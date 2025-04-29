@@ -68,9 +68,9 @@ const TeamMembers: React.FC = () => {
       linkedinUrl: "https://www.linkedin.com/in/ar-dolly-chandrawanshi-1786801b1/",
     },
     {
-      name: "Srinivasa Rao",
-      role: "Senior Artisan",
-      bio: "With over 25 years of experience in traditional bamboo crafting, Srinivasa Rao brings exceptional skill and expertise to all BambooMade projects, specializing in structural bamboo design.",
+      name: "Krishnaiah",
+      role: "Artisan",
+      bio: "Highly skilled bamboo craftsman specializing in traditional weaving patterns.",
       imageUrl: teamMember1,
     },
     {
@@ -91,12 +91,7 @@ const TeamMembers: React.FC = () => {
       bio: "Expert bamboo artisan with deep knowledge of traditional crafting techniques.",
       imageUrl: "https://lh4.googleusercontent.com/l26lfVcvgevv-d_HavGwvFQMKUG0j4Dj-aduKCHnn27seGx5vGkCtn6IBR1rzlMBhd40PrcxgL34Br8I4cCP8X_BdzO4RP27nn7t-UTvdk3bM1yLtbCrCIno5-ETkZlzdQ=w1280",
     },
-    {
-      name: "Krishnaiah",
-      role: "Artisan",
-      bio: "Highly skilled bamboo craftsman specializing in traditional weaving patterns.",
-      imageUrl: "https://lh4.googleusercontent.com/6LhVBqqDIuLKEaamjyKT1fagEcu-uHK3X3Ds8bJiMwKWbtYOK8lqET6vicRb4uXhk9ZkJgBNUbzBW23yvE723jC0a4DDxpNHTFgyPYbC90afyta3TD3Qk4JNXARQi7QW-A=w1280",
-    },
+
   ];
 
   return (
