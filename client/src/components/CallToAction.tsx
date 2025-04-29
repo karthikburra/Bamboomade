@@ -27,13 +27,13 @@ const CallToAction: React.FC = () => {
               </Button>
             </Link>
             
-            <Link href="/counseling">
+            <Link href="/project-guidance">
               <Button
                 size="lg"
                 className="w-full bg-secondary-600 hover:bg-secondary-700 text-white"
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                Book Counseling
+                Book Project Guidance
               </Button>
             </Link>
             

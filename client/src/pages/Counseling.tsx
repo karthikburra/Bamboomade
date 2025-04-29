@@ -80,7 +80,7 @@ const ProjectGuidance: React.FC = () => {
         duration: selectedDuration,
       };
       
-      return apiRequest("POST", "/api/counseling", sessionData);
+      return apiRequest("POST", "/api/project-guidance", sessionData);
     },
     onSuccess: (data) => {
       toast({

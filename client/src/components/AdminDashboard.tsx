@@ -197,7 +197,7 @@ const AdminDashboard: React.FC = () => {
             <TabsContent value="sessions">
               <Card>
                 <CardHeader>
-                  <CardTitle>Counseling Sessions</CardTitle>
+                  <CardTitle>Project Guidance Sessions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-center text-muted-foreground py-8">
