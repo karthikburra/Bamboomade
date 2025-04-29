@@ -61,9 +61,22 @@ const ProjectGuidance = () => {
   });
   
   const getCost = () => {
-    // Base cost is ₹1000 for 60 minutes
-    // Additional time costs proportionally more
-    return (selectedDuration / 60) * 1000;
+    // Return cost based on selected duration
+    switch (selectedDuration) {
+      case 5:
+        return 5;
+      case 30:
+        return 1505;
+      case 35:
+        return 1755;
+      case 60:
+        return 2505;
+      case 90:
+        return 3505;
+      default:
+        // Fallback calculation (should not happen)
+        return (selectedDuration / 60) * 2505 + 5;
+    }
   };
   
   const { mutate: bookSession, isPending } = useMutation({

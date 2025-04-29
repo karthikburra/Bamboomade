@@ -32,6 +32,7 @@ const timeSlots = [
 ];
 
 const durations = [
+  { value: 5, label: "5 minutes - ₹5" },
   { value: 30, label: "30 minutes - ₹1,505" },
   { value: 35, label: "35 minutes - ₹1,755" },
   { value: 60, label: "60 minutes - ₹2,505" },
