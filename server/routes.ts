@@ -192,7 +192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Project guidance session routes
   app.post("/api/project-guidance", validateRequest(insertProjectGuidanceSchema), async (req, res) => {
     try {
-      const session = await storage.createCounselingSession(req.body);
+      const session = await storage.createProjectGuidance(req.body);
       res.status(201).json(session);
     } catch (error) {
       res.status(500).json({ message: "Failed to book session", error: (error as Error).message });
@@ -208,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Payment ID is required" });
       }
       
-      const session = await storage.updateCounselingSessionPayment(parseInt(id), paymentId);
+      const session = await storage.updateProjectGuidancePayment(parseInt(id), paymentId);
       if (!session) {
         return res.status(404).json({ message: "Project guidance session not found" });
       }

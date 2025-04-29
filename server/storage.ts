@@ -1,7 +1,7 @@
 import { 
   users, type User, type InsertUser,
   projects, type Project, type InsertProject,
-  counselingSessions, type CounselingSession, type InsertCounselingSession,
+  projectGuidances, type ProjectGuidance, type InsertProjectGuidance,
   chatMessages, type ChatMessage, type InsertChatMessage,
   aiTrainingData, type AiTrainingData, type InsertAiTrainingData,
   tokenPurchases, type TokenPurchase, type InsertTokenPurchase
@@ -21,10 +21,10 @@ export interface IStorage {
   getFeaturedProjects(): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
   
-  // Counseling session operations
-  getAllCounselingSessions(): Promise<CounselingSession[]>;
-  getCounselingSession(id: number): Promise<CounselingSession | undefined>;
-  createCounselingSession(session: InsertCounselingSession): Promise<CounselingSession>;
+  // Project guidance operations
+  getAllProjectGuidances(): Promise<ProjectGuidance[]>;
+  getProjectGuidance(id: number): Promise<ProjectGuidance | undefined>;
+  createProjectGuidance(session: InsertProjectGuidance): Promise<ProjectGuidance>;
   updateProjectGuidancePayment(id: number, paymentId: string): Promise<ProjectGuidance | undefined>;
   
   // Chat message operations
@@ -43,14 +43,14 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private projects: Map<number, Project>;
-  private counselingSessions: Map<number, CounselingSession>;
+  private projectGuidances: Map<number, ProjectGuidance>;
   private chatMessages: Map<number, ChatMessage>;
   private aiTrainingData: Map<number, AiTrainingData>;
   private tokenPurchases: Map<number, TokenPurchase>;
   
   private currentUserId: number;
   private currentProjectId: number;
-  private currentCounselingSessionId: number;
+  private currentProjectGuidanceId: number;
   private currentChatMessageId: number;
   private currentAiTrainingDataId: number;
   private currentTokenPurchaseId: number;
@@ -58,14 +58,14 @@ export class MemStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.projects = new Map();
-    this.counselingSessions = new Map();
+    this.projectGuidances = new Map();
     this.chatMessages = new Map();
     this.aiTrainingData = new Map();
     this.tokenPurchases = new Map();
     
     this.currentUserId = 1;
     this.currentProjectId = 1;
-    this.currentCounselingSessionId = 1;
+    this.currentProjectGuidanceId = 1;
     this.currentChatMessageId = 1;
     this.currentAiTrainingDataId = 1;
     this.currentTokenPurchaseId = 1;
@@ -207,38 +207,37 @@ export class MemStorage implements IStorage {
     return project;
   }
   
-  // Counseling session operations
-  async getAllCounselingSessions(): Promise<CounselingSession[]> {
-    return Array.from(this.counselingSessions.values());
+  // Project guidance operations
+  async getAllProjectGuidances(): Promise<ProjectGuidance[]> {
+    return Array.from(this.projectGuidances.values());
   }
 
-  async getCounselingSession(id: number): Promise<CounselingSession | undefined> {
-    return this.counselingSessions.get(id);
+  async getProjectGuidance(id: number): Promise<ProjectGuidance | undefined> {
+    return this.projectGuidances.get(id);
   }
 
-  async createCounselingSession(insertSession: InsertCounselingSession): Promise<CounselingSession> {
-    const id = this.currentCounselingSessionId++;
-    const session: CounselingSession = { 
+  async createProjectGuidance(insertSession: InsertProjectGuidance): Promise<ProjectGuidance> {
+    const id = this.currentProjectGuidanceId++;
+    const session: ProjectGuidance = { 
       ...insertSession, 
       id, 
       paymentConfirmed: false,
       paymentId: undefined
     };
-    this.counselingSessions.set(id, session);
+    this.projectGuidances.set(id, session);
     return session;
   }
 
   async updateProjectGuidancePayment(id: number, paymentId: string): Promise<ProjectGuidance | undefined> {
-    // For now, this is still using the counselingSessions map until we fully migrate
-    const session = await this.getCounselingSession(id);
+    const session = await this.getProjectGuidance(id);
     if (!session) return undefined;
     
-    const updatedSession = { 
+    const updatedSession: ProjectGuidance = { 
       ...session, 
       paymentConfirmed: true, 
       paymentId 
     };
-    this.counselingSessions.set(id, updatedSession);
+    this.projectGuidances.set(id, updatedSession);
     return updatedSession;
   }
   
