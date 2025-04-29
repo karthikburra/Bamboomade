@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, LogIn } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
 import TokenCounter from "./TokenCounter";
+import { Link } from "wouter";
 
 interface Message {
   id: string;
@@ -28,6 +29,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   ]);
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: chatHistory } = useQuery({
@@ -65,6 +68,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
 
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;
+    
+    // Check if login prompt should be shown (after 3 questions)
+    const newQuestionCount = questionCount + 1;
+    setQuestionCount(newQuestionCount);
+    
+    if (newQuestionCount > 3 && !showLoginPrompt) {
+      setShowLoginPrompt(true);
+      
+      const loginPromptMessage: Message = {
+        id: `login-prompt-${Date.now()}`,
+        role: "assistant",
+        content: "You've used your 3 free questions. To continue using BambooMade AI, please create an account or log in. Creating an account gives you 10 free tokens to start with.",
+      };
+      
+      setMessages((prev) => [...prev, loginPromptMessage]);
+      return;
+    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -96,6 +116,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
           content: `⚠️ You have ${remainingTokens} tokens remaining. When you run out, you'll need to purchase more to continue using BambooMade AI.`,
         };
         setMessages((prev) => [...prev, tokenWarning]);
+      }
+      
+      // Check if this is the third question and prompt for login
+      if (newQuestionCount === 3) {
+        const loginReminderMessage: Message = {
+          id: `login-reminder-${Date.now()}`,
+          role: "assistant",
+          content: "This is your 3rd question. You can ask one more question before needing to create an account or log in. Creating an account gives you 10 free tokens to start with!",
+        };
+        setMessages((prev) => [...prev, loginReminderMessage]);
       }
     } catch (error) {
       console.error("Error processing message:", error);
@@ -131,6 +161,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     }
   };
 
+  // Check if the data contains user information
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/me"],
+    enabled: true,
+  });
+
   return (
     <div className="flex flex-col h-[70vh]">
       <Card className="flex-grow flex flex-col overflow-hidden">
@@ -161,6 +197,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                 </div>
               </div>
             )}
+            {showLoginPrompt && !user && (
+              <div className="flex justify-center mt-4">
+                <Link href="/login">
+                  <Button className="bg-green-600 hover:bg-green-700 text-white">
+                    <LogIn className="mr-2 h-4 w-4" /> Login or Register
+                  </Button>
+                </Link>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
@@ -178,13 +223,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
               onKeyDown={handleKeyDown}
               placeholder="Ask about bamboo architecture, sustainability, or our workshops..."
               className="flex-grow resize-none min-h-[60px]"
-              disabled={isProcessing}
+              disabled={isProcessing || (showLoginPrompt && !user)}
             />
             <Button
               type="submit"
               size="icon"
               className="self-end"
-              disabled={!input.trim() || isProcessing}
+              disabled={!input.trim() || isProcessing || (showLoginPrompt && !user)}
             >
               <Send size={18} />
             </Button>

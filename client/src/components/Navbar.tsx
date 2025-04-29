@@ -117,17 +117,7 @@ const Navbar: React.FC = () => {
                 Logout
               </Button>
             </div>
-          ) : (
-            <Link href="/ai-chat">
-              <Button 
-                variant="default" 
-                size="sm"
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Login
-              </Button>
-            </Link>
-          )}
+          ) : null}
 
           {isMobile && (
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
