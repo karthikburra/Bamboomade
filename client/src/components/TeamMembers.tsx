@@ -6,6 +6,7 @@ import dollyImage from "@assets/Dolly_Chandrawanshi.jpeg";
 import teamMember1 from "@assets/team_member1.png";
 import teamMember2 from "@assets/team_member2.png";
 import teamMember3 from "@assets/team_member3.png";
+import anjilammaPic from "@assets/anjilamma.png";
 
 interface TeamMemberProps {
   name: string;
@@ -77,7 +78,7 @@ const TeamMembers: React.FC = () => {
       name: "Anjilamma",
       role: "Master Weaver",
       bio: "A highly skilled bamboo weaver with expertise in creating intricate patterns and designs. Her dedication to preserving traditional techniques while innovating new applications has been invaluable to our team.",
-      imageUrl: teamMember2,
+      imageUrl: anjilammaPic,
     },
     {
       name: "Narender",
