@@ -2,10 +2,13 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertCounselingSessionSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
-import { processMessage } from "./openai-service";
+import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
+
+// Import WhatsApp bot
+import whatsappBot from "./whatsapp-bot.js";
 
 // Initialize Firebase Admin SDK if Firebase credentials are available
 try {
@@ -356,6 +359,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(purchases);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch token purchases", error: (error as Error).message });
+    }
+  });
+
+  // WhatsApp bot routes (admin only)
+  app.post("/api/whatsapp/init", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized: Admin access required" });
+      }
+      
+      // Initialize WhatsApp bot
+      await whatsappBot.initialize();
+      res.json({ message: "WhatsApp bot initialized successfully" });
+    } catch (error) {
+      console.error("WhatsApp bot initialization error:", error);
+      res.status(500).json({ message: "Failed to initialize WhatsApp bot", error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/whatsapp/join-group", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized: Admin access required" });
+      }
+
+      const { inviteCode } = req.body;
+      if (!inviteCode) {
+        return res.status(400).json({ message: "Invite code is required" });
+      }
+      
+      // Join WhatsApp group
+      await whatsappBot.joinGroupByInvite(inviteCode);
+      res.json({ message: "Successfully joined WhatsApp group" });
+    } catch (error) {
+      console.error("WhatsApp group join error:", error);
+      res.status(500).json({ message: "Failed to join WhatsApp group", error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/whatsapp/set-target-group", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized: Admin access required" });
+      }
+
+      const { groupId } = req.body;
+      if (!groupId) {
+        return res.status(400).json({ message: "Group ID is required" });
+      }
+      
+      // Set target WhatsApp group
+      await whatsappBot.setTargetGroup(groupId);
+      res.json({ message: "Successfully set target WhatsApp group" });
+    } catch (error) {
+      console.error("WhatsApp set target group error:", error);
+      res.status(500).json({ message: "Failed to set target WhatsApp group", error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/whatsapp/groups", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized: Admin access required" });
+      }
+      
+      // Get list of joined groups
+      await whatsappBot.updateGroupList();
+      const groups = whatsappBot.groups || [];
+      res.json(groups);
+    } catch (error) {
+      console.error("WhatsApp get groups error:", error);
+      res.status(500).json({ message: "Failed to get WhatsApp groups", error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/whatsapp/process-training", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized: Admin access required" });
+      }
+      
+      // Process training data
+      await whatsappBot.processTrainingData();
+      const processedCount = await convertWhatsAppToTrainingData();
+      res.json({ message: `Successfully processed ${processedCount} training items` });
+    } catch (error) {
+      console.error("WhatsApp training process error:", error);
+      res.status(500).json({ message: "Failed to process WhatsApp training data", error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/whatsapp/send-message", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Unauthorized: Admin access required" });
+      }
+
+      const { groupId, message } = req.body;
+      if (!groupId || !message) {
+        return res.status(400).json({ message: "Group ID and message are required" });
+      }
+      
+      // Send message to group
+      await whatsappBot.sendMessage(groupId, message);
+      res.json({ message: "Message sent successfully" });
+    } catch (error) {
+      console.error("WhatsApp send message error:", error);
+      res.status(500).json({ message: "Failed to send WhatsApp message", error: (error as Error).message });
     }
   });
 

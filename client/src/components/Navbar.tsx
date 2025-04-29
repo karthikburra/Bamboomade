@@ -13,7 +13,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, X, Sun, Moon, Sparkles } from "lucide-react";
+import { 
+  Menu, X, Sun, Moon, Sparkles, MessageSquareText
+} from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import lightLogoImage from "@assets/logo.png";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -92,6 +94,24 @@ const Navbar: React.FC = () => {
               <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
             </Button>
           </Link>
+          
+          {user?.isAdmin && (
+            <a 
+              href="https://wa.me/8971690163?text=Add%20BambooMade%20Bot%20to%20our%20WhatsApp%20group" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="relative group"
+            >
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
+              >
+                <MessageSquareText className="mr-2 h-4 w-4" />
+                Add Bot to WhatsApp
+              </Button>
+            </a>
+          )}
           
           <Button
             variant="ghost"
@@ -178,13 +198,25 @@ const Navbar: React.FC = () => {
                     <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
                   </Link>
                   {user?.isAdmin && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="text-base font-medium text-green-700 dark:text-green-500 transition-colors hover:text-green-800 dark:hover:text-green-300"
-                    >
-                      Admin Dashboard
-                    </Link>
+                    <>
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="text-base font-medium text-green-700 dark:text-green-500 transition-colors hover:text-green-800 dark:hover:text-green-300"
+                      >
+                        Admin Dashboard
+                      </Link>
+                      <a 
+                        href="https://wa.me/8971690163?text=Add%20BambooMade%20Bot%20to%20our%20WhatsApp%20group" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <MessageSquareText className="mr-2 h-4 w-4" />
+                        Add Bot to WhatsApp
+                      </a>
+                    </>
                   )}
                   {user && (
                     <div className="pt-4 border-t border-green-200 dark:border-green-800">
