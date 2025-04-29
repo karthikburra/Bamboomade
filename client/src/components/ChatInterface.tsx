@@ -69,22 +69,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;
     
-    // Check if login prompt should be shown (after 3 questions)
+    // No login prompt anymore
     const newQuestionCount = questionCount + 1;
     setQuestionCount(newQuestionCount);
-    
-    if (newQuestionCount > 3 && !showLoginPrompt) {
-      setShowLoginPrompt(true);
-      
-      const loginPromptMessage: Message = {
-        id: `login-prompt-${Date.now()}`,
-        role: "assistant",
-        content: "You've used your 3 free questions. To continue using BambooMade AI, please create an account or log in. Creating an account gives you 10 free tokens to start with.",
-      };
-      
-      setMessages((prev) => [...prev, loginPromptMessage]);
-      return;
-    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -118,15 +105,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
         setMessages((prev) => [...prev, tokenWarning]);
       }
       
-      // Check if this is the third question and prompt for login
-      if (newQuestionCount === 3) {
-        const loginReminderMessage: Message = {
-          id: `login-reminder-${Date.now()}`,
-          role: "assistant",
-          content: "This is your 3rd question. You can ask one more question before needing to create an account or log in. Creating an account gives you 10 free tokens to start with!",
-        };
-        setMessages((prev) => [...prev, loginReminderMessage]);
-      }
+      // No login reminder anymore
     } catch (error) {
       console.error("Error processing message:", error);
       

@@ -4,7 +4,7 @@ import { SiLinkedin } from "react-icons/si";
 import karthikImage from "@assets/karthik burra.png";
 import dollyImage from "@assets/Dolly_Chandrawanshi.jpeg";
 import krishnaiahPic from "@assets/krishnaiah.png";
-import teamMember3 from "@assets/team_member3.png";
+import narenderPic from "@assets/narender.png";
 import anjilammaPic from "@assets/anjilamma.png";
 
 interface TeamMemberProps {
@@ -83,7 +83,7 @@ const TeamMembers: React.FC = () => {
       name: "Narender",
       role: "Carpenter",
       bio: "Expert woodworker with specialized knowledge in bamboo-wood joint techniques.",
-      imageUrl: teamMember3,
+      imageUrl: narenderPic,
     }
   ];
 
