@@ -1,6 +1,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiLinkedin } from "react-icons/si";
+import karthikImage from "@assets/karthik_burra.png";
+import dollyImage from "@assets/Dolly_Chandrawanshi.jpeg";
 
 interface TeamMemberProps {
   name: string;
@@ -52,14 +54,14 @@ const TeamMembers: React.FC = () => {
       name: "Ar. Karthik Burra",
       role: "Founder",
       bio: "M.Des. Industrial Design - Srishti institute of Art Design and Technology B.Arch - CSIIT Hyderabad. He is an Industrious designer with extensive experience in large-scale Architectural projects and Bamboo product design as well as User Experience design (Ux designer).",
-      imageUrl: "https://lh6.googleusercontent.com/nSu_g4qYn6_kmlu13G3mF_953SzqlZRqdQAQU9Xvr8Q_gsyHpqGQb6V9QkrYMINTNJwdMkvUIjORMxOfOcEs_YpK_UdBuzhp9C9ORv9tqhAoqfcMDT8LAy3J_2X4-m_0oA=w1280",
+      imageUrl: karthikImage,
       linkedinUrl: "https://www.linkedin.com/in/karthik-burra-75a326a1/",
     },
     {
       name: "Ar. Dolly Chandrawanshi",
       role: "Co-Founder",
       bio: "B.Arch - NIT Raipur. Dolly is an architect with a deep passion for traditional and sustainable design. Her childhood village home, made of mud, bamboo & timber, inspired her to explore the potential of local materials and techniques.",
-      imageUrl: "https://lh6.googleusercontent.com/JnHYa6tJXH7uz951G1AE6t5UHUp4efiAf61m_cHG-do8rwZLDzFVW-3Kw61ZuxCfpCYQS6FXRbkYdrNWPT9Ftf5x0t72I65Msxx9bupMs_dUt7EmZR74NFjD6LZbe8cJ8g=w1280",
+      imageUrl: dollyImage,
       linkedinUrl: "https://www.linkedin.com/in/ar-dolly-chandrawanshi-1786801b1/",
     },
     {
