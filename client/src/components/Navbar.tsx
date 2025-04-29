@@ -14,8 +14,14 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { 
-  Menu, X, Sun, Moon, Sparkles, MessageSquareText
+  Menu, X, Sun, Moon, Sparkles, MessageSquareText, ChevronDown
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/queryClient";
 import lightLogoImage from "@assets/logo.png";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -83,31 +89,34 @@ const Navbar: React.FC = () => {
         )}
 
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <Link href="/ai-chat" className="relative group">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              BambooMade AI
-              <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
-            </Button>
-          </Link>
-          
-          <Link
-            to="/add-whatsapp-bot"
-            className="relative group"
-          >
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
-            >
-              <MessageSquareText className="mr-2 h-4 w-4" />
-              Add Bot to WhatsApp
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                BambooMade AI
+                <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
+                <ChevronDown className="ml-2 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="border-green-200 dark:border-green-800">
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/ai-chat" className="flex items-center w-full">
+                  <Sparkles className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
+                  <span>Chat with AI</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <Link href="/add-whatsapp-bot" className="flex items-center w-full">
+                  <MessageSquareText className="mr-2 h-4 w-4 text-green-600 dark:text-green-400" />
+                  <span>Add to WhatsApp</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           <Button
             variant="ghost"
@@ -184,33 +193,40 @@ const Navbar: React.FC = () => {
                     </Link>
                   ))}
                   
-                  <Link
-                    href="/ai-chat"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
-                  >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    BambooMade AI
-                    <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
-                  </Link>
+                  <div className="space-y-2 pt-2 pb-2 border-t border-b border-green-100 dark:border-green-900">
+                    <div className="flex items-center text-base font-medium text-green-800 dark:text-green-300">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      BambooMade AI Tools
+                      <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
+                    </div>
+                    
+                    <Link
+                      href="/ai-chat"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center pl-6 text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Chat with AI
+                    </Link>
+                    
+                    <Link 
+                      href="/add-whatsapp-bot"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center pl-6 text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
+                    >
+                      <MessageSquareText className="mr-2 h-4 w-4" />
+                      Add to WhatsApp
+                    </Link>
+                  </div>
+                  
                   {user?.isAdmin && (
-                    <>
-                      <Link
-                        href="/admin"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="text-base font-medium text-green-700 dark:text-green-500 transition-colors hover:text-green-800 dark:hover:text-green-300"
-                      >
-                        Admin Dashboard
-                      </Link>
-                      <Link 
-                        href="/add-whatsapp-bot"
-                        className="flex items-center text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <MessageSquareText className="mr-2 h-4 w-4" />
-                        Add Bot to WhatsApp
-                      </Link>
-                    </>
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="text-base font-medium text-green-700 dark:text-green-500 transition-colors hover:text-green-800 dark:hover:text-green-300"
+                    >
+                      Admin Dashboard
+                    </Link>
                   )}
                   {user && (
                     <div className="pt-4 border-t border-green-200 dark:border-green-800">
