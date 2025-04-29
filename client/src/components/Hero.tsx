@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import WhatsAppContact from "./WhatsAppContact";
+import heroImage from "@assets/Hero.png";
 
 const Hero: React.FC = () => {
   return (
@@ -11,8 +12,8 @@ const Hero: React.FC = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center z-0" 
         style={{ 
-          backgroundImage: `url('https://lh4.googleusercontent.com/QhBfl3ZsnGYcNo1tUqlHzZVRVYdCmYCASoBNDUWD1ia8DaUfRDRfluy3_6EvzhH6T3vB-jb2yBSmC2J_aFymcwL5YM2-8nnTKbop8Hmj_v6XG0bfo7zv2h-IzJvwG6ShHw=w1280')`,
-          filter: 'brightness(0.6)'
+          backgroundImage: `url(${heroImage})`,
+          filter: 'brightness(0.7)'
         }}
       />
       
