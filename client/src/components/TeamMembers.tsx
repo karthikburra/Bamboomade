@@ -80,9 +80,9 @@ const TeamMembers: React.FC = () => {
       imageUrl: teamMember2,
     },
     {
-      name: "Ramesh Kumar",
+      name: "Narender",
       role: "Design Specialist",
-      bio: "Combining modern design principles with traditional bamboo craftsmanship, Ramesh helps bridge the gap between architectural vision and practical implementation in all our projects.",
+      bio: "Combining modern design principles with traditional bamboo craftsmanship, Narender helps bridge the gap between architectural vision and practical implementation in all our projects.",
       imageUrl: teamMember3,
     },
     {
@@ -96,12 +96,6 @@ const TeamMembers: React.FC = () => {
       role: "Artisan",
       bio: "Highly skilled bamboo craftsman specializing in traditional weaving patterns.",
       imageUrl: "https://lh4.googleusercontent.com/6LhVBqqDIuLKEaamjyKT1fagEcu-uHK3X3Ds8bJiMwKWbtYOK8lqET6vicRb4uXhk9ZkJgBNUbzBW23yvE723jC0a4DDxpNHTFgyPYbC90afyta3TD3Qk4JNXARQi7QW-A=w1280",
-    },
-    {
-      name: "Narender",
-      role: "Carpenter",
-      bio: "Expert woodworker with specialized knowledge in bamboo-wood joint techniques.",
-      imageUrl: "https://lh5.googleusercontent.com/Bwr9-E60qJsMHwAmjvH1A-FWB9vQFVZqeVs1kZ_y6W3XxiVKqEQuXF80eu-vzyX23eEI_-Be9VOBH0NiGnp9pHBPcGRcn1XuE8SkZXB2xvfZinItaAViBm8hNsJdG1wV=w1280",
     },
   ];
 
