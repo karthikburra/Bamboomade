@@ -46,19 +46,52 @@ export default function AddWhatsAppBot() {
     mutationFn: async (data: WhatsAppInviteFormValues) => {
       return apiRequest('POST', '/api/whatsapp/join-group', data);
     },
-    onSuccess: () => {
-      toast({
-        title: 'Success!',
-        description: 'The BambooMade bot will join your WhatsApp group shortly.',
+    onSuccess: (response) => {
+      // Parse the JSON data from the response
+      response.json().then(data => {
+        if (data.success) {
+          toast({
+            title: 'Success!',
+            description: 'The BambooMade bot will join your WhatsApp group shortly.',
+          });
+          form.reset();
+        } else {
+          // Handle success response but with failure status in the data
+          toast({
+            title: 'Unable to Join Group',
+            description: data.message || 'The WhatsApp bot is currently not available. Please try again later.',
+            variant: 'destructive',
+          });
+        }
+      }).catch(error => {
+        console.error("Error parsing response:", error);
+        toast({
+          title: 'Error',
+          description: 'Unable to process the server response.',
+          variant: 'destructive',
+        });
       });
-      form.reset();
     },
     onError: (error: any) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to process your request. Please try again.',
-        variant: 'destructive',
-      });
+      // The response might include a detailed error message
+      const errorMessage = error.response?.data?.message || 
+                           error.message || 
+                           'Failed to process your request. Please try again.';
+      
+      // Check if it's a bot initialization error
+      if (errorMessage.includes('WhatsApp bot') && errorMessage.includes('not ready')) {
+        toast({
+          title: 'WhatsApp Bot Initializing',
+          description: 'The WhatsApp bot is currently starting up. Please try again in a minute.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
     },
   });
 
