@@ -189,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Counseling session routes
-  app.post("/api/counseling", validateRequest(insertCounselingSessionSchema), async (req, res) => {
+  app.post("/api/project-guidance", validateRequest(insertCounselingSessionSchema), async (req, res) => {
     try {
       const session = await storage.createCounselingSession(req.body);
       res.status(201).json(session);
@@ -198,7 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/counseling/:id/payment", async (req, res) => {
+  app.patch("/api/project-guidance/:id/payment", async (req, res) => {
     try {
       const { id } = req.params;
       const { paymentId } = req.body;
@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const session = await storage.updateCounselingSessionPayment(parseInt(id), paymentId);
       if (!session) {
-        return res.status(404).json({ message: "Counseling session not found" });
+        return res.status(404).json({ message: "Project guidance session not found" });
       }
       
       res.json(session);

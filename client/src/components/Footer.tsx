@@ -67,8 +67,8 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/counseling" className="text-base text-primary-300 hover:text-primary-50">
-                      Student Counseling
+                    <Link href="/project-guidance" className="text-base text-primary-300 hover:text-primary-50">
+                      Project Guidance
                     </Link>
                   </li>
                   <li>

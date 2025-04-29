@@ -9,7 +9,7 @@ import AnimatedLeaves from "@/components/AnimatedLeaves";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
 import Contact from "@/pages/Contact";
-import Counseling from "@/pages/Counseling";
+import ProjectGuidance from "@/pages/ProjectGuidance";
 import AIChat from "@/pages/AIChat";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
@@ -23,7 +23,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/gallery" component={Gallery} />
       <Route path="/contact" component={Contact} />
-      <Route path="/counseling" component={Counseling} />
+      <Route path="/project-guidance" component={ProjectGuidance} />
       <Route path="/ai-chat" component={AIChat} />
       <Route path="/admin" component={Admin} />
       <Route path="/login" component={Login} />

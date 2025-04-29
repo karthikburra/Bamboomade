@@ -63,7 +63,7 @@ const ProjectGuidance: React.FC = () => {
   
   // Session booking mutation
   const { mutate: bookSession, isPending } = useMutation({
-    mutationFn: async (data: CounselingFormValues) => {
+    mutationFn: async (data: ProjectGuidanceFormValues) => {
       // Combine form data with selected date/time/duration
       if (!selectedDate || !selectedTime) {
         throw new Error("Please select a date and time");
@@ -80,9 +80,9 @@ const ProjectGuidance: React.FC = () => {
         duration: selectedDuration,
       };
       
-      return apiRequest("POST", "/api/counseling", sessionData);
+      return apiRequest("POST", "/api/project-guidance", sessionData);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Session Booked",
         description: "Please complete the payment to confirm your session.",
@@ -99,7 +99,7 @@ const ProjectGuidance: React.FC = () => {
     },
   });
   
-  const onSubmit = (values: CounselingFormValues) => {
+  const onSubmit = (values: ProjectGuidanceFormValues) => {
     if (!selectedDate || !selectedTime) {
       toast({
         title: "Missing Information",
@@ -115,7 +115,7 @@ const ProjectGuidance: React.FC = () => {
   const handlePaymentSuccess = () => {
     toast({
       title: "Payment Successful",
-      description: "Your counseling session has been confirmed. Check your email for details.",
+      description: "Your project guidance session has been confirmed. Check your email for details.",
     });
     setStep(4); // Move to success step
   };
@@ -123,15 +123,15 @@ const ProjectGuidance: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Student Counseling | BambooMade</title>
-        <meta name="description" content="Book a counseling session with bamboo architecture experts to get personalized guidance for your academic and career goals." />
+        <title>Project Guidance | BambooMade</title>
+        <meta name="description" content="Book a project guidance session with bamboo architecture experts to get personalized guidance for your academic and career goals." />
       </Helmet>
       
       <div className="bg-background py-12">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              Student Counseling Sessions
+              Project Guidance Sessions
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Get personalized guidance from our bamboo architecture experts to help with your academic projects and career goals.
@@ -142,7 +142,7 @@ const ProjectGuidance: React.FC = () => {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Book Your Counseling Session</CardTitle>
+                  <CardTitle>Book Your Project Guidance Session</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="mb-6">
@@ -318,7 +318,7 @@ const ProjectGuidance: React.FC = () => {
                       </div>
                       <h3 className="text-xl font-medium mb-2">Booking Confirmed!</h3>
                       <p className="text-muted-foreground mb-6">
-                        Your counseling session has been scheduled for:
+                        Your project guidance session has been scheduled for:
                         {selectedDate && selectedTime && (
                           <span className="block font-medium text-foreground mt-2">
                             {format(selectedDate, "MMMM d, yyyy")} at {selectedTime}
@@ -340,7 +340,7 @@ const ProjectGuidance: React.FC = () => {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Counseling Details</CardTitle>
+                  <CardTitle>Project Guidance Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -356,10 +356,8 @@ const ProjectGuidance: React.FC = () => {
                       <div className="flex items-start">
                         <Calendar className="h-5 w-5 text-primary-600 mt-1 mr-3" />
                         <div>
-                          <p className="font-medium">Selected Date</p>
-                          <p className="text-muted-foreground">
-                            {format(selectedDate, "MMMM d, yyyy")}
-                          </p>
+                          <p className="font-medium">Session Date</p>
+                          <p className="text-muted-foreground">{format(selectedDate, "MMMM d, yyyy")}</p>
                         </div>
                       </div>
                     )}
@@ -368,34 +366,31 @@ const ProjectGuidance: React.FC = () => {
                       <div className="flex items-start">
                         <Clock className="h-5 w-5 text-primary-600 mt-1 mr-3" />
                         <div>
-                          <p className="font-medium">Selected Time</p>
+                          <p className="font-medium">Session Time</p>
                           <p className="text-muted-foreground">{selectedTime}</p>
                         </div>
                       </div>
                     )}
                     
+                    <div className="flex items-start">
+                      <Clock className="h-5 w-5 text-primary-600 mt-1 mr-3" />
+                      <div>
+                        <p className="font-medium">Session Cost</p>
+                        <p className="text-muted-foreground">₹{getCost()}</p>
+                      </div>
+                    </div>
+                    
                     <Separator />
                     
                     <div>
-                      <p className="font-medium">Cost</p>
-                      <p className="text-2xl font-bold">₹{getCost().toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Fees include personalized guidance, project review, and follow-up communication.
-                      </p>
+                      <h4 className="text-sm font-medium mb-2">What to Expect</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• One-on-one guidance with a bamboo expert</li>
+                        <li>• Detailed feedback on your project ideas</li>
+                        <li>• Technical advice for your specific needs</li>
+                        <li>• References and resources tailored to your goals</li>
+                      </ul>
                     </div>
-                  </div>
-                  
-                  <Separator className="my-6" />
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">What to Expect</h3>
-                    <ul className="text-sm text-muted-foreground space-y-2">
-                      <li>• One-on-one guidance from bamboo architecture experts</li>
-                      <li>• Project feedback and improvement suggestions</li>
-                      <li>• Material recommendations and technical advice</li>
-                      <li>• Career guidance in sustainable architecture</li>
-                      <li>• Post-session resource sharing</li>
-                    </ul>
                   </div>
                 </CardContent>
               </Card>
@@ -407,4 +402,4 @@ const ProjectGuidance: React.FC = () => {
   );
 };
 
-export default Counseling;
+export default ProjectGuidance;
