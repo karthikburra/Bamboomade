@@ -26,7 +26,7 @@ const AIChat: React.FC = () => {
               Chat with our specialized bamboo architecture AI assistant to get expert guidance on sustainable bamboo construction and design.
             </p>
             <p className="mt-2 text-base text-primary-600 font-medium">
-              Free unlimited access - no login required!
+              Try it now - first 3 questions free, no login required!
             </p>
           </div>
           

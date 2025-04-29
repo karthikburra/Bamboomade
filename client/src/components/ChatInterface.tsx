@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, Send, AlertTriangle } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
+import { Link } from "wouter";
 import TokenCounter from "./TokenCounter";
 
 interface Message {
@@ -29,6 +31,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  
+  // Number of free questions before showing login prompt
+  const FREE_QUESTION_LIMIT = 3;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: chatHistory } = useQuery({
@@ -67,9 +73,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;
     
-    // No login prompt anymore
     const newQuestionCount = questionCount + 1;
     setQuestionCount(newQuestionCount);
+    
+    // Check if we should show login prompt after this question
+    if (newQuestionCount >= FREE_QUESTION_LIMIT && !showLoginPrompt) {
+      setShowLoginPrompt(true);
+    }
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -94,9 +104,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       // We still call onTokensUsed for compatibility, but it doesn't do anything now
       onTokensUsed(0);
       
-      // No token warnings since we've removed token tracking
-      
-      // No login reminder anymore
+      // After reaching the question limit, add a login suggestion
+      if (showLoginPrompt && newQuestionCount === FREE_QUESTION_LIMIT) {
+        const loginMessage: Message = {
+          id: `login-prompt-${Date.now()}`,
+          role: "assistant",
+          content: "You've reached your free question limit. Please consider creating an account to continue using BambooMade AI and save your conversation history.",
+        };
+        setMessages((prev) => [...prev, loginMessage]);
+      }
     } catch (error) {
       console.error("Error processing message:", error);
       
@@ -183,6 +199,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
               <Send size={18} />
             </Button>
           </form>
+          
+          {/* Login prompt alert - shown when user reaches question limit */}
+          {showLoginPrompt && questionCount >= FREE_QUESTION_LIMIT && (
+            <div className="mt-4">
+              <Alert className="bg-primary-50 border-primary-200">
+                <AlertTriangle className="h-4 w-4 text-primary-600" />
+                <AlertDescription className="text-sm text-primary-900">
+                  <div className="flex flex-col space-y-2">
+                    <span>You've used your {FREE_QUESTION_LIMIT} free questions. Create an account to:</span>
+                    <ul className="list-disc pl-5 text-xs space-y-1">
+                      <li>Continue using BambooMade AI</li>
+                      <li>Save your chat history</li>
+                      <li>Get access to premium features</li>
+                    </ul>
+                    <div className="flex gap-2 mt-2">
+                      <Link href="/login">
+                        <Button size="sm" variant="default" className="w-full">Login</Button>
+                      </Link>
+                      <Link href="/register">
+                        <Button size="sm" variant="outline" className="w-full">Register</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
