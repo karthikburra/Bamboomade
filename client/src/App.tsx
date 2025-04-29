@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AnimatedLeaves from "@/components/AnimatedLeaves";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
 import Contact from "@/pages/Contact";
@@ -39,12 +40,13 @@ function App() {
           <meta name="description" content="BambooMade pioneers innovative and sustainable architectural solutions using bamboo, blending traditional craftsmanship with modern engineering." />
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
         </Helmet>
-        <div className="flex min-h-screen flex-col">
+        <div className="flex min-h-screen flex-col relative">
+          <AnimatedLeaves />
           <Navbar />
-          <main className="flex-1">
+          <main className="flex-1 relative z-10">
             <Router />
           </main>
-          <Footer />
+          <Footer className="relative z-10" />
         </div>
         <Toaster />
       </TooltipProvider>
