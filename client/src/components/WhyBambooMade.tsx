@@ -60,13 +60,13 @@ const WhyBambooMade: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-background to-primary-50/30 dark:to-primary-950/30">
+    <section className="py-16 bg-gradient-to-b from-background to-green-50/30 dark:to-green-950/30">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
             We Curate Bamboo Workshops
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
             Our experience and expertise help create sustainable solutions with bamboo.
           </p>
         </div>
@@ -83,9 +83,9 @@ const WhyBambooMade: React.FC = () => {
           ))}
         </div>
         
-        <div className="mt-16 text-center bg-primary-50 dark:bg-primary-900/20 p-8 rounded-lg">
-          <h3 className="text-2xl font-semibold mb-4">Our Experience</h3>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+        <div className="mt-16 text-center bg-green-50 dark:bg-green-900/20 p-8 rounded-lg">
+          <h3 className="text-2xl font-semibold mb-4 text-green-800 dark:text-green-300">Our Experience</h3>
+          <p className="text-lg text-green-700 dark:text-green-200 max-w-3xl mx-auto">
             "Through our successfully conducted workshops, we have ignited creativity, empowered participants, and built a strong foundation for Bamboo centric design."
           </p>
         </div>

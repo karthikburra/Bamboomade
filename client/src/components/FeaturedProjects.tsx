@@ -56,13 +56,13 @@ const FeaturedProjects: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-16 bg-gradient-to-b from-background to-green-50/30 dark:to-green-950/30">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
             Our Experience
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
             "Through our successfully conducted workshops, we have ignited creativity, empowered participants, and built a strong foundation for Bamboo centric design."
           </p>
         </div>
@@ -78,16 +78,16 @@ const FeaturedProjects: React.FC = () => {
                 />
               </div>
               <CardContent className="p-4 flex-grow">
-                <div className="flex items-center text-sm text-muted-foreground mb-2">
+                <div className="flex items-center text-sm text-green-600 dark:text-green-400 mb-2">
                   <Calendar className="h-4 w-4 mr-1" />
                   <span>{workshop.duration} | {workshop.date}</span>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground line-clamp-2">{workshop.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{workshop.description}</p>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">{workshop.title}</h3>
+                <p className="mt-2 text-sm text-green-600 dark:text-green-400 line-clamp-3">{workshop.description}</p>
               </CardContent>
               <CardFooter className="p-4 pt-0">
                 <Link href={workshop.viewMoreLink}>
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button variant="outline" size="sm" className="w-full border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
                     View More
                   </Button>
                 </Link>
@@ -98,7 +98,7 @@ const FeaturedProjects: React.FC = () => {
 
         <div className="mt-12 text-center">
           <Link href="/gallery">
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
               View All Projects
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

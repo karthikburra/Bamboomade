@@ -27,15 +27,15 @@ const TeamMember: React.FC<TeamMemberProps> = ({
         />
       </div>
       <CardContent className="pt-6">
-        <h3 className="text-xl font-semibold mb-1">{name}</h3>
-        <p className="text-primary-600 dark:text-primary-400 font-medium mb-3">{role}</p>
-        <p className="text-muted-foreground text-sm mb-4">{bio}</p>
+        <h3 className="text-xl font-semibold mb-1 text-green-800 dark:text-green-300">{name}</h3>
+        <p className="text-green-600 dark:text-green-400 font-medium mb-3">{role}</p>
+        <p className="text-green-700 dark:text-green-200 text-sm mb-4">{bio}</p>
         {linkedinUrl && (
           <a 
             href={linkedinUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-flex items-center text-primary-600 hover:text-primary-700"
+            className="inline-flex items-center text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
           >
             <SiLinkedin className="h-5 w-5 mr-2" />
             Connect on LinkedIn
@@ -86,10 +86,10 @@ const TeamMembers: React.FC = () => {
     <section className="py-16 bg-background">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
             Our Team
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
             Meet the passionate professionals and artisans behind BambooMade's innovative designs.
           </p>
         </div>
