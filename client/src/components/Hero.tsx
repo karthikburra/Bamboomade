@@ -28,9 +28,6 @@ const Hero: React.FC = () => {
           <p className="mt-6 text-xl text-white max-w-3xl">
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
-          <div className="mt-4 text-2xl font-semibold text-green-300 max-w-3xl">
-            We Curate Bamboo Workshops
-          </div>
           <div className="mt-6 text-lg text-white max-w-3xl">
             <p>We bring Bamboo Workshops to you!</p>
             <p className="mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
