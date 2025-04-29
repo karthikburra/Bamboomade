@@ -25,7 +25,7 @@ export interface IStorage {
   getAllCounselingSessions(): Promise<CounselingSession[]>;
   getCounselingSession(id: number): Promise<CounselingSession | undefined>;
   createCounselingSession(session: InsertCounselingSession): Promise<CounselingSession>;
-  updateCounselingSessionPayment(id: number, paymentId: string): Promise<CounselingSession | undefined>;
+  updateProjectGuidancePayment(id: number, paymentId: string): Promise<ProjectGuidance | undefined>;
   
   // Chat message operations
   getChatMessagesByUserId(userId: number): Promise<ChatMessage[]>;
@@ -228,7 +228,8 @@ export class MemStorage implements IStorage {
     return session;
   }
 
-  async updateCounselingSessionPayment(id: number, paymentId: string): Promise<CounselingSession | undefined> {
+  async updateProjectGuidancePayment(id: number, paymentId: string): Promise<ProjectGuidance | undefined> {
+    // For now, this is still using the counselingSessions map until we fully migrate
     const session = await this.getCounselingSession(id);
     if (!session) return undefined;
     

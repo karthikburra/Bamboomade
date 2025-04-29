@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +16,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Helmet } from "react-helmet";
 import BookingCalendar from "@/components/BookingCalendar";
 import PaymentForm from "@/components/PaymentForm";
+import PhonePePaymentForm from "@/components/PhonePePaymentForm";
 import { CalendarCheck, GraduationCap, Clock, Calendar, CheckCircle } from "lucide-react";
 
 // Form schema based on the project guidance session model
@@ -297,11 +297,31 @@ const ProjectGuidance: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-medium mb-4">Complete Payment</h3>
                       {sessionId && (
-                        <PaymentForm 
-                          sessionId={sessionId} 
-                          amount={getCost()}
-                          onSuccess={handlePaymentSuccess}
-                        />
+                        <Tabs defaultValue="phonepe" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 mb-4">
+                            <TabsTrigger value="phonepe">PhonePe</TabsTrigger>
+                            <TabsTrigger value="card">Credit/Debit Card</TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="phonepe">
+                            <PhonePePaymentForm 
+                              sessionId={sessionId} 
+                              amount={getCost()}
+                              customerName={form.getValues().studentName}
+                              customerEmail={form.getValues().email}
+                              customerPhone={form.getValues().phone}
+                              onSuccess={handlePaymentSuccess}
+                            />
+                          </TabsContent>
+                          
+                          <TabsContent value="card">
+                            <PaymentForm 
+                              sessionId={sessionId} 
+                              amount={getCost()}
+                              onSuccess={handlePaymentSuccess}
+                            />
+                          </TabsContent>
+                        </Tabs>
                       )}
                       <div className="mt-6">
                         <Button variant="ghost" onClick={() => setStep(2)} className="text-sm">

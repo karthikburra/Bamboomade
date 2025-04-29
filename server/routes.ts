@@ -297,8 +297,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).send("Transaction not found");
         }
         
-        // Update the counseling session with the payment ID
-        const session = await storage.updateCounselingSessionPayment(
+        // Update the project guidance session with the payment ID
+        const session = await storage.updateProjectGuidancePayment(
           parseInt(pendingPayment.sessionId),
           statusResult.paymentId
         );
