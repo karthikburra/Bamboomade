@@ -50,7 +50,7 @@ const Contact: React.FC = () => {
     <>
       <Helmet>
         <title>Contact Us | BambooMade</title>
-        <meta name="description" content="Get in touch with BambooMade for inquiries about bamboo architecture projects, workshops, and student counseling." />
+        <meta name="description" content="Get in touch with BambooMade for inquiries about bamboo architecture projects, workshops, and student project guidance." />
       </Helmet>
       
       <div className="bg-background py-12">

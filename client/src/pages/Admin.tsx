@@ -77,7 +77,7 @@ const Admin: React.FC = () => {
               Admin Dashboard
             </h1>
             <p className="mt-2 text-muted-foreground">
-              Manage BambooMade AI training data, counseling sessions, and user accounts.
+              Manage BambooMade AI training data, project guidance sessions, and user accounts.
             </p>
           </div>
           

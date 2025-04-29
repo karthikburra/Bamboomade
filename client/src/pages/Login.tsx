@@ -26,7 +26,7 @@ const Login: React.FC = () => {
     <>
       <Helmet>
         <title>Login | BambooMade</title>
-        <meta name="description" content="Login to your BambooMade account to access AI chat, counseling sessions, and more." />
+        <meta name="description" content="Login to your BambooMade account to access AI chat, project guidance sessions, and more." />
       </Helmet>
       
       <div className="bg-background py-16">
@@ -35,7 +35,7 @@ const Login: React.FC = () => {
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Welcome to BambooMade</CardTitle>
               <CardDescription>
-                Sign in to access AI chat, book counseling, and more.
+                Sign in to access AI chat, book project guidance, and more.
               </CardDescription>
             </CardHeader>
             <CardContent>

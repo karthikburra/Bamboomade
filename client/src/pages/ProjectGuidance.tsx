@@ -1,55 +1,54 @@
-import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Helmet } from "react-helmet";
+import { useState } from "react";
 import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { BookText, CalendarCheck, Calendar, CheckCircle, GraduationCap } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { Helmet } from "react-helmet";
+import { Button } from "@/components/ui/button";
 import BookingCalendar from "@/components/BookingCalendar";
 import PaymentForm from "@/components/PaymentForm";
-import PhonePePaymentForm from "@/components/PhonePePaymentForm";
-import { CalendarCheck, GraduationCap, Clock, Calendar, CheckCircle } from "lucide-react";
 
-// Form schema based on the project guidance session model
 const projectGuidanceFormSchema = z.object({
-  studentName: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  topic: z.string().min(5, "Topic must be at least 5 characters"),
+  studentName: z.string().min(2, { message: "Please enter your full name" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
+  topic: z.string().min(5, { message: "Please enter a topic for discussion" }),
   notes: z.string().optional(),
 });
 
 type ProjectGuidanceFormValues = z.infer<typeof projectGuidanceFormSchema>;
 
-const ProjectGuidance: React.FC = () => {
+const ProjectGuidance = () => {
   const { toast } = useToast();
-  const [step, setStep] = useState(1);
-  const [sessionId, setSessionId] = useState<number | null>(null);
-  
-  // Calendar state
+  const [step, setStep] = useState(1); // 1: Schedule, 2: Details, 3: Payment, 4: Confirmation
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
-  const [selectedDuration, setSelectedDuration] = useState<number>(60);
+  const [selectedDuration, setSelectedDuration] = useState<number>(60); // Default 60 minutes
+  const [sessionId, setSessionId] = useState<number | null>(null);
   
-  // Calculate cost based on duration
-  const getCost = () => {
-    switch (selectedDuration) {
-      case 30: return 1500;
-      case 90: return 3500;
-      default: return 2500; // 60 minutes
-    }
-  };
-  
-  // Form setup
   const form = useForm<ProjectGuidanceFormValues>({
     resolver: zodResolver(projectGuidanceFormSchema),
     defaultValues: {
@@ -61,28 +60,29 @@ const ProjectGuidance: React.FC = () => {
     },
   });
   
-  // Session booking mutation
+  const getCost = () => {
+    // Base cost is ₹1000 for 60 minutes
+    // Additional time costs proportionally more
+    return (selectedDuration / 60) * 1000;
+  };
+  
   const { mutate: bookSession, isPending } = useMutation({
-    mutationFn: async (data: ProjectGuidanceFormValues) => {
-      // Combine form data with selected date/time/duration
-      if (!selectedDate || !selectedTime) {
-        throw new Error("Please select a date and time");
-      }
+    mutationFn: async (values: ProjectGuidanceFormValues) => {
+      if (!selectedDate || !selectedTime) return Promise.reject("Please select a date and time");
       
-      // Parse the time and create a proper date object
-      const [hours, minutes] = selectedTime.split(":").map(Number);
       const sessionDate = new Date(selectedDate);
-      sessionDate.setHours(hours, minutes, 0, 0);
+      const [hours, minutes] = selectedTime.split(":").map(Number);
+      sessionDate.setHours(hours, minutes);
       
       const sessionData = {
-        ...data,
+        ...values,
         date: sessionDate.toISOString(),
         duration: selectedDuration,
       };
       
       return apiRequest("POST", "/api/project-guidance", sessionData);
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       toast({
         title: "Session Booked",
         description: "Please complete the payment to confirm your session.",
@@ -131,7 +131,7 @@ const ProjectGuidance: React.FC = () => {
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              Project Guidance Sessions
+              Student Project Guidance Sessions
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Get personalized guidance from our bamboo architecture experts to help with your academic projects and career goals.
@@ -297,31 +297,11 @@ const ProjectGuidance: React.FC = () => {
                     <div>
                       <h3 className="text-lg font-medium mb-4">Complete Payment</h3>
                       {sessionId && (
-                        <Tabs defaultValue="phonepe" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2 mb-4">
-                            <TabsTrigger value="phonepe">PhonePe</TabsTrigger>
-                            <TabsTrigger value="card">Credit/Debit Card</TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="phonepe">
-                            <PhonePePaymentForm 
-                              sessionId={sessionId} 
-                              amount={getCost()}
-                              customerName={form.getValues().studentName}
-                              customerEmail={form.getValues().email}
-                              customerPhone={form.getValues().phone}
-                              onSuccess={handlePaymentSuccess}
-                            />
-                          </TabsContent>
-                          
-                          <TabsContent value="card">
-                            <PaymentForm 
-                              sessionId={sessionId} 
-                              amount={getCost()}
-                              onSuccess={handlePaymentSuccess}
-                            />
-                          </TabsContent>
-                        </Tabs>
+                        <PaymentForm 
+                          sessionId={sessionId} 
+                          amount={getCost()}
+                          onSuccess={handlePaymentSuccess}
+                        />
                       )}
                       <div className="mt-6">
                         <Button variant="ghost" onClick={() => setStep(2)} className="text-sm">
@@ -360,57 +340,61 @@ const ProjectGuidance: React.FC = () => {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Project Guidance Details</CardTitle>
+                  <CardTitle>Session Information</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <Clock className="h-5 w-5 text-primary-600 mt-1 mr-3" />
-                      <div>
-                        <p className="font-medium">Session Duration</p>
-                        <p className="text-muted-foreground">{selectedDuration} minutes</p>
+                  <div className="mb-6">
+                    <h3 className="font-medium text-lg mb-2">What to Expect</h3>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      Our project guidance sessions provide personalized support for students working on bamboo architecture projects.
+                    </p>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex items-start">
+                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
+                        <span>Expert guidance on bamboo material selection and techniques</span>
+                      </li>
+                      <li className="flex items-start">
+                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
+                        <span>Project-specific design and structural advice</span>
+                      </li>
+                      <li className="flex items-start">
+                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
+                        <span>Portfolio review and career guidance</span>
+                      </li>
+                      <li className="flex items-start">
+                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
+                        <span>Resource recommendations and networking opportunities</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="font-medium text-lg mb-2">Session Details</h3>
+                    <div className="bg-primary-50 p-4 rounded-lg">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">Duration:</span>
+                        <span className="text-sm font-medium">{selectedDuration} minutes</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">Cost:</span>
+                        <span className="text-sm font-medium">₹{getCost().toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">Format:</span>
+                        <span className="text-sm font-medium">Online Video Call</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Materials:</span>
+                        <span className="text-sm font-medium">Included</span>
                       </div>
                     </div>
-                    
-                    {selectedDate && (
-                      <div className="flex items-start">
-                        <Calendar className="h-5 w-5 text-primary-600 mt-1 mr-3" />
-                        <div>
-                          <p className="font-medium">Session Date</p>
-                          <p className="text-muted-foreground">{format(selectedDate, "MMMM d, yyyy")}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {selectedTime && (
-                      <div className="flex items-start">
-                        <Clock className="h-5 w-5 text-primary-600 mt-1 mr-3" />
-                        <div>
-                          <p className="font-medium">Session Time</p>
-                          <p className="text-muted-foreground">{selectedTime}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-start">
-                      <Clock className="h-5 w-5 text-primary-600 mt-1 mr-3" />
-                      <div>
-                        <p className="font-medium">Session Cost</p>
-                        <p className="text-muted-foreground">₹{getCost()}</p>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">What to Expect</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• One-on-one guidance with a bamboo expert</li>
-                        <li>• Detailed feedback on your project ideas</li>
-                        <li>• Technical advice for your specific needs</li>
-                        <li>• References and resources tailored to your goals</li>
-                      </ul>
-                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium text-lg mb-2">Cancellation Policy</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Free cancellation up to 24 hours before your session. After that, a 50% fee applies. Contact us directly for rescheduling.
+                    </p>
                   </div>
                 </CardContent>
               </Card>

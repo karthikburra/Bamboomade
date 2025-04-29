@@ -11,7 +11,7 @@ const Home: React.FC = () => {
     <>
       <Helmet>
         <title>BambooMade - Beyond Tradition: Building a Sustainable Modern Future</title>
-        <meta name="description" content="BambooMade provides bamboo workshops, architectural solutions, and student counseling. We specialize in sustainable design using bamboo as a versatile building material." />
+        <meta name="description" content="BambooMade provides bamboo workshops, architectural solutions, and student project guidance. We specialize in sustainable design using bamboo as a versatile building material." />
       </Helmet>
       
       <Hero />

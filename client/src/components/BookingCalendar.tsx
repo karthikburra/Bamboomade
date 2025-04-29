@@ -32,9 +32,10 @@ const timeSlots = [
 ];
 
 const durations = [
-  { value: 30, label: "30 minutes - ₹1,500" },
-  { value: 60, label: "60 minutes - ₹2,500" },
-  { value: 90, label: "90 minutes - ₹3,500" }
+  { value: 30, label: "30 minutes - ₹1,505" },
+  { value: 35, label: "35 minutes - ₹1,755" },
+  { value: 60, label: "60 minutes - ₹2,505" },
+  { value: 90, label: "90 minutes - ₹3,505" }
 ];
 
 const BookingCalendar: React.FC<BookingCalendarProps> = ({

@@ -29,7 +29,7 @@ const testimonials: Testimonial[] = [
     id: 3,
     name: "Meera Krishnan",
     role: "Architecture Student",
-    content: "The counseling session I had with BambooMade's experts completely changed my thesis direction. Their knowledge about bamboo applications in modern design is unparalleled.",
+    content: "The project guidance session I had with BambooMade's experts completely changed my thesis direction. Their knowledge about bamboo applications in modern design is unparalleled.",
     rating: 5,
   },
 ];
