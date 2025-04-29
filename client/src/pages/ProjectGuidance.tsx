@@ -30,6 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import BookingCalendar from "@/components/BookingCalendar";
 import PaymentForm from "@/components/PaymentForm";
+import PhonePePaymentForm from "@/components/PhonePePaymentForm";
 
 const projectGuidanceFormSchema = z.object({
   studentName: z.string().min(2, { message: "Please enter your full name" }),
@@ -310,11 +311,30 @@ const ProjectGuidance = () => {
                     <div>
                       <h3 className="text-lg font-medium mb-4">Complete Payment</h3>
                       {sessionId && (
-                        <PaymentForm 
-                          sessionId={sessionId} 
-                          amount={getCost()}
-                          onSuccess={handlePaymentSuccess}
-                        />
+                        <>
+                          <div className="mb-4">
+                            <h4 className="text-md font-medium mb-2">Payment Options:</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <PhonePePaymentForm 
+                                  sessionId={sessionId} 
+                                  amount={getCost()}
+                                  customerName={form.getValues().studentName}
+                                  customerEmail={form.getValues().email}
+                                  customerPhone={form.getValues().phone}
+                                  onSuccess={handlePaymentSuccess}
+                                />
+                              </div>
+                              <div className="mt-4 sm:mt-0">
+                                <PaymentForm 
+                                  sessionId={sessionId} 
+                                  amount={getCost()}
+                                  onSuccess={handlePaymentSuccess}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </>
                       )}
                       <div className="mt-6">
                         <Button variant="ghost" onClick={() => setStep(2)} className="text-sm">

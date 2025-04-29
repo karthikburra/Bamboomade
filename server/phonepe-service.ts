@@ -5,9 +5,15 @@ import crypto from 'crypto';
 const PHONEPE_HOST = 'https://api.phonepe.com/apis/hermes';
 const CLIENT_ID = process.env.PHONEPE_CLIENT_ID || '';
 const CLIENT_SECRET = process.env.PHONEPE_CLIENT_SECRET || '';
-const REDIRECT_URL = 'http://localhost:5000/api/payments/phonepe/callback';
+// Detect environment and use appropriate redirect URL
+const isProduction = process.env.NODE_ENV === 'production';
+const baseUrl = isProduction 
+  ? 'https://bamboomade.repl.co' // Replace with your deployed URL when known
+  : 'http://localhost:5000';
+const REDIRECT_URL = `${baseUrl}/api/payments/phonepe/callback`;
 const REDIRECT_MODE = 'REDIRECT';
-const MERCHANT_ID = 'BAMBOOMADEONLINE'; // Replace with your actual merchant ID if different
+// Use PHONEPE_MERCHANT_ID from environment variables if available, otherwise use default
+const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'BAMBOOMADEONLINE';
 
 /**
  * Initialize a PhonePe payment
