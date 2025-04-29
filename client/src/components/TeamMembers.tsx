@@ -81,8 +81,8 @@ const TeamMembers: React.FC = () => {
     },
     {
       name: "Narender",
-      role: "Design Specialist",
-      bio: "Combining modern design principles with traditional bamboo craftsmanship, Narender helps bridge the gap between architectural vision and practical implementation in all our projects.",
+      role: "Carpenter",
+      bio: "Expert woodworker with specialized knowledge in bamboo-wood joint techniques.",
       imageUrl: teamMember3,
     },
     {
