@@ -14,6 +14,8 @@ import AIChat from "@/pages/AIChat";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
+import PaymentSuccess from "@/pages/PaymentSuccess";
+import PaymentFailed from "@/pages/PaymentFailed";
 import NotFound from "@/pages/not-found";
 import { Helmet } from "react-helmet";
 
@@ -28,6 +30,8 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/login" component={Login} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
+      <Route path="/payment-success" component={PaymentSuccess} />
+      <Route path="/payment-failed" component={PaymentFailed} />
       <Route component={NotFound} />
     </Switch>
   );
