@@ -28,7 +28,6 @@ const whatsappInviteSchema = z.object({
     .regex(/^https:\/\/chat\.whatsapp\.com\/[a-zA-Z0-9]{22}$/, {
       message: 'Please enter a valid WhatsApp group invite link (https://chat.whatsapp.com/XXXX)',
     }),
-  groupName: z.string().min(1, { message: 'Group name is required' }),
 });
 
 type WhatsAppInviteFormValues = z.infer<typeof whatsappInviteSchema>;
@@ -40,7 +39,6 @@ export default function AddWhatsAppBot() {
     resolver: zodResolver(whatsappInviteSchema),
     defaultValues: {
       inviteLink: '',
-      groupName: '',
     },
   });
 
@@ -93,27 +91,6 @@ export default function AddWhatsAppBot() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="groupName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-green-700 dark:text-green-400">Group Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g., Architecture Students 2023" 
-                        {...field} 
-                        className="border-green-200 dark:border-green-800 focus:ring-green-500"
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Enter the name of your WhatsApp group
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
               <FormField
                 control={form.control}
                 name="inviteLink"

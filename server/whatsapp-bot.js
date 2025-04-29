@@ -133,7 +133,10 @@ class WhatsAppBot {
   async joinGroupByInvite(inviteCode) {
     if (!this.isReady || !this.client) {
       console.log('[WhatsApp Bot] Client not ready. Cannot join group.');
-      return false;
+      return { 
+        success: false, 
+        error: "WhatsApp bot client is not ready. Please try again later." 
+      };
     }
 
     try {
@@ -146,10 +149,23 @@ class WhatsAppBot {
 
       // Update group list
       await this.updateGroupList();
-      return true;
+      
+      // Set this as target group for processing
+      const groupId = joinResult.gid._serialized;
+      
+      // Return success response with group ID
+      return { 
+        success: true, 
+        groupId: groupId 
+      };
     } catch (error) {
       console.error('[WhatsApp Bot] Error joining group:', error);
-      return false;
+      
+      // Return detailed error message
+      return { 
+        success: false, 
+        error: error.message || "Error joining WhatsApp group" 
+      };
     }
   }
 

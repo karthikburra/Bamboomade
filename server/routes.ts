@@ -384,29 +384,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/whatsapp/join-group", async (req, res) => {
+  // Validate WhatsApp invite link schema
+  const whatsappInviteSchema = z.object({
+    inviteLink: z
+      .string()
+      .regex(/^https:\/\/chat\.whatsapp\.com\/[a-zA-Z0-9]{22}$/, {
+        message: 'Please enter a valid WhatsApp group invite link (https://chat.whatsapp.com/XXXX)',
+      }),
+  });
+  
+  // Route for joining WhatsApp groups via invite links - public endpoint
+  app.post("/api/whatsapp/join-group", validateRequest(whatsappInviteSchema), async (req, res) => {
     try {
-      const userId = req.session.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
+      const { inviteLink } = req.body;
       
-      const user = await storage.getUser(userId);
-      if (!user || !user.isAdmin) {
-        return res.status(403).json({ message: "Unauthorized: Admin access required" });
-      }
-
-      const { inviteCode } = req.body;
+      // Extract the invite code from the link
+      const inviteCode = inviteLink.split('https://chat.whatsapp.com/')[1];
+      
       if (!inviteCode) {
-        return res.status(400).json({ message: "Invite code is required" });
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid invite link format" 
+        });
       }
       
       // Join WhatsApp group
-      await whatsappBot.joinGroupByInvite(inviteCode);
-      res.json({ message: "Successfully joined WhatsApp group" });
+      const result = await whatsappBot.joinGroupByInvite(inviteCode);
+      
+      if (result.success) {
+        return res.json({
+          success: true,
+          message: "Successfully joined WhatsApp group",
+          groupId: result.groupId
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: result.error || "Failed to join WhatsApp group"
+        });
+      }
     } catch (error) {
       console.error("WhatsApp group join error:", error);
-      res.status(500).json({ message: "Failed to join WhatsApp group", error: (error as Error).message });
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to join WhatsApp group", 
+        error: (error as Error).message 
+      });
     }
   });
 
