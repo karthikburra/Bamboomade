@@ -1,8 +1,11 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiLinkedin } from "react-icons/si";
-import karthikImage from "@assets/karthik_burra.png";
+import karthikImage from "@assets/karthik burra.png";
 import dollyImage from "@assets/Dolly_Chandrawanshi.jpeg";
+import teamMember1 from "@assets/team_member1.png";
+import teamMember2 from "@assets/team_member2.png";
+import teamMember3 from "@assets/team_member3.png";
 
 interface TeamMemberProps {
   name: string;
@@ -63,6 +66,24 @@ const TeamMembers: React.FC = () => {
       bio: "B.Arch - NIT Raipur. Dolly is an architect with a deep passion for traditional and sustainable design. Her childhood village home, made of mud, bamboo & timber, inspired her to explore the potential of local materials and techniques.",
       imageUrl: dollyImage,
       linkedinUrl: "https://www.linkedin.com/in/ar-dolly-chandrawanshi-1786801b1/",
+    },
+    {
+      name: "Srinivasa Rao",
+      role: "Senior Artisan",
+      bio: "With over 25 years of experience in traditional bamboo crafting, Srinivasa Rao brings exceptional skill and expertise to all BambooMade projects, specializing in structural bamboo design.",
+      imageUrl: teamMember1,
+    },
+    {
+      name: "Savitri Devi",
+      role: "Master Weaver",
+      bio: "A highly skilled bamboo weaver with expertise in creating intricate patterns and designs. Her dedication to preserving traditional techniques while innovating new applications has been invaluable to our team.",
+      imageUrl: teamMember2,
+    },
+    {
+      name: "Ramesh Kumar",
+      role: "Design Specialist",
+      bio: "Combining modern design principles with traditional bamboo craftsmanship, Ramesh helps bridge the gap between architectural vision and practical implementation in all our projects.",
+      imageUrl: teamMember3,
     },
     {
       name: "Anjilamma",
