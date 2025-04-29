@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-xl items-center">
-        <div className="mr-4 flex">
+        <div className="mr-4 flex pl-6">
           <Link href="/" className="flex items-center space-x-2">
             <img src={logoImage} alt="BambooMade Logo" className="h-10 w-auto" />
             <span className="text-2xl font-bold text-green-800 dark:text-green-300">
