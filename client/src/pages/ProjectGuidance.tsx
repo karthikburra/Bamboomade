@@ -312,10 +312,15 @@ const ProjectGuidance = () => {
                       <h3 className="text-lg font-medium mb-4">Complete Payment</h3>
                       {sessionId && (
                         <>
-                          <div className="mb-4">
-                            <h4 className="text-md font-medium mb-2">Payment Options:</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
+                          <div className="mb-6">
+                            <h4 className="text-md font-medium mb-4 text-center">Choose a Payment Method</h4>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              <div className="bg-gradient-to-br from-green-50 to-transparent p-3 rounded-lg shadow-sm">
+                                <div className="text-center mb-2">
+                                  <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                                    RECOMMENDED
+                                  </span>
+                                </div>
                                 <PhonePePaymentForm 
                                   sessionId={sessionId} 
                                   amount={getCost()}
@@ -325,7 +330,12 @@ const ProjectGuidance = () => {
                                   onSuccess={handlePaymentSuccess}
                                 />
                               </div>
-                              <div className="mt-4 sm:mt-0">
+                              <div>
+                                <div className="text-center mb-2">
+                                  <span className="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+                                    ALTERNATIVE
+                                  </span>
+                                </div>
                                 <PaymentForm 
                                   sessionId={sessionId} 
                                   amount={getCost()}

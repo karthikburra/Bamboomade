@@ -99,8 +99,19 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ sessionId, amount, onSuccess 
     <Card>
       <CardContent className="pt-6">
         <div className="mb-4 text-center">
-          <h3 className="text-lg font-medium">Payment Details</h3>
-          <p className="text-muted-foreground">Total Amount: ₹{amount.toLocaleString()}</p>
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-gray-100 p-2 rounded-full">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600">
+                <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M3 10H21" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M7 15H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium ml-2">Credit Card</h3>
+          </div>
+          <div className="bg-gray-50 py-2 px-4 rounded-lg">
+            <p className="font-medium text-gray-700">Total Amount: ₹{amount.toLocaleString()}</p>
+          </div>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">

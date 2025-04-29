@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PhoneCall } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -73,8 +73,15 @@ const PhonePePaymentForm = ({
     <Card>
       <CardContent className="pt-6">
         <div className="mb-4 text-center">
-          <h3 className="text-lg font-medium">PhonePe Payment</h3>
-          <p className="text-muted-foreground">Total Amount: ₹{amount.toLocaleString()}</p>
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-primary-50 p-2 rounded-full">
+              <PhoneCall className="h-6 w-6 text-primary-600" />
+            </div>
+            <h3 className="text-lg font-medium ml-2">PhonePe Payment</h3>
+          </div>
+          <div className="bg-primary-50 py-2 px-4 rounded-lg">
+            <p className="font-medium text-primary-700">Total Amount: ₹{amount.toLocaleString()}</p>
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -110,7 +117,7 @@ const PhonePePaymentForm = ({
           
           <Button
             onClick={initiatePhonePePayment}
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="w-full bg-primary-600 hover:bg-primary-700" 
             disabled={isLoading}
           >
             {isLoading ? (
@@ -120,14 +127,21 @@ const PhonePePaymentForm = ({
               </>
             ) : (
               <>
+                <PhoneCall className="mr-2 h-4 w-4" />
                 Pay with PhonePe ₹{amount.toLocaleString()}
               </>
             )}
           </Button>
           
-          <p className="text-xs text-center text-muted-foreground">
-            Secure payment powered by PhonePe
-          </p>
+          <div className="mt-3 flex items-center justify-center space-x-2">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M7 11V7C7 5.93913 7.42143 4.92172 8.17157 4.17157C8.92172 3.42143 9.93913 3 11 3C12.0609 3 13.0783 3.42143 13.8284 4.17157C14.5786 4.92172 15 5.93913 15 7V11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <p className="text-xs text-muted-foreground">
+              Secure payment powered by PhonePe
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>
