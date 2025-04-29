@@ -74,7 +74,7 @@ const TeamMembers: React.FC = () => {
       imageUrl: teamMember1,
     },
     {
-      name: "Savitri Devi",
+      name: "Anjilamma",
       role: "Master Weaver",
       bio: "A highly skilled bamboo weaver with expertise in creating intricate patterns and designs. Her dedication to preserving traditional techniques while innovating new applications has been invaluable to our team.",
       imageUrl: teamMember2,
@@ -84,14 +84,7 @@ const TeamMembers: React.FC = () => {
       role: "Carpenter",
       bio: "Expert woodworker with specialized knowledge in bamboo-wood joint techniques.",
       imageUrl: teamMember3,
-    },
-    {
-      name: "Anjilamma",
-      role: "Artisan",
-      bio: "Expert bamboo artisan with deep knowledge of traditional crafting techniques.",
-      imageUrl: "https://lh4.googleusercontent.com/l26lfVcvgevv-d_HavGwvFQMKUG0j4Dj-aduKCHnn27seGx5vGkCtn6IBR1rzlMBhd40PrcxgL34Br8I4cCP8X_BdzO4RP27nn7t-UTvdk3bM1yLtbCrCIno5-ETkZlzdQ=w1280",
-    },
-
+    }
   ];
 
   return (
