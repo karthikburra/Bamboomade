@@ -13,6 +13,7 @@ import Counseling from "@/pages/Counseling";
 import AIChat from "@/pages/AIChat";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
+import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
 import NotFound from "@/pages/not-found";
 import { Helmet } from "react-helmet";
 
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/ai-chat" component={AIChat} />
       <Route path="/admin" component={Admin} />
       <Route path="/login" component={Login} />
+      <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
       <Route component={NotFound} />
     </Switch>
   );

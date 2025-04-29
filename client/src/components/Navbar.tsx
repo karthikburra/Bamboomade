@@ -95,10 +95,8 @@ const Navbar: React.FC = () => {
             </Button>
           </Link>
           
-          <a 
-            href="https://wa.me/8971690163?text=Add%20BambooMade%20Bot%20to%20our%20WhatsApp%20group" 
-            target="_blank" 
-            rel="noopener noreferrer"
+          <Link
+            to="/add-whatsapp-bot"
             className="relative group"
           >
             <Button 
@@ -109,7 +107,7 @@ const Navbar: React.FC = () => {
               <MessageSquareText className="mr-2 h-4 w-4" />
               Add Bot to WhatsApp
             </Button>
-          </a>
+          </Link>
           
           <Button
             variant="ghost"
@@ -204,16 +202,14 @@ const Navbar: React.FC = () => {
                       >
                         Admin Dashboard
                       </Link>
-                      <a 
-                        href="https://wa.me/8971690163?text=Add%20BambooMade%20Bot%20to%20our%20WhatsApp%20group" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                      <Link 
+                        href="/add-whatsapp-bot"
                         className="flex items-center text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <MessageSquareText className="mr-2 h-4 w-4" />
                         Add Bot to WhatsApp
-                      </a>
+                      </Link>
                     </>
                   )}
                   {user && (
