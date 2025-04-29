@@ -14,13 +14,17 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import logoImage from "@assets/logo.png";
+import lightLogoImage from "@assets/logo.png";
+import darkLogoImage from "@assets/Lgo dark.png";
 
 const Navbar: React.FC = () => {
   const [location] = useLocation();
   const isMobile = useMobile();
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Get the appropriate logo based on theme
+  const logoImage = theme === 'light' ? lightLogoImage : darkLogoImage;
   
   const { data: user } = useQuery({
     queryKey: ["/api/auth/me"],
