@@ -7,15 +7,17 @@ import heroImage from "@assets/Hero.png";
 
 const Hero: React.FC = () => {
   return (
-    <div className="relative bg-gradient-to-b from-green-900/80 to-green-800/80 overflow-hidden">
+    <div className="relative bg-gradient-to-b from-green-950/90 to-green-900/90 overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center z-0" 
         style={{ 
           backgroundImage: `url(${heroImage})`,
-          filter: 'brightness(0.7)'
+          filter: 'brightness(0.4)'
         }}
       />
+      {/* Additional dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/50 z-0"></div>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 lg:py-40 z-10">
         <div className="md:max-w-3xl lg:max-w-4xl">
