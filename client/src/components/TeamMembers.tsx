@@ -3,8 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SiLinkedin } from "react-icons/si";
 import karthikImage from "@assets/karthik burra.png";
 import dollyImage from "@assets/Dolly_Chandrawanshi.jpeg";
-import teamMember1 from "@assets/team_member1.png";
-import teamMember2 from "@assets/team_member2.png";
+import krishnaiahPic from "@assets/krishnaiah.png";
 import teamMember3 from "@assets/team_member3.png";
 import anjilammaPic from "@assets/anjilamma.png";
 
@@ -72,7 +71,7 @@ const TeamMembers: React.FC = () => {
       name: "Krishnaiah",
       role: "Artisan",
       bio: "Highly skilled bamboo craftsman specializing in traditional weaving patterns.",
-      imageUrl: teamMember1,
+      imageUrl: krishnaiahPic,
     },
     {
       name: "Anjilamma",
