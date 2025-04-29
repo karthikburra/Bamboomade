@@ -75,7 +75,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     setIsProcessing(true);
 
     try {
-      const { response, tokensUsed } = await processAiChat(userMessage.content);
+      const { response, tokensUsed, remainingTokens } = await processAiChat(userMessage.content);
       
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
@@ -85,13 +85,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
 
       setMessages((prev) => [...prev, assistantMessage]);
       onTokensUsed(tokensUsed);
+      
+      // If we're running low on tokens, add a notification
+      if (remainingTokens !== undefined && remainingTokens < 5) {
+        const tokenWarning: Message = {
+          id: `token-warning-${Date.now()}`,
+          role: "assistant",
+          content: `⚠️ You have ${remainingTokens} tokens remaining. When you run out, you'll need to purchase more to continue using BambooMade AI.`,
+        };
+        setMessages((prev) => [...prev, tokenWarning]);
+      }
     } catch (error) {
       console.error("Error processing message:", error);
+      
+      // Create a user-friendly error message
+      let errorContent = "I'm sorry, I encountered an error processing your request. Please try again later.";
+      
+      // Check for specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes("Insufficient tokens")) {
+          errorContent = "You've used all your available tokens. Please purchase more tokens to continue using BambooMade AI.";
+        } else if (error.message.includes("Not authenticated") || error.message.includes("login")) {
+          errorContent = "Please log in to use BambooMade AI.";
+        }
+      }
       
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         role: "assistant",
-        content: "I'm sorry, I encountered an error processing your request. Please try again later.",
+        content: errorContent,
       };
 
       setMessages((prev) => [...prev, errorMessage]);

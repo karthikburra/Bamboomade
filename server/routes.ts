@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertCounselingSessionSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
+import { processMessage } from "./openai-service";
 import { ZodError } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -161,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Chat routes
-  app.post("/api/chat", validateRequest(insertChatMessageSchema), async (req, res) => {
+  app.post("/api/chat", async (req, res) => {
     try {
       const userId = req.session.userId;
       if (!userId) {
@@ -173,22 +174,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
+      const { message } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ message: "Valid message is required" });
+      }
+      
+      // Get training data to enhance AI responses
+      const trainingData = await storage.getAllAiTrainingData();
+      
+      // Process the message with OpenAI
+      const { response, tokensUsed } = await processMessage(message, trainingData);
+      
       // Check if user has enough tokens
-      if (user.tokens < req.body.tokensUsed) {
-        return res.status(403).json({ message: "Insufficient tokens" });
+      if (user.tokens < tokensUsed) {
+        return res.status(403).json({ 
+          message: "Insufficient tokens",
+          requiredTokens: tokensUsed,
+          availableTokens: user.tokens
+        });
       }
       
       // Deduct tokens from user
-      await storage.updateUserTokens(userId, user.tokens - req.body.tokensUsed);
+      await storage.updateUserTokens(userId, user.tokens - tokensUsed);
       
-      // Create chat message
-      const message = await storage.createChatMessage({
-        ...req.body,
-        userId
+      // Create chat message in storage
+      const chatMessage = await storage.createChatMessage({
+        userId,
+        message,
+        response,
+        tokensUsed
       });
       
-      res.status(201).json(message);
+      res.status(201).json({
+        id: chatMessage.id,
+        message,
+        response,
+        tokensUsed,
+        remainingTokens: user.tokens - tokensUsed
+      });
     } catch (error) {
+      console.error("Chat API error:", error);
       res.status(500).json({ message: "Failed to process chat", error: (error as Error).message });
     }
   });
