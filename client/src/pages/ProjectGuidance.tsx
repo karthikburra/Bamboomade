@@ -82,7 +82,7 @@ const ProjectGuidance = () => {
       
       return apiRequest("POST", "/api/project-guidance", sessionData);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Session Booked",
         description: "Please complete the payment to confirm your session.",
