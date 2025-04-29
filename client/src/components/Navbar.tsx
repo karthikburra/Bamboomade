@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import logoImage from "@assets/logo.png";
 
 const Navbar: React.FC = () => {
   const [location] = useLocation();
@@ -50,8 +51,9 @@ const Navbar: React.FC = () => {
       <div className="container flex h-16 max-w-screen-xl items-center">
         <div className="mr-4 flex">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-primary">
-              Bamboo<span className="text-secondary">Made</span>
+            <img src={logoImage} alt="BambooMade Logo" className="h-10 w-auto" />
+            <span className="text-2xl font-bold text-green-800 dark:text-green-300">
+              Bamboo<span className="text-green-600 dark:text-green-400">Made</span>
             </span>
           </Link>
         </div>
@@ -62,10 +64,10 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-colors hover:text-primary ${
+                className={`transition-colors hover:text-green-700 dark:hover:text-green-300 ${
                   isActive(link.href)
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground"
+                    ? "text-green-800 dark:text-green-300 font-semibold"
+                    : "text-green-600 dark:text-green-400"
                 }`}
               >
                 {link.label}
@@ -87,24 +89,37 @@ const Navbar: React.FC = () => {
           {user ? (
             <div className="flex items-center gap-2">
               {!isMobile && (
-                <span className="text-sm text-muted-foreground mr-2">
+                <span className="text-sm text-green-700 dark:text-green-400 mr-2">
                   {user.tokens} tokens
                 </span>
               )}
               {user.isAdmin && !isMobile && (
                 <Link href="/admin">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
+                  >
                     Admin
                   </Button>
                 </Link>
               )}
-              <Button variant="default" size="sm" onClick={handleLogout}>
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleLogout}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
                 Logout
               </Button>
             </div>
           ) : (
             <Link href="/ai-chat">
-              <Button variant="default" size="sm">
+              <Button 
+                variant="default" 
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
                 Login
               </Button>
             </Link>
@@ -123,8 +138,11 @@ const Navbar: React.FC = () => {
               </SheetTrigger>
               <SheetContent>
                 <SheetHeader>
-                  <SheetTitle>BambooMade</SheetTitle>
-                  <SheetDescription>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <img src={logoImage} alt="BambooMade Logo" className="h-10 w-auto" />
+                    <SheetTitle className="text-green-800 dark:text-green-300">BambooMade</SheetTitle>
+                  </div>
+                  <SheetDescription className="text-green-600 dark:text-green-400">
                     Sustainable Bamboo Architecture
                   </SheetDescription>
                 </SheetHeader>
@@ -136,8 +154,8 @@ const Navbar: React.FC = () => {
                       onClick={() => setIsMenuOpen(false)}
                       className={`text-base font-medium transition-colors ${
                         isActive(link.href)
-                          ? "text-primary font-semibold"
-                          : "text-muted-foreground"
+                          ? "text-green-800 dark:text-green-300 font-semibold"
+                          : "text-green-600 dark:text-green-400"
                       }`}
                     >
                       {link.label}
@@ -147,17 +165,22 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/admin"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-base font-medium text-muted-foreground transition-colors hover:text-primary"
+                      className="text-base font-medium text-green-700 dark:text-green-500 transition-colors hover:text-green-800 dark:hover:text-green-300"
                     >
                       Admin Dashboard
                     </Link>
                   )}
                   {user && (
-                    <div className="pt-4 border-t border-border">
-                      <p className="text-sm text-muted-foreground mb-2">
+                    <div className="pt-4 border-t border-green-200 dark:border-green-800">
+                      <p className="text-sm text-green-700 dark:text-green-400 mb-2">
                         Available tokens: {user.tokens}
                       </p>
-                      <Button variant="default" size="sm" onClick={handleLogout} className="w-full">
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        onClick={handleLogout} 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      >
                         Logout
                       </Button>
                     </div>
