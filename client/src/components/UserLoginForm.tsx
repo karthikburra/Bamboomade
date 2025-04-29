@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { signInWithGoogle } from "@/lib/firebase";
+import { signInWithGoogle, handleGoogleRedirect } from "@/lib/firebase";
 import { Separator } from "@/components/ui/separator";
 
 const loginFormSchema = z.object({
@@ -61,24 +61,50 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     login(values);
   };
   
+  // Check for Google redirect result on component mount
+  React.useEffect(() => {
+    async function checkGoogleRedirect() {
+      try {
+        setIsGoogleLoading(true);
+        const user = await handleGoogleRedirect();
+        
+        if (user) {
+          toast({
+            title: "Login Successful",
+            description: "Welcome to BambooMade!",
+          });
+          if (onSuccess) {
+            onSuccess();
+          }
+        }
+      } catch (error) {
+        toast({
+          title: "Google Login Failed",
+          description: error instanceof Error ? error.message : "Failed to login with Google. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    }
+    
+    checkGoogleRedirect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Start Google sign-in process
   const handleGoogleLogin = async () => {
     try {
       setIsGoogleLoading(true);
+      // This will redirect the user to Google's sign-in page
       await signInWithGoogle();
-      toast({
-        title: "Login Successful",
-        description: "Welcome to BambooMade!",
-      });
-      if (onSuccess) {
-        onSuccess();
-      }
+      // We won't reach this point as the redirect happens
     } catch (error) {
       toast({
         title: "Google Login Failed",
         description: error instanceof Error ? error.message : "Failed to login with Google. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsGoogleLoading(false);
     }
   };
