@@ -4,6 +4,17 @@ import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertCounselingSessionSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
 import { processMessage } from "./openai-service";
 import { ZodError } from "zod";
+import { z } from "zod";
+import admin from "firebase-admin";
+
+// Initialize Firebase Admin SDK if Firebase credentials are available
+try {
+  admin.initializeApp({
+    projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  });
+} catch (error) {
+  console.warn("Firebase Admin initialization failed:", error);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Helper middleware for handling zod validation errors
@@ -92,6 +103,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Logged out successfully" });
     });
+  });
+  
+  // Google Authentication
+  const googleAuthSchema = z.object({
+    idToken: z.string(),
+  });
+  
+  app.post("/api/auth/google", validateRequest(googleAuthSchema), async (req, res) => {
+    try {
+      const { idToken } = req.body;
+      
+      // Verify the ID token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const { email, name, picture } = decodedToken;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Check if user exists in our database
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Create a new user
+        user = await storage.createUser({
+          email,
+          username: name || email.split('@')[0],
+          password: '', // Not used with Google auth
+          isAdmin: false,
+          tokens: 10, // Start with some free tokens
+        });
+      }
+      
+      // Set user in session
+      req.session.userId = user.id;
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Google auth error:", error);
+      res.status(500).json({ message: "Google authentication failed", error: (error as Error).message });
+    }
   });
 
   // Project routes

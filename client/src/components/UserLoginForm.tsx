@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { signInWithGoogle } from "@/lib/firebase";
+import { Separator } from "@/components/ui/separator";
 
 const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,6 +25,7 @@ interface UserLoginFormProps {
 
 const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
