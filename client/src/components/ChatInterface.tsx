@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, LogIn } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
 import TokenCounter from "./TokenCounter";
-import { Link } from "wouter";
 
 interface Message {
   id: string;
@@ -30,7 +29,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: chatHistory } = useQuery({
@@ -176,15 +174,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                 </div>
               </div>
             )}
-            {showLoginPrompt && !user && (
-              <div className="flex justify-center mt-4">
-                <Link href="/login">
-                  <Button className="bg-green-600 hover:bg-green-700 text-white">
-                    <LogIn className="mr-2 h-4 w-4" /> Login or Register
-                  </Button>
-                </Link>
-              </div>
-            )}
+            {/* Login prompt removed */}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
@@ -202,13 +192,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
               onKeyDown={handleKeyDown}
               placeholder="Ask about bamboo architecture, sustainability, or our workshops..."
               className="flex-grow resize-none min-h-[60px]"
-              disabled={isProcessing || (showLoginPrompt && !user)}
+              disabled={isProcessing}
             />
             <Button
               type="submit"
               size="icon"
               className="self-end"
-              disabled={!input.trim() || isProcessing || (showLoginPrompt && !user)}
+              disabled={!input.trim() || isProcessing}
             >
               <Send size={18} />
             </Button>
