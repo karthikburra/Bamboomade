@@ -41,21 +41,38 @@ const AnimatedLeaves: React.FC = () => {
     // Add event listener
     window.addEventListener("resize", handleResize);
 
-    // Generate random leaves
+    // Generate strategically placed leaves
     const leafSources = [leaf1, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7];
-    const leafCount = 10; // Adjust number of leaves as needed
+    const leafCount = 7; // Reduced number of leaves for subtlety
     const initialLeaves: Leaf[] = [];
 
+    // Create leaves in specific areas of the page instead of completely random
+    // This creates a more balanced and natural look
+    const positions = [
+      { x: window.innerWidth * 0.1, y: window.innerHeight * 0.2 }, // Top left
+      { x: window.innerWidth * 0.85, y: window.innerHeight * 0.15 }, // Top right
+      { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5 }, // Middle right
+      { x: window.innerWidth * 0.2, y: window.innerHeight * 0.6 }, // Middle left
+      { x: window.innerWidth * 0.5, y: window.innerHeight * 0.3 }, // Top middle
+      { x: window.innerWidth * 0.9, y: window.innerHeight * 0.85 }, // Bottom right
+      { x: window.innerWidth * 0.15, y: window.innerHeight * 0.9 }, // Bottom left
+    ];
+
     for (let i = 0; i < leafCount; i++) {
+      const position = positions[i % positions.length];
+      // Add some randomness to the predetermined positions
+      const randomOffsetX = (Math.random() - 0.5) * 150;
+      const randomOffsetY = (Math.random() - 0.5) * 150;
+      
       initialLeaves.push({
         id: i,
         src: leafSources[i % leafSources.length],
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
+        x: position.x + randomOffsetX,
+        y: position.y + randomOffsetY,
         rotation: Math.random() * 360,
-        scale: 0.5 + Math.random() * 0.5, // Scale between 0.5 and 1
-        initialX: Math.random() * window.innerWidth,
-        initialY: Math.random() * window.innerHeight,
+        scale: 0.4 + Math.random() * 0.4, // Scale between 0.4 and 0.8 (smaller)
+        initialX: position.x + randomOffsetX,
+        initialY: position.y + randomOffsetY,
       });
     }
 
@@ -130,7 +147,7 @@ const AnimatedLeaves: React.FC = () => {
   }, [mousePosition, leaves, windowSize]);
 
   return (
-    <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden z-0">
+    <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden z-50">
       {leaves.map((leaf) => (
         <motion.img
           key={leaf.id}
@@ -139,10 +156,11 @@ const AnimatedLeaves: React.FC = () => {
           style={{
             top: leaf.y,
             left: leaf.x,
-            height: leaf.src.includes("Vector") ? "80px" : "60px", // Larger for Vector leaves
+            height: leaf.src.includes("Vector") ? "70px" : "50px", // Slightly smaller leaves
             width: "auto",
-            opacity: 0.8, // Semi-transparent
-            zIndex: 1,
+            opacity: 0.5, // More transparent for subtlety
+            zIndex: 100,
+            filter: "blur(0.5px)", // Very slight blur for depth
           }}
           animate={{
             rotate: leaf.rotation,
@@ -150,8 +168,10 @@ const AnimatedLeaves: React.FC = () => {
           }}
           transition={{
             type: "spring",
-            damping: 10,
-            stiffness: 50,
+            damping: 15,          // Increased damping for smoother motion
+            stiffness: 30,        // Lower stiffness for gentler movement
+            mass: 0.8,            // Slightly lighter feel
+            velocity: 0.5,        // Lower initial velocity
           }}
           draggable="false"
         />

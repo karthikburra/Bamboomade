@@ -9,10 +9,15 @@ import {
   Twitter, 
   Linkedin 
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string;
+}
+
+const Footer: React.FC<FooterProps> = ({ className }) => {
   return (
-    <footer className="bg-primary-950 text-primary-50">
+    <footer className={cn("bg-primary-950 text-primary-50", className)}>
       <div className="container max-w-screen-xl py-12 px-4 sm:px-6 lg:py-16 lg:px-8">
         <div className="xl:grid xl:grid-cols-4 xl:gap-8">
           <div className="space-y-8 xl:col-span-1">
@@ -115,7 +120,7 @@ const Footer: React.FC = () => {
                 <li className="flex">
                   <Phone size={20} className="flex-shrink-0 text-primary-200" />
                   <span className="ml-3 text-base text-primary-300">
-                    +91 9876543210
+                    +91 8971690163
                   </span>
                 </li>
                 <li className="flex">
@@ -126,7 +131,7 @@ const Footer: React.FC = () => {
                 </li>
                 <li className="mt-8">
                   <a 
-                    href="https://wa.me/919876543210" 
+                    href="https://wa.me/918971690163" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center rounded-md bg-secondary-600 py-2 px-4 text-base font-medium text-white hover:bg-secondary-700"

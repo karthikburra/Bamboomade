@@ -42,11 +42,13 @@ function App() {
         </Helmet>
         <div className="flex min-h-screen flex-col relative">
           <AnimatedLeaves />
-          <Navbar />
-          <main className="flex-1 relative z-10">
-            <Router />
-          </main>
-          <Footer className="relative z-10" />
+          <div className="relative">
+            <Navbar />
+            <main className="flex-1">
+              <Router />
+            </main>
+            <Footer className="relative" />
+          </div>
         </div>
         <Toaster />
       </TooltipProvider>
