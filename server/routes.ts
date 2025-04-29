@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertProjectSchema, insertCounselingSessionSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
+import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { ZodError } from "zod";
 import { z } from "zod";
@@ -188,8 +188,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Counseling session routes
-  app.post("/api/project-guidance", validateRequest(insertCounselingSessionSchema), async (req, res) => {
+  // Project guidance session routes
+  app.post("/api/project-guidance", validateRequest(insertProjectGuidanceSchema), async (req, res) => {
     try {
       const session = await storage.createCounselingSession(req.body);
       res.status(201).json(session);

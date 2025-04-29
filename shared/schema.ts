@@ -38,8 +38,8 @@ export const insertProjectSchema = createInsertSchema(projects).pick({
   featured: true,
 });
 
-// Counseling session booking
-export const counselingSessions = pgTable("counseling_sessions", {
+// Project guidance session booking
+export const projectGuidances = pgTable("project_guidance_sessions", {
   id: serial("id").primaryKey(),
   studentName: text("student_name").notNull(),
   email: text("email").notNull(),
@@ -52,7 +52,7 @@ export const counselingSessions = pgTable("counseling_sessions", {
   paymentId: text("payment_id"),
 });
 
-export const insertCounselingSessionSchema = createInsertSchema(counselingSessions).pick({
+export const insertProjectGuidanceSchema = createInsertSchema(projectGuidances).pick({
   studentName: true,
   email: true,
   phone: true,
@@ -116,8 +116,8 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 
-export type CounselingSession = typeof counselingSessions.$inferSelect;
-export type InsertCounselingSession = z.infer<typeof insertCounselingSessionSchema>;
+export type ProjectGuidance = typeof projectGuidances.$inferSelect;
+export type InsertProjectGuidance = z.infer<typeof insertProjectGuidanceSchema>;
 
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;

@@ -31,13 +31,13 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ sessionId, amount, onSuccess 
       // Generate a fake payment ID
       const paymentId = `pay_${Math.random().toString(36).substring(2, 10)}`;
       
-      // Update the counseling session with the payment ID
-      return apiRequest("PATCH", `/api/counseling/${sessionId}/payment`, { paymentId });
+      // Update the project guidance session with the payment ID
+      return apiRequest("PATCH", `/api/project-guidance/${sessionId}/payment`, { paymentId });
     },
     onSuccess: () => {
       toast({
         title: "Payment Successful",
-        description: "Your counseling session has been confirmed.",
+        description: "Your project guidance session has been confirmed.",
         variant: "default",
       });
       onSuccess();
