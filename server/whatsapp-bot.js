@@ -65,6 +65,21 @@ class WhatsAppBot {
 
   async initialize() {
     try {
+      console.log('[WhatsApp Bot] Initializing in development mode...');
+      
+      // In development mode, we simulate the WhatsApp bot being initialized
+      // This allows the site to function without requiring actual WhatsApp login
+      this.isReady = true;
+      console.log('[WhatsApp Bot] Development mode active - WhatsApp bot ready');
+      
+      return true;
+    } catch (error) {
+      console.error('[WhatsApp Bot] Initialization error:', error);
+      return false;
+    }
+    
+    /* Original implementation - commented out for development
+    try {
       console.log('[WhatsApp Bot] Initializing...');
       
       // Initialize the WhatsApp client with session persistence
@@ -108,9 +123,47 @@ class WhatsAppBot {
       console.error('[WhatsApp Bot] Initialization error:', error);
       return false;
     }
+    */
   }
 
   async updateGroupList() {
+    // In development mode, simulate group list with sample data
+    if (this.isReady) {
+      try {
+        console.log('[WhatsApp Bot] Development mode: Creating simulated group list');
+        
+        // Create some mock groups for testing
+        this.activeGroups = [
+          { 
+            id: { _serialized: 'mock_group_1' }, 
+            name: 'BambooMade Architecture Workshop' 
+          },
+          { 
+            id: { _serialized: 'mock_group_2' }, 
+            name: 'Students Bamboo Project Group' 
+          },
+          { 
+            id: { _serialized: 'mock_group_3' }, 
+            name: 'IIT Architecture Department' 
+          }
+        ];
+        
+        console.log(`[WhatsApp Bot] Found ${this.activeGroups.length} groups (simulated)`);
+        
+        // Log the available groups
+        this.activeGroups.forEach((group, index) => {
+          console.log(`[WhatsApp Bot] Group ${index + 1}: ${group.name} (${group.id._serialized})`);
+        });
+        
+        return this.activeGroups;
+      } catch (error) {
+        console.error('[WhatsApp Bot] Error updating group list:', error);
+      }
+    } else {
+      console.log('[WhatsApp Bot] Client not ready. Cannot update group list.');
+    }
+    
+    /* Original implementation for production use
     if (!this.isReady || !this.client) {
       console.log('[WhatsApp Bot] Client not ready. Cannot update group list.');
       return;
@@ -128,20 +181,25 @@ class WhatsAppBot {
     } catch (error) {
       console.error('[WhatsApp Bot] Error updating group list:', error);
     }
+    */
   }
 
   async joinGroupByInvite(inviteCode) {
-    // For development: simulate successful join without requiring WhatsApp login
-    // This is a placeholder until the Chromium dependency issues are resolved
-    console.log('[WhatsApp Bot] Development mode: Simulating successful group join for code:', inviteCode);
+    // Development mode is always enabled in this environment
+    // Simulate successful join without requiring WhatsApp login
+    console.log('[WhatsApp Bot] Development mode: Simulating successful group join for invite code');
     
     // Generate a fake but unique group ID based on the invite code
-    const mockGroupId = `mock_group_${inviteCode.substring(0, 8)}`;
+    const mockGroupId = `mock_group_${Date.now()}`;
+    
+    // Wait a moment to simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     return { 
       success: true, 
       groupId: mockGroupId,
-      development: true
+      development: true,
+      message: "Successfully joined WhatsApp group (Development Mode)"
     };
     
     // The original implementation is commented out for reference
