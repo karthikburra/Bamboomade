@@ -2,7 +2,6 @@ import React from "react";
 import Hero from "@/components/Hero";
 import FeaturedProjects from "@/components/FeaturedProjects";
 import WhyBambooMade from "@/components/WhyBambooMade";
-import TestimonialsSection from "@/components/TestimonialsSection";
 import CallToAction from "@/components/CallToAction";
 import TeamMembers from "@/components/TeamMembers";
 import { Helmet } from "react-helmet";
@@ -19,7 +18,6 @@ const Home: React.FC = () => {
       <WhyBambooMade />
       <FeaturedProjects />
       <TeamMembers />
-      <TestimonialsSection />
       <CallToAction />
     </>
   );
