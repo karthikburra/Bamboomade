@@ -31,6 +31,12 @@ const PhonePePaymentForm = ({
     try {
       setIsLoading(true);
       
+      console.log("Initiating PhonePe payment with details:", {
+        hasAmount: !!amount,
+        hasSessionId: !!sessionId,
+        hasCustomerInfo: !!(customerName && customerPhone && customerEmail)
+      });
+      
       const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
         amount,
         sessionId,
@@ -39,27 +45,48 @@ const PhonePePaymentForm = ({
         customerEmail
       });
       
+      console.log("PhonePe payment API response received:", {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      });
+      
       const data = await response.json();
+      console.log("PhonePe payment data:", {
+        success: data.success,
+        hasPaymentLink: !!data.paymentLink,
+        hasTransactionId: !!data.transactionId,
+        message: data.message,
+        error: data.error
+      });
       
       if (data.success && data.paymentLink) {
-        // Store the transaction ID in local storage for reference (optional)
+        // Store the transaction ID in local storage for reference
         localStorage.setItem('pendingPaymentTxnId', data.transactionId);
+        toast({
+          title: 'Redirecting to PhonePe',
+          description: 'You will be redirected to the PhonePe payment page.',
+        });
         
-        // Redirect to PhonePe payment page
-        window.location.href = data.paymentLink;
+        // Small delay to ensure the toast is shown
+        setTimeout(() => {
+          // Redirect to PhonePe payment page
+          window.location.href = data.paymentLink;
+        }, 1500);
         
         // onSuccess will be called after the user returns to our site 
         // via the callback URL and the payment is verified
       } else {
+        console.error("PhonePe payment initialization failed:", data.message || data.error);
         toast({
           title: 'Payment Initialization Failed',
-          description: data.message || 'Could not start the payment process. Please try again.',
+          description: data.message || data.error || 'Could not start the payment process. Please try again.',
           variant: 'destructive',
         });
         setIsLoading(false);
       }
     } catch (error) {
-      console.error('PhonePe payment error:', error);
+      console.error('PhonePe payment client-side error:', error);
       toast({
         title: 'Payment Error',
         description: 'There was an error processing your payment. Please try again.',

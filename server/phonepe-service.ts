@@ -2,9 +2,11 @@ import axios from 'axios';
 import crypto from 'crypto';
 
 // PhonePe API configuration
-const PHONEPE_HOST = 'https://api.phonepe.com/apis/hermes';
+// Use test environment URL for now, as we are in development
+const PHONEPE_HOST = 'https://api-preprod.phonepe.com/apis/pg-sandbox';
 const CLIENT_ID = process.env.PHONEPE_CLIENT_ID || '';
 const CLIENT_SECRET = process.env.PHONEPE_CLIENT_SECRET || '';
+
 // Detect environment and use appropriate redirect URL
 const isProduction = process.env.NODE_ENV === 'production';
 const baseUrl = isProduction 
@@ -12,8 +14,19 @@ const baseUrl = isProduction
   : 'http://localhost:5000';
 const REDIRECT_URL = `${baseUrl}/api/payments/phonepe/callback`;
 const REDIRECT_MODE = 'REDIRECT';
+
 // Use PHONEPE_MERCHANT_ID from environment variables if available, otherwise use default
-const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'BAMBOOMADEONLINE';
+// For the sandbox environment, use PHONEPE as the merchant ID
+const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'PHONEPE';
+
+console.log("PhonePe service initialized with:", {
+  host: PHONEPE_HOST,
+  merchantId: MERCHANT_ID,
+  redirectUrl: REDIRECT_URL,
+  hasClientId: !!CLIENT_ID,
+  hasClientSecret: !!CLIENT_SECRET,
+  environment: isProduction ? "production" : "development"
+});
 
 /**
  * Initialize a PhonePe payment
@@ -32,6 +45,15 @@ export async function initiatePhonePePayment(
   customerEmail: string
 ) {
   try {
+    console.log("Starting PhonePe payment initialization with config:", {
+      host: PHONEPE_HOST,
+      merchantId: MERCHANT_ID,
+      redirectUrl: REDIRECT_URL,
+      clientIdExists: !!CLIENT_ID,
+      clientSecretExists: !!CLIENT_SECRET,
+      orderId
+    });
+
     // Create payload for PhonePe API
     const payload = {
       merchantId: MERCHANT_ID,
@@ -46,40 +68,78 @@ export async function initiatePhonePePayment(
       }
     };
 
+    // Log the payload for debugging (excluding sensitive info)
+    console.log("PhonePe payload prepared:", {
+      merchantId: payload.merchantId,
+      merchantTransactionId: payload.merchantTransactionId,
+      amount: payload.amount,
+      redirectUrl: payload.redirectUrl,
+      hasMobileNumber: !!payload.mobileNumber,
+      instrumentType: payload.paymentInstrument.type
+    });
+
     // Generate X-VERIFY header (HMAC based auth)
     const requestData = JSON.stringify(payload);
     const base64EncodedPayload = Buffer.from(requestData).toString('base64');
     
-    // Create X-VERIFY signature
-    const hmac = crypto.createHmac('sha256', CLIENT_SECRET);
-    const signature = hmac.update(base64EncodedPayload + '/pg/v1/pay' + CLIENT_ID).digest('hex');
-    const xVerifyHeader = signature + '###' + CLIENT_ID;
+    try {
+      // Create X-VERIFY signature
+      const hmac = crypto.createHmac('sha256', CLIENT_SECRET);
+      const signature = hmac.update(base64EncodedPayload + '/pg/v1/pay' + CLIENT_ID).digest('hex');
+      const xVerifyHeader = signature + '###' + CLIENT_ID;
+      
+      console.log("Generated X-VERIFY header (signature truncated for security):", {
+        headerLength: xVerifyHeader.length,
+        hasClientId: xVerifyHeader.includes(CLIENT_ID),
+        signatureFormat: "HMAC-SHA256"
+      });
 
-    // Make the API call to PhonePe
-    const response = await axios.post(
-      `${PHONEPE_HOST}/pg/v1/pay`,
-      {
-        request: base64EncodedPayload
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-VERIFY': xVerifyHeader
+      // Make the API call to PhonePe
+      console.log(`Making API call to ${PHONEPE_HOST}/pg/v1/pay`);
+      
+      const response = await axios.post(
+        `${PHONEPE_HOST}/pg/v1/pay`,
+        {
+          request: base64EncodedPayload
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-VERIFY': xVerifyHeader
+          }
         }
-      }
-    );
+      );
 
-    if (response.data.success) {
-      return {
-        success: true,
-        paymentLink: response.data.data.instrumentResponse.redirectInfo.url,
-        transactionId: orderId
-      };
-    } else {
-      throw new Error(response.data.message || 'Payment initialization failed');
+      console.log("PhonePe API response received:", {
+        status: response.status,
+        success: response.data?.success,
+        hasData: !!response.data?.data,
+        hasInstrumentResponse: !!response.data?.data?.instrumentResponse
+      });
+
+      if (response.data.success) {
+        return {
+          success: true,
+          paymentLink: response.data.data.instrumentResponse.redirectInfo.url,
+          transactionId: orderId
+        };
+      } else {
+        console.error("PhonePe API returned success:false:", response.data);
+        throw new Error(response.data.message || 'Payment initialization failed');
+      }
+    } catch (cryptoError) {
+      console.error("Error in HMAC signature generation:", cryptoError);
+      throw new Error("Failed to generate authentication signature: " + cryptoError.message);
     }
   } catch (error: any) {
-    console.error('PhonePe payment error:', error);
+    console.error('PhonePe payment error details:', {
+      message: error.message,
+      code: error.code,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      stack: error.stack
+    });
+    
     return {
       success: false,
       error: error.response?.data?.message || error.message || 'Payment initialization failed'
@@ -94,14 +154,27 @@ export async function initiatePhonePePayment(
  */
 export async function checkPhonePePaymentStatus(merchantTransactionId: string) {
   try {
+    console.log(`Checking PhonePe payment status for transaction: ${merchantTransactionId}`);
+    
     // Generate X-VERIFY header for status check
     const hmac = crypto.createHmac('sha256', CLIENT_SECRET);
-    const signature = hmac.update(`/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}` + CLIENT_ID).digest('hex');
+    const pathWithParams = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`;
+    const dataToHash = pathWithParams + CLIENT_ID;
+    
+    console.log("Generating signature with path:", pathWithParams);
+    
+    const signature = hmac.update(dataToHash).digest('hex');
     const xVerifyHeader = signature + '###' + CLIENT_ID;
+
+    console.log("Status check request details:", {
+      url: `${PHONEPE_HOST}${pathWithParams}`,
+      headerLength: xVerifyHeader.length,
+      merchantId: MERCHANT_ID
+    });
 
     // Make the API call to PhonePe to check status
     const response = await axios.get(
-      `${PHONEPE_HOST}/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`,
+      `${PHONEPE_HOST}${pathWithParams}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -111,19 +184,40 @@ export async function checkPhonePePaymentStatus(merchantTransactionId: string) {
       }
     );
 
+    console.log("PhonePe status check response:", {
+      status: response.status,
+      success: response.data?.success,
+      hasData: !!response.data?.data
+    });
+
     if (response.data.success) {
-      return {
+      const result = {
         success: true,
         status: response.data.data.responseCode,
         paymentId: response.data.data.paymentId,
         amount: response.data.data.amount / 100, // Convert from paise to rupees
         paymentInstrument: response.data.data.paymentInstrument
       };
+      
+      console.log("Payment status result:", {
+        status: result.status,
+        paymentId: result.paymentId,
+        amount: result.amount
+      });
+      
+      return result;
     } else {
+      console.error("PhonePe status check returned success:false:", response.data);
       throw new Error(response.data.message || 'Payment status check failed');
     }
   } catch (error: any) {
-    console.error('PhonePe status check error:', error);
+    console.error('PhonePe status check error details:', {
+      message: error.message,
+      code: error.code,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data
+    });
+    
     return {
       success: false,
       error: error.response?.data?.message || error.message || 'Payment status check failed'
