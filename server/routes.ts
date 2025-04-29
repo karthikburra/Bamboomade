@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
+import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
@@ -215,6 +216,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(session);
     } catch (error) {
       res.status(500).json({ message: "Failed to update payment status", error: (error as Error).message });
+    }
+  });
+
+  // PhonePe Payment Routes
+  app.post("/api/payments/phonepe/initiate", async (req, res) => {
+    try {
+      const { amount, sessionId, customerName, customerPhone, customerEmail } = req.body;
+      
+      if (!amount || !sessionId || !customerName || !customerPhone || !customerEmail) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Missing required payment information" 
+        });
+      }
+
+      // Generate a unique order ID
+      const orderId = `ORDER_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      
+      // Initialize PhonePe payment
+      const paymentResult = await initiatePhonePePayment(
+        amount,
+        orderId,
+        customerName,
+        customerPhone,
+        customerEmail
+      );
+      
+      if (paymentResult.success) {
+        // Store the order ID for later verification (in session)
+        // This could be stored in the database for production
+        if (!req.session.pendingPayments) {
+          req.session.pendingPayments = {};
+        }
+        req.session.pendingPayments[orderId] = {
+          amount,
+          sessionId,
+          customerName,
+          customerPhone,
+          customerEmail
+        };
+        
+        res.json({
+          success: true,
+          paymentLink: paymentResult.paymentLink,
+          transactionId: paymentResult.transactionId
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: paymentResult.error || "Failed to initialize payment"
+        });
+      }
+    } catch (error) {
+      console.error("PhonePe payment initiation error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Payment initiation failed",
+        error: (error as Error).message
+      });
+    }
+  });
+
+  app.get("/api/payments/phonepe/callback", async (req, res) => {
+    try {
+      const { merchantTransactionId } = req.query;
+      
+      if (!merchantTransactionId) {
+        return res.status(400).send("Missing transaction ID");
+      }
+      
+      // Verify payment status with PhonePe
+      const statusResult = await checkPhonePePaymentStatus(merchantTransactionId as string);
+      
+      if (statusResult.success && statusResult.status === "SUCCESS") {
+        // Get the session info from our stored data
+        const pendingPayment = req.session.pendingPayments?.[merchantTransactionId as string];
+        
+        if (!pendingPayment) {
+          return res.status(404).send("Transaction not found");
+        }
+        
+        // Update the counseling session with the payment ID
+        const session = await storage.updateCounselingSessionPayment(
+          parseInt(pendingPayment.sessionId),
+          statusResult.paymentId
+        );
+        
+        if (!session) {
+          return res.status(404).send("Project guidance session not found");
+        }
+        
+        // Clean up the pending payment
+        delete req.session.pendingPayments[merchantTransactionId as string];
+        
+        // Redirect to success page
+        return res.redirect('/payment-success?sessionId=' + pendingPayment.sessionId);
+      } else {
+        // Payment failed
+        return res.redirect('/payment-failed?reason=' + 
+          encodeURIComponent(statusResult.error || "Payment verification failed"));
+      }
+    } catch (error) {
+      console.error("PhonePe callback error:", error);
+      res.status(500).send("Payment verification failed. Please contact support.");
+    }
+  });
+
+  app.get("/api/payments/phonepe/status/:transactionId", async (req, res) => {
+    try {
+      const { transactionId } = req.params;
+      
+      // Check payment status with PhonePe
+      const statusResult = await checkPhonePePaymentStatus(transactionId);
+      
+      res.json(statusResult);
+    } catch (error) {
+      console.error("PhonePe status check error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to check payment status", 
+        error: (error as Error).message 
+      });
     }
   });
 
