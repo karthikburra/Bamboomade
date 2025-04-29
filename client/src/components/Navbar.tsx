@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useIsMobile as useMobile } from "@/hooks/use-mobile";
 import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -12,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, Sparkles } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import lightLogoImage from "@assets/logo.png";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -45,7 +46,6 @@ const Navbar: React.FC = () => {
     { href: "/gallery", label: "Gallery" },
     { href: "/counseling", label: "Counseling" },
     { href: "/contact", label: "Contact" },
-    { href: "/ai-chat", label: "BambooMade AI" },
   ];
 
   const isActive = (path: string) => location === path;
@@ -81,6 +81,18 @@ const Navbar: React.FC = () => {
         )}
 
         <div className="flex flex-1 items-center justify-end space-x-4">
+          <Link href="/ai-chat" className="relative group">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              BambooMade AI
+              <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
+            </Button>
+          </Link>
+          
           <Button
             variant="ghost"
             size="icon"
@@ -155,6 +167,16 @@ const Navbar: React.FC = () => {
                       {link.label}
                     </Link>
                   ))}
+                  
+                  <Link
+                    href="/ai-chat"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center text-base font-medium text-green-700 dark:text-green-400 transition-colors hover:text-green-800 dark:hover:text-green-300"
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    BambooMade AI
+                    <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
+                  </Link>
                   {user?.isAdmin && (
                     <Link
                       href="/admin"
