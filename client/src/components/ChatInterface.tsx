@@ -33,28 +33,30 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const { data: chatHistory } = useQuery({
     queryKey: ["/api/chat/history"],
     enabled: true,
-    onSuccess: (data) => {
-      if (data && data.length > 0) {
-        // Convert chat history to messages format, only if we don't have messages yet
-        if (messages.length <= 1) {
-          const historyMessages = data.map((msg) => ([
-            {
-              id: `user-${msg.id}`,
-              role: "user" as const,
-              content: msg.message,
-            },
-            {
-              id: `assistant-${msg.id}`,
-              role: "assistant" as const,
-              content: msg.response,
-            },
-          ])).flat();
-          
-          setMessages([messages[0], ...historyMessages]);
-        }
-      }
-    },
   });
+  
+  // Process chat history when it loads
+  useEffect(() => {
+    if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
+      // Convert chat history to messages format, only if we don't have messages yet
+      if (messages.length <= 1) {
+        const historyMessages = chatHistory.map((msg: any) => ([
+          {
+            id: `user-${msg.id}`,
+            role: "user" as const,
+            content: msg.message,
+          },
+          {
+            id: `assistant-${msg.id}`,
+            role: "assistant" as const,
+            content: msg.response,
+          },
+        ])).flat();
+        
+        setMessages([messages[0], ...historyMessages]);
+      }
+    }
+  }, [chatHistory, messages.length]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
