@@ -41,14 +41,15 @@ const AnimatedLeaves: React.FC = () => {
     // Add event listener
     window.addEventListener("resize", handleResize);
 
-    // Generate strategically placed leaves
+    // Generate strategically placed leaves with increased density (30% more)
     const leafSources = [leaf1, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7];
-    const leafCount = 7; // Reduced number of leaves for subtlety
+    const leafCount = 10; // Increased from 7 to 10 (approx 30% more)
     const initialLeaves: Leaf[] = [];
 
-    // Create leaves in specific areas of the page instead of completely random
-    // This creates a more balanced and natural look
+    // Create leaves in specific areas of the page with more positions
+    // This creates a more balanced and natural look with increased density
     const positions = [
+      // Original positions
       { x: window.innerWidth * 0.1, y: window.innerHeight * 0.2 }, // Top left
       { x: window.innerWidth * 0.85, y: window.innerHeight * 0.15 }, // Top right
       { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5 }, // Middle right
@@ -56,8 +57,16 @@ const AnimatedLeaves: React.FC = () => {
       { x: window.innerWidth * 0.5, y: window.innerHeight * 0.3 }, // Top middle
       { x: window.innerWidth * 0.9, y: window.innerHeight * 0.85 }, // Bottom right
       { x: window.innerWidth * 0.15, y: window.innerHeight * 0.9 }, // Bottom left
+      
+      // Additional positions for increased density
+      { x: window.innerWidth * 0.3, y: window.innerHeight * 0.25 }, // Upper left-center
+      { x: window.innerWidth * 0.65, y: window.innerHeight * 0.35 }, // Upper right-center
+      { x: window.innerWidth * 0.4, y: window.innerHeight * 0.7 }, // Lower left-center
+      { x: window.innerWidth * 0.6, y: window.innerHeight * 0.8 }, // Lower right-center
+      { x: window.innerWidth * 0.5, y: window.innerHeight * 0.6 }, // Center
     ];
 
+    // Add primary leaves at defined positions
     for (let i = 0; i < leafCount; i++) {
       const position = positions[i % positions.length];
       // Add some randomness to the predetermined positions
@@ -73,6 +82,24 @@ const AnimatedLeaves: React.FC = () => {
         scale: 0.4 + Math.random() * 0.4, // Scale between 0.4 and 0.8 (smaller)
         initialX: position.x + randomOffsetX,
         initialY: position.y + randomOffsetY,
+      });
+    }
+    
+    // Add additional scattered leaves for greater density
+    for (let i = 0; i < 3; i++) { // Adding 3 more leaves for extra density
+      // Place these leaves in more random positions
+      const randomX = Math.random() * window.innerWidth;
+      const randomY = Math.random() * window.innerHeight;
+      
+      initialLeaves.push({
+        id: leafCount + i,
+        src: leafSources[Math.floor(Math.random() * leafSources.length)], // Random leaf image
+        x: randomX,
+        y: randomY,
+        rotation: Math.random() * 360,
+        scale: 0.3 + Math.random() * 0.3, // Slightly smaller
+        initialX: randomX,
+        initialY: randomY,
       });
     }
 
