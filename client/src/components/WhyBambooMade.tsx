@@ -21,7 +21,7 @@ const Feature: React.FC<FeatureProps> = ({ icon, title, description, imageUrl })
         <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
       </div>
       <CardContent className="pt-6">
-        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-300">
+        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
           {icon}
         </div>
         <h3 className="mb-2 text-xl font-medium text-foreground">{title}</h3>

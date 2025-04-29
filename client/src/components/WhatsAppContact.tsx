@@ -30,7 +30,7 @@ const WhatsAppContact: React.FC<WhatsAppContactProps> = ({
     <Button
       variant={variant}
       size={size}
-      className={className}
+      className={`bg-green-600 hover:bg-green-700 text-white ${className}`}
       onClick={() => window.open(whatsappUrl, "_blank")}
     >
       <MessageCircle className="mr-2 h-4 w-4" />

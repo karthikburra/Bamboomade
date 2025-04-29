@@ -148,7 +148,7 @@ const Contact: React.FC = () => {
                       <Phone className="h-5 w-5 text-primary-600 mt-1 mr-3" />
                       <div>
                         <p className="font-medium">Phone</p>
-                        <p className="text-muted-foreground">+91 9876543210</p>
+                        <p className="text-muted-foreground">+91 8971690163</p>
                       </div>
                     </div>
                     <div className="flex items-start">
@@ -170,7 +170,7 @@ const Contact: React.FC = () => {
                   </p>
                   {/* WhatsApp contact button for direct chat */}
                   <WhatsAppContact 
-                    phoneNumber="+919876543210"
+                    phoneNumber="+918971690163"
                     message="Hello, I'm interested in BambooMade services. I'd like to inquire about your bamboo workshops and architectural solutions."
                     className="w-full bg-green-600 hover:bg-green-700 text-white py-2"
                   />

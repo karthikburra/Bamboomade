@@ -6,7 +6,7 @@ import WhatsAppContact from "./WhatsAppContact";
 
 const Hero: React.FC = () => {
   return (
-    <div className="relative bg-gradient-to-b from-primary-950/30 to-primary-900/30 overflow-hidden">
+    <div className="relative bg-gradient-to-b from-green-900/80 to-green-800/80 overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center z-0" 
@@ -20,27 +20,27 @@ const Hero: React.FC = () => {
         <div className="md:max-w-3xl lg:max-w-4xl">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
             <span className="block">Beyond Tradition:</span>{" "}
-            <span className="block text-secondary-400">Building a Sustainable Modern Future</span>
+            <span className="block text-green-300">Building a Sustainable Modern Future</span>
           </h1>
           <p className="mt-6 text-xl text-white max-w-3xl">
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
           <div className="mt-6 text-lg text-white max-w-3xl">
             <p>We bring Bamboo Workshops to you!</p>
-            <p className="mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-secondary-400">Info@bamboomade.in</a></p>
+            <p className="mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
           </div>
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <Link href="/gallery">
               <Button
                 size="lg"
-                className="bg-primary-600 hover:bg-primary-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 Explore Our Projects
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <WhatsAppContact 
-              phoneNumber="+919876543210"
+              phoneNumber="+918971690163"
               message="Hello, I'm interested in BambooMade workshops. I'd like to inquire about your services."
               className="bg-green-600 hover:bg-green-700 text-white"
               size="lg"
