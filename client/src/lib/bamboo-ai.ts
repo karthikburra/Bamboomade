@@ -19,26 +19,17 @@ export async function processAiChat(message: string): Promise<{ response: string
     const data = await response.json();
     
     if (!response.ok) {
-      if (response.status === 403) {
-        // Insufficient tokens
-        throw new Error(`Insufficient tokens: You need ${data.requiredTokens} tokens but have only ${data.availableTokens} tokens remaining.`);
-      }
       throw new Error(data.message || "Failed to process message");
     }
     
     return {
       response: data.response,
       tokensUsed: data.tokensUsed,
-      remainingTokens: data.remainingTokens
+      // No remainingTokens since we're not tracking tokens per user anymore
+      remainingTokens: undefined
     };
   } catch (error) {
     console.error("Error processing AI chat:", error);
-    
-    // If the error is specifically about insufficient tokens, rethrow it
-    if (error instanceof Error && error.message.includes("Insufficient tokens")) {
-      throw error;
-    }
-    
     throw new Error("Failed to process chat message. Please try again later.");
   }
 }

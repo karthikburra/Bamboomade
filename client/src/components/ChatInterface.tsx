@@ -91,33 +91,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      onTokensUsed(tokensUsed);
+      // We still call onTokensUsed for compatibility, but it doesn't do anything now
+      onTokensUsed(0);
       
-      // If we're running low on tokens, add a notification
-      if (remainingTokens !== undefined && remainingTokens < 5) {
-        const tokenWarning: Message = {
-          id: `token-warning-${Date.now()}`,
-          role: "assistant",
-          content: `⚠️ You have ${remainingTokens} tokens remaining. When you run out, you'll need to purchase more to continue using BambooMade AI.`,
-        };
-        setMessages((prev) => [...prev, tokenWarning]);
-      }
+      // No token warnings since we've removed token tracking
       
       // No login reminder anymore
     } catch (error) {
       console.error("Error processing message:", error);
       
       // Create a user-friendly error message
-      let errorContent = "I'm sorry, I encountered an error processing your request. Please try again later.";
-      
-      // Check for specific error messages
-      if (error instanceof Error) {
-        if (error.message.includes("Insufficient tokens")) {
-          errorContent = "You've used all your available tokens. Please purchase more tokens to continue using BambooMade AI.";
-        } else if (error.message.includes("Not authenticated") || error.message.includes("login")) {
-          errorContent = "Please log in to use BambooMade AI.";
-        }
-      }
+      const errorContent = "I'm sorry, I encountered an error processing your request. Please try again later.";
       
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
@@ -138,11 +122,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     }
   };
 
-  // Check if the data contains user information
-  const { data: user } = useQuery({
-    queryKey: ["/api/auth/me"],
-    enabled: true,
-  });
+  // We no longer need to check user data since there's no login requirement
 
   return (
     <div className="flex flex-col h-[70vh]">

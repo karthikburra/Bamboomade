@@ -221,16 +221,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat routes
   app.post("/api/chat", async (req, res) => {
     try {
-      const userId = req.session.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
-      
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
       const { message } = req.body;
       
       if (!message || typeof message !== 'string') {
@@ -243,32 +233,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process the message with OpenAI
       const { response, tokensUsed } = await processMessage(message, trainingData);
       
-      // Check if user has enough tokens
-      if (user.tokens < tokensUsed) {
-        return res.status(403).json({ 
-          message: "Insufficient tokens",
-          requiredTokens: tokensUsed,
-          availableTokens: user.tokens
-        });
-      }
-      
-      // Deduct tokens from user
-      await storage.updateUserTokens(userId, user.tokens - tokensUsed);
-      
-      // Create chat message in storage
-      const chatMessage = await storage.createChatMessage({
-        userId,
-        message,
-        response,
-        tokensUsed
-      });
-      
+      // No need to check tokens or update user anymore
+      // No need to store chat messages either
+
+      // Simply return the response without token tracking
       res.status(201).json({
-        id: chatMessage.id,
         message,
         response,
         tokensUsed,
-        remainingTokens: user.tokens - tokensUsed
+        // No user-specific data
       });
     } catch (error) {
       console.error("Chat API error:", error);
