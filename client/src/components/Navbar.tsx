@@ -32,7 +32,13 @@ const Navbar: React.FC = () => {
   // Always use dark logo since we're only using dark mode
   const logoImage = darkLogoImage;
   
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<{
+    id: number;
+    username: string;
+    email: string;
+    tokens: number;
+    isAdmin: boolean;
+  }>({
     queryKey: ["/api/auth/me"],
     enabled: true,
   });
@@ -117,7 +123,7 @@ const Navbar: React.FC = () => {
           
           {/* Theme toggle removed - dark mode only */}
 
-          {user ? (
+          {user && user.tokens !== undefined && user.isAdmin !== undefined ? (
             <div className="flex items-center gap-2">
               {!isMobile && (
                 <span className="text-sm text-green-400 mr-2">
@@ -209,7 +215,7 @@ const Navbar: React.FC = () => {
                     </Link>
                   </div>
                   
-                  {user?.isAdmin && (
+                  {user && user.isAdmin && (
                     <Link
                       href="/admin"
                       onClick={() => setIsMenuOpen(false)}
@@ -218,7 +224,7 @@ const Navbar: React.FC = () => {
                       Admin Dashboard
                     </Link>
                   )}
-                  {user && (
+                  {user && user.tokens !== undefined && (
                     <div className="pt-4 border-t border-green-800">
                       <p className="text-sm text-green-400 mb-2">
                         Available tokens: {user.tokens}
