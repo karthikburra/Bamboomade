@@ -99,6 +99,20 @@ export class MemStorage implements IStorage {
         featured: true
       },
       {
+        title: "Bamboo Mirror With Lights",
+        description: "Handcrafted decorative mirror frame with integrated LED lighting, showcasing bamboo weaving techniques",
+        imageUrl: "/img/projects/bamboo-mirror.png",
+        category: "art-and-craft",
+        featured: true
+      },
+      {
+        title: "X-Frame Bamboo Table",
+        description: "Innovative bamboo joinery table design featuring cross-braced supports and natural finish",
+        imageUrl: "/img/projects/bamboo-joinery.png",
+        category: "design",
+        featured: true
+      },
+      {
         title: "Bamboo Joinery Workshop",
         description: "Hands-on workshop teaching traditional bamboo joinery techniques",
         imageUrl: "https://source.unsplash.com/featured/?bamboo,workshop",
@@ -164,11 +178,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
+    const role = insertUser.role || "user";
     const user: User = { 
       ...insertUser, 
       id, 
+      role, 
       tokens: 10, 
-      isAdmin: insertUser.role === "admin" 
+      isAdmin: role === "admin" 
     };
     this.users.set(id, user);
     return user;
@@ -202,7 +218,12 @@ export class MemStorage implements IStorage {
 
   async createProject(insertProject: InsertProject): Promise<Project> {
     const id = this.currentProjectId++;
-    const project: Project = { ...insertProject, id };
+    const featured = insertProject.featured === undefined ? false : insertProject.featured;
+    const project: Project = { 
+      ...insertProject, 
+      id,
+      featured 
+    };
     this.projects.set(id, project);
     return project;
   }
@@ -222,7 +243,7 @@ export class MemStorage implements IStorage {
       ...insertSession, 
       id, 
       paymentConfirmed: false,
-      paymentId: undefined
+      paymentId: null
     };
     this.projectGuidances.set(id, session);
     return session;

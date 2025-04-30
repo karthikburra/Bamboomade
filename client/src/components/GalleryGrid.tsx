@@ -45,6 +45,7 @@ const GalleryGrid: React.FC = () => {
             <TabsTrigger value="architecture">Architecture</TabsTrigger>
             <TabsTrigger value="workshop">Workshops</TabsTrigger>
             <TabsTrigger value="design">Design Details</TabsTrigger>
+            <TabsTrigger value="art-and-craft">Art & Craft</TabsTrigger>
           </TabsList>
         </div>
 
