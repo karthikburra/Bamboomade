@@ -36,7 +36,8 @@ const Hero: React.FC = () => {
             <Link href="/gallery">
               <Button
                 size="lg"
-                className="bg-green-600 hover:bg-green-700 text-white"
+                variant="secondary"
+                className="bg-green-800/30 text-green-400 hover:bg-green-800/50 border border-green-700"
               >
                 Explore Our Projects
                 <ArrowRight className="ml-2 h-4 w-4" />
