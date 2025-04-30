@@ -37,25 +37,25 @@ const WhyBambooMade: React.FC = () => {
       icon: <Brush size={24} />,
       title: "Art and Craft",
       description: "Bamboo weavers skillfully twist and intertwine thin strips, creating beautiful patterns with nature's versatile gift.",
-      imageUrl: "https://lh4.googleusercontent.com/__ps5FeHNOrk1ienOCNXnS_kWn6q16w8fhGYh-8LyivbRSCQgEB_jm4ANBWCFYifcRe7QhtSSdmbpg9jpCYevbOv-CMXD-TO1LHem2v533vgqJ3uH16zPjkNYnUFO4qIAQ=w1280"
+      imageUrl: "/img/projects/bamboo-mirror.png"
     },
     {
       icon: <Construction size={24} />,
       title: "Bamboo Joinery",
       description: "Immerse yourself in a bamboo furniture design journey, crafting timeless pieces, harmonizing nature's design.",
-      imageUrl: "https://lh4.googleusercontent.com/__ps5FeHNOrk1ienOCNXnS_kWn6q16w8fhGYh-8LyivbRSCQgEB_jm4ANBWCFYifcRe7QhtSSdmbpg9jpCYevbOv-CMXD-TO1LHem2v533vgqJ3uH16zPjkNYnUFO4qIAQ=w1280"
+      imageUrl: "/img/projects/bamboo-joinery.png"
     },
     {
       icon: <Home size={24} />,
       title: "Design Studios",
       description: "Architectural Design Studio, focusing on bamboo's potential as a sustainable building material.",
-      imageUrl: "https://lh6.googleusercontent.com/xBquZLKVdNI4gw7xv-pGM_usCIpUk5ssrRVr6bnMnVJOByisycUeuCM230XZQ9XP_O6cSZjkZG4aAVDWsJ-1jZnXA0T6NfUlTi37Xpt77FatY-tpdwuy8tyf3xwZ19MFuQ=w1280"
+      imageUrl: "/img/projects/bamboo-structure.png"
     },
     {
       icon: <UsersRound size={24} />,
       title: "Community Trainings",
       description: "Bamboo workshop is to equip villagers with essential bamboo crafting skills, fostering self-sustainability and economic empowerment.",
-      imageUrl: "https://lh5.googleusercontent.com/a8BFPX26p8sa6KvRd1sglsBHz0WuCSwtjhTfcAQT3aLsf4NGLPzRcEWIlXqrNob7gFHKyzQJiI27ZQroMAGFnxdlqKdQIwpruvwWVFSqxqnU9NxGZrj7_OCRyvxZuJd32w=w1280"
+      imageUrl: "/img/projects/bamboo-chair.png"
     }
   ];
 
