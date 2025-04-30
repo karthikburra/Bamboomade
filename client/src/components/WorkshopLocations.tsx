@@ -23,7 +23,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Nov 2024",
       description: "Upcoming architectural bamboo design workshop",
-      coordinates: { x: 565, y: 165 } // Hyderabad position on world map
+      coordinates: { x: 61.5, y: 45 } // Hyderabad position on world map
     },
     {
       id: "sirpur",
@@ -32,7 +32,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Jan 2024",
       description: "Community training workshop",
-      coordinates: { x: 570, y: 160 } // Chhattisgarh position on world map
+      coordinates: { x: 62, y: 43 } // Chhattisgarh position on world map
     },
     {
       id: "malaysia",
@@ -41,7 +41,7 @@ const WorkshopLocations: React.FC = () => {
       country: "Malaysia",
       date: "Nov 2023",
       description: "Volunteer at the International Bamboo Festival",
-      coordinates: { x: 605, y: 190 } // Kuala Lumpur position on world map
+      coordinates: { x: 68, y: 54 } // Kuala Lumpur position on world map
     },
     {
       id: "manit",
@@ -50,7 +50,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Sept 2023",
       description: "03 days Workshop",
-      coordinates: { x: 560, y: 155 } // Bhopal position on world map
+      coordinates: { x: 60, y: 43 } // Bhopal position on world map
     },
     {
       id: "spa",
@@ -59,7 +59,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Feb 2023",
       description: "05-day bond with the bamboo workshop",
-      coordinates: { x: 555, y: 145 } // Delhi position on world map
+      coordinates: { x: 59.5, y: 40 } // Delhi position on world map
     },
     {
       id: "woxsen",
@@ -68,7 +68,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Sept 2022",
       description: "03 days workshop",
-      coordinates: { x: 565, y: 165 } // Hyderabad position on world map
+      coordinates: { x: 61.5, y: 45 } // Hyderabad position on world map
     }
   ];
 
@@ -84,11 +84,11 @@ const WorkshopLocations: React.FC = () => {
           </p>
         </div>
 
-        <div className="relative mx-auto max-w-4xl aspect-[16/9] bg-green-100 dark:bg-green-900/40 rounded-lg overflow-hidden">
+        <div className="relative mx-auto max-w-4xl aspect-[16/9] bg-black rounded-lg overflow-hidden">
           {/* Map background */}
-          <div className="absolute inset-0 bg-green-800/20 dark:bg-green-700/20 z-0">
-            <div className="absolute inset-0 flex items-center justify-center opacity-80 dark:opacity-60">
-              <img src="/img/world-map-outline.svg" alt="World Map" className="w-full h-full object-contain text-green-800 dark:text-green-400" />
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 flex items-center justify-center opacity-90 dark:opacity-80">
+              <img src="/img/world-map.png" alt="World Map" className="w-full h-full object-contain" />
             </div>
           </div>
 
@@ -104,7 +104,7 @@ const WorkshopLocations: React.FC = () => {
               }}
             >
               <div className="relative">
-                <MapPin className="h-6 w-6 text-green-700 dark:text-green-400 animate-pulse" />
+                <MapPin className="h-7 w-7 text-white dark:text-white drop-shadow-md animate-pulse" />
                 
                 {/* Popup info */}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white dark:bg-green-900 rounded shadow-lg p-3 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
