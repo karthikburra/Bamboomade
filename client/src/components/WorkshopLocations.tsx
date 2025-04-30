@@ -88,7 +88,7 @@ const WorkshopLocations: React.FC = () => {
           {/* Map background */}
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 flex items-center justify-center">
-              <img src="/img/world-map.png" alt="World Map" className="w-full h-full object-cover" />
+              <img src="/img/Frame 427319025.png" alt="World Map" className="w-full h-full object-cover" />
             </div>
           </div>
 
