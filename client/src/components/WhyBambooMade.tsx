@@ -41,15 +41,15 @@ const WhyBambooMade: React.FC = () => {
     },
     {
       icon: <Construction size={24} />,
-      title: "Bamboo Models",
-      description: "Our intricate bamboo scale models demonstrate innovative architectural concepts and showcase bamboo's versatility as a building material.",
-      imageUrl: "/img/projects/bamboo-model.png"
+      title: "Joinery Workshop",
+      description: "Immerse yourself in a bamboo furniture design journey, crafting timeless pieces, harmonizing nature's design.",
+      imageUrl: "/img/projects/bamboo-table.png"
     },
     {
       icon: <Home size={24} />,
-      title: "Lighting Design",
-      description: "Explore the elegant fusion of form and function with our handcrafted bamboo lighting solutions, bringing warmth and sustainable beauty to any space.",
-      imageUrl: "/img/projects/bamboo-lamp.png"
+      title: "Design Studios",
+      description: "Our architectural design studios explore innovative bamboo structures and spatial concepts, developing sustainable solutions for modern building challenges.",
+      imageUrl: "/img/projects/bamboo-structure-model.jpg"
     },
     {
       icon: <UsersRound size={24} />,
