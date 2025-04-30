@@ -91,7 +91,7 @@ const Navbar: React.FC = () => {
           </nav>
         )}
 
-        <div className="flex flex-1 items-center justify-end space-x-4">
+        <div className="flex flex-1 items-center justify-end space-x-4 pr-6">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
