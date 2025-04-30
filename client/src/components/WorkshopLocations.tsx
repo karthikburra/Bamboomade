@@ -23,7 +23,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Nov 2024",
       description: "Upcoming architectural bamboo design workshop",
-      coordinates: { x: 62, y: 47 } // Hyderabad position
+      coordinates: { x: 565, y: 165 } // Hyderabad position on world map
     },
     {
       id: "sirpur",
@@ -32,7 +32,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Jan 2024",
       description: "Community training workshop",
-      coordinates: { x: 66, y: 44 } // Chhattisgarh position
+      coordinates: { x: 570, y: 160 } // Chhattisgarh position on world map
     },
     {
       id: "malaysia",
@@ -41,7 +41,7 @@ const WorkshopLocations: React.FC = () => {
       country: "Malaysia",
       date: "Nov 2023",
       description: "Volunteer at the International Bamboo Festival",
-      coordinates: { x: 81, y: 63 } // Kuala Lumpur position
+      coordinates: { x: 605, y: 190 } // Kuala Lumpur position on world map
     },
     {
       id: "manit",
@@ -49,8 +49,8 @@ const WorkshopLocations: React.FC = () => {
       city: "Bhopal",
       country: "India",
       date: "Sept 2023",
-      description: "3-day architectural workshop",
-      coordinates: { x: 58, y: 43 } // Bhopal position
+      description: "03 days Workshop",
+      coordinates: { x: 560, y: 155 } // Bhopal position on world map
     },
     {
       id: "spa",
@@ -58,8 +58,8 @@ const WorkshopLocations: React.FC = () => {
       city: "Delhi",
       country: "India",
       date: "Feb 2023",
-      description: "5-day bond with the bamboo workshop",
-      coordinates: { x: 58, y: 37 } // Delhi position
+      description: "05-day bond with the bamboo workshop",
+      coordinates: { x: 555, y: 145 } // Delhi position on world map
     },
     {
       id: "woxsen",
@@ -67,8 +67,8 @@ const WorkshopLocations: React.FC = () => {
       city: "Hyderabad",
       country: "India",
       date: "Sept 2022",
-      description: "3-day workshop",
-      coordinates: { x: 62, y: 47 } // Hyderabad position
+      description: "03 days workshop",
+      coordinates: { x: 565, y: 165 } // Hyderabad position on world map
     }
   ];
 
@@ -77,10 +77,10 @@ const WorkshopLocations: React.FC = () => {
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
-            Our Global Bamboo Footprint
+            Our Global Bamboo Workshops
           </h2>
           <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
-            Explore our bamboo workshops conducted across India and Malaysia.
+            Explore our bamboo workshops conducted across India and internationally in Malaysia.
           </p>
         </div>
 
@@ -88,7 +88,7 @@ const WorkshopLocations: React.FC = () => {
           {/* Map background */}
           <div className="absolute inset-0 bg-green-800/20 dark:bg-green-700/20 z-0">
             <div className="absolute inset-0 flex items-center justify-center opacity-80 dark:opacity-60">
-              <img src="/img/map-outline.svg" alt="Map of India and Malaysia" className="w-full h-full object-contain text-green-800 dark:text-green-400" />
+              <img src="/img/world-map-outline.svg" alt="World Map" className="w-full h-full object-contain text-green-800 dark:text-green-400" />
             </div>
           </div>
 
