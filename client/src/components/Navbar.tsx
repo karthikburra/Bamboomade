@@ -92,6 +92,15 @@ const Navbar: React.FC = () => {
         )}
 
         <div className="flex flex-1 items-center justify-end space-x-4 pr-6">
+          <Link href="/gallery">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              className="bg-green-800/30 text-green-400 hover:bg-green-800/50 border border-green-700"
+            >
+              Explore Our Projects
+            </Button>
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
