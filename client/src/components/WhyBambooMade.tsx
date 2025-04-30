@@ -41,21 +41,21 @@ const WhyBambooMade: React.FC = () => {
     },
     {
       icon: <Construction size={24} />,
-      title: "Bamboo Joinery",
-      description: "Immerse yourself in a bamboo furniture design journey, crafting timeless pieces, harmonizing nature's design.",
-      imageUrl: "/img/projects/bamboo-joinery.png"
+      title: "Bamboo Models",
+      description: "Our intricate bamboo scale models demonstrate innovative architectural concepts and showcase bamboo's versatility as a building material.",
+      imageUrl: "/img/projects/bamboo-model.png"
     },
     {
       icon: <Home size={24} />,
-      title: "Design Studios",
-      description: "Architectural Design Studio, focusing on bamboo's potential as a sustainable building material.",
-      imageUrl: "/img/projects/bamboo-structure.png"
+      title: "Lighting Design",
+      description: "Explore the elegant fusion of form and function with our handcrafted bamboo lighting solutions, bringing warmth and sustainable beauty to any space.",
+      imageUrl: "/img/projects/bamboo-lamp.png"
     },
     {
       icon: <UsersRound size={24} />,
       title: "Community Trainings",
-      description: "Bamboo workshop is to equip villagers with essential bamboo crafting skills, fostering self-sustainability and economic empowerment.",
-      imageUrl: "/img/projects/bamboo-workshop-training.png"
+      description: "Our bamboo workshops equip participants with essential bamboo crafting skills, fostering self-sustainability and economic empowerment in local communities.",
+      imageUrl: "/img/workshops/bamboo-workshop-international.png"
     }
   ];
 

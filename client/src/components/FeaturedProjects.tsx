@@ -15,43 +15,43 @@ interface Workshop {
 }
 
 const FeaturedProjects: React.FC = () => {
-  // Use real workshop data from BambooMade's website
+  // Use authentic workshop data with locally stored images
   const workshops: Workshop[] = [
     {
       id: "sirpur",
       title: "Sirpur Special Area Development Authority",
-      description: "Community training focused on bamboo crafting skills and sustainable building techniques.",
-      imageUrl: "https://lh4.googleusercontent.com/316KNhT4XoaTZUTOJVSmdOu_5vw2WWbHxefzDjerEgZEqEt6ZxhFNeT0b_LQEyDzP9BIVsgO9nhc1_1rro_c4tiZlKEcxvzgI-8gTM0AedmKfGHTqpzljEIL_ejJAfPVgw=w1280",
+      description: "Community training focused on bamboo crafting skills and sustainable building techniques for local villagers.",
+      imageUrl: "/img/projects/bamboo-workshop-training.png",
       duration: "5 day workshop",
       date: "Jan 2024",
-      viewMoreLink: "/projects/sirpur"
+      viewMoreLink: "/our-works?category=community"
     },
     {
-      id: "inboo-23",
-      title: "International Bamboo Festival, Malaysia",
-      description: "Volunteers at International Bamboo Festival showcasing sustainable bamboo techniques.",
-      imageUrl: "https://lh5.googleusercontent.com/4vCGBxeaZwe1NpZULC6j5jtonzfFTggbXqw_Zrn64tHYnrCHAG3192TmhQaVkz2TRkmqa8Y1UTvDfy9pmiL0dDaPgWx9dlG2hX9dEDNK28AK37xfI2lILrPBbDSHjlpF3w=w1280",
-      duration: "DBBB",
+      id: "international",
+      title: "International Bamboo Design Workshop",
+      description: "International participants learning sustainable bamboo design techniques and collaborative project building.",
+      imageUrl: "/img/workshops/bamboo-workshop-international.png",
+      duration: "7 day workshop",
       date: "Nov 2023",
-      viewMoreLink: "/projects/inboo-23"
+      viewMoreLink: "/our-works?category=education"
     },
     {
-      id: "manit",
-      title: "MA National Institute of Technology, Bhopal",
-      description: "Workshop for architecture students focusing on bamboo design and construction techniques.",
-      imageUrl: "https://lh4.googleusercontent.com/3afPFY8aRRrgCgEadDuyGXYM0pLqyFqO7U1NYUAsjlgwfQbPECKlfXDtyvW02-rRIfBhinysZC8YAv-hDDaGpTLtD2P13VUq7lBi5Jba7e_jVEi1SykNTDhADRWHqlQ3Pw=w1280",
+      id: "models",
+      title: "Architectural Model Making Workshop",
+      description: "Students creating innovative bamboo scale models to explore structural and spatial concepts.",
+      imageUrl: "/img/projects/bamboo-model.png",
       duration: "3 day workshop",
       date: "Sept 2023",
-      viewMoreLink: "/projects/manit"
+      viewMoreLink: "/our-works?category=architecture"
     },
     {
-      id: "spa",
-      title: "School of Planning and Architecture, Delhi",
-      description: "Workshop on innovative bamboo architecture and sustainable design principles.",
-      imageUrl: "https://lh6.googleusercontent.com/HhoF4g6nzOyuPdLXvHNwuPIGqcqfkvyRZqkfqhnJIpD0jyixmDOSeGbT4ElqLGPawdwJhWqlsa8F3rcOhPSkw64=w1280",
+      id: "lighting",
+      title: "Bamboo Lighting Design Workshop",
+      description: "Participants exploring the art of crafting elegant and sustainable bamboo lighting solutions.",
+      imageUrl: "/img/projects/bamboo-lamp.png",
       duration: "5 day workshop",
       date: "Feb 2023",
-      viewMoreLink: "/projects/spa"
+      viewMoreLink: "/our-works?category=design"
     }
   ];
 
@@ -97,9 +97,9 @@ const FeaturedProjects: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <Link href="/gallery">
+          <Link href="/our-works">
             <Button variant="outline" size="lg" className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
-              View All Projects
+              View All Works
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
