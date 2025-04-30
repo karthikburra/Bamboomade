@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useIsMobile as useMobile } from "@/hooks/use-mobile";
-import { useTheme } from "@/hooks/use-theme";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,7 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { 
-  Menu, X, Sun, Moon, Sparkles, MessageSquareText, ChevronDown
+  Menu, X, Sparkles, MessageSquareText, ChevronDown
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,17 +22,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/queryClient";
-import lightLogoImage from "@assets/logo.png";
 import darkLogoImage from "@assets/Lgo dark.png";
 
 const Navbar: React.FC = () => {
   const [location] = useLocation();
   const isMobile = useMobile();
-  const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // Get the appropriate logo based on theme
-  const logoImage = theme === 'light' ? lightLogoImage : darkLogoImage;
+  // Always use dark logo since we're only using dark mode
+  const logoImage = darkLogoImage;
   
   const { data: user } = useQuery({
     queryKey: ["/api/auth/me"],
@@ -64,8 +61,8 @@ const Navbar: React.FC = () => {
         <div className="mr-4 flex pl-6">
           <Link href="/" className="flex items-center space-x-2">
             <img src={logoImage} alt="BambooMade Logo" className="h-10 w-auto" />
-            <span className="text-2xl font-bold text-green-800 dark:text-green-300">
-              Bamboo<span className="text-green-600 dark:text-green-400">Made</span>
+            <span className="text-2xl font-bold text-green-300">
+              Bamboo<span className="text-green-400">Made</span>
             </span>
           </Link>
         </div>
@@ -76,10 +73,10 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-colors hover:text-green-700 dark:hover:text-green-300 ${
+                className={`transition-colors hover:text-green-300 ${
                   isActive(link.href)
-                    ? "text-green-800 dark:text-green-300 font-semibold"
-                    : "text-green-600 dark:text-green-400"
+                    ? "text-green-300 font-semibold"
+                    : "text-green-400"
                 }`}
               >
                 {link.label}
@@ -118,14 +115,7 @@ const Navbar: React.FC = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-          </Button>
+          {/* Theme toggle removed - dark mode only */}
 
           {user ? (
             <div className="flex items-center gap-2">

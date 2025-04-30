@@ -1,41 +1,25 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
-type Theme = "light" | "dark";
+// Only dark theme is supported
+type Theme = "dark";
 
 export function useTheme() {
-  // Initialize theme from localStorage or system preference
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first
-    const savedTheme = localStorage.getItem("bamboomade-theme") as Theme | null;
-    if (savedTheme) {
-      return savedTheme;
-    }
-    
-    // If no saved preference, check system preference
-    if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
-    
-    // Default to light theme
-    return "light";
-  });
+  // Always use dark theme
+  const theme: Theme = "dark";
 
-  // Update the class on the document when theme changes
+  // Set dark mode on initial render
   useEffect(() => {
     const root = window.document.documentElement;
+    root.classList.add("dark");
     
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    
-    // Save theme to localStorage
-    localStorage.setItem("bamboomade-theme", theme);
-  }, [theme]);
+    // Save preference to localStorage for consistency
+    localStorage.setItem("bamboomade-theme", "dark");
+  }, []);
 
+  // Empty function to maintain API compatibility
   const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+    // No-op since we only support dark mode
+    console.log("Only dark mode is supported");
   };
 
   return { theme, toggleTheme };
