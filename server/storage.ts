@@ -132,6 +132,20 @@ export class MemStorage implements IStorage {
         imageUrl: "https://source.unsplash.com/featured/?bamboo,construction",
         category: "workshop",
         featured: false
+      },
+      {
+        title: "Bamboo Chair Design",
+        description: "A simple yet sturdy bamboo chair with plywood seat, showcasing practical joinery techniques",
+        imageUrl: "/img/projects/bamboo-chair.png",
+        category: "design",
+        featured: false
+      },
+      {
+        title: "Rural Artisan Workshop",
+        description: "Training workshop for village artisans to master bamboo basket weaving and product design",
+        imageUrl: "/img/projects/bamboo-workshop-training.png",
+        category: "workshop",
+        featured: false
       }
     ];
 
@@ -240,8 +254,14 @@ export class MemStorage implements IStorage {
   async createProjectGuidance(insertSession: InsertProjectGuidance): Promise<ProjectGuidance> {
     const id = this.currentProjectGuidanceId++;
     const session: ProjectGuidance = { 
-      ...insertSession, 
-      id, 
+      id,
+      date: insertSession.date,
+      email: insertSession.email,
+      studentName: insertSession.studentName,
+      phone: insertSession.phone,
+      duration: insertSession.duration,
+      topic: insertSession.topic,
+      notes: insertSession.notes || null,
       paymentConfirmed: false,
       paymentId: null
     };
