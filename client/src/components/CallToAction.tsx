@@ -5,7 +5,7 @@ import { Phone, Calendar, MessageSquare } from "lucide-react";
 
 const CallToAction: React.FC = () => {
   return (
-    <section className="py-16 bg-primary-900 text-primary-50">
+    <section className="py-16 bg-green-950 text-green-50 dark:bg-green-900/40 dark:text-green-100">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -20,7 +20,7 @@ const CallToAction: React.FC = () => {
             <Link href="/contact">
               <Button
                 size="lg"
-                className="w-full bg-white text-primary-900 hover:bg-primary-50"
+                className="w-full bg-green-100 text-green-900 hover:bg-green-200 dark:bg-green-800 dark:text-green-100 dark:hover:bg-green-700"
               >
                 <Phone className="mr-2 h-4 w-4" />
                 Contact Us
@@ -30,7 +30,7 @@ const CallToAction: React.FC = () => {
             <Link href="/project-guidance">
               <Button
                 size="lg"
-                className="w-full bg-secondary-600 hover:bg-secondary-700 text-white"
+                className="w-full bg-green-600 hover:bg-green-700 text-white dark:bg-green-700 dark:hover:bg-green-600"
               >
                 <Calendar className="mr-2 h-4 w-4" />
                 Book Project Guidance
@@ -40,7 +40,7 @@ const CallToAction: React.FC = () => {
             <Link href="/ai-chat">
               <Button
                 size="lg"
-                className="w-full bg-primary-800 hover:bg-primary-700 text-white"
+                className="w-full bg-green-800 hover:bg-green-700 text-white dark:bg-green-500 dark:hover:bg-green-400 dark:text-green-950"
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Try BambooMade AI

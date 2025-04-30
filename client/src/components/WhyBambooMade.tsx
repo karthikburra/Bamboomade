@@ -48,13 +48,13 @@ const WhyBambooMade: React.FC = () => {
     {
       icon: <Home size={24} />,
       title: "Design Studios",
-      description: "Our architectural design studios explore innovative bamboo structures and spatial concepts, developing sustainable solutions for modern building challenges.",
+      description: "Architectural Design Studio, focusing on bamboo's potential as a sustainable building material.",
       imageUrl: "/img/projects/bamboo-structure-model.jpg"
     },
     {
       icon: <UsersRound size={24} />,
       title: "Community Trainings",
-      description: "Our bamboo workshops equip participants with essential bamboo crafting skills, fostering self-sustainability and economic empowerment in local communities.",
+      description: "Bamboo workshop is to equip villagers with essential bamboo crafting skills, fostering self-sustainability and economic empowerment.",
       imageUrl: "/img/workshops/bamboo-workshop-international.png"
     }
   ];
@@ -83,12 +83,7 @@ const WhyBambooMade: React.FC = () => {
           ))}
         </div>
         
-        <div className="mt-16 text-center bg-green-50 dark:bg-green-900/20 p-8 rounded-lg">
-          <h3 className="text-2xl font-semibold mb-4 text-green-800 dark:text-green-300">Our Experience</h3>
-          <p className="text-lg text-green-700 dark:text-green-200 max-w-3xl mx-auto">
-            "Through our successfully conducted workshops, we have ignited creativity, empowered participants, and built a strong foundation for Bamboo centric design."
-          </p>
-        </div>
+
       </div>
     </section>
   );
