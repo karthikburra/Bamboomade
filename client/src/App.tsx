@@ -16,6 +16,7 @@ import Login from "@/pages/Login";
 import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentFailed from "@/pages/PaymentFailed";
+import OurWorks from "@/pages/OurWorks";
 import NotFound from "@/pages/not-found";
 import { Helmet } from "react-helmet";
 
@@ -24,6 +25,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/gallery" component={Gallery} />
+      <Route path="/our-works" component={OurWorks} />
       <Route path="/contact" component={Contact} />
       <Route path="/project-guidance" component={ProjectGuidance} />
       <Route path="/ai-chat" component={AIChat} />
