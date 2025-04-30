@@ -4,6 +4,7 @@ import FeaturedProjects from "@/components/FeaturedProjects";
 import WhyBambooMade from "@/components/WhyBambooMade";
 import CallToAction from "@/components/CallToAction";
 import TeamMembers from "@/components/TeamMembers";
+import WorkshopLocations from "@/components/WorkshopLocations";
 import { Helmet } from "react-helmet";
 
 const Home: React.FC = () => {
@@ -17,6 +18,7 @@ const Home: React.FC = () => {
       <Hero />
       <WhyBambooMade />
       <FeaturedProjects />
+      <WorkshopLocations />
       <TeamMembers />
       <CallToAction />
     </>
