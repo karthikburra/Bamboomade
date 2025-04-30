@@ -95,9 +95,9 @@ const Navbar: React.FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="outline" 
+                variant="default" 
                 size="sm" 
-                className="border-green-700 text-green-400 hover:bg-green-900/30"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
                 BambooMade AI
