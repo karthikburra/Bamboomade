@@ -18,7 +18,7 @@ const Home: React.FC = () => {
       <Hero />
       <WhyBambooMade />
       <FeaturedProjects />
-      <WorkshopLocations />
+      {/* <WorkshopLocations /> */}
       <TeamMembers />
       <CallToAction />
     </>
