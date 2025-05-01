@@ -23,7 +23,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Nov 2024",
       description: "Upcoming architectural bamboo design workshop",
-      coordinates: { x: 40, y: 75 } // Hyderabad position
+      coordinates: { x: 39, y: 61 } // Hyderabad position
     },
     {
       id: "sirpur",
@@ -32,7 +32,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Jan 2024",
       description: "Community training workshop",
-      coordinates: { x: 42, y: 72 } // Chhattisgarh position
+      coordinates: { x: 43, y: 59 } // Chhattisgarh position
     },
     {
       id: "malaysia",
@@ -41,7 +41,7 @@ const WorkshopLocations: React.FC = () => {
       country: "Malaysia",
       date: "Nov 2023",
       description: "Volunteer at the International Bamboo Festival",
-      coordinates: { x: 72, y: 88 } // Kuala Lumpur position
+      coordinates: { x: 75, y: 80 } // Kuala Lumpur position
     },
     {
       id: "manit",
@@ -50,7 +50,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Sept 2023",
       description: "03 days Workshop",
-      coordinates: { x: 35, y: 68 } // Bhopal position
+      coordinates: { x: 32, y: 55 } // Bhopal position
     },
     {
       id: "spa",
@@ -59,7 +59,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Feb 2023",
       description: "05-day bond with the bamboo workshop",
-      coordinates: { x: 33, y: 62 } // Delhi position
+      coordinates: { x: 32, y: 46 } // Delhi position
     },
     {
       id: "woxsen",
@@ -68,7 +68,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Sept 2022",
       description: "03 days workshop",
-      coordinates: { x: 40, y: 75 } // Hyderabad position
+      coordinates: { x: 39, y: 61 } // Hyderabad position
     }
   ];
 
@@ -104,10 +104,15 @@ const WorkshopLocations: React.FC = () => {
               }}
             >
               <div className="relative">
-                <MapPin className="h-8 w-8 text-white drop-shadow-[0_0_10px_rgba(0,0,0,0.5)] filter animate-pulse" />
+                <div className="flex flex-col items-center">
+                  <MapPin className="h-8 w-8 text-white drop-shadow-[0_0_10px_rgba(0,0,0,0.5)] filter animate-pulse" />
+                  <span className="text-white text-xs font-bold bg-black bg-opacity-50 px-1 rounded mt-1 whitespace-nowrap">
+                    {location.city}
+                  </span>
+                </div>
                 
                 {/* Popup info */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-white dark:bg-green-900 rounded shadow-lg p-3 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-12 w-48 bg-white dark:bg-green-900 rounded shadow-lg p-3 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                   <h3 className="font-semibold text-green-900 dark:text-green-300">{location.name}</h3>
                   <p className="text-green-800 dark:text-green-400">{location.city}, {location.country}</p>
                   <p className="text-green-700 dark:text-green-500 text-xs">{location.date}</p>
