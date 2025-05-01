@@ -56,7 +56,7 @@ const FeaturedProjects: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-green-950/90 to-black">
+    <section className="py-16 bg-gradient-to-b from-background to-green-50/30 dark:to-green-950/30">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">

@@ -27,20 +27,20 @@
 }
 
 .dark {
-  /* Darker green palette for dark mode */
-  --background: 142 50% 2%;
+  /* Green palette for dark mode */
+  --background: 142 36% 5%;
   --foreground: 0 0% 98%;
-  --muted: 142 36% 12%;
+  --muted: 142 36% 15%;
   --muted-foreground: 142 5% 65%;
-  --popover: 142 50% 3%;
+  --popover: 142 36% 5%;
   --popover-foreground: 0 0% 98%;
-  --card: 142 50% 3%;
+  --card: 142 36% 5%;
   --card-foreground: 0 0% 98%;
   --border: 142 36% 15%;
   --input: 142 36% 15%;
   --primary: 142 76% 45%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 142 36% 12%;
+  --secondary: 142 36% 15%;
   --secondary-foreground: 0 0% 98%;
   --accent: 142 70% 50%;
   --accent-foreground: 0 0% 98%;

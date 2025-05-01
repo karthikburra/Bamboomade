@@ -88,7 +88,7 @@ const TeamMembers: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-black to-green-950/60">
+    <section className="py-16 bg-background">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
