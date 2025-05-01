@@ -114,20 +114,20 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 <li className="flex">
                   <MapPin size={20} className="flex-shrink-0 text-primary-200" />
                   <span className="ml-3 text-base text-primary-300">
-                    123 Bamboo Avenue, Green District, 400001
+                    Nagole, Hyderabad-500068
                   </span>
                 </li>
                 <li className="flex">
                   <Phone size={20} className="flex-shrink-0 text-primary-200" />
-                  <span className="ml-3 text-base text-primary-300">
+                  <a href="tel:+918971690163" className="ml-3 text-base text-primary-300 hover:text-primary-200">
                     +91 8971690163
-                  </span>
+                  </a>
                 </li>
                 <li className="flex">
                   <Mail size={20} className="flex-shrink-0 text-primary-200" />
-                  <span className="ml-3 text-base text-primary-300">
-                    info@bamboomade.com
-                  </span>
+                  <a href="mailto:Info@bamboomade.in" className="ml-3 text-base text-primary-300 hover:text-primary-200">
+                    Info@bamboomade.in
+                  </a>
                 </li>
                 <li className="mt-8">
                   <a 
