@@ -23,7 +23,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Nov 2024",
       description: "Upcoming architectural bamboo design workshop",
-      coordinates: { x: 35, y: 60 } // Hyderabad position
+      coordinates: { x: 64, y: 47 } // Hyderabad position on world map
     },
     {
       id: "sirpur",
@@ -32,7 +32,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Jan 2024",
       description: "Community training workshop",
-      coordinates: { x: 32.5, y: 54 } // Sirpur position
+      coordinates: { x: 64.5, y: 46 } // Sirpur/Chhattisgarh position on world map
     },
     {
       id: "malaysia",
@@ -41,7 +41,7 @@ const WorkshopLocations: React.FC = () => {
       country: "Malaysia",
       date: "Nov 2023",
       description: "Volunteer at the International Bamboo Festival",
-      coordinates: { x: 71.8, y: 64 } // Kuala Lumpur position
+      coordinates: { x: 70, y: 55 } // Kuala Lumpur position on world map
     },
     {
       id: "manit",
@@ -50,7 +50,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Sept 2023",
       description: "03 days Workshop",
-      coordinates: { x: 31.2, y: 50 } // Bhopal position
+      coordinates: { x: 63, y: 45 } // Bhopal position on world map
     },
     {
       id: "spa",
@@ -59,7 +59,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Feb 2023",
       description: "05-day bond with the bamboo workshop",
-      coordinates: { x: 30, y: 40 } // Delhi position
+      coordinates: { x: 63, y: 43 } // Delhi position on world map
     },
     {
       id: "woxsen",
@@ -68,7 +68,7 @@ const WorkshopLocations: React.FC = () => {
       country: "India",
       date: "Sept 2022",
       description: "03 days workshop",
-      coordinates: { x: 35, y: 60 } // Hyderabad position
+      coordinates: { x: 64, y: 47 } // Hyderabad position on world map
     }
   ];
 
@@ -88,7 +88,7 @@ const WorkshopLocations: React.FC = () => {
           {/* Map background */}
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 flex items-center justify-center">
-              <img src="/img/southeast-asia-map.svg" alt="India and Southeast Asia Map" className="w-full h-full object-cover" />
+              <img src="/img/world-map-green.png" alt="World Map" className="w-full h-full object-cover" />
             </div>
           </div>
 
