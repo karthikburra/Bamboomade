@@ -19,9 +19,9 @@ const BondWithBambooWorkshop: React.FC = () => {
 
   const images: WorkshopImage[] = [
     {
-      url: "/img/projects/bamboo-workshop-training.png",
-      alt: "Participants working with bamboo materials",
-      caption: "Workshop participants learning bamboo techniques"
+      url: "/img/projects/spa-delhi.png",
+      alt: "Bamboo pendant lamp with elegant strips design",
+      caption: "Bamboo pendant lamp created during the SPA Delhi workshop"
     },
     {
       url: "/img/projects/bamboo-model.png",
@@ -29,7 +29,7 @@ const BondWithBambooWorkshop: React.FC = () => {
       caption: "Architectural model made with bamboo"
     },
     {
-      url: "/img/projects/bamboo-lamp.png",
+      url: "/img/projects/bamboo-lamp-new.png",
       alt: "Bamboo lamp design",
       caption: "Creative bamboo lamp designed by participants"
     }

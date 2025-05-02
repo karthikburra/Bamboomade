@@ -21,7 +21,7 @@ const FeaturedProjects: React.FC = () => {
       id: "bond-with-bamboo",
       title: "Bond With Bamboo Workshop",
       description: "Inclusive workshop at SPA Delhi with diverse participants sharing knowledge on bamboo in architectural curriculum and studios.",
-      imageUrl: "/img/projects/bamboo-workshop-training.png",
+      imageUrl: "/img/projects/spa-delhi.png",
       duration: "5 day workshop",
       date: "Mar 2023",
       viewMoreLink: "/workshops/bond-with-bamboo"
