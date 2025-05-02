@@ -66,8 +66,8 @@ const OurWorks: React.FC = () => {
                   <Calendar className="h-4 w-4 mr-1" />
                   <span>2 days | September 2023</span>
                 </div>
-                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Bamboo Joinery Workshop</h3>
-                <p className="mt-2 text-sm text-green-400 line-clamp-3">Hands-on workshop teaching traditional and modern bamboo joinery techniques for architectural applications.</p>
+                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Sirpur Special Area Development Authority</h3>
+                <p className="mt-2 text-sm text-green-400 line-clamp-3">Collaboration with Sirpur Special Area Development Authority on sustainable bamboo-based architectural development projects.</p>
               </CardContent>
               <CardFooter className="p-4 pt-0">
                 <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
