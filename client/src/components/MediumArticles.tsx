@@ -20,7 +20,7 @@ const MediumArticles: React.FC = () => {
       id: "affinity-for-bamboo",
       title: "An Affinity for Bamboo",
       description: "Dive into the fascinating world of bamboo and discover why this versatile plant has captured the hearts of designers, architects, and sustainability advocates around the globe.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      imageUrl: "/img/medium/affinity-for-bamboo.jpg",
       date: "Apr 2023",
       url: "https://medium.com/@bamboomade/an-affinity-for-bamboo-63aa2deb7d25"
     },
