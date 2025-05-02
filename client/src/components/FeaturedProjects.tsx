@@ -18,40 +18,58 @@ const FeaturedProjects: React.FC = () => {
   // Use authentic workshop data with locally stored images
   const workshops: Workshop[] = [
     {
-      id: "bond-with-bamboo",
-      title: "Bond With Bamboo Workshop",
-      description: "Inclusive workshop at SPA Delhi with diverse participants sharing knowledge on bamboo in architectural curriculum and studios.",
+      id: "icfai-architecture",
+      title: "ICFAI School of Architecture",
+      description: "An impactful bamboo workshop where students explored bamboo to create exceptional products, empowering them to craft contemporary masterpieces showcasing the finished products.",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      duration: "3 day workshop",
+      date: "Nov 2024",
+      viewMoreLink: "/workshops/icfai-architecture"
+    },
+    {
+      id: "sirpur-community",
+      title: "BambooMade Community Training",
+      description: "Creating awareness of bamboo through hands-on experience focusing on traditional weaving techniques and joineries, which will directly influence the way the material is used in the future.",
       imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "5 day workshop",
-      date: "Mar 2023",
-      viewMoreLink: "/workshops/bond-with-bamboo"
+      date: "Jan 2024",
+      viewMoreLink: "/workshops/sirpur-community"
     },
     {
       id: "international-bamboo-fest",
-      title: "International Bamboo Festival '23",
-      description: "Collaboration with Ewe Jin Low at Tadom Hill Resorts creating sustainable bamboo structures and connecting with passionate bamboo architects globally.",
+      title: "International Bamboo Festival",
+      description: "Volunteering with Ewe Jin Low at Tadom Hill Resorts in Malaysia, modeling sustainable bamboo structures and contributing to the worldwide push for sustainable living.",
       imageUrl: "/img/projects/bamboo-lamp-new.png",
-      duration: "7 day workshop",
+      duration: "2 day festival",
       date: "Nov 2023",
       viewMoreLink: "/workshops/international-bamboo-fest"
     },
     {
-      id: "manit-bhopal",
-      title: "MANIT, Bhopal",
-      description: "National-level bamboo joinery and craft workshop with COA TRC and IIA Bhopal Centre, focusing on product design and detailed drawing skills.",
+      id: "nit-bhopal",
+      title: "NIT Bhopal",
+      description: "A transformative national-level bamboo joinery workshop in partnership with COA TRC and IIA Bhopal Centre, focusing on product design and detailed drawing presentations.",
       imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "3 day workshop",
       date: "Sept 2023",
-      viewMoreLink: "/workshops/manit-bhopal"
+      viewMoreLink: "/workshops/nit-bhopal"
     },
     {
-      id: "sirpur",
-      title: "Sirpur Special Area Development Authority",
-      description: "Community training focused on bamboo crafting skills and sustainable building techniques for local villagers.",
+      id: "spa-delhi",
+      title: "SPA Delhi",
+      description: "An inclusive workshop welcoming diverse participants and sharing knowledge with students, professionals, researchers, and professors to integrate bamboo into architectural curriculum.",
       imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "5 day workshop",
-      date: "Dec 2023",
-      viewMoreLink: "/workshops/sirpur"
+      date: "Feb 2023",
+      viewMoreLink: "/workshops/spa-delhi"
+    },
+    {
+      id: "woxsen-university",
+      title: "Woxsen University",
+      description: "Workshop for Interior Design department students exploring the fusion of bamboo with diverse materials to create exceptional interior products with emphasis on branding.",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      duration: "3 day workshop",
+      date: "Sept 2022",
+      viewMoreLink: "/workshops/woxsen-university"
     }
   ];
 
@@ -68,7 +86,7 @@ const FeaturedProjects: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {workshops.map((workshop) => (
+          {workshops.slice(0, 4).map((workshop) => (
             <Card key={workshop.id} className="overflow-hidden h-full flex flex-col">
               <div className="aspect-video w-full overflow-hidden bg-black/5 flex items-center justify-center">
                 <img
