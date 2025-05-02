@@ -86,7 +86,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
     // Email content
     const msg = {
       to: bookingData.studentEmail,
-      from: 'bamboomade.in@gmail.com', // BambooMade email as sender
+      from: 'projects@bamboomade.in', // BambooMade projects email as sender
       cc: 'bamboomade.in@gmail.com', // Also keep BambooMade team in the loop
       subject: 'Your BambooMade Project Guidance Session Confirmed',
       html: `

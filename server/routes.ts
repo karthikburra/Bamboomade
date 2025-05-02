@@ -217,11 +217,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/project-guidance", validateRequest(insertProjectGuidanceSchema), async (req, res) => {
+  app.post("/api/project-guidance", async (req, res) => {
     try {
-      const session = await storage.createProjectGuidance(req.body);
+      // Manually validate duration field (might be 5 minutes for testing)
+      const { studentName, email, phone, date, duration, topic, notes } = req.body;
+      
+      if (!studentName || !email || !phone || !date || !topic) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: "Missing required fields" 
+        });
+      }
+      
+      // Create the session with all the fields
+      const session = await storage.createProjectGuidance({
+        studentName,
+        email, 
+        phone,
+        date,
+        duration: duration || 60, // Default to 60 if not specified
+        topic,
+        notes: notes || ""
+      });
+      
       res.status(201).json(session);
     } catch (error) {
+      console.error("Project guidance booking error:", error);
       res.status(500).json({ message: "Failed to book session", error: (error as Error).message });
     }
   });
