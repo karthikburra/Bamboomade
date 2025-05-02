@@ -92,6 +92,11 @@ const OurWorks: React.FC = () => {
                 <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Sustainable Design Studio</h3>
                 <p className="mt-2 text-sm text-green-400 line-clamp-3">Immersive design studio focusing on sustainable architectural principles using bamboo as a primary material.</p>
               </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
+                  View Details
+                </Button>
+              </CardFooter>
             </Card>
             
             <Card className="overflow-hidden h-full flex flex-col">
@@ -110,6 +115,11 @@ const OurWorks: React.FC = () => {
                 <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Campus Bamboo Workshop</h3>
                 <p className="mt-2 text-sm text-green-400 line-clamp-3">Collaborative workshop with architecture students creating bamboo installations on university campus.</p>
               </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
+                  View Details
+                </Button>
+              </CardFooter>
             </Card>
             
             <Card className="overflow-hidden h-full flex flex-col">
@@ -128,7 +138,25 @@ const OurWorks: React.FC = () => {
                 <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Bamboo Furniture Design</h3>
                 <p className="mt-2 text-sm text-green-400 line-clamp-3">Workshop focused on designing and crafting functional bamboo furniture with sustainable techniques.</p>
               </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
+                  View Details
+                </Button>
+              </CardFooter>
             </Card>
+          </div>
+          
+          <div className="mt-12 text-center">
+            <Link href="/our-works">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-green-700 text-green-400 hover:bg-green-950/30"
+              >
+                View All Works
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
