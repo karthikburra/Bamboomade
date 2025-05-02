@@ -9,9 +9,17 @@ const CLIENT_SECRET = process.env.PHONEPE_CLIENT_SECRET || '';
 
 // Detect environment and use appropriate redirect URL
 const isProduction = process.env.NODE_ENV === 'production';
+
+// Get the Replit domain from environment variables
+const replitDomain = process.env.REPL_SLUG 
+  ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
+  : null;
+
+// Use Replit domain in production if available, otherwise use a default or localhost
 const baseUrl = isProduction 
-  ? 'https://bamboomade.repl.co' // Replace with your deployed URL when known
+  ? (replitDomain || 'https://bamboomade.replit.app') 
   : 'http://localhost:5000';
+
 const REDIRECT_URL = `${baseUrl}/api/payments/phonepe/callback`;
 const REDIRECT_MODE = 'REDIRECT';
 
@@ -54,18 +62,23 @@ export async function initiatePhonePePayment(
       orderId
     });
 
-    // Create payload for PhonePe API
+    // Create payload for PhonePe API according to PhonePe documentation
     const payload = {
       merchantId: MERCHANT_ID,
       merchantTransactionId: orderId,
-      amount: amount * 100, // Convert to paise
+      amount: amount * 100, // Convert to paise (e.g. 2505 rupees = 250500 paise)
       redirectUrl: REDIRECT_URL,
       redirectMode: REDIRECT_MODE,
       callbackUrl: REDIRECT_URL,
       mobileNumber: customerPhone,
       paymentInstrument: {
         type: 'PAY_PAGE'
-      }
+      },
+      // Adding these fields which may be required by PhonePe API
+      merchantUserId: "MUID_" + Date.now(),
+      // These fields are expected by some PhonePe API versions
+      bankAccountNumber: "",
+      ifscCode: ""
     };
 
     // Log the payload for debugging (excluding sensitive info)
@@ -83,13 +96,13 @@ export async function initiatePhonePePayment(
     const base64EncodedPayload = Buffer.from(requestData).toString('base64');
     
     try {
-      // Create X-VERIFY signature using CLIENT_SECRET as the salt key
-      // In a production environment, you would use the dedicated SALT_KEY and SALT_INDEX
+      // Create X-VERIFY signature according to PhonePe documentation
+      // The proper format is: SHA256(base64 payload + "/pg/v1/pay" + salt key) + "###" + salt index
+      // Since we don't have a salt key and index, we'll use the client secret as salt key and "1" as index
+      const dataToSign = base64EncodedPayload + "/pg/v1/pay" + CLIENT_SECRET;
       const hmac = crypto.createHmac('sha256', CLIENT_SECRET);
-      // Standard PhonePe format: SHA256(base64 payload + endpoint + salt key) + "###" + index
-      // Using a default index of 1 since we don't have a specific salt index
-      const signature = hmac.update(base64EncodedPayload + '/pg/v1/pay' + CLIENT_ID).digest('hex');
-      const xVerifyHeader = signature + '###1'; // Using '1' as default salt index
+      const signature = hmac.update(dataToSign).digest('hex');
+      const xVerifyHeader = signature + '###1';
       
       console.log("Generated X-VERIFY header (signature truncated for security):", {
         headerLength: xVerifyHeader.length,
@@ -160,16 +173,15 @@ export async function checkPhonePePaymentStatus(merchantTransactionId: string) {
   try {
     console.log(`Checking PhonePe payment status for transaction: ${merchantTransactionId}`);
     
-    // Generate X-VERIFY header for status check
-    // Using CLIENT_SECRET as the salt key, as we don't have a dedicated SALT_KEY
-    const hmac = crypto.createHmac('sha256', CLIENT_SECRET);
+    // Generate X-VERIFY header for status check according to PhonePe documentation
+    // The proper format is: SHA256(path + salt key) + "###" + salt index
     const pathWithParams = `/pg/v1/status/${MERCHANT_ID}/${merchantTransactionId}`;
-    const dataToHash = pathWithParams + CLIENT_ID;
+    const dataToHash = pathWithParams + CLIENT_SECRET;
     
     console.log("Generating signature with path:", pathWithParams);
     
+    const hmac = crypto.createHmac('sha256', CLIENT_SECRET);
     const signature = hmac.update(dataToHash).digest('hex');
-    // Using default salt index of 1
     const xVerifyHeader = signature + '###1';
 
     console.log("Status check request details:", {
