@@ -21,27 +21,22 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
     
     // Handle typing and deleting animation
     const timer = setTimeout(() => {
-      // If in deleting mode, remove characters one by one
+      // If in deleting mode, clear text instantly
       if (isDeleting) {
-        setDisplayText(currentPhrase.substring(0, displayText.length - 1));
-        setTypingSpeed(50); // Faster when deleting
-        
-        // When all text is deleted
-        if (displayText.length === 0) {
-          setIsDeleting(false);
-          setCurrentIndex((prevIndex) => (prevIndex + 1) % phrases.length);
-          setLoopCount(loopCount + 1);
-          setTypingSpeed(100); // Reset typing speed
-        }
+        setDisplayText(''); // Instantly clear the text
+        setIsDeleting(false);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % phrases.length);
+        setLoopCount(loopCount + 1);
+        setTypingSpeed(100); // Reset typing speed
       } 
       // If in typing mode, add characters one by one
       else {
         setDisplayText(currentPhrase.substring(0, displayText.length + 1));
-        setTypingSpeed(100); // Normal typing speed
+        setTypingSpeed(80); // Normal typing speed
         
         // When full text is displayed, pause before deleting
         if (displayText === currentPhrase) {
-          setTypingSpeed(2000); // Pause at the end of phrase
+          setTypingSpeed(1500); // Pause at the end of phrase
           setIsDeleting(true);
         }
       }
