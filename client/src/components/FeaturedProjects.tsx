@@ -68,7 +68,7 @@ const FeaturedProjects: React.FC = () => {
       description: "International collaboration with INBOO Kuala Lumpur on advanced bamboo construction techniques and cross-cultural design approaches.",
       imageUrl: "/img/projects/bamboo-model.png",
       duration: "10 day workshop",
-      date: "Jan 2024",
+      date: "Nov 2023",
       viewMoreLink: "/workshops/inboo-malaysia"
     },
     {

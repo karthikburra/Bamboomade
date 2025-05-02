@@ -40,7 +40,7 @@ const InternationalBambooFestWorkshop: React.FC = () => {
       id="international-bamboo-fest"
       title="International Bamboo Festival '23"
       location="Kuala Lumpur, Malaysia"
-      date="Jun 2023"
+      date="Nov 2023"
       duration="7 days workshop"
       description="At International Bamboo Festival, collaborating with Ewe Jin Low Better Bamboo Buildings to volunteer a bamboo workshop at Tadom Hill Resorts. During this time, we modelled sustainable bamboo structures, shared insights on eco-friendly architecture, and contributed in the worldwide push for sustainable living."
       highlights={highlights}
