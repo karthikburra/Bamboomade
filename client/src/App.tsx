@@ -20,6 +20,10 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentFailed from "@/pages/PaymentFailed";
 import OurWorks from "@/pages/OurWorks";
 import NotFound from "@/pages/not-found";
+// Workshop detail pages
+import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
+import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWorkshop";
+import ManitBhopalWorkshop from "@/pages/ManitBhopalWorkshop";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -37,6 +41,12 @@ function Router() {
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/payment-failed" component={PaymentFailed} />
+      
+      {/* Workshop Detail Pages */}
+      <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
+      <Route path="/workshops/international-bamboo-fest" component={InternationalBambooFestWorkshop} />
+      <Route path="/workshops/manit-bhopal" component={ManitBhopalWorkshop} />
+      
       <Route component={NotFound} />
     </Switch>
   );

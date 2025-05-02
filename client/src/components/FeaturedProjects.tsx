@@ -18,31 +18,31 @@ const FeaturedProjects: React.FC = () => {
   // Use authentic workshop data with locally stored images
   const workshops: Workshop[] = [
     {
-      id: "spa-delhi",
-      title: "SPA Delhi",
-      description: "Bamboo architecture workshop with students from the School of Planning and Architecture, Delhi focused on sustainable design principles.",
+      id: "bond-with-bamboo",
+      title: "Bond With Bamboo Workshop",
+      description: "Inclusive workshop at SPA Delhi with diverse participants sharing knowledge on bamboo in architectural curriculum and studios.",
       imageUrl: "/img/projects/bamboo-workshop-training.png",
       duration: "5 day workshop",
-      date: "Mar 2024",
-      viewMoreLink: "/our-works?category=education"
+      date: "Mar 2023",
+      viewMoreLink: "/workshops/bond-with-bamboo"
+    },
+    {
+      id: "international-bamboo-fest",
+      title: "International Bamboo Festival '23",
+      description: "Collaboration with Ewe Jin Low at Tadom Hill Resorts creating sustainable bamboo structures and connecting with passionate bamboo architects globally.",
+      imageUrl: "/img/workshops/bamboo-workshop-international.png",
+      duration: "7 day workshop",
+      date: "Jun 2023",
+      viewMoreLink: "/workshops/international-bamboo-fest"
     },
     {
       id: "manit-bhopal",
       title: "MANIT, Bhopal",
-      description: "Collaborative workshop at Maulana Azad National Institute of Technology focusing on integrating bamboo in contemporary architectural solutions.",
-      imageUrl: "/img/workshops/bamboo-workshop-international.png",
-      duration: "6 day workshop",
-      date: "Feb 2024",
-      viewMoreLink: "/our-works?category=education"
-    },
-    {
-      id: "inboo-malaysia",
-      title: "INBOO, KL, Malaysia",
-      description: "International collaboration with INBOO Kuala Lumpur on advanced bamboo construction techniques and cross-cultural design approaches.",
+      description: "National-level bamboo joinery and craft workshop with COA TRC and IIA Bhopal Centre, focusing on product design and detailed drawing skills.",
       imageUrl: "/img/projects/bamboo-model.png",
-      duration: "10 day workshop",
-      date: "Jan 2024",
-      viewMoreLink: "/our-works?category=international"
+      duration: "3 day workshop",
+      date: "Sept 2023",
+      viewMoreLink: "/workshops/manit-bhopal"
     },
     {
       id: "sirpur",
@@ -51,25 +51,25 @@ const FeaturedProjects: React.FC = () => {
       imageUrl: "/img/projects/bamboo-workshop-training.png",
       duration: "5 day workshop",
       date: "Dec 2023",
-      viewMoreLink: "/our-works?category=community"
+      viewMoreLink: "/workshops/sirpur"
     },
     {
-      id: "international",
-      title: "International Bamboo Design Workshop",
-      description: "International participants learning sustainable bamboo design techniques and collaborative project building.",
-      imageUrl: "/img/workshops/bamboo-workshop-international.png",
-      duration: "7 day workshop",
-      date: "Nov 2023",
-      viewMoreLink: "/our-works?category=education"
+      id: "spa-delhi",
+      title: "SPA Delhi",
+      description: "Bamboo architecture workshop with students from the School of Planning and Architecture, Delhi focused on sustainable design principles.",
+      imageUrl: "/img/projects/bamboo-workshop-training.png",
+      duration: "5 day workshop",
+      date: "Feb 2024",
+      viewMoreLink: "/workshops/spa-delhi"
     },
     {
-      id: "models",
-      title: "Architectural Model Making Workshop",
-      description: "Students creating innovative bamboo scale models to explore structural and spatial concepts.",
+      id: "inboo-malaysia",
+      title: "INBOO, KL, Malaysia",
+      description: "International collaboration with INBOO Kuala Lumpur on advanced bamboo construction techniques and cross-cultural design approaches.",
       imageUrl: "/img/projects/bamboo-model.png",
-      duration: "3 day workshop",
-      date: "Sept 2023",
-      viewMoreLink: "/our-works?category=architecture"
+      duration: "10 day workshop",
+      date: "Jan 2024",
+      viewMoreLink: "/workshops/inboo-malaysia"
     },
     {
       id: "lighting",
@@ -78,7 +78,7 @@ const FeaturedProjects: React.FC = () => {
       imageUrl: "/img/projects/bamboo-lamp.png",
       duration: "5 day workshop",
       date: "Feb 2023",
-      viewMoreLink: "/our-works?category=design"
+      viewMoreLink: "/workshops/bamboo-lighting"
     }
   ];
 
