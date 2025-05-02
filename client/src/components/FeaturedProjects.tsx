@@ -30,7 +30,7 @@ const FeaturedProjects: React.FC = () => {
       id: "sirpur-community",
       title: "BambooMade Community Training",
       description: "Creating awareness of bamboo through hands-on experience focusing on traditional weaving techniques and joineries, which will directly influence the way the material is used in the future.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      imageUrl: "/img/projects/community-training.png",
       duration: "5 day workshop",
       date: "Jan 2024",
       viewMoreLink: "/workshops/sirpur-community"
