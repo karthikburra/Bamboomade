@@ -48,7 +48,7 @@ const FeaturedProjects: React.FC = () => {
       id: "nit-bhopal",
       title: "NIT Bhopal",
       description: "A transformative national-level bamboo joinery workshop in partnership with COA TRC and IIA Bhopal Centre, focusing on product design and detailed drawing presentations.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      imageUrl: "/img/projects/nit-bhopal-structure.png",
       duration: "3 day workshop",
       date: "Sept 2023",
       viewMoreLink: "/workshops/nit-bhopal"
