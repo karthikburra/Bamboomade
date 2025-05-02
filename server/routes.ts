@@ -21,6 +21,17 @@ try {
   console.warn("Firebase Admin initialization failed:", error);
 }
 
+// Admin authentication middleware
+const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  // Check if the user is authenticated and is an admin
+  if (!req.session || !req.session.adminUser) {
+    return res.status(401).json({
+      message: "Unauthorized. Admin access required.",
+    });
+  }
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Helper middleware for handling zod validation errors
   const validateRequest = (schema: any) => {
@@ -107,6 +118,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to logout", error: err.message });
       }
       res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Admin authentication routes
+  app.post("/api/auth/admin-login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      
+      // Only allow specific email (info@bamboomade.in)
+      if (email.toLowerCase() !== "info@bamboomade.in") {
+        return res.status(401).json({ message: "Unauthorized access" });
+      }
+      
+      // In a real application, you would hash the password and check against the database
+      // For this demo, we'll use a hardcoded password
+      const adminPassword = "bamboomade2023"; // In production, use environment variables
+      
+      if (password !== adminPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Set admin user in session
+      req.session.adminUser = {
+        email,
+        isAdmin: true
+      };
+      
+      res.json({ 
+        message: "Admin login successful",
+        email,
+        isAdmin: true
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Login failed", error: (error as Error).message });
+    }
+  });
+  
+  app.post("/api/auth/admin-logout", (req, res) => {
+    if (req.session.adminUser) {
+      delete req.session.adminUser;
+    }
+    
+    res.json({ message: "Admin logged out successfully" });
+  });
+  
+  app.get("/api/auth/admin-check", (req, res) => {
+    if (!req.session.adminUser) {
+      return res.status(401).json({ message: "Not authenticated as admin" });
+    }
+    
+    res.json({
+      isAdmin: true,
+      email: req.session.adminUser.email
     });
   });
   
