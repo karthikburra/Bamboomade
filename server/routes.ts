@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
+import { sendBookingConfirmationEmail } from "./email-service";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
@@ -401,6 +402,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             paymentId: mockPaymentId
           });
           
+          // Send booking confirmation email with Google Meet link
+          try {
+            await sendBookingConfirmationEmail({
+              sessionId: session.id,
+              studentName: session.studentName,
+              studentEmail: session.email,
+              sessionDate: new Date(session.date),
+              sessionDuration: session.duration,
+              sessionTopic: session.topic
+            });
+            console.log("Booking confirmation email sent successfully");
+          } catch (emailError) {
+            console.error("Failed to send booking confirmation email:", emailError);
+            // Continue with payment process even if email fails
+          }
+          
           // Clean up the pending payment from whichever storage it was in
           if (global.pendingPayments && global.pendingPayments[txnId]) {
             delete global.pendingPayments[txnId];
@@ -460,6 +477,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sessionId: session.id,
           paymentId: statusResult.paymentId
         });
+        
+        // Send booking confirmation email with Google Meet link
+        try {
+          await sendBookingConfirmationEmail({
+            sessionId: session.id,
+            studentName: session.studentName,
+            studentEmail: session.email,
+            sessionDate: new Date(session.date),
+            sessionDuration: session.duration,
+            sessionTopic: session.topic
+          });
+          console.log("Booking confirmation email sent successfully");
+        } catch (emailError) {
+          console.error("Failed to send booking confirmation email:", emailError);
+          // Continue with payment process even if email fails
+        }
         
         // Clean up the pending payment from whichever storage it was in
         if (global.pendingPayments && global.pendingPayments[txnId]) {

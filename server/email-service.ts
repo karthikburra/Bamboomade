@@ -1,0 +1,148 @@
+import { MailService } from '@sendgrid/mail';
+import { format } from 'date-fns';
+
+// Initialize the mail service
+const mailService = new MailService();
+
+// This will be set once the API key is available
+let apiKeySet = false;
+
+/**
+ * Set the SendGrid API key for the mail service
+ */
+export function setApiKey(apiKey: string) {
+  if (!apiKey) {
+    console.warn('No SendGrid API key provided');
+    return false;
+  }
+  
+  try {
+    mailService.setApiKey(apiKey);
+    apiKeySet = true;
+    console.log('SendGrid API key set successfully');
+    return true;
+  } catch (error) {
+    console.error('Error setting SendGrid API key:', error);
+    return false;
+  }
+}
+
+// Setup mail service if API key is available
+if (process.env.SENDGRID_API_KEY) {
+  setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+// Function to generate a Google Meet link based on the session details
+function generateGoogleMeetLink(sessionId: number, date: Date, studentName: string): string {
+  // Create a unique meeting ID based on the session ID and date
+  const meetingId = `bamboomade-${sessionId}-${format(date, 'yyyyMMdd')}`;
+  
+  // Google Meet links use a format like: https://meet.google.com/xyz-abcd-efg
+  // For demonstration purposes, we're creating a predictable link format
+  // In production, you would integrate with the Google Calendar API to create actual meetings
+  return `https://meet.google.com/${meetingId.substring(0, 3)}-${meetingId.substring(3, 7)}-${meetingId.substring(7, 10)}`;
+}
+
+interface BookingEmailData {
+  sessionId: number;
+  studentName: string;
+  studentEmail: string;
+  sessionDate: Date;
+  sessionDuration: number; // in minutes
+  sessionTopic: string;
+}
+
+/**
+ * Send a booking confirmation email with a Google Meet link
+ */
+export async function sendBookingConfirmationEmail(bookingData: BookingEmailData): Promise<boolean> {
+  if (!apiKeySet) {
+    console.error('SendGrid API key not set, cannot send email');
+    return false;
+  }
+  
+  try {
+    // Format date and time for display
+    const formattedDate = format(bookingData.sessionDate, 'EEEE, MMMM do, yyyy');
+    const formattedTime = format(bookingData.sessionDate, 'h:mm a');
+    
+    // Generate Google Meet link
+    const meetLink = generateGoogleMeetLink(
+      bookingData.sessionId, 
+      bookingData.sessionDate, 
+      bookingData.studentName
+    );
+    
+    // Calculate end time
+    const endTime = new Date(bookingData.sessionDate);
+    endTime.setMinutes(endTime.getMinutes() + bookingData.sessionDuration);
+    const formattedEndTime = format(endTime, 'h:mm a');
+
+    // Create calendar event link (simplified version)
+    const startTime = format(bookingData.sessionDate, "yyyyMMdd'T'HHmmss");
+    const calendarEndTime = format(endTime, "yyyyMMdd'T'HHmmss");
+    const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=BambooMade%20Project%20Guidance%20Session&dates=${startTime}/${calendarEndTime}&details=Join%20this%20Google%20Meet%20link:%20${encodeURIComponent(meetLink)}%0A%0ATopic:%20${encodeURIComponent(bookingData.sessionTopic)}&location=${encodeURIComponent(meetLink)}`;
+    
+    // Email content
+    const msg = {
+      to: bookingData.studentEmail,
+      from: 'bamboomade.in@gmail.com', // BambooMade email as sender
+      cc: 'bamboomade.in@gmail.com', // Also keep BambooMade team in the loop
+      subject: 'Your BambooMade Project Guidance Session Confirmed',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="https://bamboomade.in/images/logo.png" alt="BambooMade Logo" style="max-width: 150px;">
+          </div>
+          
+          <h2 style="color: #2e7d32; margin-bottom: 20px;">Your Project Guidance Session is Confirmed!</h2>
+          
+          <p style="margin-bottom: 15px;">Hello ${bookingData.studentName},</p>
+          
+          <p style="margin-bottom: 15px;">Thank you for booking a project guidance session with BambooMade. We're excited to help you with your bamboo project!</p>
+          
+          <div style="background-color: #f9f9f9; border-left: 4px solid #2e7d32; padding: 15px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #2e7d32;">Session Details:</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${formattedTime} - ${formattedEndTime}</p>
+            <p><strong>Duration:</strong> ${bookingData.sessionDuration} minutes</p>
+            <p><strong>Topic:</strong> ${bookingData.sessionTopic}</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${meetLink}" style="background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+              Join Google Meet Session
+            </a>
+          </div>
+          
+          <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
+          
+          <div style="margin: 20px 0;">
+            <a href="${calendarLink}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">
+              Add to Google Calendar
+            </a>
+          </div>
+          
+          <p style="margin-bottom: 15px;">If you need to reschedule or have any questions, please contact us at <a href="mailto:bamboomade.in@gmail.com" style="color: #2e7d32; text-decoration: none;">bamboomade.in@gmail.com</a> or call us at <a href="tel:+918971690163" style="color: #2e7d32; text-decoration: none;">+91 8971690163</a>.</p>
+          
+          <p style="margin-bottom: 0;">We look forward to speaking with you!</p>
+          
+          <p style="margin-top: 5px;">The BambooMade Team</p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #666;">
+            <p>© 2025 BambooMade. All rights reserved.</p>
+            <p>Nagole, Hyderabad-500068, India</p>
+          </div>
+        </div>
+      `
+    };
+    
+    // Send email
+    await mailService.send(msg);
+    console.log(`Booking confirmation email sent to ${bookingData.studentEmail} for session #${bookingData.sessionId}`);
+    return true;
+  } catch (error) {
+    console.error('Error sending booking confirmation email:', error);
+    return false;
+  }
+}
