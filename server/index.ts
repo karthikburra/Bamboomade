@@ -38,6 +38,18 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Initialize SendGrid email service if API key is available
+  if (process.env.SENDGRID_API_KEY) {
+    const success = setSendGridApiKey(process.env.SENDGRID_API_KEY);
+    if (success) {
+      log("SendGrid email service initialized successfully");
+    } else {
+      log("Failed to initialize SendGrid email service");
+    }
+  } else {
+    log("SendGrid API key not found, email functionality will be disabled");
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
