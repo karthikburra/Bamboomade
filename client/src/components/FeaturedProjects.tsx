@@ -21,7 +21,7 @@ const FeaturedProjects: React.FC = () => {
       id: "bond-with-bamboo",
       title: "Bond With Bamboo Workshop",
       description: "Inclusive workshop at SPA Delhi with diverse participants sharing knowledge on bamboo in architectural curriculum and studios.",
-      imageUrl: "/img/projects/spa-delhi.png",
+      imageUrl: "/img/workshops/spa-delhi.png",
       duration: "5 day workshop",
       date: "Mar 2023",
       viewMoreLink: "/workshops/bond-with-bamboo"
@@ -97,11 +97,11 @@ const FeaturedProjects: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {workshops.slice(0, 4).map((workshop) => (
             <Card key={workshop.id} className="overflow-hidden h-full flex flex-col">
-              <div className="aspect-video w-full overflow-hidden bg-black/5">
+              <div className="aspect-video w-full overflow-hidden bg-black/5 flex items-center justify-center">
                 <img
                   src={workshop.imageUrl}
                   alt={workshop.title}
-                  className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
               </div>
               <CardContent className="p-4 flex-grow">

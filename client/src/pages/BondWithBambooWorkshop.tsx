@@ -19,7 +19,7 @@ const BondWithBambooWorkshop: React.FC = () => {
 
   const images: WorkshopImage[] = [
     {
-      url: "/img/projects/spa-delhi.png",
+      url: "/img/workshops/spa-delhi.png",
       alt: "Bamboo pendant lamp with elegant strips design",
       caption: "Bamboo pendant lamp created during the SPA Delhi workshop"
     },

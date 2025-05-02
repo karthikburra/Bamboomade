@@ -100,11 +100,11 @@ const WorkshopDetail: React.FC<WorkshopDetailProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {images.map((image, index) => (
               <div key={index} className="flex flex-col">
-                <div className="aspect-video overflow-hidden rounded-lg bg-black/5">
+                <div className="aspect-video overflow-hidden rounded-lg bg-black/5 flex items-center justify-center">
                   <img 
                     src={image.url} 
                     alt={image.alt} 
-                    className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 {image.caption && (
