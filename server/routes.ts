@@ -740,6 +740,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin API routes
+  app.get("/api/admin/project-guidance", isAdmin, async (req, res) => {
+    try {
+      const sessions = await storage.getAllProjectGuidances();
+      res.json(sessions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project guidance sessions", error: (error as Error).message });
+    }
+  });
+  
+  app.get("/api/admin/ai-training", isAdmin, async (req, res) => {
+    try {
+      const trainingData = await storage.getAllAiTrainingData();
+      res.json(trainingData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch AI training data", error: (error as Error).message });
+    }
+  });
+  
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      // Get all users but remove passwords from the response
+      const users = await Promise.all(
+        Array.from(storage.users.values()).map(async (user) => {
+          const { password, ...userWithoutPassword } = user;
+          
+          // Get token purchases for each user
+          const tokenPurchases = await storage.getTokenPurchasesByUserId(user.id);
+          
+          return {
+            ...userWithoutPassword,
+            tokenPurchaseCount: tokenPurchases.length,
+            totalPurchasedTokens: tokenPurchases.reduce((total, purchase) => total + purchase.tokens, 0)
+          };
+        })
+      );
+      
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users", error: (error as Error).message });
+    }
+  });
+  
+  app.post("/api/admin/ai-training", isAdmin, validateRequest(insertAiTrainingDataSchema), async (req, res) => {
+    try {
+      const trainingData = await storage.createAiTrainingData(req.body);
+      res.status(201).json(trainingData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create AI training data", error: (error as Error).message });
+    }
+  });
+
   // WhatsApp bot routes (admin only)
   app.post("/api/whatsapp/init", async (req, res) => {
     try {

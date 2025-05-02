@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -35,7 +35,7 @@ import AdminDashboardComponent from "@/components/AdminDashboard";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("sessions");
 
@@ -48,7 +48,7 @@ const AdminDashboard = () => {
         return response.json();
       } catch (error) {
         // If not authenticated, redirect to admin login
-        navigate("/admin-login");
+        setLocation("/admin-login");
         throw error;
       }
     }
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
         title: "Logged out",
         description: "You have been logged out successfully",
       });
-      navigate("/admin-login");
+      setLocation("/admin-login");
     } catch (error) {
       console.error("Logout error:", error);
       toast({

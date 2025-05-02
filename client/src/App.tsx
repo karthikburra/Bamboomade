@@ -13,6 +13,8 @@ import ProjectGuidance from "@/pages/ProjectGuidance";
 import AIChat from "@/pages/AIChat";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
 import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentFailed from "@/pages/PaymentFailed";
@@ -29,6 +31,8 @@ function Router() {
       <Route path="/project-guidance" component={ProjectGuidance} />
       <Route path="/ai-chat" component={AIChat} />
       <Route path="/admin" component={Admin} />
+      <Route path="/admin-login" component={AdminLogin} />
+      <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/login" component={Login} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
       <Route path="/payment-success" component={PaymentSuccess} />
