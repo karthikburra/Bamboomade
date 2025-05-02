@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Award,
   Building2,
+  Calendar,
   Construction,
   Filter,
   Users,
@@ -11,8 +12,11 @@ import {
 } from "lucide-react";
 import { 
   Card, 
-  CardContent 
+  CardContent,
+  CardFooter 
 } from "@/components/ui/card";
+import { Link } from "wouter";
+import { ArrowRight } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -20,23 +24,15 @@ import WhatsAppContact from "@/components/WhatsAppContact";
 import { Project } from "@shared/schema";
 
 const OurWorks: React.FC = () => {
-  const [filter, setFilter] = React.useState<string>("all");
+  // Set filter to "all" by default, since we're not showing filter buttons anymore
+  const filter = "all";
   
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
-
-  const filteredProjects = filter === "all" 
-    ? projects
-    : projects.filter(project => project.category === filter);
-
-  const categories = [
-    { id: "all", label: "All Works", icon: <Award size={16} className="mr-2" /> },
-    { id: "architecture", label: "Architecture", icon: <Building2 size={16} className="mr-2" /> },
-    { id: "design", label: "Design", icon: <Construction size={16} className="mr-2" /> },
-    { id: "workshop", label: "Workshops", icon: <Users size={16} className="mr-2" /> },
-    { id: "craft", label: "Art & Craft", icon: <Workflow size={16} className="mr-2" /> },
-  ];
+  
+  // Display all projects since we're not filtering anymore
+  const filteredProjects = projects;
 
   return (
     <>
@@ -44,7 +40,100 @@ const OurWorks: React.FC = () => {
         <title>Our Works | BambooMade</title>
       </Helmet>
 
-      <section className="bg-gradient-to-b from-green-950/40 to-background pt-16 pb-12">
+      <section className="py-16 bg-gradient-to-b from-green-950/40 to-background">
+        <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-green-300 sm:text-4xl">
+              Our Experience
+            </h2>
+            <p className="mt-4 text-lg text-green-400 max-w-2xl mx-auto">
+              "Through our successfully conducted workshops, we have ignited creativity, empowered participants, and built a strong foundation for Bamboo centric design."
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* Workshop cards will be fetched from API in the future */}
+            <Card className="overflow-hidden h-full flex flex-col">
+              <div className="aspect-video w-full overflow-hidden">
+                <img
+                  src="/attached_assets/IMG-20230920-WA0054 2.png"
+                  alt="Bamboo Joinery Workshop"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <CardContent className="p-4 flex-grow">
+                <div className="flex items-center text-sm text-green-400 mb-2">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>2 days | September 2023</span>
+                </div>
+                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Bamboo Joinery Workshop</h3>
+                <p className="mt-2 text-sm text-green-400 line-clamp-3">Hands-on workshop teaching traditional and modern bamboo joinery techniques for architectural applications.</p>
+              </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
+                  View Details
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card className="overflow-hidden h-full flex flex-col">
+              <div className="aspect-video w-full overflow-hidden">
+                <img
+                  src="/attached_assets/IMG-20230920-WA0061 2.png"
+                  alt="Sustainable Design Studio"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <CardContent className="p-4 flex-grow">
+                <div className="flex items-center text-sm text-green-400 mb-2">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>5 days | August 2023</span>
+                </div>
+                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Sustainable Design Studio</h3>
+                <p className="mt-2 text-sm text-green-400 line-clamp-3">Immersive design studio focusing on sustainable architectural principles using bamboo as a primary material.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden h-full flex flex-col">
+              <div className="aspect-video w-full overflow-hidden">
+                <img
+                  src="/attached_assets/IMG_20240128_163057719 1.png"
+                  alt="Campus Bamboo Workshop"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <CardContent className="p-4 flex-grow">
+                <div className="flex items-center text-sm text-green-400 mb-2">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>3 days | January 2024</span>
+                </div>
+                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Campus Bamboo Workshop</h3>
+                <p className="mt-2 text-sm text-green-400 line-clamp-3">Collaborative workshop with architecture students creating bamboo installations on university campus.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="overflow-hidden h-full flex flex-col">
+              <div className="aspect-video w-full overflow-hidden">
+                <img
+                  src="/attached_assets/IMG-3071 1 (1).png"
+                  alt="Bamboo Furniture Design"
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <CardContent className="p-4 flex-grow">
+                <div className="flex items-center text-sm text-green-400 mb-2">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  <span>4 days | December 2023</span>
+                </div>
+                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Bamboo Furniture Design</h3>
+                <p className="mt-2 text-sm text-green-400 line-clamp-3">Workshop focused on designing and crafting functional bamboo furniture with sustainable techniques.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+      
+      <section className="py-16 bg-background">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold tracking-tight text-green-300 mb-4">
@@ -55,33 +144,13 @@ const OurWorks: React.FC = () => {
             </p>
           </div>
           
-          <div className="mb-10 flex justify-center">
-            <div className="inline-flex flex-wrap gap-2 justify-center">
-              {categories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant={filter === category.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilter(category.id)}
-                  className={filter === category.id 
-                    ? "bg-green-700 hover:bg-green-600 text-white" 
-                    : "border-green-700 text-green-400 hover:bg-green-950/30"
-                  }
-                >
-                  {category.icon}
-                  {category.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-          
           {isLoading ? (
             <div className="flex items-center justify-center min-h-[300px]">
               <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full" />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects.map((project) => (
+              {projects.map((project) => (
                 <Card key={project.id} className="overflow-hidden border-green-900/30 bg-green-950/20 hover:bg-green-950/30 transition-colors">
                   <div className="aspect-video w-full overflow-hidden">
                     <img
@@ -102,18 +171,10 @@ const OurWorks: React.FC = () => {
             </div>
           )}
           
-          {filteredProjects.length === 0 && !isLoading && (
+          {projects.length === 0 && !isLoading && (
             <div className="text-center py-16">
-              <h3 className="text-xl font-medium text-green-300 mb-4">No projects found for this category</h3>
-              <p className="text-green-400 mb-6">Try selecting a different category or check back later</p>
-              <Button 
-                variant="outline" 
-                onClick={() => setFilter("all")}
-                className="border-green-700 text-green-400 hover:bg-green-950/30"
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                Show all projects
-              </Button>
+              <h3 className="text-xl font-medium text-green-300 mb-4">No projects found</h3>
+              <p className="text-green-400 mb-6">Check back later for our upcoming projects</p>
             </div>
           )}
         </div>
