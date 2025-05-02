@@ -21,7 +21,7 @@ const FeaturedProjects: React.FC = () => {
       id: "bond-with-bamboo",
       title: "Bond With Bamboo Workshop",
       description: "Inclusive workshop at SPA Delhi with diverse participants sharing knowledge on bamboo in architectural curriculum and studios.",
-      imageUrl: "/img/workshops/spa-delhi.png",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "5 day workshop",
       date: "Mar 2023",
       viewMoreLink: "/workshops/bond-with-bamboo"
@@ -30,7 +30,7 @@ const FeaturedProjects: React.FC = () => {
       id: "international-bamboo-fest",
       title: "International Bamboo Festival '23",
       description: "Collaboration with Ewe Jin Low at Tadom Hill Resorts creating sustainable bamboo structures and connecting with passionate bamboo architects globally.",
-      imageUrl: "/img/projects/bamboo-model.png",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "7 day workshop",
       date: "Nov 2023",
       viewMoreLink: "/workshops/international-bamboo-fest"
@@ -39,7 +39,7 @@ const FeaturedProjects: React.FC = () => {
       id: "manit-bhopal",
       title: "MANIT, Bhopal",
       description: "National-level bamboo joinery and craft workshop with COA TRC and IIA Bhopal Centre, focusing on product design and detailed drawing skills.",
-      imageUrl: "/img/projects/bamboo-model.png",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "3 day workshop",
       date: "Sept 2023",
       viewMoreLink: "/workshops/manit-bhopal"
@@ -48,37 +48,10 @@ const FeaturedProjects: React.FC = () => {
       id: "sirpur",
       title: "Sirpur Special Area Development Authority",
       description: "Community training focused on bamboo crafting skills and sustainable building techniques for local villagers.",
-      imageUrl: "/img/projects/bamboo-workshop-training.png",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "5 day workshop",
       date: "Dec 2023",
       viewMoreLink: "/workshops/sirpur"
-    },
-    {
-      id: "spa-delhi",
-      title: "SPA Delhi",
-      description: "Bamboo architecture workshop with students from the School of Planning and Architecture, Delhi focused on sustainable design principles.",
-      imageUrl: "/img/projects/bamboo-workshop-training.png",
-      duration: "5 day workshop",
-      date: "Feb 2024",
-      viewMoreLink: "/workshops/spa-delhi"
-    },
-    {
-      id: "inboo-malaysia",
-      title: "INBOO, KL, Malaysia",
-      description: "International collaboration with INBOO Kuala Lumpur on advanced bamboo construction techniques and cross-cultural design approaches.",
-      imageUrl: "/img/projects/bamboo-model.png",
-      duration: "10 day workshop",
-      date: "Nov 2023",
-      viewMoreLink: "/workshops/inboo-malaysia"
-    },
-    {
-      id: "lighting",
-      title: "Bamboo Lighting Design Workshop",
-      description: "Participants exploring the art of crafting elegant and sustainable bamboo lighting solutions.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
-      duration: "5 day workshop",
-      date: "Feb 2023",
-      viewMoreLink: "/workshops/bamboo-lighting"
     }
   ];
 
@@ -95,7 +68,7 @@ const FeaturedProjects: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {workshops.slice(0, 4).map((workshop) => (
+          {workshops.map((workshop) => (
             <Card key={workshop.id} className="overflow-hidden h-full flex flex-col">
               <div className="aspect-video w-full overflow-hidden bg-black/5 flex items-center justify-center">
                 <img
