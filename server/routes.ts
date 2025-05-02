@@ -8,6 +8,7 @@ import { sendBookingConfirmationEmail } from "./email-service";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
+import bcrypt from "bcrypt";
 
 // Import WhatsApp bot
 import whatsappBot from "./whatsapp-bot.js";
@@ -59,7 +60,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User with this email already exists" });
       }
       
-      const user = await storage.createUser(req.body);
+      // Hash the password before storing
+      const userData = { ...req.body };
+      userData.password = await bcrypt.hash(userData.password, 10);
+      
+      // Check if this is the admin email
+      const isAdminUser = userData.email.toLowerCase() === "info@bamboomade.in";
+      if (isAdminUser) {
+        userData.role = "admin";
+      }
+      
+      const user = await storage.createUser(userData);
+      
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
@@ -77,12 +89,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const user = await storage.getUserByEmail(email);
-      if (!user || user.password !== password) {
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // For existing users migrating to bcrypt, we temporarily check both
+      let isValidPassword = false;
+      
+      // First try bcrypt (for users created/updated with bcrypt)
+      try {
+        isValidPassword = await bcrypt.compare(password, user.password);
+      } catch (e) {
+        // If bcrypt fails (likely not a bcrypt hash), fall back to legacy check
+        isValidPassword = user.password === password;
+        
+        // If password matches with legacy check, update to bcrypt
+        if (isValidPassword) {
+          // Update password to bcrypt hash for future logins
+          user.password = await bcrypt.hash(password, 10);
+        }
+      }
+      
+      if (!isValidPassword) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
       // Set user in session (simplified auth)
       req.session.userId = user.id;
+      
+      // If user is admin, also set admin session
+      if (user.isAdmin) {
+        req.session.adminUser = {
+          email: user.email,
+          isAdmin: true
+        };
+      }
       
       // Don't return password in response
       const { password: _, ...userWithoutPassword } = user;
@@ -135,15 +176,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized access" });
       }
       
-      // In a real application, you would hash the password and check against the database
-      // For this demo, we'll use a hardcoded password
-      const adminPassword = "bamboomade2023"; // In production, use environment variables
+      // Find user or create one if it doesn't exist
+      let user = await storage.getUserByEmail(email.toLowerCase());
       
-      if (password !== adminPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      if (!user) {
+        // Create admin user if doesn't exist
+        user = await storage.createUser({
+          username: "admin",
+          password: await bcrypt.hash(password, 10),
+          email: email.toLowerCase(),
+          role: "admin",
+        });
+      } else {
+        // For existing users, we use hardcoded password for the demo
+        // In a real application, you would use bcrypt.compare with stored hash
+        const adminPassword = "bamboomade2023"; // In production, use environment variables
+        
+        if (password !== adminPassword) {
+          return res.status(401).json({ message: "Invalid credentials" });
+        }
+        
+        // Update password to bcrypt hash for future logins
+        user.password = await bcrypt.hash(password, 10);
+        
+        // Ensure user has admin flag
+        if (!user.isAdmin) {
+          user = await storage.updateUserAdminStatus(user.id, true);
+        }
       }
       
-      // Set admin user in session
+      // Set user and admin flag in session
+      req.session.userId = user.id;
       req.session.adminUser = {
         email,
         isAdmin: true
@@ -199,14 +262,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = await storage.getUserByEmail(email);
       
       if (!user) {
+        // Check if this is the admin email
+        const isAdminUser = email.toLowerCase() === "info@bamboomade.in";
+        
         // Create a new user
         user = await storage.createUser({
           email,
           username: name || email.split('@')[0],
           password: '', // Not used with Google auth
-          isAdmin: false,
-          tokens: 10, // Start with some free tokens
+          role: isAdminUser ? "admin" : "user",
         });
+        
+        // If this is an admin user, make sure the isAdmin flag is set
+        if (isAdminUser && !user.isAdmin) {
+          user = await storage.updateUserAdminStatus(user.id, true);
+        }
       }
       
       // Set user in session
@@ -707,6 +777,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin user management routes
+  app.get("/api/admin/users", isAdmin, async (req, res) => {
+    try {
+      // Get all users for admin management
+      // Note: In a real app with many users, you would implement pagination
+      const users = Array.from((storage as any).users.values()).map((user: User) => {
+        // Don't return password in response
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users", error: (error as Error).message });
+    }
+  });
+  
+  app.patch("/api/admin/users/:userId", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId, 10);
+      const { isAdmin: setAdminStatus } = req.body;
+      
+      if (typeof setAdminStatus !== 'boolean') {
+        return res.status(400).json({ message: "isAdmin must be a boolean value" });
+      }
+      
+      const updatedUser = await storage.updateUserAdminStatus(userId, setAdminStatus);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update user admin status", error: (error as Error).message });
+    }
+  });
+  
   // Token purchase routes
   app.post("/api/tokens/purchase", validateRequest(insertTokenPurchaseSchema), async (req, res) => {
     try {
