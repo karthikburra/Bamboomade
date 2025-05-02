@@ -66,7 +66,7 @@ const FeaturedProjects: React.FC = () => {
       id: "woxsen-university",
       title: "Woxsen University",
       description: "Workshop for Interior Design department students exploring the fusion of bamboo with diverse materials to create exceptional interior products with emphasis on branding.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      imageUrl: "/img/projects/woxsen-university-table.png",
       duration: "3 day workshop",
       date: "Sept 2022",
       viewMoreLink: "/workshops/woxsen-university"
