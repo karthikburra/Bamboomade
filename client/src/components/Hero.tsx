@@ -104,7 +104,6 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
     <div className="relative overflow-hidden">
       <span className="block">
         {renderHighlightedText()}
-        <span className="animate-pulse">|</span>
       </span>
     </div>
   );
