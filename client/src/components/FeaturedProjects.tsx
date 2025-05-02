@@ -18,10 +18,19 @@ const FeaturedProjects: React.FC = () => {
   // Use authentic workshop data with locally stored images
   const workshops: Workshop[] = [
     {
+      id: "icfai-architecture",
+      title: "ICFAI School of Architecture",
+      description: "An impactful bamboo workshop where students explored bamboo to create exceptional products, empowering them to craft contemporary masterpieces showcasing the finished products.",
+      imageUrl: "/img/projects/icfai-architecture.jpg",
+      duration: "3 day workshop",
+      date: "Nov 2024",
+      viewMoreLink: "/workshops/icfai-architecture"
+    },
+    {
       id: "sirpur-community",
       title: "BambooMade Community Training",
       description: "Creating awareness of bamboo through hands-on experience focusing on traditional weaving techniques and joineries, which will directly influence the way the material is used in the future.",
-      imageUrl: "/img/projects/community-training.png?v=1",
+      imageUrl: "/img/projects/community-training.png",
       duration: "5 day workshop",
       date: "Jan 2024",
       viewMoreLink: "/workshops/sirpur-community"
