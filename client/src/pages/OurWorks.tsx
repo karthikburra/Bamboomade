@@ -86,7 +86,7 @@ const OurWorks: React.FC = () => {
       id: "spa-delhi",
       title: "SPA Delhi",
       description: "An inclusive workshop welcoming diverse participants and sharing knowledge with students, professionals, researchers, and professors to integrate bamboo into architectural curriculum.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      imageUrl: "/img/projects/spa-delhi-umbrella.jpg",
       duration: "5 day workshop",
       date: "Feb 2023",
       viewMoreLink: "/workshops/spa-delhi"
