@@ -68,7 +68,7 @@ const OurWorks: React.FC = () => {
       id: "international-bamboo-fest",
       title: "International Bamboo Festival",
       description: "Volunteering with Ewe Jin Low at Tadom Hill Resorts in Malaysia, modeling sustainable bamboo structures and contributing to the worldwide push for sustainable living.",
-      imageUrl: "/img/projects/bamboo-lamp.jpg",
+      imageUrl: "/img/projects/bamboo-model-festival.png",
       duration: "2 day festival",
       date: "Nov 2023",
       viewMoreLink: "/workshops/international-bamboo-fest"
