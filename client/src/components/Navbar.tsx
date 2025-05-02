@@ -54,8 +54,7 @@ const Navbar: React.FC = () => {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/our-works", label: "Our Works" },
-    { href: "/our-works", label: "Our Experience" }, // Points to the same page as "Our Works"
+    { href: "/our-works", label: "Our Experience" }, // Keep only Our Experience pointing to our-works page
     { href: "/project-guidance", label: "Project Guidance" },
     { href: "/contact", label: "Contact" },
   ];
