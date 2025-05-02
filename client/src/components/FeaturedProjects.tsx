@@ -18,12 +18,39 @@ const FeaturedProjects: React.FC = () => {
   // Use authentic workshop data with locally stored images
   const workshops: Workshop[] = [
     {
+      id: "spa-delhi",
+      title: "SPA Delhi",
+      description: "Bamboo architecture workshop with students from the School of Planning and Architecture, Delhi focused on sustainable design principles.",
+      imageUrl: "/img/projects/bamboo-workshop-training.png",
+      duration: "5 day workshop",
+      date: "Mar 2024",
+      viewMoreLink: "/our-works?category=education"
+    },
+    {
+      id: "manit-bhopal",
+      title: "MANIT, Bhopal",
+      description: "Collaborative workshop at Maulana Azad National Institute of Technology focusing on integrating bamboo in contemporary architectural solutions.",
+      imageUrl: "/img/workshops/bamboo-workshop-international.png",
+      duration: "6 day workshop",
+      date: "Feb 2024",
+      viewMoreLink: "/our-works?category=education"
+    },
+    {
+      id: "inboo-malaysia",
+      title: "INBOO, KL, Malaysia",
+      description: "International collaboration with INBOO Kuala Lumpur on advanced bamboo construction techniques and cross-cultural design approaches.",
+      imageUrl: "/img/projects/bamboo-model.png",
+      duration: "10 day workshop",
+      date: "Jan 2024",
+      viewMoreLink: "/our-works?category=international"
+    },
+    {
       id: "sirpur",
       title: "Sirpur Special Area Development Authority",
       description: "Community training focused on bamboo crafting skills and sustainable building techniques for local villagers.",
       imageUrl: "/img/projects/bamboo-workshop-training.png",
       duration: "5 day workshop",
-      date: "Jan 2024",
+      date: "Dec 2023",
       viewMoreLink: "/our-works?category=community"
     },
     {
@@ -68,7 +95,7 @@ const FeaturedProjects: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {workshops.map((workshop) => (
+          {workshops.slice(0, 4).map((workshop) => (
             <Card key={workshop.id} className="overflow-hidden h-full flex flex-col">
               <div className="aspect-video w-full overflow-hidden">
                 <img

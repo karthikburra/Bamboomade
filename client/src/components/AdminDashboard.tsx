@@ -333,7 +333,7 @@ const AdminDashboard: React.FC = () => {
                               </TableCell>
                               <TableCell>
                                 {session.paymentId ? (
-                                  <Badge variant="success" className="bg-green-100 text-green-800 hover:bg-green-100">
+                                  <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">
                                     <CheckCircle className="h-3 w-3 mr-1" />
                                     Paid
                                   </Badge>
