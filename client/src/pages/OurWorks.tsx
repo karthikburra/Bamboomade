@@ -161,53 +161,6 @@ const OurWorks: React.FC = () => {
         </div>
       </section>
       
-      <section className="py-16 bg-background">
-        <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold tracking-tight text-green-300 mb-4">
-              Our Bamboo Works
-            </h1>
-            <p className="text-xl text-green-400 max-w-2xl mx-auto">
-              Explore our portfolio of architectural designs, workshops, and bamboo craftwork that showcase innovation and sustainability.
-            </p>
-          </div>
-          
-          {isLoading ? (
-            <div className="flex items-center justify-center min-h-[300px]">
-              <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {projects.map((project) => (
-                <Card key={project.id} className="overflow-hidden border-green-900/30 bg-green-950/20 hover:bg-green-950/30 transition-colors">
-                  <div className="aspect-video w-full overflow-hidden">
-                    <img
-                      src={project.imageUrl}
-                      alt={project.title}
-                      className="h-full w-full object-cover transition-transform hover:scale-105 duration-500"
-                    />
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold text-green-300 mb-2">{project.title}</h3>
-                    <p className="text-green-400 mb-4">{project.description}</p>
-                    <span className="inline-flex items-center rounded-full bg-green-950 px-2.5 py-0.5 text-xs font-medium text-green-300">
-                      {project.category.charAt(0).toUpperCase() + project.category.slice(1)}
-                    </span>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-          
-          {projects.length === 0 && !isLoading && (
-            <div className="text-center py-16">
-              <h3 className="text-xl font-medium text-green-300 mb-4">No projects found</h3>
-              <p className="text-green-400 mb-6">Check back later for our upcoming projects</p>
-            </div>
-          )}
-        </div>
-      </section>
-      
       <section className="py-16 bg-gradient-to-b from-background to-green-950/30">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
