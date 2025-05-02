@@ -40,38 +40,37 @@ const OurWorks: React.FC = () => {
         <title>Our Works | BambooMade</title>
       </Helmet>
 
-      <section className="py-16 bg-gradient-to-b from-green-950/40 to-background">
+      <section className="py-16 bg-gradient-to-b from-background to-green-50/30 dark:to-green-950/30">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-green-300 sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
               Our Experience
             </h2>
-            <p className="mt-4 text-lg text-green-400 max-w-2xl mx-auto">
+            <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
               "Through our successfully conducted workshops, we have ignited creativity, empowered participants, and built a strong foundation for Bamboo centric design."
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {/* Workshop cards will be fetched from API in the future */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="overflow-hidden h-full flex flex-col">
               <div className="aspect-video w-full overflow-hidden">
                 <img
-                  src="/attached_assets/IMG-20230920-WA0054 2.png"
-                  alt="Bamboo Joinery Workshop"
+                  src="/attached_assets/image 87 (1).png"
+                  alt="Sirpur Special Area Development Authority"
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
               </div>
               <CardContent className="p-4 flex-grow">
-                <div className="flex items-center text-sm text-green-400 mb-2">
+                <div className="flex items-center text-sm text-green-600 dark:text-green-400 mb-2">
                   <Calendar className="h-4 w-4 mr-1" />
                   <span>2 days | September 2023</span>
                 </div>
-                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Sirpur Special Area Development Authority</h3>
-                <p className="mt-2 text-sm text-green-400 line-clamp-3">Collaboration with Sirpur Special Area Development Authority on sustainable bamboo-based architectural development projects.</p>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">Sirpur Special Area Development Authority</h3>
+                <p className="mt-2 text-sm text-green-600 dark:text-green-400 line-clamp-3">Collaboration with Sirpur Special Area Development Authority on sustainable bamboo-based architectural development projects.</p>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
-                  View Details
+                <Button variant="outline" size="sm" className="w-full border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
+                  View More
                 </Button>
               </CardFooter>
             </Card>
@@ -85,16 +84,16 @@ const OurWorks: React.FC = () => {
                 />
               </div>
               <CardContent className="p-4 flex-grow">
-                <div className="flex items-center text-sm text-green-400 mb-2">
+                <div className="flex items-center text-sm text-green-600 dark:text-green-400 mb-2">
                   <Calendar className="h-4 w-4 mr-1" />
                   <span>5 days | August 2023</span>
                 </div>
-                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Sustainable Design Studio</h3>
-                <p className="mt-2 text-sm text-green-400 line-clamp-3">Immersive design studio focusing on sustainable architectural principles using bamboo as a primary material.</p>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">Sustainable Design Studio</h3>
+                <p className="mt-2 text-sm text-green-600 dark:text-green-400 line-clamp-3">Immersive design studio focusing on sustainable architectural principles using bamboo as a primary material.</p>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
-                  View Details
+                <Button variant="outline" size="sm" className="w-full border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
+                  View More
                 </Button>
               </CardFooter>
             </Card>
@@ -108,16 +107,16 @@ const OurWorks: React.FC = () => {
                 />
               </div>
               <CardContent className="p-4 flex-grow">
-                <div className="flex items-center text-sm text-green-400 mb-2">
+                <div className="flex items-center text-sm text-green-600 dark:text-green-400 mb-2">
                   <Calendar className="h-4 w-4 mr-1" />
                   <span>3 days | January 2024</span>
                 </div>
-                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Campus Bamboo Workshop</h3>
-                <p className="mt-2 text-sm text-green-400 line-clamp-3">Collaborative workshop with architecture students creating bamboo installations on university campus.</p>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">Campus Bamboo Workshop</h3>
+                <p className="mt-2 text-sm text-green-600 dark:text-green-400 line-clamp-3">Collaborative workshop with architecture students creating bamboo installations on university campus.</p>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
-                  View Details
+                <Button variant="outline" size="sm" className="w-full border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
+                  View More
                 </Button>
               </CardFooter>
             </Card>
@@ -131,28 +130,24 @@ const OurWorks: React.FC = () => {
                 />
               </div>
               <CardContent className="p-4 flex-grow">
-                <div className="flex items-center text-sm text-green-400 mb-2">
+                <div className="flex items-center text-sm text-green-600 dark:text-green-400 mb-2">
                   <Calendar className="h-4 w-4 mr-1" />
                   <span>4 days | December 2023</span>
                 </div>
-                <h3 className="text-lg font-semibold text-green-300 line-clamp-2">Bamboo Furniture Design</h3>
-                <p className="mt-2 text-sm text-green-400 line-clamp-3">Workshop focused on designing and crafting functional bamboo furniture with sustainable techniques.</p>
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">Bamboo Furniture Design</h3>
+                <p className="mt-2 text-sm text-green-600 dark:text-green-400 line-clamp-3">Workshop focused on designing and crafting functional bamboo furniture with sustainable techniques.</p>
               </CardContent>
               <CardFooter className="p-4 pt-0">
-                <Button variant="outline" size="sm" className="w-full border-green-700 text-green-400 hover:bg-green-950/30">
-                  View Details
+                <Button variant="outline" size="sm" className="w-full border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
+                  View More
                 </Button>
               </CardFooter>
             </Card>
           </div>
-          
+
           <div className="mt-12 text-center">
             <Link href="/our-works">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-green-700 text-green-400 hover:bg-green-950/30"
-              >
+              <Button variant="outline" size="lg" className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
                 View All Works
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
