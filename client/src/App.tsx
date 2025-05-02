@@ -24,6 +24,7 @@ import NotFound from "@/pages/not-found";
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
 import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWorkshop";
 import ManitBhopalWorkshop from "@/pages/ManitBhopalWorkshop";
+import BambooLightingWorkshop from "@/pages/BambooLightingWorkshop";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
       <Route path="/workshops/international-bamboo-fest" component={InternationalBambooFestWorkshop} />
       <Route path="/workshops/manit-bhopal" component={ManitBhopalWorkshop} />
+      <Route path="/workshops/bamboo-lighting" component={BambooLightingWorkshop} />
       
       <Route component={NotFound} />
     </Switch>

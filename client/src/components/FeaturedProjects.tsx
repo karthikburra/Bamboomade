@@ -75,7 +75,7 @@ const FeaturedProjects: React.FC = () => {
       id: "lighting",
       title: "Bamboo Lighting Design Workshop",
       description: "Participants exploring the art of crafting elegant and sustainable bamboo lighting solutions.",
-      imageUrl: "/img/projects/bamboo-lamp.png",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
       duration: "5 day workshop",
       date: "Feb 2023",
       viewMoreLink: "/workshops/bamboo-lighting"
