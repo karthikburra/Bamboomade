@@ -55,7 +55,7 @@ const WhyBambooMade: React.FC = () => {
       icon: <UsersRound size={24} />,
       title: "Community Trainings",
       description: "Bamboo workshop is to equip villagers with essential bamboo crafting skills, fostering self-sustainability and economic empowerment.",
-      imageUrl: "/img/workshops/bamboo-workshop-international.png"
+      imageUrl: "/img/workshops/bamboo-workshop-community.jpg"
     }
   ];
 

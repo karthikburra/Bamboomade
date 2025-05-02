@@ -37,16 +37,16 @@ const MediumArticles: React.FC = () => {
   return (
     <section className="py-16 bg-gradient-to-b from-green-50/30 to-background dark:from-green-950/30 dark:to-background">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
+        <div className="mb-8 sm:mb-12 text-center px-4 sm:px-0">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
             From Our Journal
           </h2>
-          <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
             "Explore our thoughts, research, and insights on bamboo architecture and sustainable design practices."
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 px-4 sm:px-0">
           {articles.map((article) => (
             <Card key={article.id} className="overflow-hidden h-full flex flex-col">
               <div className="aspect-video w-full overflow-hidden bg-black/5 flex items-center justify-center">
@@ -54,20 +54,21 @@ const MediumArticles: React.FC = () => {
                   src={article.imageUrl}
                   alt={article.title}
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  loading="lazy"
                 />
               </div>
-              <CardContent className="p-4 flex-grow">
-                <div className="flex items-center text-sm text-green-600 dark:text-green-400 mb-2">
+              <CardContent className="p-3 sm:p-4 flex-grow">
+                <div className="flex items-center text-xs sm:text-sm text-green-600 dark:text-green-400 mb-1 sm:mb-2">
                   <span>{article.date} • Medium Article</span>
                 </div>
-                <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">{article.title}</h3>
-                <p className="mt-2 text-sm text-green-600 dark:text-green-400 line-clamp-3">{article.description}</p>
+                <h3 className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">{article.title}</h3>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-green-600 dark:text-green-400 line-clamp-3">{article.description}</p>
               </CardContent>
-              <CardFooter className="p-4 pt-0">
+              <CardFooter className="p-3 sm:p-4 pt-0">
                 <a href={article.url} target="_blank" rel="noopener noreferrer" className="w-full">
-                  <Button variant="outline" size="sm" className="w-full border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
+                  <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
                     Read on Medium
-                    <ExternalLink className="ml-2 h-4 w-4" />
+                    <ExternalLink className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </a>
               </CardFooter>
@@ -75,9 +76,9 @@ const MediumArticles: React.FC = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <a href="https://medium.com/@bamboomade" target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" size="lg" className="border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
+        <div className="mt-8 sm:mt-12 text-center px-4 sm:px-0">
+          <a href="https://medium.com/@bamboomade" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto inline-block">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto text-sm sm:text-base border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
               View All Articles
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

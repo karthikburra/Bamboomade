@@ -41,13 +41,19 @@ const AnimatedLeaves: React.FC = () => {
     // Add event listener
     window.addEventListener("resize", handleResize);
 
-    // Generate strategically placed leaves with increased density (30% more)
+    // Generate strategically placed leaves with responsive density
     const leafSources = [leaf1, leaf2, leaf3, leaf4, leaf5, leaf6, leaf7];
-    const leafCount = 10; // Increased from 7 to 10 (approx 30% more)
+    
+    // Adjust leaf count based on screen size for better mobile performance
+    const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+    
+    // Fewer leaves on mobile for better performance
+    const leafCount = isMobile ? 6 : (isTablet ? 8 : 10);
     const initialLeaves: Leaf[] = [];
 
     // Create leaves in specific areas of the page with more positions
-    // This creates a more balanced and natural look with increased density
+    // This creates a more balanced and natural look with density adjusted for screen size
     const positions = [
       // Original positions
       { x: window.innerWidth * 0.1, y: window.innerHeight * 0.2 }, // Top left
@@ -58,7 +64,7 @@ const AnimatedLeaves: React.FC = () => {
       { x: window.innerWidth * 0.9, y: window.innerHeight * 0.85 }, // Bottom right
       { x: window.innerWidth * 0.15, y: window.innerHeight * 0.9 }, // Bottom left
       
-      // Additional positions for increased density
+      // Additional positions for increased density (used on larger screens)
       { x: window.innerWidth * 0.3, y: window.innerHeight * 0.25 }, // Upper left-center
       { x: window.innerWidth * 0.65, y: window.innerHeight * 0.35 }, // Upper right-center
       { x: window.innerWidth * 0.4, y: window.innerHeight * 0.7 }, // Lower left-center
@@ -69,9 +75,15 @@ const AnimatedLeaves: React.FC = () => {
     // Add primary leaves at defined positions
     for (let i = 0; i < leafCount; i++) {
       const position = positions[i % positions.length];
-      // Add some randomness to the predetermined positions
-      const randomOffsetX = (Math.random() - 0.5) * 150;
-      const randomOffsetY = (Math.random() - 0.5) * 150;
+      
+      // Smaller random offset on mobile for more controlled positioning
+      const offsetMultiplier = isMobile ? 80 : (isTablet ? 120 : 150);
+      const randomOffsetX = (Math.random() - 0.5) * offsetMultiplier;
+      const randomOffsetY = (Math.random() - 0.5) * offsetMultiplier;
+      
+      // Smaller scale on mobile for less visual interference
+      const minScale = isMobile ? 0.3 : (isTablet ? 0.35 : 0.4);
+      const maxScale = isMobile ? 0.6 : (isTablet ? 0.7 : 0.8);
       
       initialLeaves.push({
         id: i,
@@ -79,28 +91,31 @@ const AnimatedLeaves: React.FC = () => {
         x: position.x + randomOffsetX,
         y: position.y + randomOffsetY,
         rotation: Math.random() * 360,
-        scale: 0.4 + Math.random() * 0.4, // Scale between 0.4 and 0.8 (smaller)
+        scale: minScale + Math.random() * (maxScale - minScale),
         initialX: position.x + randomOffsetX,
         initialY: position.y + randomOffsetY,
       });
     }
     
-    // Add additional scattered leaves for greater density
-    for (let i = 0; i < 3; i++) { // Adding 3 more leaves for extra density
-      // Place these leaves in more random positions
-      const randomX = Math.random() * window.innerWidth;
-      const randomY = Math.random() * window.innerHeight;
-      
-      initialLeaves.push({
-        id: leafCount + i,
-        src: leafSources[Math.floor(Math.random() * leafSources.length)], // Random leaf image
-        x: randomX,
-        y: randomY,
-        rotation: Math.random() * 360,
-        scale: 0.3 + Math.random() * 0.3, // Slightly smaller
-        initialX: randomX,
-        initialY: randomY,
-      });
+    // Add additional scattered leaves for greater density (skip on mobile)
+    if (!isMobile) {
+      const additionalCount = isTablet ? 2 : 3;
+      for (let i = 0; i < additionalCount; i++) {
+        // Place these leaves in more random positions
+        const randomX = Math.random() * window.innerWidth;
+        const randomY = Math.random() * window.innerHeight;
+        
+        initialLeaves.push({
+          id: leafCount + i,
+          src: leafSources[Math.floor(Math.random() * leafSources.length)],
+          x: randomX,
+          y: randomY,
+          rotation: Math.random() * 360,
+          scale: 0.3 + Math.random() * 0.3,
+          initialX: randomX,
+          initialY: randomY,
+        });
+      }
     }
     
     setLeaves(initialLeaves);
@@ -174,6 +189,10 @@ const AnimatedLeaves: React.FC = () => {
     return () => cancelAnimationFrame(animationId);
   }, [mousePosition, leaves, windowSize]);
 
+  // Determine if it's a mobile device for responsive sizing
+  const isMobile = windowSize.width < 768;
+  const isTablet = windowSize.width >= 768 && windowSize.width < 1024;
+
   return (
     <div className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden z-50">
       {leaves.map((leaf) => (
@@ -184,9 +203,12 @@ const AnimatedLeaves: React.FC = () => {
           style={{
             top: leaf.y,
             left: leaf.x,
-            height: leaf.src.includes("Vector") ? "70px" : "50px", // Slightly smaller leaves
+            // Responsive leaf sizes
+            height: leaf.src.includes("Vector") 
+              ? (isMobile ? "40px" : isTablet ? "55px" : "70px") 
+              : (isMobile ? "30px" : isTablet ? "40px" : "50px"),
             width: "auto",
-            opacity: 0.5, // More transparent for subtlety
+            opacity: isMobile ? 0.4 : 0.5, // Slightly more transparent on mobile
             zIndex: 100,
             filter: "blur(0.5px)", // Very slight blur for depth
           }}
