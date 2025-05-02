@@ -11,33 +11,51 @@ interface AnimatedTextProps {
 
 const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [loopCount, setLoopCount] = useState(0);
+  const [typingSpeed, setTypingSpeed] = useState(100);
 
   useEffect(() => {
-    // Handle the text animation cycle
-    const interval = setInterval(() => {
-      // First fade out
-      setIsVisible(false);
-      
-      // After fading out, change the text and fade in
-      setTimeout(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % phrases.length);
-        setIsVisible(true);
-      }, 500); // 500ms for fade out animation
-      
-    }, 5000); // 5 seconds per phrase (includes fade in/out time)
+    const currentPhrase = phrases[currentIndex];
     
-    return () => clearInterval(interval);
-  }, [phrases]);
+    // Handle typing and deleting animation
+    const timer = setTimeout(() => {
+      // If in deleting mode, remove characters one by one
+      if (isDeleting) {
+        setDisplayText(currentPhrase.substring(0, displayText.length - 1));
+        setTypingSpeed(50); // Faster when deleting
+        
+        // When all text is deleted
+        if (displayText.length === 0) {
+          setIsDeleting(false);
+          setCurrentIndex((prevIndex) => (prevIndex + 1) % phrases.length);
+          setLoopCount(loopCount + 1);
+          setTypingSpeed(100); // Reset typing speed
+        }
+      } 
+      // If in typing mode, add characters one by one
+      else {
+        setDisplayText(currentPhrase.substring(0, displayText.length + 1));
+        setTypingSpeed(100); // Normal typing speed
+        
+        // When full text is displayed, pause before deleting
+        if (displayText === currentPhrase) {
+          setTypingSpeed(2000); // Pause at the end of phrase
+          setIsDeleting(true);
+        }
+      }
+      
+    }, typingSpeed);
+    
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, currentIndex, phrases, loopCount, typingSpeed]);
 
   return (
     <div className="relative overflow-hidden">
-      <span
-        className={`block transition-opacity duration-500 ${
-          isVisible ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {phrases[currentIndex]}
+      <span className="block">
+        {displayText}
+        <span className="animate-pulse">|</span>
       </span>
     </div>
   );
