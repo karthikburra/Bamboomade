@@ -190,6 +190,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project guidance session routes
+  app.get("/api/project-guidance", async (req, res) => {
+    try {
+      const sessions = await storage.getAllProjectGuidances();
+      res.status(200).json(sessions);
+    } catch (error) {
+      console.error("Error fetching project guidance sessions:", error);
+      res.status(500).json({ message: "Failed to fetch project guidance sessions" });
+    }
+  });
+  
+  app.get("/api/project-guidance/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      const session = await storage.getProjectGuidance(id);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Project guidance session not found" });
+      }
+      
+      res.status(200).json(session);
+    } catch (error) {
+      console.error("Error fetching project guidance session:", error);
+      res.status(500).json({ message: "Failed to fetch project guidance session" });
+    }
+  });
+  
   app.post("/api/project-guidance", validateRequest(insertProjectGuidanceSchema), async (req, res) => {
     try {
       const session = await storage.createProjectGuidance(req.body);
