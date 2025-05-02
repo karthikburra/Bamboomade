@@ -17,15 +17,20 @@ interface FeatureProps {
 const Feature: React.FC<FeatureProps> = ({ icon, title, description, imageUrl }) => {
   return (
     <Card className="border-0 shadow-md overflow-hidden">
-      <div className="aspect-[4/3] w-full overflow-hidden">
-        <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+      <div className="aspect-[4/3] w-full overflow-hidden bg-black/5">
+        <img 
+          src={imageUrl} 
+          alt={title} 
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          loading="lazy" 
+        />
       </div>
-      <CardContent className="pt-6">
-        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
+      <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+        <div className="mb-3 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
           {icon}
         </div>
-        <h3 className="mb-2 text-xl font-medium text-foreground">{title}</h3>
-        <p className="text-muted-foreground">{description}</p>
+        <h3 className="mb-1 sm:mb-2 text-lg sm:text-xl font-medium text-foreground">{title}</h3>
+        <p className="text-sm sm:text-base text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
   );
@@ -60,18 +65,18 @@ const WhyBambooMade: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-background to-green-50/30 dark:to-green-950/30">
+    <section className="py-10 sm:py-16 bg-gradient-to-b from-background to-green-50/30 dark:to-green-950/30">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
+        <div className="mb-8 sm:mb-12 text-center px-2">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
             We Curate Bamboo Workshops
           </h2>
-          <p className="mt-4 text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
             Our experience and expertise help create sustainable solutions with bamboo.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature, index) => (
             <Feature
               key={index}
@@ -82,8 +87,6 @@ const WhyBambooMade: React.FC = () => {
             />
           ))}
         </div>
-        
-
       </div>
     </section>
   );

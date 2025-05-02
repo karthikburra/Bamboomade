@@ -63,18 +63,18 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-xl items-center">
-        <div className="mr-4 flex pl-6">
-          <Link href="/" className="flex items-center space-x-2">
-            <img src={logoImage} alt="BambooMade Logo" className="h-10 w-auto" />
-            <span className="text-2xl font-bold text-green-300">
+      <div className="container flex h-14 sm:h-16 max-w-screen-xl items-center">
+        <div className="mr-2 sm:mr-4 flex pl-2 sm:pl-6">
+          <Link href="/" className="flex items-center space-x-1 sm:space-x-2">
+            <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-10 w-auto" />
+            <span className="text-xl sm:text-2xl font-bold text-green-300">
               Bamboo<span className="text-green-400">Made</span>
             </span>
           </Link>
         </div>
 
         {!isMobile && (
-          <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
+          <nav className="flex flex-1 items-center space-x-4 sm:space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
                 key={`${link.href}-${link.label}`}
@@ -91,42 +91,54 @@ const Navbar: React.FC = () => {
           </nav>
         )}
 
-        <div className="flex flex-1 items-center justify-end space-x-4 pr-6">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+        <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4 pr-2 sm:pr-6">
+          {!isMobile ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm"
+                >
+                  <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  BambooMade AI
+                  <Badge className="ml-1 sm:ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">New</Badge>
+                  <ChevronDown className="ml-1 sm:ml-2 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="border-green-800">
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/ai-chat" className="flex items-center w-full">
+                    <Sparkles className="mr-2 h-4 w-4 text-green-400" />
+                    <span>Chat with AI</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/add-whatsapp-bot" className="flex items-center w-full">
+                    <MessageSquareText className="mr-2 h-4 w-4 text-green-400" />
+                    <span>Add to WhatsApp</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link href="/ai-chat">
               <Button 
                 variant="default" 
                 size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white p-1 h-8"
               >
-                <Sparkles className="mr-2 h-4 w-4" />
-                BambooMade AI
-                <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
-                <ChevronDown className="ml-2 h-3 w-3" />
+                <Sparkles className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="border-green-800">
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/ai-chat" className="flex items-center w-full">
-                  <Sparkles className="mr-2 h-4 w-4 text-green-400" />
-                  <span>Chat with AI</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href="/add-whatsapp-bot" className="flex items-center w-full">
-                  <MessageSquareText className="mr-2 h-4 w-4 text-green-400" />
-                  <span>Add to WhatsApp</span>
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Link>
+          )}
           
           {/* Theme toggle removed - dark mode only */}
 
           {user && user.tokens !== undefined && user.isAdmin !== undefined ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {!isMobile && (
-                <span className="text-sm text-green-400 mr-2">
+                <span className="text-xs sm:text-sm text-green-400 mr-1 sm:mr-2">
                   {user.tokens} tokens
                 </span>
               )}
@@ -135,7 +147,7 @@ const Navbar: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-green-700 text-green-400 hover:bg-green-900/30"
+                    className="text-xs h-8 border-green-700 text-green-400 hover:bg-green-900/30"
                   >
                     Admin
                   </Button>
@@ -145,9 +157,9 @@ const Navbar: React.FC = () => {
                 variant="default" 
                 size="sm" 
                 onClick={handleLogout}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="text-xs h-8 bg-green-600 hover:bg-green-700 text-white"
               >
-                Logout
+                {isMobile ? "Exit" : "Logout"}
               </Button>
             </div>
           ) : null}
@@ -163,23 +175,23 @@ const Navbar: React.FC = () => {
                   {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
                 </Button>
               </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <img src={logoImage} alt="BambooMade Logo" className="h-10 w-auto" />
-                    <SheetTitle className="text-green-300">BambooMade</SheetTitle>
+              <SheetContent className="w-[85%] sm:max-w-sm px-4 sm:px-6">
+                <SheetHeader className="pb-2">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <img src={logoImage} alt="BambooMade Logo" className="h-8 w-auto" />
+                    <SheetTitle className="text-lg sm:text-xl text-green-300">BambooMade</SheetTitle>
                   </div>
-                  <SheetDescription className="text-green-400">
+                  <SheetDescription className="text-sm text-green-400">
                     Sustainable Bamboo Architecture
                   </SheetDescription>
                 </SheetHeader>
-                <nav className="flex flex-col space-y-4 mt-8">
+                <nav className="flex flex-col space-y-3 mt-5 sm:mt-6">
                   {navLinks.map((link) => (
                     <Link
                       key={`${link.href}-${link.label}`}
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`text-base font-medium transition-colors ${
+                      className={`text-sm sm:text-base py-1.5 font-medium transition-colors ${
                         isActive(link.href)
                           ? "text-green-300 font-semibold"
                           : "text-green-400"
@@ -189,28 +201,28 @@ const Navbar: React.FC = () => {
                     </Link>
                   ))}
                   
-                  <div className="space-y-2 pt-2 pb-2 border-t border-b border-green-900">
-                    <div className="flex items-center text-base font-medium text-green-300">
-                      <Sparkles className="mr-2 h-4 w-4" />
+                  <div className="space-y-1.5 py-3 border-t border-b border-green-900/50">
+                    <div className="flex items-center text-sm sm:text-base font-medium text-green-300">
+                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       BambooMade AI Tools
-                      <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[10px] px-1.5 py-0">New</Badge>
+                      <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">New</Badge>
                     </div>
                     
                     <Link
                       href="/ai-chat"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center pl-6 text-base font-medium text-green-400 transition-colors hover:text-green-300"
+                      className="flex items-center pl-6 text-sm sm:text-base py-1.5 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
-                      <Sparkles className="mr-2 h-4 w-4" />
+                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Chat with AI
                     </Link>
                     
                     <Link 
                       href="/add-whatsapp-bot"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center pl-6 text-base font-medium text-green-400 transition-colors hover:text-green-300"
+                      className="flex items-center pl-6 text-sm sm:text-base py-1.5 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
-                      <MessageSquareText className="mr-2 h-4 w-4" />
+                      <MessageSquareText className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Add to WhatsApp
                     </Link>
                   </div>
@@ -219,21 +231,21 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/admin"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-base font-medium text-green-400 transition-colors hover:text-green-300"
+                      className="text-sm sm:text-base py-1.5 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
                       Admin Dashboard
                     </Link>
                   )}
                   {user && user.tokens !== undefined && (
-                    <div className="pt-4 border-t border-green-800">
-                      <p className="text-sm text-green-400 mb-2">
+                    <div className="pt-3 mt-1 border-t border-green-800/50">
+                      <p className="text-xs sm:text-sm text-green-400 mb-2">
                         Available tokens: {user.tokens}
                       </p>
                       <Button 
                         variant="default" 
                         size="sm" 
                         onClick={handleLogout} 
-                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        className="w-full text-xs sm:text-sm h-8 sm:h-9 bg-green-600 hover:bg-green-700 text-white"
                       >
                         Logout
                       </Button>
