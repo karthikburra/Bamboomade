@@ -169,16 +169,16 @@ const ProjectGuidance = () => {
                     <div className="flex justify-between mb-4">
                       <div className={`flex items-center ${step >= 1 ? "text-primary-600" : "text-muted-foreground"}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${step >= 1 ? "bg-primary-100 text-primary-600" : "bg-muted text-muted-foreground"}`}>
-                          <CalendarCheck size={16} />
+                          <GraduationCap size={16} />
                         </div>
-                        <span>Schedule</span>
+                        <span>Details</span>
                       </div>
                       <Separator className="w-10 my-4 mx-2" />
                       <div className={`flex items-center ${step >= 2 ? "text-primary-600" : "text-muted-foreground"}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${step >= 2 ? "bg-primary-100 text-primary-600" : "bg-muted text-muted-foreground"}`}>
-                          <GraduationCap size={16} />
+                          <CalendarCheck size={16} />
                         </div>
-                        <span>Details</span>
+                        <span>Schedule</span>
                       </div>
                       <Separator className="w-10 my-4 mx-2" />
                       <div className={`flex items-center ${step >= 3 ? "text-primary-600" : "text-muted-foreground"}`}>
@@ -199,31 +199,16 @@ const ProjectGuidance = () => {
                   
                   {step === 1 && (
                     <div>
-                      <h3 className="text-lg font-medium mb-4">Select Date & Time</h3>
-                      <BookingCalendar
-                        selectedDate={selectedDate}
-                        setSelectedDate={setSelectedDate}
-                        selectedTime={selectedTime}
-                        setSelectedTime={setSelectedTime}
-                        selectedDuration={selectedDuration}
-                        setSelectedDuration={setSelectedDuration}
-                      />
-                      <div className="mt-6 flex justify-end">
-                        <Button 
-                          onClick={() => setStep(2)} 
-                          disabled={!selectedDate || !selectedTime || !selectedDuration}
-                        >
-                          Continue
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {step === 2 && (
-                    <div>
                       <h3 className="text-lg font-medium mb-4">Your Information</h3>
                       <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          // Just validate and go to step 2, don't submit yet
+                          const validFields = form.trigger(["studentName", "email", "phone", "topic"]);
+                          validFields.then(valid => {
+                            if (valid) setStep(2);
+                          });
+                        }} className="space-y-4">
                           <FormField
                             control={form.control}
                             name="studentName"
@@ -300,16 +285,38 @@ const ProjectGuidance = () => {
                             )}
                           />
                           
-                          <div className="flex justify-between mt-6">
-                            <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                              Back
-                            </Button>
-                            <Button type="submit" disabled={isPending}>
-                              {isPending ? "Processing..." : "Continue to Payment"}
+                          <div className="flex justify-end mt-6">
+                            <Button type="submit">
+                              Continue to Schedule
                             </Button>
                           </div>
                         </form>
                       </Form>
+                    </div>
+                  )}
+                  
+                  {step === 2 && (
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Select Date & Time</h3>
+                      <BookingCalendar
+                        selectedDate={selectedDate}
+                        setSelectedDate={setSelectedDate}
+                        selectedTime={selectedTime}
+                        setSelectedTime={setSelectedTime}
+                        selectedDuration={selectedDuration}
+                        setSelectedDuration={setSelectedDuration}
+                      />
+                      <div className="flex justify-between mt-6">
+                        <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                          Back to Details
+                        </Button>
+                        <Button 
+                          onClick={() => form.handleSubmit(onSubmit)()}
+                          disabled={!selectedDate || !selectedTime || !selectedDuration || isPending}
+                        >
+                          {isPending ? "Processing..." : "Continue to Payment"}
+                        </Button>
+                      </div>
                     </div>
                   )}
                   
@@ -356,7 +363,7 @@ const ProjectGuidance = () => {
                       )}
                       <div className="mt-6">
                         <Button variant="ghost" onClick={() => setStep(2)} className="text-sm">
-                          Back to details
+                          Back to schedule
                         </Button>
                       </div>
                     </div>
