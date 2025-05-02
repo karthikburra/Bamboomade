@@ -3,10 +3,14 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setApiKey as setSendGridApiKey } from "./email-service";
 import session from 'express-session';
+import path from 'path';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Serve static files from the public directory
+app.use(express.static(path.join(import.meta.dirname, '..', 'public')));
 
 // Configure session middleware
 app.use(session({
