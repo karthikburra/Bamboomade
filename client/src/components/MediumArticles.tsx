@@ -23,6 +23,14 @@ const MediumArticles: React.FC = () => {
       imageUrl: "/img/projects/bamboo-lamp-new.png",
       date: "Apr 2023",
       url: "https://medium.com/@bamboomade/an-affinity-for-bamboo-63aa2deb7d25"
+    },
+    {
+      id: "letter-to-mother-earth",
+      title: "Letter to Mother Earth",
+      description: "A heartfelt reflection on our relationship with nature and the importance of sustainable practices in honoring and preserving our planet for future generations.",
+      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      date: "May 2023",
+      url: "https://medium.com/@bamboomade/letter-to-mother-earth-a5e6470a2594"
     }
   ];
 
