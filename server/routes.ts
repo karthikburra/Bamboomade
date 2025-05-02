@@ -291,7 +291,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to create or retrieve user" });
       }
-      res.json(userWithoutPassword);
     } catch (error) {
       console.error("Google auth error:", error);
       res.status(500).json({ message: "Google authentication failed", error: (error as Error).message });

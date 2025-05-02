@@ -7,6 +7,35 @@ export interface ChatMessage {
   tokensUsed: number;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  tokens: number;
+  isAdmin: boolean;
+}
+
+export interface TrainingData {
+  id: number;
+  question: string;
+  answer: string;
+  category: string;
+  createdAt: string;
+}
+
+export interface ProjectGuidance {
+  id: number;
+  studentName: string;
+  email: string;
+  phone: string;
+  date: string;
+  duration: number;
+  topic: string;
+  notes: string;
+  paymentId?: string;
+}
+
 /**
  * Processes a chat message with the BambooMade AI
  * @param message The user's message to process
@@ -34,6 +63,8 @@ export async function processAiChat(message: string): Promise<{ response: string
   }
 }
 
+// Admin API Functions
+
 /**
  * Adds new training data to the BambooMade AI (admin only)
  */
@@ -43,4 +74,28 @@ export async function addAiTrainingData(question: string, answer: string, catego
     answer,
     category
   });
+}
+
+/**
+ * Fetches all users (admin only)
+ */
+export async function fetchAllUsers(): Promise<User[]> {
+  const response = await apiRequest("GET", "/api/admin/users");
+  return response.json();
+}
+
+/**
+ * Updates a user's admin status (admin only)
+ */
+export async function updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User> {
+  const response = await apiRequest("PATCH", `/api/admin/users/${userId}`, { isAdmin });
+  return response.json();
+}
+
+/**
+ * Fetches all project guidance sessions (admin only)
+ */
+export async function fetchAllSessions(): Promise<ProjectGuidance[]> {
+  const response = await apiRequest("GET", "/api/project-guidance");
+  return response.json();
 }
