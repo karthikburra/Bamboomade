@@ -315,20 +315,22 @@ const ProjectGuidance = () => {
                           <div className="mb-6">
                             <h4 className="text-md font-medium mb-4 text-center">Choose a Payment Method</h4>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              <div className="bg-gradient-to-br from-green-50 to-transparent p-3 rounded-lg shadow-sm">
-                                <div className="text-center mb-2">
-                                  <span className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                                    RECOMMENDED
+                              <div className="bg-gradient-to-br from-purple-900/90 to-purple-800/80 p-5 rounded-lg shadow-lg border border-purple-600">
+                                <div className="text-center mb-3">
+                                  <span className="inline-block bg-purple-700/80 text-white px-4 py-1 rounded-full text-sm font-medium">
+                                    RECOMMENDED PAYMENT METHOD
                                   </span>
                                 </div>
-                                <PhonePePaymentForm 
-                                  sessionId={sessionId} 
-                                  amount={getCost()}
-                                  customerName={form.getValues().studentName}
-                                  customerEmail={form.getValues().email}
-                                  customerPhone={form.getValues().phone}
-                                  onSuccess={handlePaymentSuccess}
-                                />
+                                <div className="bg-white/10 p-1 rounded-lg">
+                                  <PhonePePaymentForm 
+                                    sessionId={sessionId} 
+                                    amount={getCost()}
+                                    customerName={form.getValues().studentName}
+                                    customerEmail={form.getValues().email}
+                                    customerPhone={form.getValues().phone}
+                                    onSuccess={handlePaymentSuccess}
+                                  />
+                                </div>
                               </div>
                               <div>
                                 <div className="text-center mb-2">
