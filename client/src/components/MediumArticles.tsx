@@ -28,7 +28,7 @@ const MediumArticles: React.FC = () => {
       id: "letter-to-mother-earth",
       title: "Letter to Mother Earth",
       description: "A heartfelt reflection on our relationship with nature and the importance of sustainable practices in honoring and preserving our planet for future generations.",
-      imageUrl: "/img/projects/bamboo-lamp-new.png",
+      imageUrl: "/img/medium/letter-to-mother-earth.jpg",
       date: "May 2023",
       url: "https://medium.com/@bamboomade/letter-to-mother-earth-a5e6470a2594"
     }
