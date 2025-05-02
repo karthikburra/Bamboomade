@@ -46,10 +46,64 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
     return () => clearTimeout(timer);
   }, [displayText, isDeleting, currentIndex, phrases, loopCount, typingSpeed]);
 
+  // Helper function to highlight specific parts of the text
+  const renderHighlightedText = () => {
+    // Define the parts to be highlighted for each phrase
+    const highlightMap = [
+      { phrase: 0, text: "Thesis Project", className: "text-yellow-300 font-bold" },
+      { phrase: 1, text: "BambooMade AI", className: "text-yellow-300 font-bold" },
+      { phrase: 2, text: "Bamboo workshops", className: "text-yellow-300 font-bold" },
+    ];
+    
+    // Find which highlight applies to current phrase
+    const highlight = highlightMap.find(h => h.phrase === currentIndex);
+    
+    if (!highlight || displayText.length === 0) {
+      return displayText;
+    }
+    
+    // Check if the highlighted part is in the currently displayed text
+    const { text, className } = highlight;
+    const startIndex = phrases[currentIndex].indexOf(text);
+    
+    // If the highlight text isn't in the phrase or we haven't typed that far yet
+    if (startIndex === -1 || displayText.length <= startIndex) {
+      return displayText;
+    }
+    
+    // Check if we've typed past the end of the highlighted part
+    const endIndex = startIndex + text.length;
+    if (displayText.length < endIndex) {
+      // We're in the middle of typing the highlighted part
+      const beforeHighlight = displayText.substring(0, startIndex);
+      const highlightPart = displayText.substring(startIndex);
+      
+      return (
+        <>
+          {beforeHighlight}
+          <span className={className}>{highlightPart}</span>
+        </>
+      );
+    } else {
+      // We've typed the full highlighted part
+      const beforeHighlight = displayText.substring(0, startIndex);
+      const highlightPart = displayText.substring(startIndex, endIndex);
+      const afterHighlight = displayText.substring(endIndex);
+      
+      return (
+        <>
+          {beforeHighlight}
+          <span className={className}>{highlightPart}</span>
+          {afterHighlight}
+        </>
+      );
+    }
+  };
+
   return (
     <div className="relative overflow-hidden">
       <span className="block">
-        {displayText}
+        {renderHighlightedText()}
         <span className="animate-pulse">|</span>
       </span>
     </div>
@@ -77,8 +131,8 @@ const Hero: React.FC = () => {
             <span className="block text-green-300 min-h-[4rem] md:min-h-[4.5rem]">
               <AnimatedText 
                 phrases={[
-                  "Get thesis project guidance from Experts",
-                  "Explore Bamboo AI for more Knowledge",
+                  "Get Thesis Project guidance from Experts",
+                  "Explore BambooMade AI for more Knowledge",
                   "We bring Bamboo workshops to you"
                 ]} 
               />
