@@ -1,7 +1,7 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema } from "@shared/schema";
+import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { sendBookingConfirmationEmail } from "./email-service";
@@ -206,11 +206,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Set user and admin flag in session
-      req.session.userId = user.id;
-      req.session.adminUser = {
-        email,
-        isAdmin: true
-      };
+      if (user) {
+        req.session.userId = user.id;
+        req.session.adminUser = {
+          email,
+          isAdmin: true
+        };
+      }
       
       res.json({ 
         message: "Admin login successful",
@@ -280,10 +282,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Set user in session
-      req.session.userId = user.id;
-      
-      // Don't return password in response
-      const { password, ...userWithoutPassword } = user;
+      if (user) {
+        req.session.userId = user.id;
+        
+        // Don't return password in response
+        const { password, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+      } else {
+        res.status(500).json({ message: "Failed to create or retrieve user" });
+      }
       res.json(userWithoutPassword);
     } catch (error) {
       console.error("Google auth error:", error);
