@@ -89,10 +89,16 @@ const ProjectGuidance = () => {
       sessionDate.setHours(hours, minutes);
       
       const sessionData = {
-        ...values,
+        studentName: values.studentName,
+        email: values.email,
+        phone: values.phone,
+        topic: values.topic,
+        notes: values.notes || "",
         date: sessionDate.toISOString(),
         duration: selectedDuration,
       };
+      
+      console.log("Submitting project guidance session:", sessionData);
       
       return apiRequest("POST", "/api/project-guidance", sessionData);
     },
