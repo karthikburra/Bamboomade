@@ -55,6 +55,7 @@ const Navbar: React.FC = () => {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/our-works", label: "Our Works" },
+    { href: "/our-works", label: "Our Experience" }, // Points to the same page as "Our Works"
     { href: "/project-guidance", label: "Project Guidance" },
     { href: "/contact", label: "Contact" },
   ];
@@ -77,7 +78,7 @@ const Navbar: React.FC = () => {
           <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
-                key={link.href}
+                key={`${link.href}-${link.label}`}
                 href={link.href}
                 className={`transition-colors hover:text-green-300 ${
                   isActive(link.href)
@@ -176,7 +177,7 @@ const Navbar: React.FC = () => {
                 <nav className="flex flex-col space-y-4 mt-8">
                   {navLinks.map((link) => (
                     <Link
-                      key={link.href}
+                      key={`${link.href}-${link.label}`}
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
                       className={`text-base font-medium transition-colors ${
