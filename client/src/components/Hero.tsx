@@ -1,9 +1,47 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import WhatsAppContact from "./WhatsAppContact";
 import heroImage from "@assets/Hero.png";
+
+interface AnimatedTextProps {
+  phrases: string[];
+}
+
+const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    // Handle the text animation cycle
+    const interval = setInterval(() => {
+      // First fade out
+      setIsVisible(false);
+      
+      // After fading out, change the text and fade in
+      setTimeout(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % phrases.length);
+        setIsVisible(true);
+      }, 500); // 500ms for fade out animation
+      
+    }, 5000); // 5 seconds per phrase (includes fade in/out time)
+    
+    return () => clearInterval(interval);
+  }, [phrases]);
+
+  return (
+    <div className="relative overflow-hidden">
+      <span
+        className={`block transition-opacity duration-500 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {phrases[currentIndex]}
+      </span>
+    </div>
+  );
+};
 
 const Hero: React.FC = () => {
   return (
@@ -23,13 +61,20 @@ const Hero: React.FC = () => {
         <div className="md:max-w-3xl lg:max-w-4xl">
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
             <span className="block">Beyond Tradition:</span>{" "}
-            <span className="block text-green-300">Building a Sustainable Modern Future</span>
+            <span className="block text-green-300 min-h-[4rem] md:min-h-[4.5rem]">
+              <AnimatedText 
+                phrases={[
+                  "Get thesis project guidance from Experts",
+                  "Explore Bamboo AI for more Knowledge",
+                  "We bring Bamboo workshops to you"
+                ]} 
+              />
+            </span>
           </h1>
           <p className="mt-6 text-xl text-white max-w-3xl">
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
           <div className="mt-6 text-lg text-white max-w-3xl">
-            <p>We bring Bamboo Workshops to you!</p>
             <p className="mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
           </div>
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
