@@ -171,6 +171,21 @@ export class MemStorage implements IStorage {
     ];
 
     trainingData.forEach(data => this.createAiTrainingData(data));
+    
+    // Create test project guidance sessions for development testing
+    const testProjectGuidances = [
+      {
+        studentName: "Test User",
+        email: "test@example.com",
+        phone: "9876543210",
+        date: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // One week from now
+        duration: 60, // 60 minutes
+        topic: "Bamboo Building Project - Test session",
+        notes: "This is a test project guidance session for development"
+      }
+    ];
+    
+    testProjectGuidances.forEach(session => this.createProjectGuidance(session));
   }
 
   // User operations
