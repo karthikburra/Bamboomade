@@ -97,11 +97,11 @@ const FeaturedProjects: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {workshops.slice(0, 4).map((workshop) => (
             <Card key={workshop.id} className="overflow-hidden h-full flex flex-col">
-              <div className="aspect-video w-full overflow-hidden">
+              <div className="aspect-video w-full overflow-hidden bg-black/5">
                 <img
                   src={workshop.imageUrl}
                   alt={workshop.title}
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
                 />
               </div>
               <CardContent className="p-4 flex-grow">

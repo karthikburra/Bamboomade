@@ -24,9 +24,9 @@ const BambooLightingWorkshop: React.FC = () => {
       caption: "Bamboo pendant lamp designed and created during the workshop"
     },
     {
-      url: "/img/projects/bamboo-workshop-training.png",
-      alt: "Participants creating bamboo lamps",
-      caption: "Workshop participants learning bamboo lamp making techniques"
+      url: "/img/projects/bamboo-lamp-new.png",
+      alt: "Bamboo pendant lamp illuminated",
+      caption: "The warm glow of the bamboo pendant lamp showing intricate weaving patterns"
     },
     {
       url: "/img/projects/bamboo-model.png",
