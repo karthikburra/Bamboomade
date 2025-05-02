@@ -131,9 +131,9 @@ const Hero: React.FC = () => {
             <span className="block text-green-300 min-h-[4rem] md:min-h-[4.5rem]">
               <AnimatedText 
                 phrases={[
-                  "Get Thesis Project guidance from Experts",
-                  "Explore BambooMade AI for more Knowledge",
-                  "We bring Bamboo workshops to you"
+                  "Get Thesis Project guidance from Experts.",
+                  "Explore BambooMade AI for more Knowledge.",
+                  "We bring Bamboo workshops to you."
                 ]} 
               />
             </span>
