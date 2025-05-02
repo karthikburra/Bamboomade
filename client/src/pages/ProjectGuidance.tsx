@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet";
 import { useState } from "react";
 import { format } from "date-fns";
-import { BookText, CalendarCheck, Calendar, CheckCircle, GraduationCap } from "lucide-react";
+import { BookText, CalendarCheck, Calendar, CheckCircle, GraduationCap, Briefcase, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -32,12 +32,15 @@ import BookingCalendar from "@/components/BookingCalendar";
 import PaymentForm from "@/components/PaymentForm";
 import PhonePePaymentForm from "@/components/PhonePePaymentForm";
 
+import * as ToggleGroup from "@radix-ui/react-toggle-group";
+
 const projectGuidanceFormSchema = z.object({
   studentName: z.string().min(2, { message: "Please enter your full name" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   phone: z.string().min(10, { message: "Please enter a valid phone number" }),
   topic: z.string().min(5, { message: "Please enter a topic for discussion" }),
   notes: z.string().optional(),
+  isStudent: z.boolean().default(true),
 });
 
 type ProjectGuidanceFormValues = z.infer<typeof projectGuidanceFormSchema>;
@@ -58,6 +61,7 @@ const ProjectGuidance = () => {
       phone: "",
       topic: "",
       notes: "",
+      isStudent: true, // Default to student
     },
   });
   
@@ -96,6 +100,7 @@ const ProjectGuidance = () => {
         notes: values.notes || "",
         date: sessionDate.toISOString(),
         duration: selectedDuration,
+        isStudent: values.isStudent,
       };
       
       console.log("Submitting project guidance session:", sessionData);
@@ -144,17 +149,17 @@ const ProjectGuidance = () => {
     <>
       <Helmet>
         <title>Project Guidance | BambooMade</title>
-        <meta name="description" content="Book a project guidance session with bamboo architecture experts to get personalized guidance for your academic and career goals." />
+        <meta name="description" content="Book a project guidance session with bamboo architecture experts to get personalized guidance for your academic or professional bamboo projects." />
       </Helmet>
       
       <div className="bg-background py-12">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              Student Project Guidance Sessions
+              Project Guidance Sessions
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get personalized guidance from our bamboo architecture experts to help with your academic projects and career goals.
+              Get personalized guidance from our bamboo architecture experts to help with your academic or professional bamboo projects.
             </p>
           </div>
           
@@ -209,6 +214,49 @@ const ProjectGuidance = () => {
                             if (valid) setStep(2);
                           });
                         }} className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="isStudent"
+                            render={({ field }) => (
+                              <FormItem className="mb-6">
+                                <FormLabel>I am a:</FormLabel>
+                                <FormControl>
+                                  <div className="flex rounded-md overflow-hidden border border-input mt-1">
+                                    <ToggleGroup.Root
+                                      className="inline-flex w-full rounded-md"
+                                      type="single"
+                                      value={field.value ? "student" : "professional"}
+                                      onValueChange={(value) => {
+                                        if (value) { // Prevent deselection
+                                          field.onChange(value === "student");
+                                        }
+                                      }}
+                                      aria-label="User type"
+                                    >
+                                      <ToggleGroup.Item
+                                        className={`flex items-center justify-center gap-2 flex-1 p-2 h-10 data-[state=on]:bg-green-600 data-[state=on]:text-white transition-colors ${field.value ? 'bg-green-600 text-white' : 'hover:bg-muted'}`}
+                                        value="student"
+                                        aria-label="Student"
+                                      >
+                                        <User size={18} />
+                                        <span>Student</span>
+                                      </ToggleGroup.Item>
+                                      <ToggleGroup.Item
+                                        className={`flex items-center justify-center gap-2 flex-1 p-2 h-10 data-[state=on]:bg-green-600 data-[state=on]:text-white transition-colors ${!field.value ? 'bg-green-600 text-white' : 'hover:bg-muted'}`}
+                                        value="professional"
+                                        aria-label="Professional"
+                                      >
+                                        <Briefcase size={18} />
+                                        <span>Professional</span>
+                                      </ToggleGroup.Item>
+                                    </ToggleGroup.Root>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
                           <FormField
                             control={form.control}
                             name="studentName"
