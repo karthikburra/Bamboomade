@@ -30,9 +30,9 @@ const FeaturedProjects: React.FC = () => {
       id: "international-bamboo-fest",
       title: "International Bamboo Festival '23",
       description: "Collaboration with Ewe Jin Low at Tadom Hill Resorts creating sustainable bamboo structures and connecting with passionate bamboo architects globally.",
-      imageUrl: "/img/workshops/bamboo-workshop-international.png",
+      imageUrl: "/img/projects/bamboo-model.png",
       duration: "7 day workshop",
-      date: "Jun 2023",
+      date: "Nov 2023",
       viewMoreLink: "/workshops/international-bamboo-fest"
     },
     {
