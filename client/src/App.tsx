@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedLeaves from "@/components/AnimatedLeaves";
+import ScrollToTop from "@/components/ScrollToTop";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
 import Contact from "@/pages/Contact";
@@ -88,6 +89,7 @@ function App() {
           <div className="relative">
             <Navbar />
             <main className="flex-1">
+              <ScrollToTop />
               <Router />
             </main>
             <Footer className="relative" />

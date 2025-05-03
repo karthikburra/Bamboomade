@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "wouter";
+import ScrollLink from "@/components/ScrollLink";
 import { Button } from "@/components/ui/button";
 import { Phone, Calendar, MessageSquare } from "lucide-react";
 
@@ -17,7 +17,7 @@ const CallToAction: React.FC = () => {
           </p>
           
           <div className="mt-6 sm:mt-10 grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3 px-2 sm:px-0">
-            <Link href="/contact" className="w-full">
+            <ScrollLink href="/contact" className="w-full">
               <Button
                 size="lg"
                 className="w-full text-sm sm:text-base py-5 sm:py-6 bg-green-800 text-white hover:bg-green-700"
@@ -25,9 +25,9 @@ const CallToAction: React.FC = () => {
                 <Phone className="mr-2 h-4 w-4" />
                 Contact Us
               </Button>
-            </Link>
+            </ScrollLink>
             
-            <Link href="/project-guidance" className="w-full">
+            <ScrollLink href="/project-guidance" className="w-full">
               <Button
                 size="lg"
                 className="w-full text-sm sm:text-base py-5 sm:py-6 bg-green-600 hover:bg-green-500 text-white"
@@ -36,9 +36,9 @@ const CallToAction: React.FC = () => {
                 <span className="hidden sm:inline">Book Project Guidance</span>
                 <span className="inline sm:hidden">Project Guidance</span>
               </Button>
-            </Link>
+            </ScrollLink>
             
-            <Link href="/ai-chat" className="w-full">
+            <ScrollLink href="/ai-chat" className="w-full">
               <Button
                 size="lg"
                 className="w-full text-sm sm:text-base py-5 sm:py-6 bg-green-500 hover:bg-green-400 text-white"
@@ -46,7 +46,7 @@ const CallToAction: React.FC = () => {
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Try BambooMade AI
               </Button>
-            </Link>
+            </ScrollLink>
           </div>
         </div>
       </div>

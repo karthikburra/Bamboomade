@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
+import ScrollLink from "@/components/ScrollLink";
 import { useQuery } from "@tanstack/react-query";
 import { useIsMobile as useMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -65,18 +66,18 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 sm:h-16 md:h-18 lg:h-20 max-w-screen-xl items-center px-2 sm:px-4 md:px-6 lg:px-8">
         <div className="mr-2 sm:mr-4 md:mr-6 lg:mr-8 flex">
-          <Link href="/" className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
+          <ScrollLink href="/" className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
             <img src={logoImage} alt="BambooMade Logo" className="h-7 sm:h-8 md:h-9 lg:h-10 w-auto" />
             <span className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-green-300">
               Bamboo<span className="text-green-400">Made</span>
             </span>
-          </Link>
+          </ScrollLink>
         </div>
 
         {!isMobile && (
           <nav className="flex flex-1 items-center space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-xs sm:text-sm md:text-base font-medium">
             {navLinks.map((link) => (
-              <Link
+              <ScrollLink
                 key={`${link.href}-${link.label}`}
                 href={link.href}
                 className={`transition-colors hover:text-green-300 ${
@@ -86,7 +87,7 @@ const Navbar: React.FC = () => {
                 }`}
               >
                 {link.label}
-              </Link>
+              </ScrollLink>
             ))}
           </nav>
         )}
@@ -109,21 +110,21 @@ const Navbar: React.FC = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="border-green-800">
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/ai-chat" className="flex items-center w-full">
+                  <ScrollLink href="/ai-chat" className="flex items-center w-full">
                     <Sparkles className="mr-2 h-4 w-4 text-green-400" />
                     <span>Chat with AI</span>
-                  </Link>
+                  </ScrollLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/add-whatsapp-bot" className="flex items-center w-full">
+                  <ScrollLink href="/add-whatsapp-bot" className="flex items-center w-full">
                     <MessageSquareText className="mr-2 h-4 w-4 text-green-400" />
                     <span>Add to WhatsApp</span>
-                  </Link>
+                  </ScrollLink>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link href="/ai-chat">
+            <ScrollLink href="/ai-chat">
               <Button 
                 variant="default" 
                 size="sm" 
@@ -131,7 +132,7 @@ const Navbar: React.FC = () => {
               >
                 <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-            </Link>
+            </ScrollLink>
           )}
           
           {/* Theme toggle removed - dark mode only */}
@@ -144,7 +145,7 @@ const Navbar: React.FC = () => {
                 </span>
               )}
               {user.isAdmin && !isMobile && (
-                <Link href="/admin">
+                <ScrollLink href="/admin">
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -152,7 +153,7 @@ const Navbar: React.FC = () => {
                   >
                     Admin
                   </Button>
-                </Link>
+                </ScrollLink>
               )}
               <Button 
                 variant="default" 
@@ -189,7 +190,7 @@ const Navbar: React.FC = () => {
                 </SheetHeader>
                 <nav className="flex flex-col space-y-3 sm:space-y-4 mt-5 sm:mt-6 md:mt-7">
                   {navLinks.map((link) => (
-                    <Link
+                    <ScrollLink
                       key={`${link.href}-${link.label}`}
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
@@ -200,7 +201,7 @@ const Navbar: React.FC = () => {
                       }`}
                     >
                       {link.label}
-                    </Link>
+                    </ScrollLink>
                   ))}
                   
                   <div className="space-y-2 sm:space-y-3 py-3 sm:py-4 border-t border-b border-green-900/50">
@@ -210,33 +211,33 @@ const Navbar: React.FC = () => {
                       <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
                     </div>
                     
-                    <Link
+                    <ScrollLink
                       href="/ai-chat"
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center pl-6 sm:pl-7 text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
                       <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                       Chat with AI
-                    </Link>
+                    </ScrollLink>
                     
-                    <Link 
+                    <ScrollLink 
                       href="/add-whatsapp-bot"
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center pl-6 sm:pl-7 text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
                       <MessageSquareText className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                       Add to WhatsApp
-                    </Link>
+                    </ScrollLink>
                   </div>
                   
                   {user && user.isAdmin && (
-                    <Link
+                    <ScrollLink
                       href="/admin"
                       onClick={() => setIsMenuOpen(false)}
                       className="text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
                       Admin Dashboard
-                    </Link>
+                    </ScrollLink>
                   )}
                   {user && user.tokens !== undefined && (
                     <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50">
