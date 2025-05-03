@@ -94,6 +94,44 @@ export function generateGoogleMeetLink(sessionId: number, date: Date, studentNam
   return `https://meet.google.com/${firstSegment}-${secondSegment}-${thirdSegment}`;
 }
 
+/**
+ * Generate a Google Calendar event link that includes projects@bamboomade.in as the host
+ * This allows users to add the event to their calendar with the host information
+ */
+export function generateGoogleCalendarLink(
+  sessionId: number,
+  meetLink: string,
+  sessionDate: Date,
+  sessionDuration: number,
+  sessionTopic: string,
+  studentName: string
+): string {
+  // Format start and end times for Google Calendar
+  const startTime = format(sessionDate, "yyyyMMdd'T'HHmmss");
+  const endDate = new Date(sessionDate);
+  endDate.setMinutes(endDate.getMinutes() + sessionDuration);
+  const endTime = format(endDate, "yyyyMMdd'T'HHmmss");
+  
+  // Create the event details with the host email explicitly mentioned
+  const details = `
+BambooMade Project Guidance Session with ${studentName}
+Session ID: ${sessionId}
+
+Join this Google Meet link: ${meetLink}
+Topic: ${sessionTopic}
+
+This meeting is hosted by projects@bamboomade.in
+  `.trim();
+  
+  // Create the calendar event title
+  const title = `BambooMade - ${sessionTopic}`;
+
+  // Create the Google Calendar event URL with projects@bamboomade.in as the host
+  // add parameter adds the email as an attendee
+  // src parameter sets the calendar it will be added to
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(meetLink)}&add=${encodeURIComponent('projects@bamboomade.in')}&src=${encodeURIComponent('projects@bamboomade.in')}`;
+}
+
 interface BookingEmailData {
   sessionId: number;
   studentName: string;
@@ -129,10 +167,15 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
     endTime.setMinutes(endTime.getMinutes() + bookingData.sessionDuration);
     const formattedEndTime = format(endTime, 'h:mm a');
 
-    // Create calendar event link (simplified version)
-    const startTime = format(bookingData.sessionDate, "yyyyMMdd'T'HHmmss");
-    const calendarEndTime = format(endTime, "yyyyMMdd'T'HHmmss");
-    const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=BambooMade%20Project%20Guidance%20Session&dates=${startTime}/${calendarEndTime}&details=Join%20this%20Google%20Meet%20link:%20${encodeURIComponent(meetLink)}%0A%0ATopic:%20${encodeURIComponent(bookingData.sessionTopic)}&location=${encodeURIComponent(meetLink)}`;
+    // Create calendar event link that explicitly shows it's from projects@bamboomade.in
+    const calendarLink = generateGoogleCalendarLink(
+      bookingData.sessionId,
+      meetLink,
+      bookingData.sessionDate,
+      bookingData.sessionDuration,
+      bookingData.sessionTopic, 
+      bookingData.studentName
+    );
     
     // Email HTML content
     const htmlContent = `
