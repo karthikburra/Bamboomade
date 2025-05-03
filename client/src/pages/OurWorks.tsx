@@ -152,7 +152,7 @@ const OurWorks: React.FC = () => {
         </div>
       </section>
       
-      <section className="py-16 bg-gradient-to-b from-background to-green-950/30">
+      <section className="py-16 bg-gradient-to-b from-green-950 to-black">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight text-green-300 mb-4">
@@ -202,7 +202,7 @@ const OurWorks: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-                <div className="bg-green-950/40 rounded-lg p-6">
+                <div className="bg-green-950/80 rounded-lg p-6">
                   <h4 className="text-lg font-medium text-green-300 mb-4">Contact Us for a Consultation</h4>
                   <p className="text-green-400 mb-6">
                     Reach out to discuss your project needs and schedule a consultation with our bamboo experts.
@@ -251,7 +251,7 @@ const OurWorks: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-                <div className="bg-green-950/40 rounded-lg p-6">
+                <div className="bg-green-950/80 rounded-lg p-6">
                   <h4 className="text-lg font-medium text-green-300 mb-4">Schedule a Workshop</h4>
                   <p className="text-green-400 mb-6">
                     Our workshops can be customized for individuals, groups, or institutions. Contact us to schedule or inquire about upcoming workshops.
@@ -300,7 +300,7 @@ const OurWorks: React.FC = () => {
                     </li>
                   </ul>
                 </div>
-                <div className="bg-green-950/40 rounded-lg p-6">
+                <div className="bg-green-950/80 rounded-lg p-6">
                   <h4 className="text-lg font-medium text-green-300 mb-4">Book a Guidance Session</h4>
                   <p className="text-green-400 mb-6">
                     Schedule a session with our experts to get specialized guidance for your bamboo project needs.

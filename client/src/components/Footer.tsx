@@ -78,33 +78,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                   </li>
                 </ul>
               </div>
-              <div className="mt-0">
-                <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-primary-100">
-                  Resources
-                </h3>
-                <ul className="mt-3 sm:mt-4 space-y-2 sm:space-y-4">
-                  <li>
-                    <a href="#" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
-                      Blog
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
-                      Research Papers
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
-                      Design Guidelines
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
-                      Sustainability Reports
-                    </a>
-                  </li>
-                </ul>
-              </div>
+
             </div>
             <div>
               <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-primary-100">
