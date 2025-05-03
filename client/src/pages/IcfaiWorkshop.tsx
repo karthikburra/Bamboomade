@@ -80,8 +80,19 @@ const IcfaiWorkshop: React.FC = () => {
       </div>
 
       {/* Hero section */}
-      <div className="bg-gradient-to-b from-green-900 to-green-800 text-white py-12 sm:py-16 md:py-20">
-        <div className="container max-w-7xl mx-auto px-4">
+      <div className="relative text-white py-12 sm:py-16 md:py-20">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0" 
+          style={{ 
+            backgroundImage: `url(/img/workshops/icfai-hero-bg.jpg)`,
+            filter: 'brightness(0.4)'
+          }}
+        />
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-green-900/90 to-green-800/80 z-0"></div>
+        
+        <div className="container max-w-7xl mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               ICFAI School of Architecture
@@ -189,8 +200,19 @@ const IcfaiWorkshop: React.FC = () => {
       </section>
 
       {/* CTA section */}
-      <section className="py-16 bg-gradient-to-br from-green-800 to-green-900 text-white">
-        <div className="container max-w-7xl mx-auto px-4 text-center">
+      <section className="py-16 relative text-white">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0" 
+          style={{ 
+            backgroundImage: `url(/img/workshops/icfai-cta-bg.jpg)`,
+            filter: 'brightness(0.3)'
+          }}
+        />
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-green-800/90 to-green-900/90 z-0"></div>
+        
+        <div className="container max-w-7xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">
             Organize a Similar Workshop at Your Institution
           </h2>
