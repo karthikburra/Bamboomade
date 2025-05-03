@@ -51,8 +51,7 @@ function Router() {
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/login" component={Login} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
-      <Route path="/payment-success" component={PaymentSuccess} />
-      <Route path="/payment-details" component={PaymentSuccessPage} />
+      <Route path="/payment-success" component={PaymentSuccessPage} />
       <Route path="/payment-failed" component={PaymentFailed} />
       
       {/* Workshop Detail Pages */}
