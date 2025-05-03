@@ -11,9 +11,26 @@ let transporter: nodemailer.Transporter | null = null;
  */
 export function initializeEmailService() {
   try {
-    // Create a dev transporter that doesn't actually send emails but logs them
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Initializing email service in development mode');
+    // Always use a real email service if EMAIL_PASSWORD is available
+    if (process.env.EMAIL_PASSWORD) {
+      console.log('Initializing email service with real SMTP credentials');
+      
+      // Use Gmail SMTP
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'projects@bamboomade.in',
+          pass: process.env.EMAIL_PASSWORD, // App password for Gmail
+        }
+      });
+      
+      emailServiceEnabled = true;
+      console.log('Email service initialized with real credentials');
+      return true;
+    } 
+    // Fall back to development mode if no password is available
+    else {
+      console.log('Initializing email service in development mode (EMAIL_PASSWORD not found)');
       
       // Create a preview-only transport in development that logs to console
       transporter = nodemailer.createTransport({
@@ -30,23 +47,6 @@ export function initializeEmailService() {
       
       emailServiceEnabled = true;
       console.log('Email service initialized in development mode (logs emails to console)');
-      return true;
-    } 
-    
-    // In production, use a real email service
-    else {
-      // You can configure different email providers here
-      // For Gmail:
-      transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'projects@bamboomade.in',
-          pass: process.env.EMAIL_PASSWORD, // App password for Gmail
-        }
-      });
-      
-      emailServiceEnabled = true;
-      console.log('Email service initialized for production');
       return true;
     }
   } catch (error) {
