@@ -149,37 +149,78 @@ const IcfaiWorkshop: React.FC = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-8 text-center">
             Featured Workshop Creations
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="col-span-2">
-              <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg">
+          <div className="grid grid-cols-12 gap-3 sm:gap-4">
+            {/* First row */}
+            <div className="col-span-12 md:col-span-5 lg:col-span-6">
+              <div className="rounded-lg overflow-hidden shadow-lg h-full">
                 <img 
                   src={workshopImg4} 
                   alt="Coffee table made with bamboo and glass" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">Coffee table with glass top designed and created by students</p>
             </div>
-            <div>
-              <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+            <div className="col-span-12 md:col-span-7 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="rounded-lg overflow-hidden shadow-lg">
                 <img 
                   src={workshopImg9} 
-                  alt="Bamboo lighting fixture display" 
+                  alt="Bamboo display stand" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">Bamboo lamp and decorative elements</p>
-            </div>
-            <div>
-              <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+              <div className="rounded-lg overflow-hidden shadow-lg">
                 <img 
                   src={workshopImg12} 
                   alt="Bamboo lighting fixture with LED lights" 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">Creative lighting fixture with LED integration</p>
+              <div className="sm:col-span-2 rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg6} 
+                  alt="Students working on bamboo frame assembly" 
+                  className="w-full h-60 object-cover"
+                />
+              </div>
             </div>
+            
+            {/* Second row */}
+            <div className="col-span-12 md:col-span-7 lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg3} 
+                  alt="Workshop demonstration session" 
+                  className="w-full h-40 object-cover"
+                />
+              </div>
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg5} 
+                  alt="Students processing bamboo" 
+                  className="w-full h-40 object-cover"
+                />
+              </div>
+              <div className="col-span-2 rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg10} 
+                  alt="Students harvesting bamboo outdoors" 
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+            </div>
+            <div className="col-span-12 md:col-span-5 lg:col-span-6">
+              <div className="rounded-lg overflow-hidden shadow-lg h-full">
+                <img 
+                  src={workshopImg2} 
+                  alt="Bamboo basket weaving display" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center text-gray-700 dark:text-gray-300 italic">
+            The students created remarkable pieces showcasing both traditional craftsmanship and innovative design approaches.
           </div>
         </div>
       </section>
@@ -190,25 +231,41 @@ const IcfaiWorkshop: React.FC = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-8 text-center">
             Workshop Gallery
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {galleryImages.map((image, index) => (
-              <div 
-                key={index} 
-                className="overflow-hidden rounded-lg shadow-md bg-white dark:bg-green-900/60"
-              >
-                <div className="aspect-video relative">
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+          
+          {/* Masonry-style grid layout */}
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+            {galleryImages.map((image, index) => {
+              // Calculate dynamic heights for more variety in the collage
+              const randomHeight = index % 3 === 0 ? 'h-72' : index % 3 === 1 ? 'h-64' : 'h-80';
+              
+              return (
+                <div 
+                  key={index} 
+                  className="break-inside-avoid mb-4 overflow-hidden rounded-lg shadow-md bg-white dark:bg-green-900/60"
+                >
+                  <div className={`relative ${randomHeight}`}>
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
+                    {/* Hover overlay with caption */}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <p className="text-white font-medium">
+                        {image.alt}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-3 text-sm text-gray-600 dark:text-gray-300">
-                  {image.alt}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          
+          {/* Caption explaining the gallery */}
+          <p className="mt-8 text-center text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            The workshop at ICFAI School of Architecture engaged students in a comprehensive bamboo learning journey, 
+            from material selection and processing to the creation of beautiful functional objects.
+          </p>
         </div>
       </section>
       
