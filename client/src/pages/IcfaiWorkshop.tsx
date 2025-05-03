@@ -86,11 +86,11 @@ const IcfaiWorkshop: React.FC = () => {
           className="absolute inset-0 bg-cover bg-center z-0" 
           style={{ 
             backgroundImage: `url(/img/workshops/icfai-hero-bg.jpg)`,
-            filter: 'brightness(0.4)'
+            filter: 'brightness(0.7)'
           }}
         />
         {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-green-900/90 to-green-800/80 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-green-900/50 to-green-800/40 z-0"></div>
         
         <div className="container max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -327,11 +327,11 @@ const IcfaiWorkshop: React.FC = () => {
           className="absolute inset-0 bg-cover bg-center z-0" 
           style={{ 
             backgroundImage: `url(/img/workshops/icfai-cta-bg.jpg)`,
-            filter: 'brightness(0.3)'
+            filter: 'brightness(0.6)'
           }}
         />
         {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-800/90 to-green-900/90 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-green-800/60 to-green-900/70 z-0"></div>
         
         <div className="container max-w-7xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold mb-4">
