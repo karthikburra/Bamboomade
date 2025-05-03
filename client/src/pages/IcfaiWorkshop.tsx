@@ -113,9 +113,39 @@ const IcfaiWorkshop: React.FC = () => {
                 size="lg"
               />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Workshop information */}
+      <section className="py-16 bg-white dark:bg-green-950">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
+                About the <span className="text-yellow-500 dark:text-yellow-300">Workshop</span>
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+                The impactful <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo workshop</span> held at ICFAI School of Architecture, Telangana, 
+                propelled students to explore the bamboo to create <span className="text-yellow-500 dark:text-yellow-300 font-medium">exceptional products</span>. This 
+                exercise empowered them to craft <span className="text-yellow-500 dark:text-yellow-300 font-medium">contemporary masterpieces</span> showcasing the 
+                finished products.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+                Throughout the three days, students progressed from basic material understanding
+                to creating <span className="text-yellow-500 dark:text-yellow-300 font-medium">functional designs</span>. The workshop emphasized <span className="text-yellow-500 dark:text-yellow-300 font-medium">hands-on learning</span>, with
+                students working directly with bamboo to understand its properties, limitations,
+                and vast potential as a <span className="text-yellow-500 dark:text-yellow-300 font-medium">sustainable building material</span>.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 text-lg">
+                Instructors guided participants through various <span className="text-yellow-500 dark:text-yellow-300 font-medium">joinery techniques</span>, tools usage,
+                and design considerations unique to <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo construction</span>, fostering both technical
+                skills and creative exploration.
+              </p>
+            </div>
             
-            {/* Hero Images */}
-            <div className="hidden lg:block">
+            {/* Workshop Images */}
+            <div className="mt-8 lg:mt-0">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-3">
                   <div className="rounded-lg overflow-hidden shadow-xl h-44">
@@ -151,34 +181,6 @@ const IcfaiWorkshop: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Workshop information */}
-      <section className="py-16 bg-white dark:bg-green-950">
-        <div className="container max-w-7xl mx-auto px-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
-              About the Workshop
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-              The impactful bamboo workshop held at ICFAI School of Architecture, Telangana, 
-              propelled students to explore the bamboo to create exceptional products. This 
-              exercise empowered them to craft contemporary masterpieces showcasing the 
-              finished products.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-              Throughout the three days, students progressed from basic material understanding
-              to creating functional designs. The workshop emphasized hands-on learning, with
-              students working directly with bamboo to understand its properties, limitations,
-              and vast potential as a sustainable building material.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 text-lg">
-              Instructors guided participants through various joinery techniques, tools usage,
-              and design considerations unique to bamboo construction, fostering both technical
-              skills and creative exploration.
-            </p>
           </div>
         </div>
       </section>
