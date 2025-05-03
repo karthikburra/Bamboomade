@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import WhatsAppContact from "@/components/WhatsAppContact";
 
 // Import workshop images from assets folder
-// Using images from existing assets as placeholders 
-// (you can replace these with actual Sirpur workshop images)
-import workshopImg1 from "@assets/IMG_20241105_143222581_HDR.jpg";
+// Using the authentic Sirpur training workshop image for the main photo
+import workshopImg1 from "@assets/IMG_20240128_163057719 1.png"; // Main Sirpur workshop image
+// Using additional bamboo craft images to supplement
 import workshopImg2 from "@assets/IMG_20241105_143140009_HDR.jpg";
 import workshopImg3 from "@assets/IMG_20241106_110210399_HDR.jpg";
 import workshopImg4 from "@assets/IMG_20241106_124903428_HDR.jpg";
@@ -18,7 +18,7 @@ import workshopImg6 from "@assets/IMG_20241107_171107759.jpg";
 const SirpurWorkshop: React.FC = () => {
   // Image gallery with aspect ratios preserved
   const galleryImages = [
-    { src: workshopImg1, alt: "Community members learning bamboo techniques" },
+    { src: workshopImg1, alt: "Sirpur workshop participants with their bamboo basket crafts" },
     { src: workshopImg2, alt: "Traditional bamboo weaving demonstration" },
     { src: workshopImg3, alt: "Workshop participants crafting with bamboo" },
     { src: workshopImg4, alt: "Bamboo joinery techniques being taught" },
@@ -69,13 +69,13 @@ const SirpurWorkshop: React.FC = () => {
           </h1>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 mb-4">
             <div className="flex items-center bg-black/30 text-green-300 px-3 py-1 rounded-full backdrop-blur-sm">
-              <span className="text-sm sm:text-base">January 2024</span>
+              <span className="text-sm sm:text-base">January 24-29, 2024</span>
             </div>
             <div className="flex items-center bg-black/30 text-green-300 px-3 py-1 rounded-full backdrop-blur-sm">
               <span className="text-sm sm:text-base">Sirpur, Chhattisgarh</span>
             </div>
             <div className="flex items-center bg-black/30 text-green-300 px-3 py-1 rounded-full backdrop-blur-sm">
-              <span className="text-sm sm:text-base">5-Day Workshop</span>
+              <span className="text-sm sm:text-base">6-Day Workshop</span>
             </div>
           </div>
           <p className="text-white/90 text-lg sm:text-xl max-w-3xl">
@@ -92,7 +92,7 @@ const SirpurWorkshop: React.FC = () => {
               About the <span className="text-yellow-500 dark:text-yellow-300">Workshop</span>
             </h2>
             <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-              The <span className="text-yellow-500 dark:text-yellow-300 font-medium">BambooMade Community Training</span> at Sirpur, Chhattisgarh, focused on creating awareness of bamboo through <span className="text-yellow-500 dark:text-yellow-300 font-medium">hands-on experience</span>. The 5-day workshop primarily emphasized traditional weaving techniques and joineries that have been passed down through generations in the community.
+              The <span className="text-yellow-500 dark:text-yellow-300 font-medium">BambooMade Community Training</span> at Sirpur, Chhattisgarh, focused on empowering local villagers with <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo crafting skills</span>. Held at Patel Samaj Bhavan in Barpura-02, this 6-day workshop (January 24-29, 2024) was organized with support from the Sirpur Rural Development Project and the local Gram Panchayat.
             </p>
             <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
               This community-centered approach aimed to have a <span className="text-yellow-500 dark:text-yellow-300 font-medium">direct influence</span> on how bamboo is used in future applications. By bringing together traditional craftspeople and modern design concepts, the workshop created a bridge between <span className="text-yellow-500 dark:text-yellow-300 font-medium">heritage techniques</span> and contemporary applications.
