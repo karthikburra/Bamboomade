@@ -108,12 +108,13 @@ const ProjectGuidance = () => {
       return apiRequest("POST", "/api/project-guidance", sessionData);
     },
     onSuccess: (data: any) => {
-      toast({
-        title: "Session Booked",
-        description: "Please complete the payment to confirm your session.",
-      });
       setSessionId(data.id);
-      setStep(3); // Move to payment step
+      
+      // Directly proceed to payment instead of showing payment selection
+      initiatePayment(data.id, form.getValues());
+      
+      // If payment initiation fails, the initiatePayment function will 
+      // fall back to the regular payment screen (setStep(3))
     },
     onError: (error) => {
       toast({
@@ -124,6 +125,58 @@ const ProjectGuidance = () => {
     },
   });
   
+  // Function to initiate PhonePe payment directly
+  const initiatePayment = async (sessionId: number, values: ProjectGuidanceFormValues) => {
+    try {
+      toast({
+        title: "Processing",
+        description: "Setting up your payment...",
+      });
+      
+      const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
+        amount: getCost(),
+        sessionId,
+        customerName: values.studentName,
+        customerPhone: values.phone,
+        customerEmail: values.email
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.paymentLink) {
+        // Store the transaction ID in local storage for reference
+        localStorage.setItem('pendingPaymentTxnId', data.transactionId);
+        
+        toast({
+          title: 'Redirecting to PhonePe',
+          description: 'You will be redirected to the PhonePe payment page.',
+        });
+        
+        // Redirect to PhonePe payment page
+        window.location.href = data.paymentLink;
+      } else {
+        toast({
+          title: 'Payment Initialization Failed',
+          description: data.message || data.error || 'Could not start the payment process. Please try again.',
+          variant: 'destructive',
+        });
+        
+        // Fall back to the payment selection page
+        setStep(3);
+      }
+    } catch (error) {
+      console.error('PhonePe payment client-side error:', error);
+      toast({
+        title: 'Payment Error',
+        description: 'There was an error processing your payment. Please try again.',
+        variant: 'destructive',
+      });
+      
+      // Fall back to the payment selection page
+      setStep(3);
+    }
+  };
+
   const onSubmit = (values: ProjectGuidanceFormValues) => {
     if (!selectedDate || !selectedTime) {
       toast({
@@ -134,6 +187,8 @@ const ProjectGuidance = () => {
       return;
     }
     
+    // When the user submits the form with date and time, book the session
+    // and then immediately redirect to payment
     bookSession(values);
   };
   
