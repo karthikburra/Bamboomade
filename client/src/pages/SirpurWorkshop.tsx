@@ -29,21 +29,21 @@ const SirpurWorkshop: React.FC = () => {
 
   // Workshop key points
   const workshopHighlights = [
-    "Introduction to bamboo as a sustainable local resource",
-    "Traditional weaving techniques preserved from generations",
-    "Essential joinery methods for structural applications",
-    "Hands-on experience with bamboo processing",
-    "Community-focused skill development approach",
-    "Bridging traditional craftsmanship with modern applications"
+    "Equipping villagers with essential bamboo crafting skills for self-sustainability",
+    "Economic empowerment through traditional and marketable bamboo craft techniques",
+    "Preparing local artisans to become key players in the future bamboo product industry",
+    "Hands-on training in bamboo processing and product development",
+    "Community-focused skill development promoting local entrepreneurship",
+    "Preserving traditional craftsmanship while fostering economic opportunities"
   ];
 
   return (
     <>
       <Helmet>
-        <title>Community Training Workshop at Sirpur | BambooMade</title>
+        <title>Community Training for Economic Empowerment | Sirpur, Chhattisgarh | BambooMade</title>
         <meta
           name="description"
-          content="6-day bamboo community training workshop at Sirpur, Chhattisgarh focused on traditional weaving techniques and teaching bamboo crafting skills to local villagers."
+          content="6-day bamboo community training workshop at Sirpur, Chhattisgarh empowering villagers with essential bamboo crafting skills for self-sustainability and economic opportunities in the future bamboo industry."
         />
       </Helmet>
 
@@ -82,7 +82,7 @@ const SirpurWorkshop: React.FC = () => {
                 6-day Bamboo Traditional Crafting Workshop • January 24-29, 2024 • Sirpur, Chhattisgarh
               </div>
               <p className="text-lg text-green-100 mb-8 max-w-3xl">
-                An immersive training program to create awareness of bamboo through hands-on experience, focusing on traditional weaving techniques and joinery methods passed down through generations.
+                An immersive training program equipping villagers with essential bamboo crafting skills, fostering self-sustainability and economic empowerment. Our aim was to prepare these artisans to become key players in the future bamboo product industry.
               </p>
               <WhatsAppContact
                 phoneNumber="8971690163"
