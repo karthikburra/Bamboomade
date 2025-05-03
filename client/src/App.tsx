@@ -28,6 +28,7 @@ import BambooLightingWorkshop from "@/pages/BambooLightingWorkshop";
 import IcfaiWorkshop from "@/pages/IcfaiWorkshop";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import PricingAndRefundPolicy from "@/pages/PricingAndRefundPolicy";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -56,6 +57,7 @@ function Router() {
       {/* Legal Pages */}
       <Route path="/terms-and-conditions" component={TermsAndConditions} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/pricing-and-refund-policy" component={PricingAndRefundPolicy} />
       
       <Route component={NotFound} />
     </Switch>
