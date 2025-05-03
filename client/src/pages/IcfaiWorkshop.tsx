@@ -19,6 +19,8 @@ import workshopImg10 from "@assets/IMG_20241106_110210399_HDR.jpg";
 import workshopImg11 from "@assets/IMG_20241106_150152616 (1).jpg";
 import workshopImg12 from "@assets/IMG_20241107_172108003 (1).jpg";
 
+// New workshop images - using public URLs instead of imports
+
 const IcfaiWorkshop: React.FC = () => {
   // Image gallery with aspect ratios preserved
   const galleryImages = [
@@ -252,7 +254,47 @@ const IcfaiWorkshop: React.FC = () => {
               </div>
             </div>
             
-            {/* Second row - workshop activity and more creations */}
+            {/* Second row - new authentic workshop creations */}
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/attached_assets/IMG_5806.JPG" 
+                  alt="Bamboo coat stand with woven lamp fixture" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Multi-purpose Bamboo Stand</h3>
+              </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/attached_assets/IMG20241107164704.jpg" 
+                  alt="Bamboo crossbow handcrafted by students" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Bamboo Crossbow Creation</h3>
+              </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/attached_assets/IMG20241105150502.jpg" 
+                  alt="Students using drilling machine on bamboo" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Workshop Drilling Activity</h3>
+              </div>
+            </div>
+            
+            {/* Third row - workshop activity and more creations */}
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
