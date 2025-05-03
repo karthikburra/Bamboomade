@@ -26,6 +26,7 @@ import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWork
 import ManitBhopalWorkshop from "@/pages/ManitBhopalWorkshop";
 import BambooLightingWorkshop from "@/pages/BambooLightingWorkshop";
 import IcfaiWorkshop from "@/pages/IcfaiWorkshop";
+import SirpurWorkshop from "@/pages/SirpurWorkshop";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import PricingAndRefundPolicy from "@/pages/PricingAndRefundPolicy";
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/workshops/manit-bhopal" component={ManitBhopalWorkshop} />
       <Route path="/workshops/bamboo-lighting" component={BambooLightingWorkshop} />
       <Route path="/workshops/icfai-architecture" component={IcfaiWorkshop} />
+      <Route path="/workshops/sirpur-community-training" component={SirpurWorkshop} />
       
       {/* Legal Pages */}
       <Route path="/terms-and-conditions" component={TermsAndConditions} />
