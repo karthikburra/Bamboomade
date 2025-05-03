@@ -163,61 +163,80 @@ function ProjectGuidance() {
         email: values.email
       });
       
-      const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
-        amount: getCost(),
-        sessionId, // Ensure sessionId is explicitly set
-        customerName: values.studentName,
-        customerPhone: values.phone,
-        customerEmail: values.email
-      });
-      
-      // Log all raw response details
-      console.log("Raw API response:", {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText,
-        headers: response.headers
-      });
-      
-      const data = await response.json();
-      
-      // Log parsed data with specifics to help debug
-      console.log("Parsed response data:", {
-        success: data.success,
-        hasPaymentLink: !!data.paymentLink,
-        hasTransactionId: !!data.transactionId,
-        message: data.message,
-        error: data.error,
-        fullData: data
-      });
-      
-      if (data.success && data.paymentLink) {
-        // Store the transaction ID in local storage for reference
-        localStorage.setItem('pendingPaymentTxnId', data.transactionId);
-        
-        toast({
-          title: 'Redirecting to PhonePe',
-          description: 'You will be redirected to the PhonePe payment page.',
+      // Make the API request
+      try {
+        const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
+          amount: getCost(),
+          sessionId, // Ensure sessionId is explicitly set
+          customerName: values.studentName,
+          customerPhone: values.phone,
+          customerEmail: values.email
         });
         
-        // Small delay to ensure the toast is shown before redirecting
-        setTimeout(() => {
-          // Redirect to PhonePe payment page
-          window.location.href = data.paymentLink;
-        }, 1500);
-      } else {
-        console.error("PhonePe payment initialization failed:", data.message || data.error);
+        // Log all raw response details
+        console.log("Raw API response:", {
+          status: response.status,
+          ok: response.ok,
+          statusText: response.statusText
+        });
+        
+        const data = await response.json();
+        
+        // Log parsed data with specifics to help debug
+        console.log("Parsed response data:", {
+          success: data.success,
+          hasPaymentLink: !!data.paymentLink,
+          hasTransactionId: !!data.transactionId,
+          message: data.message,
+          error: data.error,
+          fullData: data
+        });
+        
+        if (data.success && data.paymentLink) {
+          // Store the transaction ID in local storage for reference
+          localStorage.setItem('pendingPaymentTxnId', data.transactionId);
+          
+          toast({
+            title: 'Redirecting to PhonePe',
+            description: 'You will be redirected to the PhonePe payment page.',
+          });
+          
+          console.log("Will redirect to payment link:", data.paymentLink);
+          
+          // Small delay to ensure the toast is shown before redirecting
+          setTimeout(() => {
+            // Simple option - direct redirect
+            window.location.href = data.paymentLink;
+          }, 1500);
+        } else {
+          throw new Error(data.message || data.error || 'Payment initialization failed');
+        }
+      } catch (apiError: any) {
+        console.error("PhonePe API request error:", apiError);
+        
+        // Log the full error details for debugging
+        console.error({
+          message: apiError.message,
+          stack: apiError.stack,
+          response: apiError.response
+        });
+        
         toast({
           title: 'Payment Initialization Failed',
-          description: data.message || data.error || 'Could not start the payment process. Please try again.',
+          description: apiError.message || 'Could not start the payment process. Please try again.',
           variant: 'destructive',
         });
         
         // Fall back to the payment selection page
         setStep(3);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('PhonePe payment client-side error:', error);
+      console.error({
+        message: error.message,
+        stack: error.stack
+      });
+      
       toast({
         title: 'Payment Error',
         description: 'There was an error processing your payment. Please try again.',

@@ -547,8 +547,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sessionId: pendingPayment?.sessionId
           });
         } else {
-          console.error("PhonePe callback error: Transaction not found in storage");
-          return res.status(404).send("Transaction not found");
+          // Try to extract session ID from the transaction ID format: ORDER_TIMESTAMP_ID
+          console.log("Transaction not found in storage, trying to extract session ID from txnId:", txnId);
+          const parts = txnId.split('_');
+          if (parts.length >= 3) {
+            const potentialSessionId = parseInt(parts[parts.length - 1]);
+            if (!isNaN(potentialSessionId)) {
+              console.log("Successfully extracted session ID from txnId:", potentialSessionId);
+              
+              // Try to find the session in the database
+              const session = await storage.getProjectGuidance(potentialSessionId);
+              if (session && !session.paymentConfirmed) {
+                console.log("Found matching session in database:", {
+                  id: session.id,
+                  studentName: session.studentName,
+                  paymentConfirmed: session.paymentConfirmed
+                });
+                pendingPayment = { sessionId: session.id };
+              } else {
+                console.log("No matching session found or session already paid");
+              }
+            }
+          }
+          
+          if (!pendingPayment) {
+            console.error("PhonePe callback error: Transaction not found in storage and couldn't extract valid session ID");
+            return res.redirect('/payment-failed?reason=' + encodeURIComponent('Session not found or already paid'));
+          }
         }
         
         // Use a mock payment ID for test environment
@@ -622,13 +647,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (global.pendingPayments && global.pendingPayments[txnId]) {
           pendingPayment = global.pendingPayments[txnId];
-        } else if (req.session?.pendingPayments) {
+        } else if (req.session?.pendingPayments && req.session.pendingPayments[txnId]) {
           pendingPayment = req.session.pendingPayments[txnId];
+        } else {
+          // Try to extract session ID from the transaction ID format: ORDER_TIMESTAMP_ID
+          console.log("Transaction not found in storage, trying to extract session ID from txnId:", txnId);
+          const parts = txnId.split('_');
+          if (parts.length >= 3) {
+            const potentialSessionId = parseInt(parts[parts.length - 1]);
+            if (!isNaN(potentialSessionId)) {
+              console.log("Successfully extracted session ID from txnId:", potentialSessionId);
+              
+              // Try to find the session in the database
+              const session = await storage.getProjectGuidance(potentialSessionId);
+              if (session && !session.paymentConfirmed) {
+                console.log("Found matching session in database:", {
+                  id: session.id,
+                  studentName: session.studentName,
+                  paymentConfirmed: session.paymentConfirmed
+                });
+                pendingPayment = { sessionId: session.id };
+              } else {
+                console.log("No matching session found or session already paid");
+              }
+            }
+          }
         }
         
         if (!pendingPayment) {
-          console.error("PhonePe callback error: Transaction not found in storage");
-          return res.status(404).send("Transaction not found");
+          console.error("PhonePe callback error: Transaction not found in storage and couldn't extract valid session ID");
+          return res.redirect('/payment-failed?reason=' + encodeURIComponent('Session not found or already paid'));
         }
         
         // Update the project guidance session with the payment ID
