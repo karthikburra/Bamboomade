@@ -50,7 +50,7 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
   const renderHighlightedText = () => {
     // Define the parts to be highlighted for each phrase
     const highlightMap = [
-      { phrase: 0, text: "Thesis Project", className: "text-yellow-300 font-bold" },
+      { phrase: 0, text: "Academic Project", className: "text-yellow-300 font-bold" },
       { phrase: 1, text: "BambooMade AI", className: "text-yellow-300 font-bold" },
       { phrase: 2, text: "Bamboo workshops", className: "text-yellow-300 font-bold" },
     ];
@@ -130,7 +130,7 @@ const Hero: React.FC = () => {
             <span className="block text-green-300 min-h-[3.5rem] sm:min-h-[4rem] md:min-h-[4.5rem]">
               <AnimatedText 
                 phrases={[
-                  "Get Thesis Project guidance from Experts.",
+                  "Get Academic Project guidance from Experts.",
                   "Explore BambooMade AI for more Knowledge.",
                   "We bring Bamboo workshops to you."
                 ]} 
