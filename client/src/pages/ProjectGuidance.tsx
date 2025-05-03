@@ -562,6 +562,21 @@ function ProjectGuidance() {
                               customerPhone={form.getValues().phone}
                               onSuccess={handlePaymentSuccess}
                             />
+                            
+                            <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md border border-muted mt-4">
+                              <p>
+                                By proceeding with payment, you agree to our{' '}
+                                <a 
+                                  href="/pricing-and-refund-policy" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-green-500 hover:text-green-400 underline"
+                                >
+                                  refund policy
+                                </a>. 
+                                Cancellations made more than 48 hours before the session receive a full refund (minus 5% processing fee).
+                              </p>
+                            </div>
                           </div>
                           
                           <div className="flex justify-between mt-6">
@@ -674,9 +689,19 @@ function ProjectGuidance() {
                     <span>90-minute Comprehensive Review</span>
                     <span className="font-medium">₹3,505</span>
                   </div>
-                  <div className="mt-4 text-xs text-muted-foreground">
+                  <div className="mt-4 text-xs text-muted-foreground space-y-2">
                     <p>
                       All sessions include pre-session review of your materials and post-session notes.
+                    </p>
+                    <p>
+                      <a 
+                        href="/pricing-and-refund-policy" 
+                        className="text-green-500 hover:text-green-400 underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View our detailed pricing & refund policy
+                      </a>
                     </p>
                   </div>
                 </CardContent>
