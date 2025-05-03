@@ -465,14 +465,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         session.studentName
       );
       
-      // Generate calendar event link (this is just for display)
-      const startTime = format(sessionDate, "yyyyMMdd'T'HHmmss");
-      const endTime = format(
-        addMinutes(sessionDate, session.duration),
-        "yyyyMMdd'T'HHmmss"
+      // Generate calendar event link with projects@bamboomade.in as the host
+      const calendarLink = generateGoogleCalendarLink(
+        session.id,
+        meetLink,
+        sessionDate,
+        session.duration,
+        session.topic,
+        session.studentName
       );
-      
-      const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=BambooMade%20Project%20Guidance%20Session&dates=${startTime}/${endTime}&details=Join%20this%20Google%20Meet%20link:%20${encodeURIComponent(meetLink)}%0A%0ATopic:%20${encodeURIComponent(session.topic)}&location=${encodeURIComponent(meetLink)}`;
       
       res.json({
         success: true,

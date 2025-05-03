@@ -92,18 +92,10 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
     );
   }
 
-  // Create calendar event link
-  const createCalendarLink = () => {
+  // Use the calendar link from the API response - it includes projects@bamboomade.in as the host
+  const getCalendarLink = () => {
     if (!sessionDetails) return '#';
-    
-    const startDate = new Date(sessionDetails.date);
-    const endDate = new Date(startDate);
-    endDate.setMinutes(endDate.getMinutes() + sessionDetails.duration);
-    
-    const startTime = format(startDate, "yyyyMMdd'T'HHmmss");
-    const endTime = format(endDate, "yyyyMMdd'T'HHmmss");
-    
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=BambooMade%20Project%20Guidance%20Session&dates=${startTime}/${endTime}&details=Join%20this%20Google%20Meet%20link:%20${encodeURIComponent(meetLink)}%0A%0ATopic:%20${encodeURIComponent(sessionDetails.topic)}&location=${encodeURIComponent(meetLink)}`;
+    return sessionDetails.calendarLink || '#';
   };
 
   return (
@@ -186,7 +178,7 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
         <Button 
           variant="outline" 
           className="w-full flex items-center border-green-700 text-green-400 hover:bg-green-900/30"
-          onClick={() => window.open(createCalendarLink(), '_blank')}
+          onClick={() => window.open(getCalendarLink(), '_blank')}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           Add to Google Calendar
