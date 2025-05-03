@@ -62,13 +62,20 @@ function ProjectGuidance() {
       // User is returning from payment page
       setSessionId(parseInt(sessionIdParam));
       
-      // If there's a txnId parameter, it's likely a successful payment
-      if (params.get("txnId")) {
+      // Check for successful payment from any of the payment gateways
+      const paymentId = params.get("txnId") || params.get("paymentId") || params.get("razorpay_payment_id");
+      
+      if (paymentId) {
         toast({
           title: "Payment Successful",
-          description: "Your project guidance session has been booked.",
+          description: "We will send your Google Meet link within 4 hours.",
         });
         setStep(4); // Move to confirmation step
+        
+        // Clear the URL parameters to avoid confusion if page is refreshed
+        const url = new URL(window.location.href);
+        url.search = '';
+        window.history.replaceState({}, document.title, url.toString());
       }
     }
     
@@ -224,7 +231,7 @@ function ProjectGuidance() {
   const handlePaymentSuccess = (paymentId: string) => {
     toast({
       title: "Payment Successful",
-      description: "Your project guidance session has been confirmed. Check your email for details.",
+      description: "We will send your Google Meet link within 4 hours.",
     });
     setStep(4); // Move to success step
   };
@@ -490,7 +497,7 @@ function ProjectGuidance() {
                             <h4 className="text-base font-medium">Select Payment Method</h4>
                             <PaymentOptions 
                               amount={getCost()}
-                              sessionId={sessionId ? sessionId.toString() : ""}
+                              sessionId={sessionId ?? 0}
                               customerName={form.getValues().studentName}
                               customerEmail={form.getValues().email}
                               customerPhone={form.getValues().phone}
@@ -543,20 +550,78 @@ function ProjectGuidance() {
                   )}
                   
                   {step === 4 && (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-8 h-8 text-green-600" />
+                    <div className="py-6">
+                      <div className="flex flex-col items-center justify-center mb-6">
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                          <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h3 className="text-xl font-bold text-green-600 dark:text-green-400">Payment Successful!</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mt-2 text-center">
+                          We will send you a Google Meet link within 4 hours
+                        </p>
                       </div>
-                      <h3 className="text-xl font-bold text-green-600 mb-2">Booking Confirmed</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Thank you for booking a project guidance session with BambooMade. You will receive a confirmation email with a Google Meet link for your session.
-                      </p>
-                      <Button 
-                        onClick={() => window.location.href = "/"} 
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Return Home
-                      </Button>
+                      
+                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-6">
+                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
+                          Session Details
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Date:</p>
+                            <p className="font-medium">{selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : ""}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Time:</p>
+                            <p className="font-medium">{selectedTime} IST</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Duration:</p>
+                            <p className="font-medium">{selectedDuration} minutes</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Topic:</p>
+                            <p className="font-medium">{form.getValues().topic}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-t border-gray-100 dark:border-gray-700 pt-5 mt-4">
+                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
+                          Contact Information
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                          For any queries regarding your session, please contact us:
+                        </p>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-500 dark:text-gray-400">Email:</span>
+                            <a href="mailto:projects@bamboomade.in" className="text-green-600 dark:text-green-400 hover:underline">
+                              projects@bamboomade.in
+                            </a>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-500 dark:text-gray-400">Phone:</span>
+                            <a href="tel:+918971690163" className="text-green-600 dark:text-green-400 hover:underline">
+                              +91 8971690163
+                            </a>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-500 dark:text-gray-400">WhatsApp:</span>
+                            <a href="https://wa.me/918971690163" className="text-green-600 dark:text-green-400 hover:underline">
+                              +91 8971690163
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-center mt-8">
+                        <Button 
+                          onClick={() => window.location.href = "/"} 
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Return Home
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </CardContent>
