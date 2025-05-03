@@ -1,11 +1,46 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Razorpay with keys
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
-});
+// Razorpay instance holder
+let razorpay: Razorpay | null = null;
+
+// Initialize Razorpay if keys are available
+function getRazorpayInstance(): Razorpay | null {
+  if (razorpay) return razorpay;
+  
+  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    try {
+      razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
+      
+      console.log("Razorpay service initialized with:", {
+        keyIdExists: !!process.env.RAZORPAY_KEY_ID,
+        keySecretExists: !!process.env.RAZORPAY_KEY_SECRET,
+        environment: process.env.NODE_ENV || 'development',
+      });
+      
+      return razorpay;
+    } catch (error) {
+      console.error("Failed to initialize Razorpay:", error);
+      return null;
+    }
+  }
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("========== RAZORPAY DEVELOPMENT MODE ==========");
+    console.log("The Razorpay integration is running in development mode.");
+    console.log("- No credentials provided, simulated mode is active");
+    console.log("- Payments will be simulated for testing purposes");
+    console.log("- No actual charges will be made");
+    console.log("===============================================");
+  } else {
+    console.error("Razorpay credentials missing in production environment");
+  }
+  
+  return null;
+}
 
 /**
  * Initialize a Razorpay payment
@@ -63,6 +98,15 @@ export async function initiateRazorpayPayment(
       };
     }
 
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      return {
+        success: false,
+        error: 'Razorpay service not initialized',
+      };
+    }
+    
     // Create order in Razorpay
     const orderOptions = {
       amount: amountInPaise,
@@ -75,7 +119,7 @@ export async function initiateRazorpayPayment(
       }
     };
 
-    const order = await razorpay.orders.create(orderOptions);
+    const order = await razorpayInstance.orders.create(orderOptions);
 
     return {
       success: true,
@@ -169,8 +213,17 @@ export async function getRazorpayPaymentDetails(paymentId: string) {
       return { success: false, error: 'RAZORPAY_NOT_CONFIGURED' };
     }
 
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      return {
+        success: false,
+        error: 'Razorpay service not initialized',
+      };
+    }
+    
     // Fetch payment from Razorpay
-    const payment = await razorpay.payments.fetch(paymentId);
+    const payment = await razorpayInstance.payments.fetch(paymentId);
 
     return {
       success: true,

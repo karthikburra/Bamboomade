@@ -53,23 +53,25 @@ const RazorpayPaymentForm = ({
   const createOrderMutation = useMutation({
     mutationFn: async () => {
       setIsLoading(true);
-      return apiRequest('POST', '/api/razorpay/create-order', {
+      const response = await apiRequest('POST', '/api/razorpay/create-order', {
         amount,
         orderId,
         customerName,
         customerEmail,
         customerPhone
       });
+      const data = await response.json();
+      return data;
     },
-    onSuccess: (response) => {
-      if (response.success) {
-        openRazorpayCheckout(response);
+    onSuccess: (data) => {
+      if (data.success) {
+        openRazorpayCheckout(data);
       } else {
         setIsLoading(false);
-        onFailure(response.error || 'Failed to create payment order');
+        onFailure(data.error || 'Failed to create payment order');
         toast({
           title: 'Payment Initialization Failed',
-          description: response.error || 'Could not initialize payment. Please try again.',
+          description: data.error || 'Could not initialize payment. Please try again.',
           variant: 'destructive'
         });
       }
@@ -93,11 +95,13 @@ const RazorpayPaymentForm = ({
       razorpay_payment_id: string; 
       razorpay_signature: string; 
     }) => {
-      return apiRequest('POST', '/api/razorpay/verify-payment', data);
+      const response = await apiRequest('POST', '/api/razorpay/verify-payment', data);
+      const responseData = await response.json();
+      return responseData;
     },
-    onSuccess: (response, variables) => {
+    onSuccess: (data, variables) => {
       setIsLoading(false);
-      if (response.success && response.verified) {
+      if (data.success && data.verified) {
         onSuccess(variables.razorpay_payment_id);
         toast({
           title: 'Payment Successful',

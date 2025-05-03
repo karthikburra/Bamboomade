@@ -756,6 +756,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Razorpay Payment Routes
+  app.post("/api/razorpay/create-order", async (req, res) => {
+    try {
+      const { amount, sessionId, customerName, customerPhone, customerEmail } = req.body;
+      
+      // Log information for debugging
+      console.log("Razorpay order creation:", {
+        amount,
+        sessionId,
+        customerName: customerName ? "✓" : "✗", // For privacy, just log if present
+        customerPhone: customerPhone ? "✓" : "✗", // For privacy, just log if present
+        customerEmail: customerEmail ? "✓" : "✗", // For privacy, just log if present
+        keyIdExists: !!process.env.RAZORPAY_KEY_ID,
+        keySecretExists: !!process.env.RAZORPAY_KEY_SECRET
+      });
+      
+      if (!amount || !customerName || !customerPhone || !customerEmail) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Missing required payment information" 
+        });
+      }
+      
+      // Verify that the required environment variables are set
+      if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        console.warn("Missing Razorpay credentials in environment variables");
+        if (process.env.NODE_ENV !== 'production') {
+          console.log("Development mode: Will simulate Razorpay payment");
+        } else {
+          return res.status(500).json({
+            success: false,
+            message: "Payment service configuration error"
+          });
+        }
+      }
+      
+      // Generate a unique order ID that includes the session ID for better tracking
+      const orderId = sessionId 
+        ? `ORDER_RP_${Date.now()}_${sessionId}` 
+        : `ORDER_RP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      
+      console.log(`Razorpay order creation for order: ${orderId}`);
+      
+      // Initialize Razorpay payment
+      const orderResult = await initiateRazorpayPayment(
+        amount,
+        orderId,
+        customerName,
+        customerPhone,
+        customerEmail
+      );
+      
+      // Log the order result (excluding sensitive info)
+      console.log("Razorpay order result:", {
+        success: orderResult.success,
+        hasOrderId: !!orderResult.orderId,
+        hasError: !!orderResult.error
+      });
+      
+      if (orderResult.success) {
+        // For development/testing, store the pending payment in memory
+        // In production, this should be stored in the database
+        const pendingPaymentData = {
+          amount,
+          sessionId,
+          customerName,
+          customerPhone,
+          customerEmail
+        };
+        
+        // Store in global variable for testing if session is not available
+        if (!req.session) {
+          console.log("Session not available, using global storage for pending payment");
+          global.pendingPayments = global.pendingPayments || {};
+          global.pendingPayments[orderId] = pendingPaymentData;
+        } else {
+          if (!req.session.pendingPayments) {
+            req.session.pendingPayments = {};
+          }
+          req.session.pendingPayments[orderId] = pendingPaymentData;
+        }
+        
+        res.json(orderResult);
+      } else {
+        console.error("Razorpay order creation failed:", orderResult.error);
+        res.status(400).json({
+          success: false,
+          message: orderResult.error || "Failed to create payment order"
+        });
+      }
+    } catch (error) {
+      console.error("Razorpay order creation error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Payment order creation failed",
+        error: (error as Error).message
+      });
+    }
+  });
+
+  app.post("/api/razorpay/verify-payment", async (req, res) => {
+    try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+      
+      console.log("Razorpay payment verification request:", {
+        orderId: razorpay_order_id ? "✓" : "✗",
+        paymentId: razorpay_payment_id ? "✓" : "✗",
+        signature: razorpay_signature ? "✓" : "✗"
+      });
+      
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Missing required verification parameters" 
+        });
+      }
+      
+      // Verify the payment signature
+      const verificationResult = verifyRazorpayPayment(
+        razorpay_order_id,
+        razorpay_payment_id, 
+        razorpay_signature
+      );
+      
+      if (verificationResult.success && verificationResult.verified) {
+        // Get payment details from Razorpay
+        const paymentDetails = await getRazorpayPaymentDetails(razorpay_payment_id);
+        
+        if (paymentDetails.success) {
+          console.log("Razorpay payment verified successfully:", {
+            paymentId: razorpay_payment_id,
+            status: paymentDetails.status,
+            amount: paymentDetails.amount
+          });
+          
+          // Extract session ID from our custom order ID format if present
+          // Format: ORDER_RP_timestamp_sessionId
+          let sessionId = null;
+          const orderIdParts = razorpay_order_id.split('_');
+          if (orderIdParts.length >= 4) {
+            sessionId = orderIdParts[3];
+            
+            // If we have a session ID and it's a project guidance session, update its payment status
+            if (sessionId && !isNaN(parseInt(sessionId))) {
+              try {
+                const session = await storage.getProjectGuidance(parseInt(sessionId));
+                
+                if (session) {
+                  // Update payment status in the database
+                  await storage.updateProjectGuidancePayment(parseInt(sessionId), razorpay_payment_id);
+                  
+                  // Send confirmation email with Google Meet link
+                  const sessionDate = new Date(session.date);
+                  
+                  await sendBookingConfirmationEmail({
+                    sessionId: session.id,
+                    studentName: session.studentName,
+                    studentEmail: session.email,
+                    sessionDate: sessionDate,
+                    sessionDuration: session.duration,
+                    sessionTopic: session.topic
+                  });
+                  
+                  console.log(`Payment confirmation email sent for session ${sessionId}`);
+                }
+              } catch (emailError) {
+                console.error("Failed to send confirmation email:", emailError);
+                // Continue processing even if email fails
+              }
+            }
+          }
+          
+          res.json({
+            success: true,
+            verified: true,
+            paymentId: razorpay_payment_id
+          });
+        } else {
+          console.error("Razorpay payment details retrieval failed:", paymentDetails.error);
+          res.status(400).json({
+            success: false,
+            message: "Payment verification failed: could not retrieve payment details"
+          });
+        }
+      } else {
+        console.error("Razorpay payment verification failed:", verificationResult.error);
+        res.status(400).json({
+          success: false, 
+          verified: false,
+          message: "Payment signature verification failed"
+        });
+      }
+    } catch (error) {
+      console.error("Razorpay payment verification error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Payment verification failed",
+        error: (error as Error).message
+      });
+    }
+  });
+
   // AI Chat routes
   app.post("/api/chat", async (req, res) => {
     try {

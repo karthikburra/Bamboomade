@@ -8,12 +8,13 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 interface PhonePePaymentFormProps {
-  sessionId: number;
+  sessionId: string;
   amount: number;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  onSuccess: () => void;
+  onSuccess: (paymentId: string) => void;
+  onFailure: (error: string) => void;
 }
 
 const PhonePePaymentForm = ({
@@ -22,7 +23,8 @@ const PhonePePaymentForm = ({
   customerName,
   customerEmail,
   customerPhone,
-  onSuccess
+  onSuccess,
+  onFailure
 }: PhonePePaymentFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -77,22 +79,26 @@ const PhonePePaymentForm = ({
         // onSuccess will be called after the user returns to our site 
         // via the callback URL and the payment is verified
       } else {
-        console.error("PhonePe payment initialization failed:", data.message || data.error);
+        const errorMessage = data.message || data.error || 'Could not start the payment process. Please try again.';
+        console.error("PhonePe payment initialization failed:", errorMessage);
         toast({
           title: 'Payment Initialization Failed',
-          description: data.message || data.error || 'Could not start the payment process. Please try again.',
+          description: errorMessage,
           variant: 'destructive',
         });
         setIsLoading(false);
+        onFailure(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.message || 'There was an error processing your payment. Please try again.';
       console.error('PhonePe payment client-side error:', error);
       toast({
         title: 'Payment Error',
-        description: 'There was an error processing your payment. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
       setIsLoading(false);
+      onFailure(errorMessage);
     }
   };
 
