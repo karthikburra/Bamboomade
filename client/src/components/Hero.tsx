@@ -143,9 +143,7 @@ const Hero: React.FC = () => {
           <p className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl text-white max-w-3xl">
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
-          <p className="mt-2 sm:mt-3 text-base sm:text-lg text-green-300 font-medium max-w-3xl">
-            Innovating sustainable architecture with bamboo since 2019
-          </p>
+
           <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-sm sm:text-base md:text-lg text-white max-w-3xl">
             <p className="mt-1 sm:mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
           </div>
