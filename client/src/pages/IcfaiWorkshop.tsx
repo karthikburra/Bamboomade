@@ -149,15 +149,15 @@ const IcfaiWorkshop: React.FC = () => {
                 <div className="space-y-3">
                   <div className="rounded-lg overflow-hidden shadow-xl h-44">
                     <img 
-                      src="/img/workshops/icfai-lamp.jpg" 
-                      alt="Bamboo lamp fixture with LED lights" 
+                      src="/img/workshops/icfai-hanging-lamp-new.jpg" 
+                      alt="Bamboo lamp fixture with LED lights on display" 
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="rounded-lg overflow-hidden shadow-xl h-48">
                     <img 
-                      src="/img/workshops/icfai-bamboo-cutting.jpg" 
-                      alt="Students working with bamboo materials" 
+                      src="/img/workshops/icfai-workshop-activity-new.jpg" 
+                      alt="Students working with bamboo materials in workshop" 
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -165,15 +165,15 @@ const IcfaiWorkshop: React.FC = () => {
                 <div className="space-y-3">
                   <div className="rounded-lg overflow-hidden shadow-xl h-48">
                     <img 
-                      src="/img/workshops/icfai-hanging-lamp.jpg" 
-                      alt="Bamboo shelving unit and hanging lamp" 
+                      src="/img/workshops/icfai-woven-lamp-new.jpg" 
+                      alt="Intricate woven bamboo pendant lamp with light" 
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="rounded-lg overflow-hidden shadow-xl h-44">
                     <img 
-                      src="/img/workshops/icfai-bamboo-shelf.jpg" 
-                      alt="Bamboo furniture display" 
+                      src="/img/workshops/icfai-bamboo-stool-new.jpg" 
+                      alt="Handcrafted bamboo stool with woven seat" 
                       className="w-full h-full object-cover"
                     />
                   </div>
