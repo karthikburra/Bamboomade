@@ -271,6 +271,46 @@ const IcfaiWorkshop: React.FC = () => {
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
+                  src="/workshop-images/bamboo-chair.jpg" 
+                  alt="Bamboo chair with woven seat in classroom" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Bamboo Chair Creation</h3>
+              </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/workshop-images/bamboo-table.jpg" 
+                  alt="Bamboo coffee table with glass top" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Glass-Top Bamboo Table</h3>
+              </div>
+            </div>
+            
+            {/* Third row - more bamboo creations */}
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/workshop-images/bamboo-screen.jpg" 
+                  alt="Decorative bamboo screen divider" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Bamboo Screen Divider</h3>
+              </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
                   src="/workshop-images/bamboo-bow.jpg" 
                   alt="Bamboo crossbow handcrafted by students" 
                   className="max-w-full max-h-[400px] object-contain"
@@ -294,7 +334,7 @@ const IcfaiWorkshop: React.FC = () => {
               </div>
             </div>
             
-            {/* Third row - workshop activity and more creations */}
+            {/* Fourth row - additional workshop images */}
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
