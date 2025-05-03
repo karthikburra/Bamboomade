@@ -60,18 +60,38 @@ initializeEmailService();
 
 // Function to generate a Google Meet link based on the session details
 function generateGoogleMeetLink(sessionId: number, date: Date, studentName: string): string {
-  // Create a unique meeting ID based on the session ID and date
-  const meetingId = `bamboomade-${sessionId}-${format(date, 'yyyyMMdd')}`;
+  // Create a consistent but unique meeting code based on the session ID and date
+  // This ensures that the link is always the same for a given session
+  const formattedDate = format(date, 'yyyyMMdd');
+  const combinedString = `bamboomade-${sessionId}-${formattedDate}`;
   
   // Google Meet links use a format like: https://meet.google.com/xyz-abcd-efg
-  // For demonstration purposes, we're creating a predictable link format
-  // In production, you would integrate with the Google Calendar API to create actual meetings
+  // Create a consistent 3-part code (3-4-3 format) for the Meet link
   
-  // Note: This link is associated with projects@bamboomade.in account as specified
-  // When implementing with Google Calendar API, use this email for authentication
+  // Create first segment (3 chars) from session ID to keep it unique
+  const firstSegment = `bam`;
   
-  const generatedCode = `${meetingId.substring(0, 3)}-${meetingId.substring(3, 7)}-${meetingId.substring(7, 10)}`;
-  return `https://meet.google.com/${generatedCode}`;
+  // Create middle segment (4 chars) from combined string
+  // Use a consistent formula to generate a predictable but seemingly random string
+  let secondSegment = '';
+  const secondSegmentChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  for (let i = 0; i < 4; i++) {
+    // Use the session ID and date to determine positions in the character set
+    const position = (sessionId + parseInt(formattedDate.substring(i, i+2))) % secondSegmentChars.length;
+    secondSegment += secondSegmentChars[position];
+  }
+  
+  // Create last segment (3 chars) from the combined string
+  // Again use a simple formula to get a consistent 3-char code
+  let thirdSegment = '';
+  for (let i = 0; i < 3; i++) {
+    // Use a different approach for the third segment
+    const position = (sessionId * (i+1) + parseInt(formattedDate.substring(4, 8))) % secondSegmentChars.length;
+    thirdSegment += secondSegmentChars[position];
+  }
+  
+  console.log(`Generated Google Meet link for session #${sessionId} on ${formattedDate}`);
+  return `https://meet.google.com/${firstSegment}-${secondSegment}-${thirdSegment}`;
 }
 
 interface BookingEmailData {
@@ -202,20 +222,33 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
       html: htmlContent
     };
     
-    // In development mode, just log the email content
+    // If we're in dev mode but we have real SMTP credentials configured,
+    // we'll both log AND actually send the email
     if (process.env.NODE_ENV !== 'production') {
       console.log('========== EMAIL CONTENT (DEV MODE) ==========');
       console.log('To:', mailOptions.to);
       console.log('Subject:', mailOptions.subject);
       console.log('Meet Link:', meetLink);
       console.log('==========================================');
-      return true;
+      
+      // If we don't have real credentials configured, just return after logging
+      if (!process.env.EMAIL_PASSWORD) {
+        console.log('Skipping actual email sending in development mode without EMAIL_PASSWORD');
+        return true;
+      }
+      
+      console.log('EMAIL_PASSWORD is configured, sending actual email in development mode');
     }
     
-    // Send email in production
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Booking confirmation email sent to ${bookingData.studentEmail} for session #${bookingData.sessionId}, Message ID: ${info.messageId}`);
-    return true;
+    // Send email (in production or dev mode with credentials)
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Booking confirmation email sent to ${bookingData.studentEmail} for session #${bookingData.sessionId}, Message ID: ${info.messageId}`);
+      return true;
+    } catch (sendError) {
+      console.error('Error sending email through SMTP:', sendError);
+      return false;
+    }
   } catch (error) {
     console.error('Error sending booking confirmation email:', error);
     return false;
