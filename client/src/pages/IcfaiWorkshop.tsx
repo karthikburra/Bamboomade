@@ -272,12 +272,12 @@ const IcfaiWorkshop: React.FC = () => {
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
                   src="/workshop-images/bamboo-chair.jpg" 
-                  alt="Bamboo chair with woven seat in classroom" 
+                  alt="Building bamboo multi-purpose stand in workshop" 
                   className="max-w-full max-h-[400px] object-contain"
                 />
               </div>
               <div className="p-3 bg-green-900/80">
-                <h3 className="text-green-100 font-medium">Bamboo Chair Creation</h3>
+                <h3 className="text-green-100 font-medium">Building Bamboo Multi-Purpose Stand</h3>
               </div>
             </div>
             
