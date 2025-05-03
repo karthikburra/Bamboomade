@@ -6,6 +6,7 @@ import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { sendBookingConfirmationEmail, initializeEmailService, generateGoogleMeetLink, generateGoogleCalendarLink } from "./email-service";
+import { initializeSheetsService, updateProjectGuidanceSession, addUserToSheet } from "./sheets-service";
 import { format, addMinutes } from "date-fns";
 import { ZodError } from "zod";
 import { z } from "zod";
@@ -42,6 +43,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     initializeEmailService();
   } else {
     console.log('[express] Email password not found, email functionality will be limited to development mode');
+  }
+  
+  // Initialize Google Sheets integration
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY && process.env.GOOGLE_SPREADSHEET_ID) {
+    console.log('[express] Initializing Google Sheets integration');
+    initializeSheetsService();
+  } else {
+    console.log('[express] Google Sheets integration credentials not found, Google Sheets functionality will be disabled');
   }
   // Helper middleware for handling zod validation errors
   const validateRequest = (schema: any) => {
@@ -80,6 +89,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const user = await storage.createUser(userData);
+      
+      // Add user to Google Sheet for tracking
+      addUserToSheet(user.id, user.username, user.email, user.role)
+        .catch(error => console.error("Failed to add user to Google Sheet:", error));
       
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
@@ -288,6 +301,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (isAdminUser && !user.isAdmin) {
           user = await storage.updateUserAdminStatus(user.id, true);
         }
+
+        // Add new user to Google Sheet for tracking
+        addUserToSheet(user.id, user.username, user.email, user.role)
+          .catch(error => console.error("Failed to add Google-authenticated user to Google Sheet:", error));
       }
       
       // Set user in session
