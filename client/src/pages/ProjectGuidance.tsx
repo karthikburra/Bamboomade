@@ -176,7 +176,7 @@ function ProjectGuidance() {
         status: response.status,
         ok: response.ok,
         statusText: response.statusText,
-        headers: Object.fromEntries([...response.headers.entries()])
+        headers: response.headers
       });
       
       const data = await response.json();

@@ -11,14 +11,15 @@ const CLIENT_SECRET = process.env.PHONEPE_CLIENT_SECRET || '';
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Get the Replit domain from environment variables
+// In Replit, we need to use .replit.app domain as our callback URL
 const replitDomain = process.env.REPL_SLUG 
-  ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
+  ? `https://${process.env.REPL_SLUG}.replit.app` 
   : null;
 
 // Use Replit domain in production if available, otherwise use a default or localhost
 const baseUrl = isProduction 
   ? (replitDomain || 'https://bamboomade.replit.app') 
-  : 'http://localhost:5000';
+  : (replitDomain || 'http://localhost:5000');
 
 const REDIRECT_URL = `${baseUrl}/api/payments/phonepe/callback`;
 const REDIRECT_MODE = 'REDIRECT';
