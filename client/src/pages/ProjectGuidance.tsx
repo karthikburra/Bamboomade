@@ -45,7 +45,7 @@ const projectGuidanceFormSchema = z.object({
 
 type ProjectGuidanceFormValues = z.infer<typeof projectGuidanceFormSchema>;
 
-const ProjectGuidance = () => {
+function ProjectGuidance() {
   const { toast } = useToast();
   const [step, setStep] = useState(1); // 1: Schedule, 2: Details, 3: Payment, 4: Confirmation
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -615,6 +615,6 @@ const ProjectGuidance = () => {
       </div>
     </>
   );
-};
+}
 
 export default ProjectGuidance;
