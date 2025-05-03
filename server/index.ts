@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { setApiKey as setSendGridApiKey } from "./email-service";
+import { initializeEmailService } from "./email-service";
 import session from 'express-session';
 import path from 'path';
 
@@ -54,16 +54,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize SendGrid email service if API key is available
-  if (process.env.SENDGRID_API_KEY) {
-    const success = setSendGridApiKey(process.env.SENDGRID_API_KEY);
+  // Initialize email service if password is available
+  if (process.env.EMAIL_PASSWORD) {
+    const success = initializeEmailService();
     if (success) {
-      log("SendGrid email service initialized successfully");
+      log("Email service initialized successfully");
     } else {
-      log("Failed to initialize SendGrid email service");
+      log("Failed to initialize email service");
     }
   } else {
-    log("SendGrid API key not found, email functionality will be disabled");
+    log("Email password not found, email functionality will be limited to development mode");
   }
 
   const server = await registerRoutes(app);
