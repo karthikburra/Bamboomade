@@ -18,19 +18,25 @@ const hostName =
     ? `https://${process.env.REPL_SLUG}.replit.app` 
     : (isProduction 
         ? 'https://bamboomade.replit.app' 
-        : 'https://workspace.replit.app');
+        : 'https://4000-${process.env.REPL_ID}.${process.env.REPL_SLUG}.replit.dev');
 
-// Setup PhonePe callback URLs
+// Setup PhonePe callback URLs - Make sure to format URLs correctly
 const CALLBACK_URL = `${hostName}/api/payments/phonepe/callback`;
 const REDIRECT_URL = `${hostName}/api/payments/phonepe/callback`;
+
+// Additional configuration for PhonePe
+const MERCHANT_USER_ID = 'MUID_' + Date.now(); // Generate a merchant user ID
+const REDIRECT_MODE = 'REDIRECT'; // Required by PhonePe
 
 // Log initialization information (excluding sensitive data)
 console.log("PhonePe service initialized with:", {
   host: PHONEPE_HOST,
   merchantId: MERCHANT_ID,
+  callbackUrl: CALLBACK_URL,
   redirectUrl: REDIRECT_URL,
   hasClientId: !!CLIENT_ID,
   hasClientSecret: !!SALT_KEY,
+  saltIndex: SALT_INDEX,
   environment: isProduction ? "production" : "development"
 });
 
@@ -64,20 +70,21 @@ export async function initiatePhonePePayment(
     });
 
     // Create payload according to PhonePe API documentation
+    // Follow exact format as per V1 API
     const payload = {
       merchantId: MERCHANT_ID,
       merchantTransactionId: orderId,
       // Convert rupees to paise (1 rupee = 100 paise)
       amount: Math.round(amount * 100),
       redirectUrl: REDIRECT_URL,
-      redirectMode: "REDIRECT",
+      redirectMode: REDIRECT_MODE,
       callbackUrl: CALLBACK_URL,
       mobileNumber: customerPhone,
       paymentInstrument: {
         type: "PAY_PAGE"
       },
-      // Optional but helpful fields
-      merchantUserId: "MUID_" + Date.now(),
+      // Required for merchant identification
+      merchantUserId: MERCHANT_USER_ID
     };
 
     // Convert payload to base64
@@ -97,7 +104,7 @@ export async function initiatePhonePePayment(
       signatureGenerated: true
     });
 
-    // Make API call to PhonePe
+    // Make API call to PhonePe with all required headers
     const response = await axios.post(
       `${PHONEPE_HOST}/pg/v1/pay`,
       {
@@ -106,7 +113,9 @@ export async function initiatePhonePePayment(
       {
         headers: {
           'Content-Type': 'application/json',
-          'X-VERIFY': xVerifyHeader
+          'X-VERIFY': xVerifyHeader,
+          'X-MERCHANT-ID': MERCHANT_ID,
+          'Accept': 'application/json'
         }
       }
     );

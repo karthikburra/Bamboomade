@@ -449,8 +449,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate a unique order ID
-      const orderId = `ORDER_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      // Generate a unique order ID that includes the session ID for better tracking
+      const orderId = sessionId 
+        ? `ORDER_${Date.now()}_${sessionId}` 
+        : `ORDER_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       
       console.log(`PhonePe payment request for order: ${orderId}`);
       
