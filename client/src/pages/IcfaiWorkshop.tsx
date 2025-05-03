@@ -1,6 +1,6 @@
 import React from "react";
 import { Helmet } from "react-helmet";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Award, Flame } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import WhatsAppContact from "@/components/WhatsAppContact";
@@ -93,24 +93,64 @@ const IcfaiWorkshop: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-green-900/90 to-green-800/80 z-0"></div>
         
         <div className="container max-w-7xl mx-auto px-4 relative z-10">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              ICFAI School of Architecture
-            </h1>
-            <div className="text-green-300 font-semibold text-xl mb-6">
-              3-day Bamboo Joinery and Craft Workshop • November 2024
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                ICFAI School of Architecture
+              </h1>
+              <div className="text-green-300 font-semibold text-xl mb-6">
+                3-day Bamboo Joinery and Craft Workshop • November 2024
+              </div>
+              <p className="text-lg text-green-100 mb-8">
+                An immersive workshop that propelled architecture students to explore
+                bamboo's potential, empowering them to craft contemporary masterpieces
+                and sustainable design solutions.
+              </p>
+              <WhatsAppContact
+                phoneNumber="+918971690163"
+                message="Hello, I'm interested in organizing a bamboo workshop similar to the one at ICFAI School of Architecture. Could you provide more information?"
+                className="bg-green-600 hover:bg-green-700 text-white"
+                size="lg"
+              />
             </div>
-            <p className="text-lg sm:text-xl text-green-100 mb-8">
-              An immersive workshop that propelled architecture students to explore
-              bamboo's potential, empowering them to craft contemporary masterpieces
-              and sustainable design solutions.
-            </p>
-            <WhatsAppContact
-              phoneNumber="+918971690163"
-              message="Hello, I'm interested in organizing a bamboo workshop similar to the one at ICFAI School of Architecture. Could you provide more information?"
-              className="bg-green-600 hover:bg-green-700 text-white"
-              size="lg"
-            />
+            
+            {/* Hero Images */}
+            <div className="hidden lg:block">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-3">
+                  <div className="rounded-lg overflow-hidden shadow-xl h-44">
+                    <img 
+                      src="/img/workshops/icfai-lamp.jpg" 
+                      alt="Bamboo lamp fixture with LED lights" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="rounded-lg overflow-hidden shadow-xl h-48">
+                    <img 
+                      src="/img/workshops/icfai-bamboo-cutting.jpg" 
+                      alt="Students working with bamboo materials" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="rounded-lg overflow-hidden shadow-xl h-48">
+                    <img 
+                      src="/img/workshops/icfai-hanging-lamp.jpg" 
+                      alt="Bamboo shelving unit and hanging lamp" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="rounded-lg overflow-hidden shadow-xl h-44">
+                    <img 
+                      src="/img/workshops/icfai-bamboo-shelf.jpg" 
+                      alt="Bamboo furniture display" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -226,35 +266,55 @@ const IcfaiWorkshop: React.FC = () => {
       </section>
       
       {/* Key Highlights & Student Creations */}
-      <section className="py-16 bg-green-50 dark:bg-green-900/20">
+      <section className="py-16 bg-gradient-to-br from-green-50 to-white dark:from-green-900/30 dark:to-green-950/40">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
-                Key Highlights
-              </h2>
-              <ul className="space-y-3 mb-8">
+            {/* Key Highlights Section */}
+            <div className="bg-white dark:bg-green-900/60 rounded-xl shadow-lg p-6 border border-green-100 dark:border-green-800">
+              <div className="flex items-center mb-6">
+                <div className="bg-green-100 dark:bg-green-800/50 p-3 rounded-full mr-4">
+                  <Award className="h-6 w-6 text-green-600 dark:text-green-300" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300">
+                  Key Highlights
+                </h2>
+              </div>
+              
+              <div className="space-y-4">
                 {workshopHighlights.map((highlight, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">{highlight}</span>
-                  </li>
+                  <div 
+                    key={index} 
+                    className="flex p-3 rounded-lg transition-colors hover:bg-green-50 dark:hover:bg-green-800/30"
+                  >
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-200 font-medium">{highlight}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
-                Student Creations
-              </h2>
-              <ul className="space-y-3">
+            {/* Student Creations Section */}
+            <div className="bg-white dark:bg-green-900/60 rounded-xl shadow-lg p-6 border border-green-100 dark:border-green-800">
+              <div className="flex items-center mb-6">
+                <div className="bg-green-100 dark:bg-green-800/50 p-3 rounded-full mr-4">
+                  <Flame className="h-6 w-6 text-green-600 dark:text-green-300" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300">
+                  Student Creations
+                </h2>
+              </div>
+              
+              <div className="space-y-4">
                 {workshopDeliverables.map((deliverable, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">{deliverable}</span>
-                  </li>
+                  <div 
+                    key={index} 
+                    className="flex p-3 rounded-lg transition-colors hover:bg-green-50 dark:hover:bg-green-800/30"
+                  >
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-200 font-medium">{deliverable}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
         </div>
