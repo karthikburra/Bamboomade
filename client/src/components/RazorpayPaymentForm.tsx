@@ -14,6 +14,7 @@ declare global {
 interface RazorpayPaymentFormProps {
   amount: number;
   orderId: string;
+  sessionId?: number;  // Added sessionId (optional for backward compatibility)
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -24,6 +25,7 @@ interface RazorpayPaymentFormProps {
 const RazorpayPaymentForm = ({
   amount,
   orderId,
+  sessionId,
   customerName,
   customerEmail,
   customerPhone,
@@ -56,6 +58,7 @@ const RazorpayPaymentForm = ({
       const response = await apiRequest('POST', '/api/razorpay/create-order', {
         amount,
         orderId,
+        sessionId,  // Pass the sessionId to the server
         customerName,
         customerEmail,
         customerPhone

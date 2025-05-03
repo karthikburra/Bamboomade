@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 interface PhonePePaymentFormProps {
-  sessionId: string;
+  sessionId: number;
   amount: number;
   customerName: string;
   customerEmail: string;

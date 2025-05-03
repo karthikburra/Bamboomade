@@ -9,7 +9,7 @@ import { Check, CreditCard } from 'lucide-react';
 
 interface PaymentOptionsProps {
   amount: number;
-  sessionId: string;
+  sessionId: number;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -124,6 +124,7 @@ const PaymentOptions = ({
             <RazorpayPaymentForm
               amount={amount}
               orderId={orderId}
+              sessionId={sessionId}
               customerName={customerName}
               customerEmail={customerEmail}
               customerPhone={customerPhone}

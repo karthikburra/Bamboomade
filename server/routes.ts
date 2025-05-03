@@ -800,9 +800,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate a unique order ID that includes the session ID for better tracking
+      // Format: BAMBOO_sessionId_timestamp 
+      // This makes it easier to extract the session ID after payment
       const orderId = sessionId 
-        ? `ORDER_RP_${Date.now()}_${sessionId}` 
-        : `ORDER_RP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        ? `BAMBOO_${sessionId}_${Date.now()}` 
+        : `BAMBOO_RANDOM_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
         
       console.log(`Generated Razorpay order ID with sessionId ${sessionId}: ${orderId}`);
       
@@ -901,13 +903,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           // Extract session ID from our custom order ID format if present
-          // Format: ORDER_RP_timestamp_sessionId
+          // Format: BAMBOO_sessionId_timestamp
           let sessionId = null;
           const orderIdParts = razorpay_order_id.split('_');
           console.log("Parsing Razorpay order ID parts:", orderIdParts);
           
-          if (orderIdParts.length >= 4) {
-            sessionId = orderIdParts[3];
+          // Check for our specific format
+          if (orderIdParts[0] === 'BAMBOO' && orderIdParts.length >= 3 && orderIdParts[1] !== 'RANDOM') {
+            // The session ID is the second part (index 1)
+            sessionId = orderIdParts[1];
             console.log("Extracted sessionId from order ID:", sessionId);
             
             // If we have a session ID and it's a project guidance session, update its payment status
