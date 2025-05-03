@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { BookText, CalendarCheck, Calendar, CheckCircle, GraduationCap, Briefcase, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +52,36 @@ function ProjectGuidance() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<number>(60); // Default 60 minutes
   const [sessionId, setSessionId] = useState<number | null>(null);
+  
+  // Check if returning from payment flow
+  useEffect(() => {
+    // Check URL parameters for payment callback
+    const params = new URLSearchParams(window.location.search);
+    const sessionIdParam = params.get("sessionId");
+    
+    if (sessionIdParam) {
+      // User is returning from payment page
+      setSessionId(parseInt(sessionIdParam));
+      
+      // If there's a txnId parameter, it's likely a successful payment
+      if (params.get("txnId")) {
+        toast({
+          title: "Payment Successful",
+          description: "Your project guidance session has been booked.",
+        });
+        setStep(4); // Move to confirmation step
+      }
+    }
+    
+    // Check if there was a pending transaction in localStorage
+    const pendingTxnId = localStorage.getItem('pendingPaymentTxnId');
+    if (pendingTxnId) {
+      console.log("Found pending transaction:", pendingTxnId);
+      
+      // Clear the pending transaction
+      localStorage.removeItem('pendingPaymentTxnId');
+    }
+  }, [toast]);
   
   const form = useForm<ProjectGuidanceFormValues>({
     resolver: zodResolver(projectGuidanceFormSchema),
