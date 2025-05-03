@@ -9,12 +9,12 @@ import { Check, CreditCard } from 'lucide-react';
 
 interface PaymentOptionsProps {
   amount: number;
-  sessionId: number;
+  sessionId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  onPaymentSuccess: (paymentId: string) => void;
-  onPaymentFailure: (error: string) => void;
+  onSuccess: (paymentId: string) => void;
+  onFailure: (error: string) => void;
 }
 
 type PaymentGateway = 'phonepe' | 'razorpay';
@@ -25,8 +25,8 @@ const PaymentOptions = ({
   customerName,
   customerEmail,
   customerPhone,
-  onPaymentSuccess,
-  onPaymentFailure
+  onSuccess,
+  onFailure
 }: PaymentOptionsProps) => {
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>('phonepe');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -113,12 +113,12 @@ const PaymentOptions = ({
           {selectedGateway === 'phonepe' ? (
             <PhonePePaymentForm
               amount={amount}
-              sessionId={sessionId.toString()}
+              sessionId={sessionId}
               customerName={customerName}
               customerEmail={customerEmail}
               customerPhone={customerPhone}
-              onSuccess={onPaymentSuccess}
-              onFailure={onPaymentFailure}
+              onSuccess={onSuccess}
+              onFailure={onFailure}
             />
           ) : (
             <RazorpayPaymentForm
@@ -127,8 +127,8 @@ const PaymentOptions = ({
               customerName={customerName}
               customerEmail={customerEmail}
               customerPhone={customerPhone}
-              onSuccess={onPaymentSuccess}
-              onFailure={onPaymentFailure}
+              onSuccess={onSuccess}
+              onFailure={onFailure}
             />
           )}
         </div>

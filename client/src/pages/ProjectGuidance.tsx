@@ -29,8 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import BookingCalendar from "@/components/BookingCalendar";
-import PaymentForm from "@/components/PaymentForm";
-import PhonePePaymentForm from "@/components/PhonePePaymentForm";
+import PaymentOptions from "@/components/PaymentOptions";
 
 import * as ToggleGroup from "@radix-ui/react-toggle-group";
 
@@ -174,106 +173,33 @@ function ProjectGuidance() {
     },
   });
   
-  // Function to directly initiate PhonePe payment
+  // Function to proceed to payment page after session booking
   const initiatePayment = async (sessionId: number, values: ProjectGuidanceFormValues) => {
     try {
       toast({
-        title: "Processing",
-        description: "Setting up your payment...",
+        title: "Session Booked",
+        description: "Please complete the payment to confirm your session.",
       });
       
-      console.log("Initiating direct payment with sessionId:", sessionId);
+      console.log("Proceeding to payment page with sessionId:", sessionId);
       
-      // Add more debugging to see what's happening
-      console.log("Making PhonePe payment API request with data:", {
-        amount: getCost(),
-        sessionId,
-        customerName: values.studentName,
-        phone: values.phone,
-        email: values.email
-      });
+      // Directly go to payment options page
+      setStep(3);
       
-      // Make the API request
-      try {
-        const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
-          amount: getCost(),
-          sessionId, // Ensure sessionId is explicitly set
-          customerName: values.studentName,
-          customerPhone: values.phone,
-          customerEmail: values.email
-        });
-        
-        // Log all raw response details
-        console.log("Raw API response:", {
-          status: response.status,
-          ok: response.ok,
-          statusText: response.statusText
-        });
-        
-        const data = await response.json();
-        
-        // Log parsed data with specifics to help debug
-        console.log("Parsed response data:", {
-          success: data.success,
-          hasPaymentLink: !!data.paymentLink,
-          hasTransactionId: !!data.transactionId,
-          message: data.message,
-          error: data.error,
-          fullData: data
-        });
-        
-        if (data.success && data.paymentLink) {
-          // Store the transaction ID in local storage for reference
-          localStorage.setItem('pendingPaymentTxnId', data.transactionId);
-          
-          toast({
-            title: 'Redirecting to PhonePe',
-            description: 'You will be redirected to the PhonePe payment page.',
-          });
-          
-          console.log("Will redirect to payment link:", data.paymentLink);
-          
-          // Small delay to ensure the toast is shown before redirecting
-          setTimeout(() => {
-            // Simple option - direct redirect
-            window.location.href = data.paymentLink;
-          }, 1500);
-        } else {
-          throw new Error(data.message || data.error || 'Payment initialization failed');
-        }
-      } catch (apiError: any) {
-        console.error("PhonePe API request error:", apiError);
-        
-        // Log the full error details for debugging
-        console.error({
-          message: apiError.message,
-          stack: apiError.stack,
-          response: apiError.response
-        });
-        
-        toast({
-          title: 'Payment Initialization Failed',
-          description: apiError.message || 'Could not start the payment process. Please try again.',
-          variant: 'destructive',
-        });
-        
-        // Fall back to the payment selection page
-        setStep(3);
-      }
     } catch (error: any) {
-      console.error('PhonePe payment client-side error:', error);
+      console.error('Error while preparing payment page:', error);
       console.error({
         message: error.message,
         stack: error.stack
       });
       
       toast({
-        title: 'Payment Error',
-        description: 'There was an error processing your payment. Please try again.',
+        title: 'Error',
+        description: 'There was an error preparing the payment page. Please try again.',
         variant: 'destructive',
       });
       
-      // If we have a valid session ID, show the payment selection page
+      // If we have a valid session ID, still try to show the payment page
       if (sessionId) {
         setStep(3);
       }
@@ -295,12 +221,20 @@ function ProjectGuidance() {
     bookSession(values);
   };
   
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (paymentId: string) => {
     toast({
       title: "Payment Successful",
       description: "Your project guidance session has been confirmed. Check your email for details.",
     });
     setStep(4); // Move to success step
+  };
+  
+  const handlePaymentFailure = (error: string) => {
+    toast({
+      title: "Payment Failed",
+      description: error || "There was an issue processing your payment. Please try again.",
+      variant: "destructive",
+    });
   };
   
   return (
@@ -553,14 +487,15 @@ function ProjectGuidance() {
                           </div>
                           
                           <div className="space-y-4">
-                            <h4 className="text-base font-medium">Pay with PhonePe</h4>
-                            <PhonePePaymentForm 
+                            <h4 className="text-base font-medium">Select Payment Method</h4>
+                            <PaymentOptions 
                               amount={getCost()}
-                              sessionId={sessionId}
+                              sessionId={sessionId ? sessionId.toString() : ""}
                               customerName={form.getValues().studentName}
                               customerEmail={form.getValues().email}
                               customerPhone={form.getValues().phone}
                               onSuccess={handlePaymentSuccess}
+                              onFailure={handlePaymentFailure}
                             />
                             
                             <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md border border-muted mt-4">
