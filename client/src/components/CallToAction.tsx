@@ -5,7 +5,7 @@ import { Phone, Calendar, MessageSquare } from "lucide-react";
 
 const CallToAction: React.FC = () => {
   return (
-    <section className="py-12 sm:py-16 bg-gradient-to-b from-black to-green-950/60 text-green-50">
+    <section className="py-12 sm:py-16 bg-gradient-to-b from-black to-green-950 text-green-50">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight sm:text-4xl px-2">
