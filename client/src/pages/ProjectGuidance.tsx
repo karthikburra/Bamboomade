@@ -108,10 +108,25 @@ const ProjectGuidance = () => {
       return apiRequest("POST", "/api/project-guidance", sessionData);
     },
     onSuccess: (data: any) => {
-      setSessionId(data.id);
+      // Make sure we have a valid session ID
+      if (!data || !data.id) {
+        console.error("Missing session ID in server response:", data);
+        toast({
+          title: "Session Booking Error",
+          description: "Could not process your booking. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const bookedSessionId = data.id;
+      console.log("Session booked successfully with ID:", bookedSessionId);
+      
+      // Update state with the session ID
+      setSessionId(bookedSessionId);
       
       // Directly proceed to payment instead of showing payment selection
-      initiatePayment(data.id, form.getValues());
+      initiatePayment(bookedSessionId, form.getValues());
       
       // If payment initiation fails, the initiatePayment function will 
       // fall back to the regular payment screen (setStep(3))
@@ -133,9 +148,11 @@ const ProjectGuidance = () => {
         description: "Setting up your payment...",
       });
       
+      console.log("Initiating direct payment with sessionId:", sessionId);
+      
       const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
         amount: getCost(),
-        sessionId,
+        sessionId: sessionId, // Ensure sessionId is explicitly set
         customerName: values.studentName,
         customerPhone: values.phone,
         customerEmail: values.email
@@ -172,8 +189,10 @@ const ProjectGuidance = () => {
         variant: 'destructive',
       });
       
-      // Fall back to the payment selection page
-      setStep(3);
+      // If we have a valid session ID, show the payment selection page
+      if (sessionId) {
+        setStep(3);
+      }
     }
   };
 

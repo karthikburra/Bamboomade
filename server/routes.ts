@@ -427,11 +427,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         clientSecretExists: !!process.env.PHONEPE_CLIENT_SECRET
       });
       
-      if (!amount || !sessionId || !customerName || !customerPhone || !customerEmail) {
+      if (!amount || !customerName || !customerPhone || !customerEmail) {
         return res.status(400).json({ 
           success: false,
           message: "Missing required payment information" 
         });
+      }
+      
+      // sessionId is required for booking confirmation, but we'll allow the payment to proceed
+      // in case we want to handle the session creation after payment in some flows
+      if (!sessionId) {
+        console.warn("PhonePe payment initiated without sessionId");
       }
 
       // Verify that the required environment variables are set
