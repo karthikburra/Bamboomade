@@ -185,6 +185,67 @@ const IcfaiWorkshop: React.FC = () => {
         </div>
       </section>
 
+      {/* Key Highlights & Student Creations */}
+      <section className="py-16 bg-gradient-to-br from-green-950 to-green-900 text-white">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* Key Highlights Section */}
+            <div className="bg-green-900/80 rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+              <div className="flex items-center mb-6">
+                <div className="bg-yellow-800/50 p-3 rounded-full mr-4">
+                  <Award className="h-6 w-6 text-yellow-300" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-green-200">
+                  Key <span className="text-yellow-300">Highlights</span>
+                </h2>
+              </div>
+              
+              <div className="p-4 rounded-lg bg-green-800/30 border border-green-700">
+                <p className="text-green-100 mb-4 leading-relaxed">
+                  The workshop focused on teaching <span className="text-yellow-300 font-semibold">sustainable</span> building methods and 
+                  innovative <span className="text-yellow-300 font-semibold">joinery techniques</span> for <span className="text-yellow-300 font-semibold">bamboo</span> construction. 
+                  Students learned how to transform raw bamboo into <span className="text-yellow-300 font-semibold">functional products</span> through 
+                  hands-on experience.
+                </p>
+                <p className="text-green-100 leading-relaxed">
+                  <span className="text-yellow-300 font-semibold">Collaborative</span> design sessions enabled participants to develop 
+                  <span className="text-yellow-300 font-semibold"> modern designs</span> while embracing traditional craftsmanship. 
+                  The intensive program provided a comprehensive understanding of bamboo as a versatile and sustainable building material 
+                  with real-world applications.
+                </p>
+              </div>
+            </div>
+
+            {/* Student Creations Section */}
+            <div className="bg-green-900/80 rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+              <div className="flex items-center mb-6">
+                <div className="bg-yellow-800/50 p-3 rounded-full mr-4">
+                  <Flame className="h-6 w-6 text-yellow-300" />
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-green-200">
+                  Student <span className="text-yellow-300">Creations</span>
+                </h2>
+              </div>
+              
+              <div className="p-4 rounded-lg bg-yellow-900/30 border border-yellow-700">
+                <p className="text-green-100 mb-4 leading-relaxed">
+                  Students created versatile <span className="text-yellow-300 font-semibold">Partition</span> screens with intricate patterns 
+                  and <span className="text-yellow-300 font-semibold">Coffee tables</span> with glass tops on bamboo frames. The workshop also 
+                  produced <span className="text-yellow-300 font-semibold">Ergonomic</span> chairs designed for comfort and support, showing how 
+                  bamboo can be applied to everyday furniture.
+                </p>
+                <p className="text-green-100 leading-relaxed">
+                  <span className="text-yellow-300 font-semibold">Creative</span> lighting fixtures became a standout achievement, showcasing bamboo's 
+                  versatility with light diffusion. <span className="text-yellow-300 font-semibold">Multi-purpose</span> storage solutions and
+                  <span className="text-yellow-300 font-semibold"> Decorative</span> wall elements demonstrated how bamboo can enhance both 
+                  functionality and aesthetics in contemporary interior design.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {/* Featured images - highlighting best projects */}
       <section className="py-12 bg-gradient-to-b from-green-950 to-green-900 text-white">
         <div className="container max-w-7xl mx-auto px-4">
@@ -263,67 +324,6 @@ const IcfaiWorkshop: React.FC = () => {
 
           <div className="mt-8 text-center text-green-100 italic">
             The students created <span className="text-yellow-200">remarkable pieces</span> showcasing both <span className="text-yellow-200">traditional craftsmanship</span> and <span className="text-yellow-200">innovative design</span> approaches.
-          </div>
-        </div>
-      </section>
-      
-      {/* Key Highlights & Student Creations */}
-      <section className="py-16 bg-gradient-to-br from-green-950 to-green-900 text-white">
-        <div className="container max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Key Highlights Section */}
-            <div className="bg-green-900/80 rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-              <div className="flex items-center mb-6">
-                <div className="bg-yellow-800/50 p-3 rounded-full mr-4">
-                  <Award className="h-6 w-6 text-yellow-300" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-green-200">
-                  Key <span className="text-yellow-300">Highlights</span>
-                </h2>
-              </div>
-              
-              <div className="p-4 rounded-lg bg-green-800/30 border border-green-700">
-                <p className="text-green-100 mb-4 leading-relaxed">
-                  The workshop focused on teaching <span className="text-yellow-300 font-semibold">sustainable</span> building methods and 
-                  innovative <span className="text-yellow-300 font-semibold">joinery techniques</span> for <span className="text-yellow-300 font-semibold">bamboo</span> construction. 
-                  Students learned how to transform raw bamboo into <span className="text-yellow-300 font-semibold">functional products</span> through 
-                  hands-on experience.
-                </p>
-                <p className="text-green-100 leading-relaxed">
-                  <span className="text-yellow-300 font-semibold">Collaborative</span> design sessions enabled participants to develop 
-                  <span className="text-yellow-300 font-semibold"> modern designs</span> while embracing traditional craftsmanship. 
-                  The intensive program provided a comprehensive understanding of bamboo as a versatile and sustainable building material 
-                  with real-world applications.
-                </p>
-              </div>
-            </div>
-
-            {/* Student Creations Section */}
-            <div className="bg-green-900/80 rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
-              <div className="flex items-center mb-6">
-                <div className="bg-yellow-800/50 p-3 rounded-full mr-4">
-                  <Flame className="h-6 w-6 text-yellow-300" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-green-200">
-                  Student <span className="text-yellow-300">Creations</span>
-                </h2>
-              </div>
-              
-              <div className="p-4 rounded-lg bg-yellow-900/30 border border-yellow-700">
-                <p className="text-green-100 mb-4 leading-relaxed">
-                  Students created versatile <span className="text-yellow-300 font-semibold">Partition</span> screens with intricate patterns 
-                  and <span className="text-yellow-300 font-semibold">Coffee tables</span> with glass tops on bamboo frames. The workshop also 
-                  produced <span className="text-yellow-300 font-semibold">Ergonomic</span> chairs designed for comfort and support, showing how 
-                  bamboo can be applied to everyday furniture.
-                </p>
-                <p className="text-green-100 leading-relaxed">
-                  <span className="text-yellow-300 font-semibold">Creative</span> lighting fixtures became a standout achievement, showcasing bamboo's 
-                  versatility with light diffusion. <span className="text-yellow-300 font-semibold">Multi-purpose</span> storage solutions and
-                  <span className="text-yellow-300 font-semibold"> Decorative</span> wall elements demonstrated how bamboo can enhance both 
-                  functionality and aesthetics in contemporary interior design.
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
