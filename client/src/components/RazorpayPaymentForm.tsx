@@ -105,12 +105,23 @@ const RazorpayPaymentForm = ({
     onSuccess: (data, variables) => {
       setIsLoading(false);
       if (data.success && data.verified) {
+        // Call the onSuccess callback from parent component
         onSuccess(variables.razorpay_payment_id);
+        
+        // Display success message
         toast({
           title: 'Payment Successful',
           description: 'Your payment has been processed successfully.',
           variant: 'default'
         });
+        
+        // Redirect to payment success page if sessionId is available
+        if (sessionId) {
+          // Small delay to ensure toast is visible
+          setTimeout(() => {
+            window.location.href = `/payment-success?paymentId=${variables.razorpay_payment_id}&sessionId=${sessionId}`;
+          }, 1000);
+        }
       } else {
         onFailure('Payment verification failed');
         toast({
