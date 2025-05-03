@@ -122,7 +122,7 @@ const IcfaiWorkshop: React.FC = () => {
       <section className="py-16 bg-white dark:bg-green-950">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
               About the <span className="text-yellow-500 dark:text-yellow-300">Workshop</span>
             </h2>
             <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
