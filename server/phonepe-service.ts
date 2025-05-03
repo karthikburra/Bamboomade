@@ -8,6 +8,7 @@ const PHONEPE_HOST = 'https://api-preprod.phonepe.com/apis/pg-sandbox';
 // Credential variables - load from environment
 const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || '';
 const SALT_KEY = process.env.PHONEPE_CLIENT_SECRET || '';
+const CLIENT_ID = process.env.PHONEPE_CLIENT_ID || '';
 const SALT_INDEX = '1'; // PhonePe typically uses 1 as the salt index
 
 // Get the Replit domain or use local development domain
@@ -28,6 +29,7 @@ console.log("PhonePe service initialized with:", {
   host: PHONEPE_HOST,
   merchantId: MERCHANT_ID,
   redirectUrl: REDIRECT_URL,
+  hasClientId: !!CLIENT_ID,
   hasClientSecret: !!SALT_KEY,
   environment: isProduction ? "production" : "development"
 });
