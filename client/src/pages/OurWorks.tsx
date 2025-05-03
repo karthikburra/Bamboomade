@@ -50,7 +50,7 @@ const OurWorks: React.FC = () => {
       id: "icfai-architecture",
       title: "ICFAI School of Architecture",
       description: "An impactful bamboo workshop where students explored bamboo to create exceptional products, empowering them to craft contemporary masterpieces showcasing the finished products.",
-      imageUrl: "/img/projects/icfai-bamboo-stool.jpg",
+      imageUrl: "/img/projects/icfai-bamboo-stool-thumbnail.png",
       duration: "3 day workshop",
       date: "Nov 2024",
       viewMoreLink: "/workshops/icfai-architecture"
