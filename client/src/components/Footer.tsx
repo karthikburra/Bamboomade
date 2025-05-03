@@ -152,9 +152,9 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               Terms & Conditions
             </Link>
             <span className="hidden sm:inline text-primary-600">|</span>
-            <a href="mailto:Info@bamboomade.in" className="text-xs sm:text-sm text-primary-300 hover:text-primary-100">
+            <Link href="/privacy-policy" className="text-xs sm:text-sm text-primary-300 hover:text-primary-100">
               Privacy Policy
-            </a>
+            </Link>
           </div>
           <p className="text-sm sm:text-base text-primary-400 text-center">
             &copy; {new Date().getFullYear()} BambooMade. All rights reserved.

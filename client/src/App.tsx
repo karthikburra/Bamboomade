@@ -27,6 +27,7 @@ import ManitBhopalWorkshop from "@/pages/ManitBhopalWorkshop";
 import BambooLightingWorkshop from "@/pages/BambooLightingWorkshop";
 import IcfaiWorkshop from "@/pages/IcfaiWorkshop";
 import TermsAndConditions from "@/pages/TermsAndConditions";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -54,6 +55,7 @@ function Router() {
       
       {/* Legal Pages */}
       <Route path="/terms-and-conditions" component={TermsAndConditions} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
       
       <Route component={NotFound} />
     </Switch>
