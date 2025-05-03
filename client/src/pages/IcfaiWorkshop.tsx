@@ -266,54 +266,83 @@ const IcfaiWorkshop: React.FC = () => {
       </section>
       
       {/* Key Highlights & Student Creations */}
-      <section className="py-16 bg-gradient-to-br from-green-50 to-white dark:from-green-900/30 dark:to-green-950/40">
+      <section className="py-16 bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900/40 dark:to-green-950/30">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Key Highlights Section */}
-            <div className="bg-white dark:bg-green-900/60 rounded-xl shadow-lg p-6 border border-green-100 dark:border-green-800">
+            <div className="bg-white dark:bg-green-900/60 rounded-xl shadow-lg p-6 border-l-4 border-green-500 dark:border-green-400">
               <div className="flex items-center mb-6">
-                <div className="bg-green-100 dark:bg-green-800/50 p-3 rounded-full mr-4">
-                  <Award className="h-6 w-6 text-green-600 dark:text-green-300" />
+                <div className="bg-yellow-100 dark:bg-yellow-800/50 p-3 rounded-full mr-4">
+                  <Award className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300">
-                  Key Highlights
+                  Key <span className="text-yellow-500 dark:text-yellow-300">Highlights</span>
                 </h2>
               </div>
               
               <div className="space-y-4">
-                {workshopHighlights.map((highlight, index) => (
-                  <div 
-                    key={index} 
-                    className="flex p-3 rounded-lg transition-colors hover:bg-green-50 dark:hover:bg-green-800/30"
-                  >
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-200 font-medium">{highlight}</span>
-                  </div>
-                ))}
+                {workshopHighlights.map((highlight, index) => {
+                  // Highlight key terms in yellow
+                  const highlightedText = highlight
+                    .replace(/sustainable/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">sustainable</span>')
+                    .replace(/techniques/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">techniques</span>')
+                    .replace(/joinery/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">joinery</span>')
+                    .replace(/bamboo/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">bamboo</span>')
+                    .replace(/modern designs/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">modern designs</span>')
+                    .replace(/functional products/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">functional products</span>')
+                    .replace(/Collaborative/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Collaborative</span>');
+                    
+                  return (
+                    <div 
+                      key={index} 
+                      className="flex p-3 rounded-lg transition-colors hover:bg-green-50 dark:hover:bg-green-800/30 border border-transparent hover:border-green-200 dark:hover:border-green-700"
+                    >
+                      <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-3 mt-0.5 flex-shrink-0" />
+                      <span 
+                        className="text-gray-700 dark:text-gray-200 font-medium"
+                        dangerouslySetInnerHTML={{ __html: highlightedText }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             {/* Student Creations Section */}
-            <div className="bg-white dark:bg-green-900/60 rounded-xl shadow-lg p-6 border border-green-100 dark:border-green-800">
+            <div className="bg-white dark:bg-green-900/60 rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 dark:border-yellow-400">
               <div className="flex items-center mb-6">
-                <div className="bg-green-100 dark:bg-green-800/50 p-3 rounded-full mr-4">
-                  <Flame className="h-6 w-6 text-green-600 dark:text-green-300" />
+                <div className="bg-yellow-100 dark:bg-yellow-800/50 p-3 rounded-full mr-4">
+                  <Flame className="h-6 w-6 text-yellow-600 dark:text-yellow-300" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300">
-                  Student Creations
+                  Student <span className="text-yellow-500 dark:text-yellow-300">Creations</span>
                 </h2>
               </div>
               
               <div className="space-y-4">
-                {workshopDeliverables.map((deliverable, index) => (
-                  <div 
-                    key={index} 
-                    className="flex p-3 rounded-lg transition-colors hover:bg-green-50 dark:hover:bg-green-800/30"
-                  >
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-200 font-medium">{deliverable}</span>
-                  </div>
-                ))}
+                {workshopDeliverables.map((deliverable, index) => {
+                  // Highlight key terms in yellow
+                  const highlightedText = deliverable
+                    .replace(/Partition/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Partition</span>')
+                    .replace(/Coffee tables/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Coffee tables</span>')
+                    .replace(/Ergonomic/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Ergonomic</span>')
+                    .replace(/Creative/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Creative</span>')
+                    .replace(/Multi-purpose/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Multi-purpose</span>')
+                    .replace(/Decorative/g, '<span class="text-yellow-500 dark:text-yellow-300 font-semibold">Decorative</span>');
+                    
+                  return (
+                    <div 
+                      key={index} 
+                      className="flex p-3 rounded-lg transition-colors hover:bg-yellow-50 dark:hover:bg-yellow-900/20 border border-transparent hover:border-yellow-200 dark:hover:border-yellow-800"
+                    >
+                      <Check className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-3 mt-0.5 flex-shrink-0" />
+                      <span 
+                        className="text-gray-700 dark:text-gray-200 font-medium"
+                        dangerouslySetInnerHTML={{ __html: highlightedText }}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
