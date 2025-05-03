@@ -5,7 +5,8 @@ import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, ins
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
-import { sendBookingConfirmationEmail, initializeEmailService } from "./email-service";
+import { sendBookingConfirmationEmail, initializeEmailService, generateGoogleMeetLink } from "./email-service";
+import { format, addMinutes } from "date-fns";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
@@ -416,6 +417,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(session);
     } catch (error) {
       res.status(500).json({ message: "Failed to update payment status", error: (error as Error).message });
+    }
+  });
+  
+  // New endpoint to get session details with Google Meet link after payment
+  app.get("/api/session-details/:sessionId", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.sessionId, 10);
+      const paymentId = req.query.paymentId as string;
+      
+      if (isNaN(sessionId)) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid session ID" 
+        });
+      }
+      
+      if (!paymentId) {
+        return res.status(400).json({
+          success: false,
+          message: "Payment ID is required"
+        });
+      }
+      
+      const session = await storage.getProjectGuidance(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({
+          success: false,
+          message: "Session not found"
+        });
+      }
+      
+      // Verify that this session has been paid for
+      if (!session.paymentConfirmed || session.paymentId !== paymentId) {
+        return res.status(403).json({
+          success: false,
+          message: "Payment verification failed"
+        });
+      }
+      
+      // Generate the Google Meet link
+      const sessionDate = new Date(session.date);
+      const meetLink = generateGoogleMeetLink(
+        session.id,
+        sessionDate,
+        session.studentName
+      );
+      
+      // Generate calendar event link (this is just for display)
+      const startTime = format(sessionDate, "yyyyMMdd'T'HHmmss");
+      const endTime = format(
+        addMinutes(sessionDate, session.duration),
+        "yyyyMMdd'T'HHmmss"
+      );
+      
+      const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=BambooMade%20Project%20Guidance%20Session&dates=${startTime}/${endTime}&details=Join%20this%20Google%20Meet%20link:%20${encodeURIComponent(meetLink)}%0A%0ATopic:%20${encodeURIComponent(session.topic)}&location=${encodeURIComponent(meetLink)}`;
+      
+      res.json({
+        success: true,
+        session,
+        meetLink,
+        calendarLink
+      });
+    } catch (error) {
+      console.error("Error getting session details:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to get session details",
+        error: (error as Error).message
+      });
     }
   });
 

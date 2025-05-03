@@ -59,7 +59,7 @@ export function initializeEmailService() {
 initializeEmailService();
 
 // Function to generate a Google Meet link based on the session details
-function generateGoogleMeetLink(sessionId: number, date: Date, studentName: string): string {
+export function generateGoogleMeetLink(sessionId: number, date: Date, studentName: string): string {
   // Create a consistent but unique meeting code based on the session ID and date
   // This ensures that the link is always the same for a given session
   const formattedDate = format(date, 'yyyyMMdd');
