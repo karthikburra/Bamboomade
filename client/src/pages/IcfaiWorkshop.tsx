@@ -4,7 +4,6 @@ import { ArrowLeft, Check, Award, Flame } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import WhatsAppContact from "@/components/WhatsAppContact";
-import Footer from "@/components/Footer";
 
 // Import workshop images
 import workshopImg1 from "@assets/IMG_20241107_171145625.jpg";
@@ -354,22 +353,20 @@ const IcfaiWorkshop: React.FC = () => {
             <WhatsAppContact
               phoneNumber="+918971690163"
               message="Hello, I'm interested in organizing a bamboo workshop at our institution. Please provide more details."
-              className="bg-white text-green-800 hover:bg-green-100"
+              className="bg-green-600 hover:bg-green-700 text-white"
               size="lg"
             />
-            <Link href="/project-guidance">
+            <Link href="/our-works">
               <Button 
                 size="lg" 
-                className="bg-green-700 hover:bg-green-600 text-white border border-green-600"
+                className="bg-white text-green-800 hover:bg-green-100 border border-green-200"
               >
-                Explore Project Guidance
+                View Our Experience
               </Button>
             </Link>
           </div>
         </div>
       </section>
-
-      <Footer />
     </>
   );
 };
