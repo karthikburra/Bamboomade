@@ -14,7 +14,7 @@ declare global {
 interface RazorpayPaymentFormProps {
   amount: number;
   orderId: string;
-  sessionId?: number;  // Added sessionId (optional for backward compatibility)
+  sessionId?: number | null;  // Added sessionId (optional for backward compatibility)
   customerName: string;
   customerEmail: string;
   customerPhone: string;

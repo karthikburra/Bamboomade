@@ -9,7 +9,7 @@ import { Check, CreditCard } from 'lucide-react';
 
 interface PaymentOptionsProps {
   amount: number;
-  sessionId: number;
+  sessionId: number | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -40,7 +40,7 @@ const PaymentOptions = ({
   };
 
   // Generate a unique order ID that incorporates the session ID
-  const orderId = `ORDER_${Date.now()}_${sessionId}`;
+  const orderId = `ORDER_${Date.now()}_${sessionId || 0}`;
 
   return (
     <div className="w-full max-w-md mx-auto">
