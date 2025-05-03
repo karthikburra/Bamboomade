@@ -351,19 +351,6 @@ const IcfaiWorkshop: React.FC = () => {
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
-                  src={workshopImg4} 
-                  alt="Coffee table made with bamboo and glass" 
-                  className="max-w-full max-h-[400px] object-contain"
-                />
-              </div>
-              <div className="p-3 bg-green-900/80">
-                <h3 className="text-green-100 font-medium">Bamboo and Glass Coffee Table</h3>
-              </div>
-            </div>
-            
-            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
-              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
-                <img 
                   src={workshopImg12} 
                   alt="Bamboo lighting fixture with LED lights" 
                   className="max-w-full max-h-[400px] object-contain"
