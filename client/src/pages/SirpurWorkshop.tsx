@@ -5,25 +5,26 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import WhatsAppContact from "@/components/WhatsAppContact";
 
-// Import workshop images from assets folder
-// Using the authentic Sirpur training workshop image for the main photo
-import workshopImg1 from "@assets/IMG_20240128_163057719 1.png"; // Main Sirpur workshop image
-// Using additional bamboo craft images to supplement
-import workshopImg2 from "@assets/IMG_20241105_143140009_HDR.jpg";
-import workshopImg3 from "@assets/IMG_20241106_110210399_HDR.jpg";
-import workshopImg4 from "@assets/IMG_20241106_124903428_HDR.jpg";
-import workshopImg5 from "@assets/IMG_20241105_142900515.jpg"; 
-import workshopImg6 from "@assets/IMG_20241107_171107759.jpg";
+// Import authentic workshop images from attached assets
+import workshopBanner from "@assets/IMG_20240128_162436182 1.png";
+import workshopParticipants from "@assets/IMG_20240126_151421409 1.png";
+import workshopDemonstration from "@assets/IMG_20240124_171249621 1.png";
+import workshopHandsOn from "@assets/IMG_20240125_132425317 1.png";
+import workshopChair from "@assets/IMG_20240128_133251345 1.png";
+import workshopStool from "@assets/IMG_20240128_162642715 2.png";
+import workshopWeaving from "@assets/WhatsApp Image 2024-03-26 at 23.35 1.png";
+import workshopExplanation from "@assets/IMG_20240124_162253839 1.png";
+import workshopTesting from "@assets/IMG_20240128_160659664 1.png";
 
 const SirpurWorkshop: React.FC = () => {
-  // Image gallery with aspect ratios preserved
+  // Image gallery with authentic Sirpur workshop images
   const galleryImages = [
-    { src: workshopImg1, alt: "Sirpur workshop participants with their bamboo basket crafts" },
-    { src: workshopImg2, alt: "Traditional bamboo weaving demonstration" },
-    { src: workshopImg3, alt: "Workshop participants crafting with bamboo" },
-    { src: workshopImg4, alt: "Bamboo joinery techniques being taught" },
-    { src: workshopImg5, alt: "Hands-on bamboo crafting experience" },
-    { src: workshopImg6, alt: "Traditional weaving patterns in bamboo" }
+    { src: workshopParticipants, alt: "Group photo of Sirpur community bamboo workshop participants" },
+    { src: workshopWeaving, alt: "Women learning traditional bamboo weaving techniques in a group setting" },
+    { src: workshopDemonstration, alt: "Workshop participants learning bamboo joinery techniques" },
+    { src: workshopHandsOn, alt: "Men crafting bamboo furniture during the workshop" },
+    { src: workshopExplanation, alt: "Instructor explaining bamboo crafting methods to participants" },
+    { src: workshopTesting, alt: "Participant testing a bamboo chair created during the workshop" }
   ];
 
   // Workshop key points
@@ -153,8 +154,8 @@ const SirpurWorkshop: React.FC = () => {
               <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
                 <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                   <img 
-                    src={workshopImg2} 
-                    alt="Traditional bamboo weaving patterns" 
+                    src={workshopWeaving} 
+                    alt="Women learning traditional bamboo weaving techniques in a group setting" 
                     className="max-w-full max-h-[400px] object-contain"
                   />
                 </div>
@@ -166,21 +167,21 @@ const SirpurWorkshop: React.FC = () => {
               <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
                 <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                   <img 
-                    src={workshopImg4} 
-                    alt="Bamboo joinery techniques demonstration" 
+                    src={workshopChair} 
+                    alt="Bamboo chair created during the workshop" 
                     className="max-w-full max-h-[400px] object-contain"
                   />
                 </div>
                 <div className="p-3 bg-green-900/80">
-                  <h3 className="text-green-100 font-medium">Bamboo Joinery Techniques</h3>
+                  <h3 className="text-green-100 font-medium">Bamboo Furniture Creations</h3>
                 </div>
               </div>
               
               <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
                 <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                   <img 
-                    src={workshopImg6} 
-                    alt="Woven bamboo traditional patterns" 
+                    src={workshopStool} 
+                    alt="Bamboo stool with traditional joinery techniques" 
                     className="max-w-full max-h-[400px] object-contain"
                   />
                 </div>

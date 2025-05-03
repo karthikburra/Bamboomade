@@ -29,11 +29,11 @@ const FeaturedProjects: React.FC = () => {
     {
       id: "sirpur-community",
       title: "BambooMade Community Training",
-      description: "Creating awareness of bamboo through hands-on experience focusing on traditional weaving techniques and joineries, which will directly influence the way the material is used in the future.",
-      imageUrl: "/img/projects/community-training.png",
-      duration: "5 day workshop",
-      date: "Jan 2024",
-      viewMoreLink: "/workshops/sirpur-community"
+      description: "Empowering local villagers with bamboo crafting skills at Patel Samaj Bhavan, Barpura-02, with support from Sirpur Rural Development Project and the local Gram Panchayat.",
+      imageUrl: "/img/projects/sirpur-workshop-thumbnail.png",
+      duration: "6 day workshop",
+      date: "Jan 24-29, 2024",
+      viewMoreLink: "/workshops/sirpur-community-training"
     },
     {
       id: "international-bamboo-fest",
