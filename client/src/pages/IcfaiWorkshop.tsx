@@ -282,31 +282,19 @@ const IcfaiWorkshop: React.FC = () => {
                 </h2>
               </div>
               
-              <div className="space-y-4">
-                {workshopHighlights.map((highlight, index) => {
-                  // Highlight key terms in yellow
-                  const highlightedText = highlight
-                    .replace(/sustainable/g, '<span class="text-yellow-300 font-semibold">sustainable</span>')
-                    .replace(/techniques/g, '<span class="text-yellow-300 font-semibold">techniques</span>')
-                    .replace(/joinery/g, '<span class="text-yellow-300 font-semibold">joinery</span>')
-                    .replace(/bamboo/g, '<span class="text-yellow-300 font-semibold">bamboo</span>')
-                    .replace(/modern designs/g, '<span class="text-yellow-300 font-semibold">modern designs</span>')
-                    .replace(/functional products/g, '<span class="text-yellow-300 font-semibold">functional products</span>')
-                    .replace(/Collaborative/g, '<span class="text-yellow-300 font-semibold">Collaborative</span>');
-                    
-                  return (
-                    <div 
-                      key={index} 
-                      className="flex p-3 rounded-lg transition-colors hover:bg-green-800/50 border border-transparent hover:border-green-500"
-                    >
-                      <Check className="h-5 w-5 text-green-300 mr-3 mt-0.5 flex-shrink-0" />
-                      <span 
-                        className="text-green-100 font-medium"
-                        dangerouslySetInnerHTML={{ __html: highlightedText }}
-                      />
-                    </div>
-                  );
-                })}
+              <div className="p-4 rounded-lg bg-green-800/30 border border-green-700">
+                <p className="text-green-100 mb-4 leading-relaxed">
+                  The workshop focused on teaching <span className="text-yellow-300 font-semibold">sustainable</span> building methods and 
+                  innovative <span className="text-yellow-300 font-semibold">joinery techniques</span> for <span className="text-yellow-300 font-semibold">bamboo</span> construction. 
+                  Students learned how to transform raw bamboo into <span className="text-yellow-300 font-semibold">functional products</span> through 
+                  hands-on experience.
+                </p>
+                <p className="text-green-100 leading-relaxed">
+                  <span className="text-yellow-300 font-semibold">Collaborative</span> design sessions enabled participants to develop 
+                  <span className="text-yellow-300 font-semibold"> modern designs</span> while embracing traditional craftsmanship. 
+                  The intensive program provided a comprehensive understanding of bamboo as a versatile and sustainable building material 
+                  with real-world applications.
+                </p>
               </div>
             </div>
 
@@ -321,30 +309,19 @@ const IcfaiWorkshop: React.FC = () => {
                 </h2>
               </div>
               
-              <div className="space-y-4">
-                {workshopDeliverables.map((deliverable, index) => {
-                  // Highlight key terms in yellow
-                  const highlightedText = deliverable
-                    .replace(/Partition/g, '<span class="text-yellow-300 font-semibold">Partition</span>')
-                    .replace(/Coffee tables/g, '<span class="text-yellow-300 font-semibold">Coffee tables</span>')
-                    .replace(/Ergonomic/g, '<span class="text-yellow-300 font-semibold">Ergonomic</span>')
-                    .replace(/Creative/g, '<span class="text-yellow-300 font-semibold">Creative</span>')
-                    .replace(/Multi-purpose/g, '<span class="text-yellow-300 font-semibold">Multi-purpose</span>')
-                    .replace(/Decorative/g, '<span class="text-yellow-300 font-semibold">Decorative</span>');
-                    
-                  return (
-                    <div 
-                      key={index} 
-                      className="flex p-3 rounded-lg transition-colors hover:bg-yellow-900/30 border border-transparent hover:border-yellow-500"
-                    >
-                      <Check className="h-5 w-5 text-yellow-300 mr-3 mt-0.5 flex-shrink-0" />
-                      <span 
-                        className="text-green-100 font-medium"
-                        dangerouslySetInnerHTML={{ __html: highlightedText }}
-                      />
-                    </div>
-                  );
-                })}
+              <div className="p-4 rounded-lg bg-yellow-900/30 border border-yellow-700">
+                <p className="text-green-100 mb-4 leading-relaxed">
+                  Students created versatile <span className="text-yellow-300 font-semibold">Partition</span> screens with intricate patterns 
+                  and <span className="text-yellow-300 font-semibold">Coffee tables</span> with glass tops on bamboo frames. The workshop also 
+                  produced <span className="text-yellow-300 font-semibold">Ergonomic</span> chairs designed for comfort and support, showing how 
+                  bamboo can be applied to everyday furniture.
+                </p>
+                <p className="text-green-100 leading-relaxed">
+                  <span className="text-yellow-300 font-semibold">Creative</span> lighting fixtures became a standout achievement, showcasing bamboo's 
+                  versatility with light diffusion. <span className="text-yellow-300 font-semibold">Multi-purpose</span> storage solutions and
+                  <span className="text-yellow-300 font-semibold"> Decorative</span> wall elements demonstrated how bamboo can enhance both 
+                  functionality and aesthetics in contemporary interior design.
+                </p>
               </div>
             </div>
           </div>
