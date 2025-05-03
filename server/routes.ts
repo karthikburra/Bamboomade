@@ -5,7 +5,7 @@ import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, ins
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
-import { sendBookingConfirmationEmail, initializeEmailService, generateGoogleMeetLink } from "./email-service";
+import { sendBookingConfirmationEmail, initializeEmailService, generateGoogleMeetLink, generateGoogleCalendarLink } from "./email-service";
 import { format, addMinutes } from "date-fns";
 import { ZodError } from "zod";
 import { z } from "zod";
