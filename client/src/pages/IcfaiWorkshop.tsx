@@ -360,6 +360,19 @@ const IcfaiWorkshop: React.FC = () => {
                 <h3 className="text-green-100 font-medium">Decorative Bamboo Light</h3>
               </div>
             </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/img/workshops/icfai-bamboo-product.jpeg" 
+                  alt="Unique bamboo product created during workshop" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Innovative Bamboo Creation</h3>
+              </div>
+            </div>
           </div>
 
           <div className="mt-8 text-center text-green-100 italic">
