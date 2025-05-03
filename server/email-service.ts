@@ -1,36 +1,62 @@
-import { MailService } from '@sendgrid/mail';
 import { format } from 'date-fns';
+import nodemailer from 'nodemailer';
 
-// Initialize the mail service
-const mailService = new MailService();
-
-// This will be set once the API key is available
-let apiKeySet = false;
+// Email service configuration
+let emailServiceEnabled = false;
+let transporter: nodemailer.Transporter | null = null;
 
 /**
- * Set the SendGrid API key for the mail service
+ * Initialize the email service with SMTP configuration
+ * This can use Gmail, or any other SMTP service
  */
-export function setApiKey(apiKey: string) {
-  if (!apiKey) {
-    console.warn('No SendGrid API key provided');
-    return false;
-  }
-  
+export function initializeEmailService() {
   try {
-    mailService.setApiKey(apiKey);
-    apiKeySet = true;
-    console.log('SendGrid API key set successfully');
-    return true;
+    // Create a dev transporter that doesn't actually send emails but logs them
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Initializing email service in development mode');
+      
+      // Create a preview-only transport in development that logs to console
+      transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: 'ethereal.user@ethereal.email', // Not a real auth
+          pass: 'ethereal.password'
+        },
+        debug: true,
+        logger: true
+      });
+      
+      emailServiceEnabled = true;
+      console.log('Email service initialized in development mode (logs emails to console)');
+      return true;
+    } 
+    
+    // In production, use a real email service
+    else {
+      // You can configure different email providers here
+      // For Gmail:
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'Info@bamboomade.in',
+          pass: process.env.EMAIL_PASSWORD, // App password for Gmail
+        }
+      });
+      
+      emailServiceEnabled = true;
+      console.log('Email service initialized for production');
+      return true;
+    }
   } catch (error) {
-    console.error('Error setting SendGrid API key:', error);
+    console.error('Error initializing email service:', error);
     return false;
   }
 }
 
-// Setup mail service if API key is available
-if (process.env.SENDGRID_API_KEY) {
-  setApiKey(process.env.SENDGRID_API_KEY);
-}
+// Initialize email service on startup
+initializeEmailService();
 
 // Function to generate a Google Meet link based on the session details
 function generateGoogleMeetLink(sessionId: number, date: Date, studentName: string): string {
@@ -61,8 +87,8 @@ interface BookingEmailData {
  * Send a booking confirmation email with a Google Meet link
  */
 export async function sendBookingConfirmationEmail(bookingData: BookingEmailData): Promise<boolean> {
-  if (!apiKeySet) {
-    console.error('SendGrid API key not set, cannot send email');
+  if (!emailServiceEnabled || !transporter) {
+    console.error('Email service not initialized, cannot send email');
     return false;
   }
   
@@ -88,63 +114,107 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
     const calendarEndTime = format(endTime, "yyyyMMdd'T'HHmmss");
     const calendarLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=BambooMade%20Project%20Guidance%20Session&dates=${startTime}/${calendarEndTime}&details=Join%20this%20Google%20Meet%20link:%20${encodeURIComponent(meetLink)}%0A%0ATopic:%20${encodeURIComponent(bookingData.sessionTopic)}&location=${encodeURIComponent(meetLink)}`;
     
-    // Email content
-    const msg = {
-      to: bookingData.studentEmail,
-      from: 'Info@bamboomade.in', // Using Info@bamboomade.in as sender for Meet link generation
-      cc: 'bamboomade.in@gmail.com', // Also keep BambooMade team in the loop
-      subject: 'Your BambooMade Project Guidance Session Confirmed',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <img src="https://bamboomade.in/images/logo.png" alt="BambooMade Logo" style="max-width: 150px;">
-          </div>
-          
-          <h2 style="color: #2e7d32; margin-bottom: 20px;">Your Project Guidance Session is Confirmed!</h2>
-          
-          <p style="margin-bottom: 15px;">Hello ${bookingData.studentName},</p>
-          
-          <p style="margin-bottom: 15px;">Thank you for booking a project guidance session with BambooMade. We're excited to help you with your bamboo project!</p>
-          
-          <div style="background-color: #f9f9f9; border-left: 4px solid #2e7d32; padding: 15px; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; color: #2e7d32;">Session Details:</h3>
-            <p><strong>Date:</strong> ${formattedDate}</p>
-            <p><strong>Time:</strong> ${formattedTime} - ${formattedEndTime}</p>
-            <p><strong>Duration:</strong> ${bookingData.sessionDuration} minutes</p>
-            <p><strong>Topic:</strong> ${bookingData.sessionTopic}</p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${meetLink}" style="background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
-              Join Google Meet Session
-            </a>
-          </div>
-          
-          <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by Info@bamboomade.in. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
-          
-          <div style="margin: 20px 0;">
-            <a href="${calendarLink}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">
-              Add to Google Calendar
-            </a>
-          </div>
-          
-          <p style="margin-bottom: 15px;">If you need to reschedule or have any questions, please contact us at <a href="mailto:bamboomade.in@gmail.com" style="color: #2e7d32; text-decoration: none;">bamboomade.in@gmail.com</a> or call us at <a href="tel:+918971690163" style="color: #2e7d32; text-decoration: none;">+91 8971690163</a>.</p>
-          
-          <p style="margin-bottom: 0;">We look forward to speaking with you!</p>
-          
-          <p style="margin-top: 5px;">The BambooMade Team</p>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #666;">
-            <p>© 2025 BambooMade. All rights reserved.</p>
-            <p>Nagole, Hyderabad-500068, India</p>
-          </div>
+    // Email HTML content
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="https://bamboomade.in/images/logo.png" alt="BambooMade Logo" style="max-width: 150px;">
         </div>
-      `
+        
+        <h2 style="color: #2e7d32; margin-bottom: 20px;">Your Project Guidance Session is Confirmed!</h2>
+        
+        <p style="margin-bottom: 15px;">Hello ${bookingData.studentName},</p>
+        
+        <p style="margin-bottom: 15px;">Thank you for booking a project guidance session with BambooMade. We're excited to help you with your bamboo project!</p>
+        
+        <div style="background-color: #f9f9f9; border-left: 4px solid #2e7d32; padding: 15px; margin-bottom: 20px;">
+          <h3 style="margin-top: 0; color: #2e7d32;">Session Details:</h3>
+          <p><strong>Date:</strong> ${formattedDate}</p>
+          <p><strong>Time:</strong> ${formattedTime} - ${formattedEndTime}</p>
+          <p><strong>Duration:</strong> ${bookingData.sessionDuration} minutes</p>
+          <p><strong>Topic:</strong> ${bookingData.sessionTopic}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${meetLink}" style="background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+            Join Google Meet Session
+          </a>
+        </div>
+        
+        <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by Info@bamboomade.in. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
+        
+        <div style="margin: 20px 0;">
+          <a href="${calendarLink}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">
+            Add to Google Calendar
+          </a>
+        </div>
+        
+        <p style="margin-bottom: 15px;">If you need to reschedule or have any questions, please contact us at <a href="mailto:bamboomade.in@gmail.com" style="color: #2e7d32; text-decoration: none;">bamboomade.in@gmail.com</a> or call us at <a href="tel:+918971690163" style="color: #2e7d32; text-decoration: none;">+91 8971690163</a>.</p>
+        
+        <p style="margin-bottom: 0;">We look forward to speaking with you!</p>
+        
+        <p style="margin-top: 5px;">The BambooMade Team</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #666;">
+          <p>© 2025 BambooMade. All rights reserved.</p>
+          <p>Nagole, Hyderabad-500068, India</p>
+        </div>
+      </div>
+    `;
+    
+    // Plain text alternative
+    const textContent = `
+      Your BambooMade Project Guidance Session is Confirmed!
+      
+      Hello ${bookingData.studentName},
+      
+      Thank you for booking a project guidance session with BambooMade. We're excited to help you with your bamboo project!
+      
+      SESSION DETAILS:
+      Date: ${formattedDate}
+      Time: ${formattedTime} - ${formattedEndTime}
+      Duration: ${bookingData.sessionDuration} minutes
+      Topic: ${bookingData.sessionTopic}
+      
+      JOIN GOOGLE MEET: ${meetLink}
+      
+      Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by Info@bamboomade.in.
+      
+      ADD TO GOOGLE CALENDAR: ${calendarLink}
+      
+      If you need to reschedule or have any questions, please contact us at bamboomade.in@gmail.com or call us at +91 8971690163.
+      
+      We look forward to speaking with you!
+      
+      The BambooMade Team
+      
+      © 2025 BambooMade. All rights reserved.
+      Nagole, Hyderabad-500068, India
+    `;
+    
+    // Message options
+    const mailOptions = {
+      from: '"BambooMade" <Info@bamboomade.in>',
+      to: bookingData.studentEmail,
+      cc: 'bamboomade.in@gmail.com',
+      subject: 'Your BambooMade Project Guidance Session Confirmed',
+      text: textContent,
+      html: htmlContent
     };
     
-    // Send email
-    await mailService.send(msg);
-    console.log(`Booking confirmation email sent to ${bookingData.studentEmail} for session #${bookingData.sessionId}`);
+    // In development mode, just log the email content
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('========== EMAIL CONTENT (DEV MODE) ==========');
+      console.log('To:', mailOptions.to);
+      console.log('Subject:', mailOptions.subject);
+      console.log('Meet Link:', meetLink);
+      console.log('==========================================');
+      return true;
+    }
+    
+    // Send email in production
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Booking confirmation email sent to ${bookingData.studentEmail} for session #${bookingData.sessionId}, Message ID: ${info.messageId}`);
     return true;
   } catch (error) {
     console.error('Error sending booking confirmation email:', error);

@@ -5,7 +5,7 @@ import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, ins
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
-import { sendBookingConfirmationEmail } from "./email-service";
+import { sendBookingConfirmationEmail, initializeEmailService } from "./email-service";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
@@ -35,6 +35,13 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize email service at startup
+  if (process.env.EMAIL_PASSWORD) {
+    console.log('[express] Initializing email service with credentials');
+    initializeEmailService();
+  } else {
+    console.log('[express] Email password not found, email functionality will be limited to development mode');
+  }
   // Helper middleware for handling zod validation errors
   const validateRequest = (schema: any) => {
     return (req: Request, res: Response, next: any) => {
