@@ -105,10 +105,14 @@ function ProjectGuidance() {
       
       console.log("Submitting project guidance session:", sessionData);
       
-      return apiRequest("POST", "/api/project-guidance", sessionData);
+      const response = await apiRequest("POST", "/api/project-guidance", sessionData);
+      const data = await response.json();
+      return data;
     },
     onSuccess: (data: any) => {
       // Make sure we have a valid session ID
+      console.log("Full server response for session booking:", data);
+      
       if (!data || !data.id) {
         console.error("Missing session ID in server response:", data);
         toast({
@@ -161,16 +165,31 @@ function ProjectGuidance() {
       
       const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
         amount: getCost(),
-        sessionId: sessionId, // Ensure sessionId is explicitly set
+        sessionId, // Ensure sessionId is explicitly set
         customerName: values.studentName,
         customerPhone: values.phone,
         customerEmail: values.email
       });
       
-      console.log("Raw API response:", response);
+      // Log all raw response details
+      console.log("Raw API response:", {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
+        headers: Object.fromEntries([...response.headers.entries()])
+      });
       
       const data = await response.json();
-      console.log("Parsed response data:", data);
+      
+      // Log parsed data with specifics to help debug
+      console.log("Parsed response data:", {
+        success: data.success,
+        hasPaymentLink: !!data.paymentLink,
+        hasTransactionId: !!data.transactionId,
+        message: data.message,
+        error: data.error,
+        fullData: data
+      });
       
       if (data.success && data.paymentLink) {
         // Store the transaction ID in local storage for reference
@@ -181,9 +200,13 @@ function ProjectGuidance() {
           description: 'You will be redirected to the PhonePe payment page.',
         });
         
-        // Redirect to PhonePe payment page
-        window.location.href = data.paymentLink;
+        // Small delay to ensure the toast is shown before redirecting
+        setTimeout(() => {
+          // Redirect to PhonePe payment page
+          window.location.href = data.paymentLink;
+        }, 1500);
       } else {
+        console.error("PhonePe payment initialization failed:", data.message || data.error);
         toast({
           title: 'Payment Initialization Failed',
           description: data.message || data.error || 'Could not start the payment process. Please try again.',
