@@ -224,50 +224,6 @@ const IcfaiWorkshop: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Image gallery */}
-      <section className="py-16 bg-white dark:bg-green-950/70">
-        <div className="container max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-8 text-center">
-            Workshop Gallery
-          </h2>
-          
-          {/* Masonry-style grid layout */}
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-            {galleryImages.map((image, index) => {
-              // Calculate dynamic heights for more variety in the collage
-              const randomHeight = index % 3 === 0 ? 'h-72' : index % 3 === 1 ? 'h-64' : 'h-80';
-              
-              return (
-                <div 
-                  key={index} 
-                  className="break-inside-avoid mb-4 overflow-hidden rounded-lg shadow-md bg-white dark:bg-green-900/60"
-                >
-                  <div className={`relative ${randomHeight}`}>
-                    <img
-                      src={image.src}
-                      alt={image.alt}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                    />
-                    {/* Hover overlay with caption */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <p className="text-white font-medium">
-                        {image.alt}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          
-          {/* Caption explaining the gallery */}
-          <p className="mt-8 text-center text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            The workshop at ICFAI School of Architecture engaged students in a comprehensive bamboo learning journey, 
-            from material selection and processing to the creation of beautiful functional objects.
-          </p>
-        </div>
-      </section>
       
       {/* Key Highlights & Student Creations */}
       <section className="py-16 bg-green-50 dark:bg-green-900/20">
