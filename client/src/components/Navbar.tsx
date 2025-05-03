@@ -63,18 +63,18 @@ const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 sm:h-16 max-w-screen-xl items-center">
-        <div className="mr-2 sm:mr-4 flex pl-2 sm:pl-6">
-          <Link href="/" className="flex items-center space-x-1 sm:space-x-2">
-            <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-10 w-auto" />
-            <span className="text-xl sm:text-2xl font-bold text-green-300">
+      <div className="container flex h-14 sm:h-16 md:h-18 lg:h-20 max-w-screen-xl items-center px-2 sm:px-4 md:px-6 lg:px-8">
+        <div className="mr-2 sm:mr-4 md:mr-6 lg:mr-8 flex">
+          <Link href="/" className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
+            <img src={logoImage} alt="BambooMade Logo" className="h-7 sm:h-8 md:h-9 lg:h-10 w-auto" />
+            <span className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-green-300">
               Bamboo<span className="text-green-400">Made</span>
             </span>
           </Link>
         </div>
 
         {!isMobile && (
-          <nav className="flex flex-1 items-center space-x-4 sm:space-x-6 text-sm font-medium">
+          <nav className="flex flex-1 items-center space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-xs sm:text-sm md:text-base font-medium">
             {navLinks.map((link) => (
               <Link
                 key={`${link.href}-${link.label}`}
@@ -91,19 +91,20 @@ const Navbar: React.FC = () => {
           </nav>
         )}
 
-        <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-4 pr-2 sm:pr-6">
+        <div className="flex flex-1 items-center justify-end space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
           {!isMobile ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
                   variant="default" 
                   size="sm" 
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm"
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
                 >
-                  <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  BambooMade AI
-                  <Badge className="ml-1 sm:ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">New</Badge>
-                  <ChevronDown className="ml-1 sm:ml-2 h-3 w-3" />
+                  <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                  <span className="hidden sm:inline">BambooMade AI</span>
+                  <span className="sm:hidden">AI</span>
+                  <Badge className="ml-1 sm:ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
+                  <ChevronDown className="ml-1 sm:ml-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="border-green-800">
@@ -126,9 +127,9 @@ const Navbar: React.FC = () => {
               <Button 
                 variant="default" 
                 size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white p-1 h-8"
+                className="bg-green-600 hover:bg-green-700 text-white p-1 h-8 w-8 sm:h-9 sm:w-9"
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </Link>
           )}
@@ -136,9 +137,9 @@ const Navbar: React.FC = () => {
           {/* Theme toggle removed - dark mode only */}
 
           {user && user.tokens !== undefined && user.isAdmin !== undefined ? (
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
               {!isMobile && (
-                <span className="text-xs sm:text-sm text-green-400 mr-1 sm:mr-2">
+                <span className="text-xs sm:text-sm md:text-base text-green-400 mr-1 sm:mr-2 md:mr-3">
                   {user.tokens} tokens
                 </span>
               )}
@@ -147,7 +148,7 @@ const Navbar: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="text-xs h-8 border-green-700 text-green-400 hover:bg-green-900/30"
+                    className="text-xs sm:text-sm h-8 sm:h-9 md:h-10 border-green-700 text-green-400 hover:bg-green-900/30"
                   >
                     Admin
                   </Button>
@@ -157,7 +158,7 @@ const Navbar: React.FC = () => {
                 variant="default" 
                 size="sm" 
                 onClick={handleLogout}
-                className="text-xs h-8 bg-green-600 hover:bg-green-700 text-white"
+                className="text-xs sm:text-sm h-8 sm:h-9 md:h-10 bg-green-600 hover:bg-green-700 text-white"
               >
                 {isMobile ? "Exit" : "Logout"}
               </Button>
@@ -171,27 +172,28 @@ const Navbar: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   aria-label="Toggle menu"
+                  className="h-9 w-9 sm:h-10 sm:w-10"
                 >
-                  {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
+                  {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </Button>
               </SheetTrigger>
               <SheetContent className="w-[85%] sm:max-w-sm px-4 sm:px-6">
-                <SheetHeader className="pb-2">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <img src={logoImage} alt="BambooMade Logo" className="h-8 w-auto" />
-                    <SheetTitle className="text-lg sm:text-xl text-green-300">BambooMade</SheetTitle>
+                <SheetHeader className="pb-2 sm:pb-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3 mb-1 sm:mb-2">
+                    <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-10 w-auto" />
+                    <SheetTitle className="text-lg sm:text-xl md:text-2xl text-green-300">BambooMade</SheetTitle>
                   </div>
-                  <SheetDescription className="text-sm text-green-400">
+                  <SheetDescription className="text-sm sm:text-base text-green-400">
                     Sustainable Bamboo Architecture
                   </SheetDescription>
                 </SheetHeader>
-                <nav className="flex flex-col space-y-3 mt-5 sm:mt-6">
+                <nav className="flex flex-col space-y-3 sm:space-y-4 mt-5 sm:mt-6 md:mt-7">
                   {navLinks.map((link) => (
                     <Link
                       key={`${link.href}-${link.label}`}
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`text-sm sm:text-base py-1.5 font-medium transition-colors ${
+                      className={`text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium transition-colors ${
                         isActive(link.href)
                           ? "text-green-300 font-semibold"
                           : "text-green-400"
@@ -201,28 +203,28 @@ const Navbar: React.FC = () => {
                     </Link>
                   ))}
                   
-                  <div className="space-y-1.5 py-3 border-t border-b border-green-900/50">
-                    <div className="flex items-center text-sm sm:text-base font-medium text-green-300">
-                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <div className="space-y-2 sm:space-y-3 py-3 sm:py-4 border-t border-b border-green-900/50">
+                    <div className="flex items-center text-sm sm:text-base md:text-lg font-medium text-green-300">
+                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                       BambooMade AI Tools
-                      <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0">New</Badge>
+                      <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
                     </div>
                     
                     <Link
                       href="/ai-chat"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center pl-6 text-sm sm:text-base py-1.5 font-medium text-green-400 transition-colors hover:text-green-300"
+                      className="flex items-center pl-6 sm:pl-7 text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
-                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                       Chat with AI
                     </Link>
                     
                     <Link 
                       href="/add-whatsapp-bot"
                       onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center pl-6 text-sm sm:text-base py-1.5 font-medium text-green-400 transition-colors hover:text-green-300"
+                      className="flex items-center pl-6 sm:pl-7 text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
-                      <MessageSquareText className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <MessageSquareText className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                       Add to WhatsApp
                     </Link>
                   </div>
@@ -231,21 +233,21 @@ const Navbar: React.FC = () => {
                     <Link
                       href="/admin"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-sm sm:text-base py-1.5 font-medium text-green-400 transition-colors hover:text-green-300"
+                      className="text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                     >
                       Admin Dashboard
                     </Link>
                   )}
                   {user && user.tokens !== undefined && (
-                    <div className="pt-3 mt-1 border-t border-green-800/50">
-                      <p className="text-xs sm:text-sm text-green-400 mb-2">
+                    <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50">
+                      <p className="text-xs sm:text-sm md:text-base text-green-400 mb-2 sm:mb-3">
                         Available tokens: {user.tokens}
                       </p>
                       <Button 
                         variant="default" 
                         size="sm" 
                         onClick={handleLogout} 
-                        className="w-full text-xs sm:text-sm h-8 sm:h-9 bg-green-600 hover:bg-green-700 text-white"
+                        className="w-full text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 bg-green-600 hover:bg-green-700 text-white"
                       >
                         Logout
                       </Button>
