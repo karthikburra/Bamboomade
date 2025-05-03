@@ -431,6 +431,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Project guidance session not found" });
       }
       
+      // Update Google Sheets with payment information (in the background)
+      updateProjectGuidanceSession(session, 'Test')
+        .catch(error => console.error("Failed to update Google Sheet for direct payment update:", error));
+      
       res.json(session);
     } catch (error) {
       res.status(500).json({ message: "Failed to update payment status", error: (error as Error).message });
@@ -713,6 +717,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Continue with payment process even if email fails
           }
           
+          // Update Google Sheets with payment information
+          try {
+            await updateProjectGuidanceSession(session, 'PhonePe');
+            console.log("Google Sheets updated successfully with PhonePe payment");
+          } catch (sheetsError) {
+            console.error("Failed to update Google Sheets with PhonePe payment:", sheetsError);
+            // Continue with payment process even if sheets update fails
+          }
+          
           // Clean up the pending payment from whichever storage it was in
           if (global.pendingPayments && global.pendingPayments[txnId]) {
             delete global.pendingPayments[txnId];
@@ -810,6 +823,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (emailError) {
           console.error("Failed to send booking confirmation email:", emailError);
           // Continue with payment process even if email fails
+        }
+        
+        // Update Google Sheets with payment information
+        try {
+          await updateProjectGuidanceSession(session, 'PhonePe');
+          console.log("Google Sheets updated successfully with PhonePe payment");
+        } catch (sheetsError) {
+          console.error("Failed to update Google Sheets with PhonePe payment:", sheetsError);
+          // Continue with payment process even if sheets update fails
         }
         
         // Clean up the pending payment from whichever storage it was in
@@ -1029,6 +1051,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     console.log(`Payment confirmation email sent for session ${sessionId}, result:`, emailResult);
                   } catch (innerEmailError) {
                     console.error(`Failed to send confirmation email for session ${sessionId}:`, innerEmailError);
+                  }
+                  
+                  // Update Google Sheets with payment information
+                  try {
+                    await updateProjectGuidanceSession(session, 'Razorpay');
+                    console.log(`Google Sheets updated successfully with Razorpay payment for session ${sessionId}`);
+                  } catch (sheetsError) {
+                    console.error(`Failed to update Google Sheets with Razorpay payment for session ${sessionId}:`, sheetsError);
+                    // Continue with payment process even if sheets update fails
                   }
                 }
               } catch (emailError) {

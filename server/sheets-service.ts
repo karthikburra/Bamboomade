@@ -26,11 +26,34 @@ export function initializeSheetsService(): boolean {
     }
 
     // Create JWT client for authentication
+    // Properly format the private key - it sometimes comes with escaped newlines or as a raw string
+    let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+    
+    // Check if the key starts with -----BEGIN PRIVATE KEY----- and contains literal \n
+    if (privateKey.includes('\\n')) {
+      privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+    
+    // Check if the key is missing newlines altogether
+    if (!privateKey.includes('\n')) {
+      // Add proper line breaks for PEM format
+      privateKey = privateKey
+        .replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n')
+        .replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----')
+        .match(/.{1,64}/g).join('\n');
+    }
+    
+    console.log("Creating Google Sheets authentication with:", {
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      keyLength: privateKey.length,
+      keyFormat: privateKey.includes('\n') ? "Contains newlines" : "No newlines",
+      spreadsheetId: process.env.GOOGLE_SPREADSHEET_ID
+    });
+    
     const client = new google.auth.JWT(
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       undefined,
-      // The private key needs to have \n replaced with actual newlines
-      process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      privateKey,
       ['https://www.googleapis.com/auth/spreadsheets']
     );
 
