@@ -258,7 +258,7 @@ const IcfaiWorkshop: React.FC = () => {
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
-                  src="/attached_assets/IMG_5806.JPG" 
+                  src="/workshop-images/bamboo-stand.jpg" 
                   alt="Bamboo coat stand with woven lamp fixture" 
                   className="max-w-full max-h-[400px] object-contain"
                 />
@@ -271,7 +271,7 @@ const IcfaiWorkshop: React.FC = () => {
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
-                  src="/attached_assets/IMG20241107164704.jpg" 
+                  src="/workshop-images/bamboo-bow.jpg" 
                   alt="Bamboo crossbow handcrafted by students" 
                   className="max-w-full max-h-[400px] object-contain"
                 />
@@ -284,7 +284,7 @@ const IcfaiWorkshop: React.FC = () => {
             <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
               <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
                 <img 
-                  src="/attached_assets/IMG20241105150502.jpg" 
+                  src="/workshop-images/workshop-drilling.jpg" 
                   alt="Students using drilling machine on bamboo" 
                   className="max-w-full max-h-[400px] object-contain"
                 />
