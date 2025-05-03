@@ -26,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 Bamboo<span className="text-secondary-400">Made</span>
               </span>
               <p className="mt-2 text-xs sm:text-sm text-primary-200">
-                Innovating sustainable architecture with bamboo since 2010
+                Innovating sustainable architecture with bamboo since 2019
               </p>
             </div>
             <div className="flex space-x-4 sm:space-x-6">
