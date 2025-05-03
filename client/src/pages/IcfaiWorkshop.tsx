@@ -118,61 +118,74 @@ const IcfaiWorkshop: React.FC = () => {
       {/* Workshop information */}
       <section className="py-16 bg-white dark:bg-green-950">
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
-                About the Workshop
-              </h2>
-              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-                The impactful bamboo workshop held at ICFAI School of Architecture, Telangana, 
-                propelled students to explore the bamboo to create exceptional products. This 
-                exercise empowered them to craft contemporary masterpieces showcasing the 
-                finished products.
-              </p>
-              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-                Throughout the three days, students progressed from basic material understanding
-                to creating functional designs. The workshop emphasized hands-on learning, with
-                students working directly with bamboo to understand its properties, limitations,
-                and vast potential as a sustainable building material.
-              </p>
-              <p className="text-gray-700 dark:text-gray-300 text-lg">
-                Instructors guided participants through various joinery techniques, tools usage,
-                and design considerations unique to bamboo construction, fostering both technical
-                skills and creative exploration.
-              </p>
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
+              About the Workshop
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+              The impactful bamboo workshop held at ICFAI School of Architecture, Telangana, 
+              propelled students to explore the bamboo to create exceptional products. This 
+              exercise empowered them to craft contemporary masterpieces showcasing the 
+              finished products.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+              Throughout the three days, students progressed from basic material understanding
+              to creating functional designs. The workshop emphasized hands-on learning, with
+              students working directly with bamboo to understand its properties, limitations,
+              and vast potential as a sustainable building material.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 text-lg">
+              Instructors guided participants through various joinery techniques, tools usage,
+              and design considerations unique to bamboo construction, fostering both technical
+              skills and creative exploration.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured images - highlighting best projects */}
+      <section className="py-12 bg-green-50 dark:bg-green-900/20">
+        <div className="container max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-8 text-center">
+            Featured Workshop Creations
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="col-span-2">
+              <div className="aspect-[4/3] rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg4} 
+                  alt="Coffee table made with bamboo and glass" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">Coffee table with glass top designed and created by students</p>
             </div>
-
             <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
-                Key Highlights
-              </h2>
-              <ul className="space-y-3 mb-8">
-                {workshopHighlights.map((highlight, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">{highlight}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <h3 className="text-xl font-bold text-green-700 dark:text-green-400 mb-4">
-                Student Creations
-              </h3>
-              <ul className="space-y-3">
-                {workshopDeliverables.map((deliverable, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">{deliverable}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg9} 
+                  alt="Bamboo lighting fixture display" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">Bamboo lamp and decorative elements</p>
+            </div>
+            <div>
+              <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={workshopImg12} 
+                  alt="Bamboo lighting fixture with LED lights" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">Creative lighting fixture with LED integration</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Image gallery */}
-      <section className="py-16 bg-green-50 dark:bg-green-900/40">
+      <section className="py-16 bg-white dark:bg-green-950/70">
         <div className="container max-w-7xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-8 text-center">
             Workshop Gallery
@@ -195,6 +208,41 @@ const IcfaiWorkshop: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Key Highlights & Student Creations */}
+      <section className="py-16 bg-green-50 dark:bg-green-900/20">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
+                Key Highlights
+              </h2>
+              <ul className="space-y-3 mb-8">
+                {workshopHighlights.map((highlight, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300">{highlight}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
+                Student Creations
+              </h2>
+              <ul className="space-y-3">
+                {workshopDeliverables.map((deliverable, index) => (
+                  <li key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300">{deliverable}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
