@@ -106,7 +106,7 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <div>
             <CardTitle className="text-xl text-green-400">Payment Successful!</CardTitle>
             <CardDescription className="text-gray-400">
-              Your BambooMade project guidance session is confirmed
+              We will send you a Google Meet link within 4 hours
             </CardDescription>
           </div>
         </div>
@@ -143,38 +143,37 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
               </div>
             </div>
 
-            <div className="space-y-2 pt-4">
-              <h3 className="text-lg font-medium text-green-400">Your Google Meet Link</h3>
-              <div className="bg-gray-800 p-3 rounded flex items-center justify-between">
-                <div className="truncate mr-2 text-gray-300 text-sm">
-                  {meetLink}
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleCopy}
-                  className="border-green-700 hover:bg-green-900 hover:text-green-400"
-                >
-                  {copied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">
-                Join this link at the scheduled time. The session will be hosted by projects@bamboomade.in
+            <div className="space-y-2 pt-4 border-t border-green-800/30 mt-5">
+              <h3 className="text-lg font-medium text-green-400 mt-4">Contact Information</h3>
+              <p className="text-sm text-gray-300">
+                For any queries regarding your session, please contact us:
               </p>
+              <div className="space-y-2 mt-3">
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">Email:</span>
+                  <a href="mailto:projects@bamboomade.in" className="text-green-400 hover:underline">
+                    projects@bamboomade.in
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">Phone:</span>
+                  <a href="tel:+918971690163" className="text-green-400 hover:underline">
+                    +91 8971690163
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">WhatsApp:</span>
+                  <a href="https://wa.me/918971690163" className="text-green-400 hover:underline">
+                    +91 8971690163
+                  </a>
+                </div>
+              </div>
             </div>
           </>
         )}
       </CardContent>
       
       <CardFooter className="flex-col space-y-3">
-        <Button 
-          className="w-full flex items-center bg-green-700 hover:bg-green-600 text-white"
-          onClick={() => window.open(meetLink, '_blank')}
-        >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Open Google Meet
-        </Button>
-        
         <Button 
           variant="outline" 
           className="w-full flex items-center border-green-700 text-green-400 hover:bg-green-900/30"

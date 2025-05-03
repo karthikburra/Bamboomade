@@ -60,9 +60,29 @@ export default function PaymentSuccessPage() {
             <p className="text-gray-300 mb-4">
               {error || "We couldn't retrieve your payment information. Please contact us for assistance."}
             </p>
-            <p className="text-gray-400 text-sm">
-              You can contact us at <a href="mailto:bamboomade.in@gmail.com" className="text-green-400 hover:underline">bamboomade.in@gmail.com</a> or <a href="tel:+918971690163" className="text-green-400 hover:underline">+91 8971690163</a> with any questions.
-            </p>
+            <div className="text-left mt-6 border-t border-gray-800 pt-4">
+              <h3 className="text-lg font-medium text-green-400 mb-3">Contact Information</h3>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">Email:</span>
+                  <a href="mailto:projects@bamboomade.in" className="text-green-400 hover:underline">
+                    projects@bamboomade.in
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">Phone:</span>
+                  <a href="tel:+918971690163" className="text-green-400 hover:underline">
+                    +91 8971690163
+                  </a>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">WhatsApp:</span>
+                  <a href="https://wa.me/918971690163" className="text-green-400 hover:underline">
+                    +91 8971690163
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -72,7 +92,8 @@ export default function PaymentSuccessPage() {
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-center text-green-500">Payment Successful</h1>
+        <h1 className="text-3xl font-bold mb-8 text-center text-green-500">Payment Successful!</h1>
+        <h2 className="text-xl mb-8 text-center text-gray-300">We will send your Google Meet link within 4 hours</h2>
         <PaymentSuccess paymentId={paymentId} sessionId={sessionId} />
       </div>
     </div>
