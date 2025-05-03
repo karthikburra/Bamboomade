@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
+import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { sendBookingConfirmationEmail } from "./email-service";
 import { ZodError } from "zod";
 import { z } from "zod";
