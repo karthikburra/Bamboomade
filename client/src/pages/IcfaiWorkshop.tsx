@@ -84,12 +84,12 @@ const IcfaiWorkshop: React.FC = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center z-0" 
           style={{ 
-            backgroundImage: `url(/img/workshops/icfai-hero-bg.jpg)`,
-            filter: 'brightness(0.7)'
+            backgroundImage: `url(/img/workshops/icfai-group-photo.jpg)`,
+            filter: 'brightness(0.65)'
           }}
         />
         {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-green-900/50 to-green-800/40 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-green-950/70 to-green-900/60 z-0"></div>
         
         <div className="container max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
