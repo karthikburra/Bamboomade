@@ -140,7 +140,7 @@ const ProjectGuidance = () => {
     },
   });
   
-  // Function to initiate PhonePe payment directly
+  // Function to directly initiate PhonePe payment
   const initiatePayment = async (sessionId: number, values: ProjectGuidanceFormValues) => {
     try {
       toast({
@@ -150,6 +150,15 @@ const ProjectGuidance = () => {
       
       console.log("Initiating direct payment with sessionId:", sessionId);
       
+      // Add more debugging to see what's happening
+      console.log("Making PhonePe payment API request with data:", {
+        amount: getCost(),
+        sessionId,
+        customerName: values.studentName,
+        phone: values.phone,
+        email: values.email
+      });
+      
       const response = await apiRequest('POST', '/api/payments/phonepe/initiate', {
         amount: getCost(),
         sessionId: sessionId, // Ensure sessionId is explicitly set
@@ -158,7 +167,10 @@ const ProjectGuidance = () => {
         customerEmail: values.email
       });
       
+      console.log("Raw API response:", response);
+      
       const data = await response.json();
+      console.log("Parsed response data:", data);
       
       if (data.success && data.paymentLink) {
         // Store the transaction ID in local storage for reference
@@ -407,8 +419,8 @@ const ProjectGuidance = () => {
                             )}
                           />
                           
-                          <div className="flex justify-end mt-6">
-                            <Button type="submit">
+                          <div className="flex justify-end gap-2">
+                            <Button type="submit" className="bg-green-600 hover:bg-green-700">
                               Continue to Schedule
                             </Button>
                           </div>
@@ -428,15 +440,22 @@ const ProjectGuidance = () => {
                         selectedDuration={selectedDuration}
                         setSelectedDuration={setSelectedDuration}
                       />
+                      
                       <div className="flex justify-between mt-6">
-                        <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                          Back to Details
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setStep(1)}
+                        >
+                          Back
                         </Button>
                         <Button 
-                          onClick={() => form.handleSubmit(onSubmit)()}
-                          disabled={!selectedDate || !selectedTime || !selectedDuration || isPending}
+                          type="button" 
+                          onClick={() => onSubmit(form.getValues())}
+                          className="bg-green-600 hover:bg-green-700"
+                          disabled={!selectedDate || !selectedTime || isPending}
                         >
-                          {isPending ? "Processing..." : "Continue to Payment"}
+                          {isPending ? "Processing..." : "Book and Continue to Payment"}
                         </Button>
                       </div>
                     </div>
@@ -444,72 +463,77 @@ const ProjectGuidance = () => {
                   
                   {step === 3 && (
                     <div>
-                      <h3 className="text-lg font-medium mb-4">Complete Payment</h3>
-                      {sessionId && (
-                        <>
-                          <div className="mb-6">
-                            <h4 className="text-md font-medium mb-4 text-center">Choose a Payment Method</h4>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              <div className="bg-gradient-to-br from-purple-900/90 to-purple-800/80 p-5 rounded-lg shadow-lg border border-purple-600">
-                                <div className="text-center mb-3">
-                                  <span className="inline-block bg-purple-700/80 text-white px-4 py-1 rounded-full text-sm font-medium">
-                                    RECOMMENDED PAYMENT METHOD
-                                  </span>
-                                </div>
-                                <div className="bg-white/10 p-1 rounded-lg">
-                                  <PhonePePaymentForm 
-                                    sessionId={sessionId} 
-                                    amount={getCost()}
-                                    customerName={form.getValues().studentName}
-                                    customerEmail={form.getValues().email}
-                                    customerPhone={form.getValues().phone}
-                                    onSuccess={handlePaymentSuccess}
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-center mb-2">
-                                  <span className="inline-block bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                                    ALTERNATIVE
-                                  </span>
-                                </div>
-                                <PaymentForm 
-                                  sessionId={sessionId} 
-                                  amount={getCost()}
-                                  onSuccess={handlePaymentSuccess}
-                                />
-                              </div>
+                      <h3 className="text-lg font-medium mb-4">Payment</h3>
+                      
+                      {sessionId ? (
+                        <div className="space-y-6">
+                          <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+                            <h4 className="text-base font-medium text-green-800 mb-2">
+                              Session Details
+                            </h4>
+                            <div className="text-sm text-green-700">
+                              <p><span className="font-medium">Name:</span> {form.getValues().studentName}</p>
+                              <p><span className="font-medium">Date:</span> {selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : ""}</p>
+                              <p><span className="font-medium">Time:</span> {selectedTime} IST</p>
+                              <p><span className="font-medium">Duration:</span> {selectedDuration} minutes</p>
+                              <p><span className="font-medium">Total:</span> ₹{getCost()}</p>
                             </div>
                           </div>
-                        </>
+                          
+                          <div className="space-y-4">
+                            <h4 className="text-base font-medium">Pay with PhonePe</h4>
+                            <PhonePePaymentForm 
+                              amount={getCost()}
+                              sessionId={sessionId}
+                              customerName={form.getValues().studentName}
+                              customerEmail={form.getValues().email}
+                              customerPhone={form.getValues().phone}
+                              onSuccess={handlePaymentSuccess}
+                            />
+                          </div>
+                          
+                          <div className="flex justify-between mt-6">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setStep(2)}
+                            >
+                              Back
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="py-12 text-center">
+                          <p className="text-muted-foreground">
+                            Session information is missing. Please go back and try again.
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setStep(1)}
+                            className="mt-4"
+                          >
+                            Start Over
+                          </Button>
+                        </div>
                       )}
-                      <div className="mt-6">
-                        <Button variant="ghost" onClick={() => setStep(2)} className="text-sm">
-                          Back to schedule
-                        </Button>
-                      </div>
                     </div>
                   )}
                   
                   {step === 4 && (
                     <div className="text-center py-8">
-                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
-                        <CheckCircle size={32} />
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-8 h-8 text-green-600" />
                       </div>
-                      <h3 className="text-xl font-medium mb-2">Booking Confirmed!</h3>
+                      <h3 className="text-xl font-bold text-green-600 mb-2">Booking Confirmed</h3>
                       <p className="text-muted-foreground mb-6">
-                        Your project guidance session has been scheduled for:
-                        {selectedDate && selectedTime && (
-                          <span className="block font-medium text-foreground mt-2">
-                            {format(selectedDate, "MMMM d, yyyy")} at {selectedTime}
-                          </span>
-                        )}
+                        Thank you for booking a project guidance session with BambooMade. You will receive a confirmation email with a Google Meet link for your session.
                       </p>
-                      <p className="text-sm text-muted-foreground mb-6">
-                        We've sent a confirmation email with all the details. Our expert will contact you before the session.
-                      </p>
-                      <Button onClick={() => window.location.href = "/"}>
-                        Return to Home
+                      <Button 
+                        onClick={() => window.location.href = "/"} 
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Return Home
                       </Button>
                     </div>
                   )}
@@ -520,60 +544,67 @@ const ProjectGuidance = () => {
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Session Information</CardTitle>
+                  <CardTitle>How It Works</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    <h3 className="font-medium text-lg mb-2">What to Expect</h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Our project guidance sessions provide personalized support for students working on bamboo architecture projects.
-                    </p>
-                    <ul className="space-y-2 text-sm">
-                      <li className="flex items-start">
-                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
-                        <span>Expert guidance on bamboo material selection and techniques</span>
-                      </li>
-                      <li className="flex items-start">
-                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
-                        <span>Project-specific design and structural advice</span>
-                      </li>
-                      <li className="flex items-start">
-                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
-                        <span>Portfolio review and career guidance</span>
-                      </li>
-                      <li className="flex items-start">
-                        <BookText className="h-5 w-5 text-primary-600 mr-2 mt-0.5" />
-                        <span>Resource recommendations and networking opportunities</span>
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <h3 className="font-medium text-lg mb-2">Session Details</h3>
-                    <div className="bg-primary-50 p-4 rounded-lg">
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">Duration:</span>
-                        <span className="text-sm font-medium">{selectedDuration} minutes</span>
-                      </div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">Cost:</span>
-                        <span className="text-sm font-medium">₹{getCost().toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">Format:</span>
-                        <span className="text-sm font-medium">Online Video Call</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Materials:</span>
-                        <span className="text-sm font-medium">Included</span>
-                      </div>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                      <BookText className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-medium">1. Book a Session</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Select a date and time that works for you and provide details about your bamboo project.
+                      </p>
                     </div>
                   </div>
                   
-                  <div>
-                    <h3 className="font-medium text-lg mb-2">Cancellation Policy</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Free cancellation up to 24 hours before your session. After that, a 50% fee applies. Contact us directly for rescheduling.
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-medium">2. Receive Confirmation</h3>
+                      <p className="text-sm text-muted-foreground">
+                        After payment, you'll receive a confirmation email with a Google Meet link for your session.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-medium">3. Join Your Session</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Meet with our bamboo expert online at your scheduled time to discuss your project and get personalized guidance.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Session Pricing</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span>30-minute Quick Review</span>
+                    <span className="font-medium">₹1,505</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span>1-hour Detailed Guidance</span>
+                    <span className="font-medium">₹2,505</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>90-minute Comprehensive Review</span>
+                    <span className="font-medium">₹3,505</span>
+                  </div>
+                  <div className="mt-4 text-xs text-muted-foreground">
+                    <p>
+                      All sessions include pre-session review of your materials and post-session notes.
                     </p>
                   </div>
                 </CardContent>
