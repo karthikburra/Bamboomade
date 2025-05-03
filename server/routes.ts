@@ -621,8 +621,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             delete req.session.pendingPayments[txnId];
           }
           
-          // Redirect to success page
-          return res.redirect('/payment-success?sessionId=' + pendingPayment.sessionId);
+          // Redirect to success page with both session ID and transaction ID for reference
+          return res.redirect(`/payment-success?sessionId=${pendingPayment.sessionId}&txnId=${txnId}`);
         } catch (storageError) {
           console.error("PhonePe callback storage error:", storageError);
           return res.status(500).send("Database error during payment processing");
@@ -720,8 +720,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           delete req.session.pendingPayments[txnId];
         }
         
-        // Redirect to success page
-        return res.redirect('/payment-success?sessionId=' + pendingPayment.sessionId);
+        // Redirect to success page with both session ID and transaction ID for reference
+        return res.redirect(`/payment-success?sessionId=${pendingPayment.sessionId}&txnId=${txnId}`);
       } else {
         // Payment failed
         const errorReason = statusResult.error || "Payment verification failed";
