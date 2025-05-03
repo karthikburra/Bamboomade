@@ -35,13 +35,13 @@ const MediumArticles: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-b from-green-50/30 to-background dark:from-green-950/30 dark:to-background">
+    <section className="py-16 bg-gradient-to-b from-green-100 to-background dark:from-green-900 dark:to-background">
       <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="mb-8 sm:mb-12 text-center px-4 sm:px-0">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-green-800 dark:text-green-300 sm:text-4xl">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-green-900 dark:text-green-200 sm:text-4xl">
             From Our Journal
           </h2>
-          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-green-700 dark:text-green-400 max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-green-800 dark:text-green-300 max-w-2xl mx-auto">
             "Explore our thoughts, research, and insights on bamboo architecture and sustainable design practices."
           </p>
         </div>
