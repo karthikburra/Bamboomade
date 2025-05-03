@@ -119,67 +119,27 @@ const IcfaiWorkshop: React.FC = () => {
       {/* Workshop information */}
       <section className="py-16 bg-white dark:bg-green-950">
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
-                About the <span className="text-yellow-500 dark:text-yellow-300">Workshop</span>
-              </h2>
-              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-                The impactful <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo workshop</span> held at ICFAI School of Architecture, Telangana, 
-                propelled students to explore the bamboo to create <span className="text-yellow-500 dark:text-yellow-300 font-medium">exceptional products</span>. This 
-                exercise empowered them to craft <span className="text-yellow-500 dark:text-yellow-300 font-medium">contemporary masterpieces</span> showcasing the 
-                finished products.
-              </p>
-              <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
-                Throughout the three days, students progressed from basic material understanding
-                to creating <span className="text-yellow-500 dark:text-yellow-300 font-medium">functional designs</span>. The workshop emphasized <span className="text-yellow-500 dark:text-yellow-300 font-medium">hands-on learning</span>, with
-                students working directly with bamboo to understand its properties, limitations,
-                and vast potential as a <span className="text-yellow-500 dark:text-yellow-300 font-medium">sustainable building material</span>.
-              </p>
-              <p className="text-gray-700 dark:text-gray-300 text-lg">
-                Instructors guided participants through various <span className="text-yellow-500 dark:text-yellow-300 font-medium">joinery techniques</span>, tools usage,
-                and design considerations unique to <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo construction</span>, fostering both technical
-                skills and creative exploration.
-              </p>
-            </div>
-            
-            {/* Workshop Images */}
-            <div className="mt-8 lg:mt-0">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-3">
-                  <div className="rounded-lg overflow-hidden shadow-xl h-44">
-                    <img 
-                      src="/img/workshops/icfai-hanging-lamp-new.jpg" 
-                      alt="Bamboo lamp fixture with LED lights on display" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="rounded-lg overflow-hidden shadow-xl h-48">
-                    <img 
-                      src="/img/workshops/icfai-workshop-activity-new.jpg" 
-                      alt="Students working with bamboo materials in workshop" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="rounded-lg overflow-hidden shadow-xl h-48">
-                    <img 
-                      src="/img/workshops/icfai-woven-lamp-new.jpg" 
-                      alt="Intricate woven bamboo pendant lamp with light" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="rounded-lg overflow-hidden shadow-xl h-44">
-                    <img 
-                      src="/img/workshops/icfai-bamboo-stool-new.jpg" 
-                      alt="Handcrafted bamboo stool with woven seat" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6 text-center">
+              About the <span className="text-yellow-500 dark:text-yellow-300">Workshop</span>
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+              The impactful <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo workshop</span> held at ICFAI School of Architecture, Telangana, 
+              propelled students to explore the bamboo to create <span className="text-yellow-500 dark:text-yellow-300 font-medium">exceptional products</span>. This 
+              exercise empowered them to craft <span className="text-yellow-500 dark:text-yellow-300 font-medium">contemporary masterpieces</span> showcasing the 
+              finished products.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg">
+              Throughout the three days, students progressed from basic material understanding
+              to creating <span className="text-yellow-500 dark:text-yellow-300 font-medium">functional designs</span>. The workshop emphasized <span className="text-yellow-500 dark:text-yellow-300 font-medium">hands-on learning</span>, with
+              students working directly with bamboo to understand its properties, limitations,
+              and vast potential as a <span className="text-yellow-500 dark:text-yellow-300 font-medium">sustainable building material</span>.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 text-lg">
+              Instructors guided participants through various <span className="text-yellow-500 dark:text-yellow-300 font-medium">joinery techniques</span>, tools usage,
+              and design considerations unique to <span className="text-yellow-500 dark:text-yellow-300 font-medium">bamboo construction</span>, fostering both technical
+              skills and creative exploration.
+            </p>
           </div>
         </div>
       </section>
@@ -251,72 +211,72 @@ const IcfaiWorkshop: React.FC = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-green-200 mb-8 text-center">
             Featured Workshop <span className="text-yellow-300">Creations</span>
           </h2>
-          <div className="grid grid-cols-12 gap-3 sm:gap-4">
-            {/* First row */}
-            <div className="col-span-12 md:col-span-5 lg:col-span-6">
-              <div className="rounded-lg overflow-hidden shadow-lg h-full">
-                <img 
-                  src={workshopImg4} 
-                  alt="Coffee table made with bamboo and glass" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            <div className="col-span-12 md:col-span-7 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={workshopImg9} 
-                  alt="Bamboo display stand" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={workshopImg12} 
-                  alt="Bamboo lighting fixture with LED lights" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="sm:col-span-2 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={workshopImg6} 
-                  alt="Students working on bamboo frame assembly" 
-                  className="w-full h-60 object-cover"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* First row - authentic bamboo creations */}
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src="/img/workshops/icfai-bamboo-stool-new.jpg" 
+                alt="Handcrafted bamboo stool with woven rope seat" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Bamboo Stool with Woven Seat</h3>
               </div>
             </div>
             
-            {/* Second row */}
-            <div className="col-span-12 md:col-span-7 lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-4">
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={workshopImg3} 
-                  alt="Workshop demonstration session" 
-                  className="w-full h-40 object-cover"
-                />
-              </div>
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={workshopImg5} 
-                  alt="Students processing bamboo" 
-                  className="w-full h-40 object-cover"
-                />
-              </div>
-              <div className="col-span-2 rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={workshopImg10} 
-                  alt="Students harvesting bamboo outdoors" 
-                  className="w-full h-48 object-cover"
-                />
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src="/img/workshops/icfai-hanging-lamp-new.jpg" 
+                alt="Bamboo lamp fixture with raw bamboo materials" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Bamboo Table Lamp</h3>
               </div>
             </div>
-            <div className="col-span-12 md:col-span-5 lg:col-span-6">
-              <div className="rounded-lg overflow-hidden shadow-lg h-full">
-                <img 
-                  src={workshopImg2} 
-                  alt="Bamboo basket weaving display" 
-                  className="w-full h-full object-cover"
-                />
+            
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src="/img/workshops/icfai-woven-lamp-new.jpg" 
+                alt="Intricate woven bamboo pendant lamp with light" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Woven Bamboo Pendant Light</h3>
+              </div>
+            </div>
+            
+            {/* Second row - workshop activity and more creations */}
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src="/img/workshops/icfai-workshop-activity-new.jpg" 
+                alt="Students working with bamboo materials in workshop" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Workshop Activity</h3>
+              </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={workshopImg4} 
+                alt="Coffee table made with bamboo and glass" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Bamboo and Glass Coffee Table</h3>
+              </div>
+            </div>
+            
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={workshopImg12} 
+                alt="Bamboo lighting fixture with LED lights" 
+                className="w-full h-64 object-cover"
+              />
+              <div className="p-3 bg-green-900/80">
+                <h3 className="text-green-100 font-medium">Decorative Bamboo Light</h3>
               </div>
             </div>
           </div>
