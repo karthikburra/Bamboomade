@@ -62,7 +62,7 @@ const OurWorks: React.FC = () => {
       imageUrl: "/img/projects/community-training.png",
       duration: "5 day workshop",
       date: "Jan 2024",
-      viewMoreLink: "/workshops/sirpur-community"
+      viewMoreLink: "/workshops/sirpur-community-training"
     },
     {
       id: "international-bamboo-fest",
