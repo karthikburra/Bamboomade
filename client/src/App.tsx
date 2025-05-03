@@ -25,6 +25,7 @@ import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
 import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWorkshop";
 import ManitBhopalWorkshop from "@/pages/ManitBhopalWorkshop";
 import BambooLightingWorkshop from "@/pages/BambooLightingWorkshop";
+import IcfaiWorkshop from "@/pages/IcfaiWorkshop";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/workshops/international-bamboo-fest" component={InternationalBambooFestWorkshop} />
       <Route path="/workshops/manit-bhopal" component={ManitBhopalWorkshop} />
       <Route path="/workshops/bamboo-lighting" component={BambooLightingWorkshop} />
+      <Route path="/workshops/icfai-architecture" component={IcfaiWorkshop} />
       
       <Route component={NotFound} />
     </Switch>
