@@ -42,47 +42,57 @@ const SirpurWorkshop: React.FC = () => {
         <title>Community Training Workshop at Sirpur | BambooMade</title>
         <meta
           name="description"
-          content="5-day bamboo community training workshop at Sirpur, Chhattisgarh focused on traditional weaving techniques and joinery methods."
+          content="6-day bamboo community training workshop at Sirpur, Chhattisgarh focused on traditional weaving techniques and teaching bamboo crafting skills to local villagers."
         />
       </Helmet>
 
-      {/* Hero Banner */}
-      <section className="relative bg-green-900 dark:bg-black">
-        <div className="absolute inset-0 overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-90"
-            style={{ mixBlendMode: 'multiply' }}
-          ></div>
-          <img
-            src={galleryImages[0].src}
-            alt="Bamboo Community Training Workshop"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="container relative z-10 mx-auto px-4 py-24 sm:py-32">
-          <Link href="/our-works" className="inline-flex items-center text-green-300 hover:text-green-100 mb-6 transition-colors">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Our Works
+      {/* Back button navigation */}
+      <div className="bg-green-900/80 text-white">
+        <div className="container max-w-7xl mx-auto px-4 py-3">
+          <Link href="/our-works">
+            <Button variant="link" className="text-green-200 hover:text-green-100 -ml-4 font-medium">
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to Our Experience
+            </Button>
           </Link>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-            BambooMade Community Training
-          </h1>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-6 mb-4">
-            <div className="flex items-center bg-black/30 text-green-300 px-3 py-1 rounded-full backdrop-blur-sm">
-              <span className="text-sm sm:text-base">January 24-29, 2024</span>
-            </div>
-            <div className="flex items-center bg-black/30 text-green-300 px-3 py-1 rounded-full backdrop-blur-sm">
-              <span className="text-sm sm:text-base">Sirpur, Chhattisgarh</span>
-            </div>
-            <div className="flex items-center bg-black/30 text-green-300 px-3 py-1 rounded-full backdrop-blur-sm">
-              <span className="text-sm sm:text-base">6-Day Workshop</span>
+        </div>
+      </div>
+
+      {/* Hero section */}
+      <div className="relative text-white py-12 sm:py-16 md:py-20">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0" 
+          style={{ 
+            backgroundImage: `url(${galleryImages[0].src})`,
+            filter: 'brightness(0.7)'
+          }}
+        />
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-green-950/70 to-green-900/60 z-0"></div>
+        
+        <div className="container max-w-7xl mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 items-center">
+            <div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                BambooMade Community Training
+              </h1>
+              <div className="text-green-300 font-semibold text-xl mb-6">
+                6-day Bamboo Traditional Crafting Workshop • January 24-29, 2024 • Sirpur, Chhattisgarh
+              </div>
+              <p className="text-lg text-green-100 mb-8 max-w-3xl">
+                An immersive training program to create awareness of bamboo through hands-on experience, focusing on traditional weaving techniques and joinery methods passed down through generations.
+              </p>
+              <WhatsAppContact
+                phoneNumber="8971690163"
+                message="Hello, I'm interested in organizing a community bamboo workshop similar to the one at Sirpur. Could you provide more information?"
+                className="bg-green-600 hover:bg-green-700 text-white"
+                size="lg"
+              />
             </div>
           </div>
-          <p className="text-white/90 text-lg sm:text-xl max-w-3xl">
-            An immersive training program to create awareness of bamboo through hands-on experience, focusing on traditional weaving techniques and joinery methods.
-          </p>
         </div>
-      </section>
+      </div>
 
       {/* Workshop information */}
       <section className="py-16 bg-white dark:bg-green-950">
