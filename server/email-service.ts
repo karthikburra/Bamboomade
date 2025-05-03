@@ -40,7 +40,12 @@ function generateGoogleMeetLink(sessionId: number, date: Date, studentName: stri
   // Google Meet links use a format like: https://meet.google.com/xyz-abcd-efg
   // For demonstration purposes, we're creating a predictable link format
   // In production, you would integrate with the Google Calendar API to create actual meetings
-  return `https://meet.google.com/${meetingId.substring(0, 3)}-${meetingId.substring(3, 7)}-${meetingId.substring(7, 10)}`;
+  
+  // Note: This link is associated with Info@bamboomade.in account as specified
+  // When implementing with Google Calendar API, use this email for authentication
+  
+  const generatedCode = `${meetingId.substring(0, 3)}-${meetingId.substring(3, 7)}-${meetingId.substring(7, 10)}`;
+  return `https://meet.google.com/${generatedCode}`;
 }
 
 interface BookingEmailData {
@@ -86,7 +91,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
     // Email content
     const msg = {
       to: bookingData.studentEmail,
-      from: 'projects@bamboomade.in', // BambooMade projects email as sender
+      from: 'Info@bamboomade.in', // Using Info@bamboomade.in as sender for Meet link generation
       cc: 'bamboomade.in@gmail.com', // Also keep BambooMade team in the loop
       subject: 'Your BambooMade Project Guidance Session Confirmed',
       html: `
@@ -115,7 +120,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
             </a>
           </div>
           
-          <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
+          <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by Info@bamboomade.in. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
           
           <div style="margin: 20px 0;">
             <a href="${calendarLink}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">
