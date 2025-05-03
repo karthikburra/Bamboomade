@@ -147,6 +147,15 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           </div>
         </div>
         <div className="mt-8 sm:mt-12 border-t border-primary-800 pt-6 sm:pt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-4">
+            <Link href="/terms-and-conditions" className="text-xs sm:text-sm text-primary-300 hover:text-primary-100">
+              Terms & Conditions
+            </Link>
+            <span className="hidden sm:inline text-primary-600">|</span>
+            <a href="mailto:Info@bamboomade.in" className="text-xs sm:text-sm text-primary-300 hover:text-primary-100">
+              Privacy Policy
+            </a>
+          </div>
           <p className="text-sm sm:text-base text-primary-400 text-center">
             &copy; {new Date().getFullYear()} BambooMade. All rights reserved.
           </p>

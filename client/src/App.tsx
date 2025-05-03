@@ -26,6 +26,7 @@ import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWork
 import ManitBhopalWorkshop from "@/pages/ManitBhopalWorkshop";
 import BambooLightingWorkshop from "@/pages/BambooLightingWorkshop";
 import IcfaiWorkshop from "@/pages/IcfaiWorkshop";
+import TermsAndConditions from "@/pages/TermsAndConditions";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -50,6 +51,9 @@ function Router() {
       <Route path="/workshops/manit-bhopal" component={ManitBhopalWorkshop} />
       <Route path="/workshops/bamboo-lighting" component={BambooLightingWorkshop} />
       <Route path="/workshops/icfai-architecture" component={IcfaiWorkshop} />
+      
+      {/* Legal Pages */}
+      <Route path="/terms-and-conditions" component={TermsAndConditions} />
       
       <Route component={NotFound} />
     </Switch>
