@@ -102,7 +102,7 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
 
   return (
     <div className="relative overflow-hidden">
-      <span className="block">
+      <span className="block text-pretty">
         {renderHighlightedText()}
       </span>
     </div>
@@ -112,22 +112,25 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
 const Hero: React.FC = () => {
   return (
     <div className="relative bg-gradient-to-b from-green-950/90 to-green-900/90 overflow-hidden">
-      {/* Background Image with Overlay */}
+      {/* Background Image with Overlay - optimized for all screen sizes */}
       <div 
-        className="absolute inset-0 bg-cover bg-center z-0" 
+        className="absolute inset-0 bg-cover bg-center z-0 transform scale-105" 
         style={{ 
           backgroundImage: `url(${heroImage})`,
-          filter: 'brightness(0.4)'
+          filter: 'brightness(0.4)',
+          backgroundPosition: 'center 25%',
+          backgroundSize: 'cover',
+          willChange: 'transform'
         }}
       />
-      {/* Additional dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/50 z-0"></div>
+      {/* Additional dark overlay for better text readability with gradient for depth */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40 z-0"></div>
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 lg:py-40 z-10">
-        <div className="md:max-w-3xl lg:max-w-4xl">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-16 sm:py-20 md:py-28 lg:py-36 xl:py-40 z-10">
+        <div className="md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-white">
             <span className="block">Beyond Tradition:</span>{" "}
-            <span className="block text-green-300 min-h-[3.5rem] sm:min-h-[4rem] md:min-h-[4.5rem]">
+            <span className="block text-green-300 min-h-[2.5rem] sm:min-h-[3rem] md:min-h-[3.5rem] lg:min-h-[4rem] xl:min-h-[4.5rem]">
               <AnimatedText 
                 phrases={[
                   "Get Academic Project guidance from Experts.",
@@ -137,36 +140,42 @@ const Hero: React.FC = () => {
               />
             </span>
           </h1>
-          <p className="mt-4 sm:mt-6 text-lg sm:text-xl text-white max-w-3xl">
+          <p className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-base sm:text-lg md:text-xl lg:text-2xl text-white max-w-3xl">
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
-          <div className="mt-4 sm:mt-6 text-base sm:text-lg text-white max-w-3xl">
-            <p className="mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
+          <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-sm sm:text-base md:text-lg text-white max-w-3xl">
+            <p className="mt-1 sm:mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
           </div>
-          <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
             <Link href="/gallery" className="w-full sm:w-auto">
               <Button
                 size="lg"
                 variant="secondary"
-                className="w-full sm:w-auto bg-green-800/30 text-green-400 hover:bg-green-800/50 border border-green-700"
+                className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 bg-green-800/30 text-green-400 hover:bg-green-800/50 border border-green-700"
               >
                 Explore Our Projects
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
             <WhatsAppContact 
               phoneNumber="+918971690163"
               message="Hello, I'm interested in BambooMade workshops. I'd like to inquire about your services."
-              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+              className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 bg-green-600 hover:bg-green-700 text-white"
               size="lg"
             />
           </div>
         </div>
       </div>
       
-      {/* Wave Divider */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="text-background fill-current w-full h-auto">
+      {/* Wave Divider - Responsive height for different screen sizes */}
+      <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 1440 120" 
+          className="text-background fill-current w-full h-auto"
+          preserveAspectRatio="none"
+          style={{ height: 'clamp(40px, 8vw, 120px)' }}
+        >
           <path d="M0,64L80,80C160,96,320,128,480,122.7C640,117,800,75,960,64C1120,53,1280,75,1360,85.3L1440,96L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"></path>
         </svg>
       </div>
