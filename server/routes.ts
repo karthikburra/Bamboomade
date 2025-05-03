@@ -803,6 +803,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderId = sessionId 
         ? `ORDER_RP_${Date.now()}_${sessionId}` 
         : `ORDER_RP_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        
+      console.log(`Generated Razorpay order ID with sessionId ${sessionId}: ${orderId}`);
       
       console.log(`Razorpay order creation for order: ${orderId}`);
       
@@ -902,8 +904,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Format: ORDER_RP_timestamp_sessionId
           let sessionId = null;
           const orderIdParts = razorpay_order_id.split('_');
+          console.log("Parsing Razorpay order ID parts:", orderIdParts);
+          
           if (orderIdParts.length >= 4) {
             sessionId = orderIdParts[3];
+            console.log("Extracted sessionId from order ID:", sessionId);
             
             // If we have a session ID and it's a project guidance session, update its payment status
             if (sessionId && !isNaN(parseInt(sessionId))) {
@@ -917,16 +922,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   // Send confirmation email with Google Meet link
                   const sessionDate = new Date(session.date);
                   
-                  await sendBookingConfirmationEmail({
-                    sessionId: session.id,
-                    studentName: session.studentName,
-                    studentEmail: session.email,
-                    sessionDate: sessionDate,
-                    sessionDuration: session.duration,
-                    sessionTopic: session.topic
-                  });
-                  
-                  console.log(`Payment confirmation email sent for session ${sessionId}`);
+                  console.log(`Attempting to send booking confirmation email for session ${sessionId} to ${session.email}`);
+                  try {
+                    const emailResult = await sendBookingConfirmationEmail({
+                      sessionId: session.id,
+                      studentName: session.studentName,
+                      studentEmail: session.email,
+                      sessionDate: sessionDate,
+                      sessionDuration: session.duration,
+                      sessionTopic: session.topic
+                    });
+                    
+                    console.log(`Payment confirmation email sent for session ${sessionId}, result:`, emailResult);
+                  } catch (innerEmailError) {
+                    console.error(`Failed to send confirmation email for session ${sessionId}:`, innerEmailError);
+                  }
                 }
               } catch (emailError) {
                 console.error("Failed to send confirmation email:", emailError);
