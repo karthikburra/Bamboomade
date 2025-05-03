@@ -29,6 +29,7 @@ import IcfaiWorkshop from "@/pages/IcfaiWorkshop";
 import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import PricingAndRefundPolicy from "@/pages/PricingAndRefundPolicy";
+import ShippingPolicy from "@/pages/ShippingPolicy";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/terms-and-conditions" component={TermsAndConditions} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/pricing-and-refund-policy" component={PricingAndRefundPolicy} />
+      <Route path="/shipping-policy" component={ShippingPolicy} />
       
       <Route component={NotFound} />
     </Switch>
