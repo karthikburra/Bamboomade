@@ -94,7 +94,7 @@ const IcfaiWorkshop: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-green-950/70 to-green-900/60 z-0"></div>
         
         <div className="container max-w-7xl mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 items-center">
             <div>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
                 ICFAI School of Architecture
@@ -121,7 +121,7 @@ const IcfaiWorkshop: React.FC = () => {
       {/* Workshop information */}
       <section className="py-16 bg-white dark:bg-green-950">
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="max-w-4xl">
+          <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-green-800 dark:text-green-300 mb-6">
               About the <span className="text-yellow-500 dark:text-yellow-300">Workshop</span>
             </h2>
