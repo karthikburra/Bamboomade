@@ -213,68 +213,80 @@ const IcfaiWorkshop: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* First row - authentic bamboo creations */}
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src="/img/workshops/icfai-bamboo-stool-new.jpg" 
-                alt="Handcrafted bamboo stool with woven rope seat" 
-                className="w-full h-64 object-cover"
-              />
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/img/workshops/icfai-bamboo-stool-new.jpg" 
+                  alt="Handcrafted bamboo stool with woven rope seat" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
               <div className="p-3 bg-green-900/80">
                 <h3 className="text-green-100 font-medium">Bamboo Stool with Woven Seat</h3>
               </div>
             </div>
             
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src="/img/workshops/icfai-hanging-lamp-new.jpg" 
-                alt="Bamboo lamp fixture with raw bamboo materials" 
-                className="w-full h-64 object-cover"
-              />
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/img/workshops/icfai-hanging-lamp-new.jpg" 
+                  alt="Bamboo lamp fixture with raw bamboo materials" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
               <div className="p-3 bg-green-900/80">
                 <h3 className="text-green-100 font-medium">Bamboo Table Lamp</h3>
               </div>
             </div>
             
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src="/img/workshops/icfai-woven-lamp-new.jpg" 
-                alt="Intricate woven bamboo pendant lamp with light" 
-                className="w-full h-64 object-cover"
-              />
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/img/workshops/icfai-woven-lamp-new.jpg" 
+                  alt="Intricate woven bamboo pendant lamp with light" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
               <div className="p-3 bg-green-900/80">
                 <h3 className="text-green-100 font-medium">Woven Bamboo Pendant Light</h3>
               </div>
             </div>
             
             {/* Second row - workshop activity and more creations */}
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src="/img/workshops/icfai-workshop-activity-new.jpg" 
-                alt="Students working with bamboo materials in workshop" 
-                className="w-full h-64 object-cover"
-              />
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src="/img/workshops/icfai-workshop-activity-new.jpg" 
+                  alt="Students working with bamboo materials in workshop" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
               <div className="p-3 bg-green-900/80">
                 <h3 className="text-green-100 font-medium">Workshop Activity</h3>
               </div>
             </div>
             
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src={workshopImg4} 
-                alt="Coffee table made with bamboo and glass" 
-                className="w-full h-64 object-cover"
-              />
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src={workshopImg4} 
+                  alt="Coffee table made with bamboo and glass" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
               <div className="p-3 bg-green-900/80">
                 <h3 className="text-green-100 font-medium">Bamboo and Glass Coffee Table</h3>
               </div>
             </div>
             
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <img 
-                src={workshopImg12} 
-                alt="Bamboo lighting fixture with LED lights" 
-                className="w-full h-64 object-cover"
-              />
+            <div className="rounded-lg overflow-hidden shadow-lg flex flex-col">
+              <div className="flex-grow flex items-center justify-center bg-black/10 p-4">
+                <img 
+                  src={workshopImg12} 
+                  alt="Bamboo lighting fixture with LED lights" 
+                  className="max-w-full max-h-[400px] object-contain"
+                />
+              </div>
               <div className="p-3 bg-green-900/80">
                 <h3 className="text-green-100 font-medium">Decorative Bamboo Light</h3>
               </div>
