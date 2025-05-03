@@ -327,9 +327,9 @@ const OurWorks: React.FC = () => {
         </div>
       </section>
       
-      <Separator className="bg-green-900/30" />
+      <Separator className="bg-green-900/50" />
       
-      <section className="py-16">
+      <section className="py-16 bg-gradient-to-b from-black to-green-950">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-green-300 mb-4">
             Ready to Collaborate?

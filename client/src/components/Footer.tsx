@@ -138,6 +138,9 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               Shipping Policy
             </Link>
           </div>
+          <p className="text-sm sm:text-base text-primary-300 text-center mb-1">
+            Innovating sustainable architecture with bamboo since 2019
+          </p>
           <p className="text-sm sm:text-base text-primary-400 text-center">
             &copy; {new Date().getFullYear()} BambooMade. All rights reserved.
           </p>
