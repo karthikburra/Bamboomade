@@ -746,6 +746,7 @@ function ProjectGuidance() {
                         setSelectedTime={setSelectedTime}
                         selectedDuration={selectedDuration}
                         setSelectedDuration={setSelectedDuration}
+                        isStudent={form.getValues().isStudent}
                       />
                       
                       <div className="flex justify-between mt-6">

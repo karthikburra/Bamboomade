@@ -25,6 +25,7 @@ interface BookingCalendarFullProps {
   setSelectedTime: (time: string) => void;
   selectedDuration: number;
   setSelectedDuration: (duration: number) => void;
+  isStudent?: boolean; // Add isStudent property to determine pricing
 }
 
 // Simplified interface for rescheduling flow
@@ -41,12 +42,17 @@ const timeSlots = [
   "13:00", "14:00", "15:00", "16:00"
 ];
 
-const durations = [
-  { value: 5, label: "5 minutes - ₹5" },
-  { value: 30, label: "30 minutes - ₹1,505" },
-  { value: 35, label: "35 minutes - ₹1,755" },
-  { value: 60, label: "60 minutes - ₹2,505" },
-  { value: 90, label: "90 minutes - ₹3,505" }
+// Define separate duration options for students and professionals
+const studentDurations = [
+  { value: 30, label: "30 minutes - ₹500" },
+  { value: 60, label: "60 minutes - ₹800" },
+  { value: 90, label: "90 minutes - ₹1,200" }
+];
+
+const professionalDurations = [
+  { value: 30, label: "30 minutes - ₹1,000" },
+  { value: 60, label: "60 minutes - ₹1,500" },
+  { value: 90, label: "90 minutes - ₹2,250" }
 ];
 
 // Type guard to determine which interface we're using
@@ -136,7 +142,10 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select duration" />
               </SelectTrigger>
               <SelectContent>
-                {durations.map((duration) => (
+                {/* Use the appropriate durations list based on user type */}
+                {(isFullProps(props) && props.isStudent !== undefined ? 
+                  (props.isStudent ? studentDurations : professionalDurations) : 
+                  studentDurations).map((duration) => (
                   <SelectItem key={duration.value} value={duration.value.toString()}>
                     {duration.label}
                   </SelectItem>
