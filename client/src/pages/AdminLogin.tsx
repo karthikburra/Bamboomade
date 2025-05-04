@@ -1,162 +1,129 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-
+import { useLocation } from "wouter";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { Lock, User } from "lucide-react";
 
-const adminLoginSchema = z.object({
-  email: z.string().email("Please enter a valid email").refine(
-    (email) => email.toLowerCase() === "info@bamboomade.in",
-    {
-      message: "Only BambooMade admin email is allowed",
-    }
-  ),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
-
-const AdminLogin = () => {
+export default function AdminLogin() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [_, setLocation] = useLocation();
 
-  const form = useForm<AdminLoginFormValues>({
-    resolver: zodResolver(adminLoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const { mutate: login, isPending } = useMutation({
-    mutationFn: async (data: AdminLoginFormValues) => {
-      return apiRequest("POST", "/api/auth/admin-login", data);
-    },
-    onSuccess: () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
       toast({
-        title: "Login Successful",
-        description: "Welcome to the BambooMade admin panel",
-      });
-      setLocation("/admin-dashboard");
-    },
-    onError: (error: any) => {
-      console.error("Login error:", error);
-      setAuthError(error?.message || "Invalid credentials. Please try again.");
-      toast({
-        title: "Login Failed",
-        description: error?.message || "Invalid credentials. Please try again.",
+        title: "Error",
+        description: "Please enter both email and password.",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (values: AdminLoginFormValues) => {
-    setAuthError(null);
-    login(values);
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await apiRequest("POST", "/api/auth/login", {
+        email,
+        password,
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome to the admin dashboard.",
+        });
+        
+        // Navigate to admin dashboard
+        setLocation("/admin-dashboard");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: data.message || "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Login Error",
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <>
+    <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white p-4">
       <Helmet>
         <title>Admin Login | BambooMade</title>
-        <meta name="description" content="Admin login page for BambooMade" />
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Admin login page" />
       </Helmet>
-
-      <div className="bg-background py-12 min-h-screen flex items-center">
-        <div className="container max-w-md mx-auto px-4">
-          <Card className="border-primary/20">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
-              <CardDescription className="text-center">
-                Secure access for BambooMade administrators
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {authError && (
-                <div className="bg-destructive/10 text-destructive rounded-md p-3 flex items-start mb-4">
-                  <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                  <p className="text-sm">{authError}</p>
-                </div>
-              )}
-
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="info@bamboomade.in"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="Enter your password"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isPending}
-                  >
-                    {isPending ? "Logging in..." : "Login"}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </>
+      
+      <Card className="w-full max-w-md bg-gray-900 border-gray-800">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access the admin dashboard
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleLogin}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="relative">
+                <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <Input
+                  className="pl-10 bg-gray-800 border-gray-700"
+                  placeholder="Email Address"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="relative">
+                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                <Input
+                  className="pl-10 bg-gray-800 border-gray-700"
+                  placeholder="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              className="w-full bg-green-600 hover:bg-green-700" 
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging In..." : "Login"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
-};
-
-export default AdminLogin;
+}

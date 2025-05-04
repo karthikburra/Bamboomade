@@ -1,475 +1,474 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { LogOut, RefreshCw, Filter, Download, Eye, Trash } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, Clock, User, Phone, Mail } from "lucide-react";
 
-// Import the AdminDashboard component for re-use
-import AdminDashboardComponent from "@/components/AdminDashboard";
+interface Session {
+  id: number;
+  formattedDate: string;
+  formattedTime: string;
+  date: string;
+  email: string;
+  phone: string;
+  topic: string;
+  notes: string;
+  duration: number;
+  paymentStatus: string;
+  studentName: string;
+  status: string;
+  googleMeetLink?: string;
+}
 
-const AdminDashboard = () => {
+export default function AdminDashboard() {
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [meetLink, setMeetLink] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("sessions");
 
-  // Check if admin is authenticated
-  const { data: authData, isLoading: authLoading } = useQuery({
-    queryKey: ["/api/auth/admin-check"],
+  // Check if user is authenticated and is admin
+  const { data: userData, isLoading: isAuthLoading } = useQuery({
+    queryKey: ["/api/auth/check-admin"],
     queryFn: async () => {
-      try {
-        const response = await apiRequest("GET", "/api/auth/admin-check");
-        return response.json();
-      } catch (error) {
-        // If not authenticated, redirect to admin login
-        setLocation("/admin-login");
-        throw error;
-      }
-    }
-  });
-
-  // Get project guidance sessions
-  const { 
-    data: sessions, 
-    isLoading: sessionsLoading,
-    refetch: refetchSessions
-  } = useQuery({
-    queryKey: ["/api/admin/project-guidance"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/project-guidance");
+      const response = await apiRequest("GET", "/api/auth/check-admin");
       return response.json();
     },
-    enabled: !authLoading && !!authData?.isAdmin,
-  });
-
-  // Get AI training data
-  const { 
-    data: trainingData, 
-    isLoading: trainingDataLoading,
-    refetch: refetchTrainingData
-  } = useQuery({
-    queryKey: ["/api/admin/ai-training"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/ai-training");
-      return response.json();
-    },
-    enabled: !authLoading && !!authData?.isAdmin,
-  });
-
-  // Get user data
-  const { 
-    data: users, 
-    isLoading: usersLoading,
-    refetch: refetchUsers
-  } = useQuery({
-    queryKey: ["/api/admin/users"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/users");
-      return response.json();
-    },
-    enabled: !authLoading && !!authData?.isAdmin,
-  });
-
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await apiRequest("POST", "/api/auth/admin-logout");
+    retry: false,
+    onError: () => {
       toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
-      });
-      setLocation("/admin-login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Logout Failed",
-        description: "An error occurred while logging out.",
+        title: "Authentication Error",
+        description: "You must be logged in as an admin to view this page.",
         variant: "destructive",
       });
-    }
-  };
+      setLocation("/admin-login");
+    },
+  });
 
-  // Handle refresh data
-  const handleRefresh = () => {
-    if (activeTab === "sessions") {
-      refetchSessions();
-    } else if (activeTab === "training") {
-      refetchTrainingData();
-    } else if (activeTab === "users") {
-      refetchUsers();
+  // Redirect to login if not admin
+  useEffect(() => {
+    if (!isAuthLoading && (!userData || !userData.isAdmin)) {
+      setLocation("/admin-login");
     }
+  }, [userData, isAuthLoading, setLocation]);
+
+  // Fetch all sessions (only available to admin)
+  const { data: sessionsData, isLoading: isSessionsLoading } = useQuery({
+    queryKey: ["/api/admin/sessions"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/sessions");
+      return response.json();
+    },
+    enabled: Boolean(userData?.isAdmin),
+  });
+
+  // Update Google Meet link for a session
+  const { mutate: updateMeetLink, isPending: isUpdating } = useMutation({
+    mutationFn: async ({ sessionId, googleMeetLink }: { sessionId: number; googleMeetLink: string }) => {
+      const response = await apiRequest("POST", "/api/admin/update-meet-link", {
+        sessionId,
+        googleMeetLink,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Google Meet link updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sessions"] });
+      setIsDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update Google Meet link.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleUpdateMeetLink = () => {
+    if (!selectedSession) return;
     
-    toast({
-      title: "Data Refreshed",
-      description: "The data has been refreshed.",
+    updateMeetLink({
+      sessionId: selectedSession.id,
+      googleMeetLink: meetLink,
     });
   };
 
-  // Export data as CSV
-  const exportData = (data: any[], filename: string) => {
-    if (!data || data.length === 0) {
-      toast({
-        title: "Export Failed",
-        description: "No data to export.",
-        variant: "destructive",
-      });
-      return;
+  const handleLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/auth/logout");
+      navigate("/admin-login");
+    } catch (error) {
+      console.error("Logout error:", error);
     }
-
-    // Convert data to CSV
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-      headers.join(","),
-      ...data.map(row => 
-        headers.map(header => {
-          let cell = row[header];
-          // Handle different data types and escape commas, quotes
-          if (typeof cell === "string") {
-            // Replace " with "" to escape quotes and wrap in quotes if contains comma
-            cell = cell.replace(/"/g, '""');
-            if (cell.includes(",") || cell.includes('"') || cell.includes("\n")) {
-              cell = `"${cell}"`;
-            }
-          } else if (cell instanceof Date) {
-            cell = cell.toISOString();
-          } else if (cell === null || cell === undefined) {
-            cell = "";
-          }
-          return cell;
-        }).join(",")
-      )
-    ].join("\n");
-
-    // Create download link
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `${filename}_${new Date().toISOString().split("T")[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
-  if (authLoading) {
+  const openMeetLinkDialog = (session: Session) => {
+    setSelectedSession(session);
+    setMeetLink(session.googleMeetLink || "");
+    setIsDialogOpen(true);
+  };
+
+  if (isAuthLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-green-500" />
       </div>
     );
   }
 
+  const sessions = sessionsData?.sessions || [];
+  
+  // Split sessions into categories
+  const pendingSessions = sessions.filter((s: Session) => 
+    s.status !== 'cancelled' && s.status !== 'completed' && !s.googleMeetLink);
+    
+  const upcomingSessions = sessions.filter((s: Session) => 
+    s.status !== 'cancelled' && s.status !== 'completed' && s.googleMeetLink);
+    
+  const completedSessions = sessions.filter((s: Session) => 
+    s.status === 'completed');
+    
+  const cancelledSessions = sessions.filter((s: Session) => 
+    s.status === 'cancelled');
+
   return (
-    <>
+    <div className="min-h-screen bg-gray-950 text-white">
       <Helmet>
         <title>Admin Dashboard | BambooMade</title>
-        <meta name="description" content="Admin dashboard for BambooMade" />
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Admin dashboard for session management" />
       </Helmet>
-
-      <div className="bg-background min-h-screen">
-        <div className="container py-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-              <Button 
-                variant="destructive"
-                size="sm"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <Button variant="ghost" className="flex items-center gap-2" onClick={handleLogout}>
+            <LogOut size={18} />
+            <span>Logout</span>
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-gray-900 border-gray-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Total Sessions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{sessions.length}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-amber-900/20 border-amber-900">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg text-amber-400">Pending</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-green-900/20 border-green-900">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg text-green-400">Upcoming</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-red-900/20 border-red-900">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg text-red-400">Cancelled</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <Tabs defaultValue="pending" className="space-y-4">
+          <TabsList className="bg-gray-800 border border-gray-700">
+            <TabsTrigger value="pending" className="data-[state=active]:bg-green-700">
+              Pending ({pendingSessions.length})
+            </TabsTrigger>
+            <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700">
+              Upcoming ({upcomingSessions.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed" className="data-[state=active]:bg-green-700">
+              Completed ({completedSessions.length})
+            </TabsTrigger>
+            <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700">
+              Cancelled ({cancelledSessions.length})
+            </TabsTrigger>
+            <TabsTrigger value="all" className="data-[state=active]:bg-green-700">
+              All Sessions
+            </TabsTrigger>
+          </TabsList>
+          
+          {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
+            let displaySessions;
+            let emptyMessage = "";
+            
+            switch (tab) {
+              case "pending":
+                displaySessions = pendingSessions;
+                emptyMessage = "No pending sessions requiring Google Meet links.";
+                break;
+              case "upcoming":
+                displaySessions = upcomingSessions;
+                emptyMessage = "No upcoming sessions with Google Meet links set.";
+                break;
+              case "completed":
+                displaySessions = completedSessions;
+                emptyMessage = "No completed sessions.";
+                break;
+              case "cancelled":
+                displaySessions = cancelledSessions;
+                emptyMessage = "No cancelled sessions.";
+                break;
+              default:
+                displaySessions = sessions;
+                emptyMessage = "No sessions found.";
+            }
+            
+            return (
+              <TabsContent key={tab} value={tab} className="space-y-4">
+                <Card className="bg-gray-900 border-gray-800">
+                  <CardHeader>
+                    <CardTitle className="capitalize">{tab} Sessions</CardTitle>
+                    <CardDescription>
+                      {tab === "pending" ? "Sessions requiring Google Meet links" : 
+                       tab === "upcoming" ? "Sessions with Google Meet links set" :
+                       `All ${tab} sessions`}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {isSessionsLoading ? (
+                      <div className="flex justify-center p-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-green-500" />
+                      </div>
+                    ) : displaySessions.length === 0 ? (
+                      <div className="text-center py-8 text-gray-400">
+                        <p>{emptyMessage}</p>
+                      </div>
+                    ) : (
+                      <div className="rounded-md border border-gray-800 overflow-hidden">
+                        <Table>
+                          <TableHeader className="bg-gray-800">
+                            <TableRow className="hover:bg-gray-800/80">
+                              <TableHead className="text-gray-300">ID</TableHead>
+                              <TableHead className="text-gray-300">Student</TableHead>
+                              <TableHead className="text-gray-300">Contact</TableHead>
+                              <TableHead className="text-gray-300">Date & Time</TableHead>
+                              <TableHead className="text-gray-300">Topic</TableHead>
+                              <TableHead className="text-gray-300">Duration</TableHead>
+                              <TableHead className="text-gray-300">Payment</TableHead>
+                              <TableHead className="text-gray-300">Google Meet</TableHead>
+                              <TableHead className="text-gray-300">Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody className="divide-y divide-gray-800">
+                            {displaySessions.map((session: Session) => (
+                              <TableRow 
+                                key={session.id} 
+                                className="hover:bg-gray-800/50 bg-gray-900"
+                              >
+                                <TableCell className="font-mono">{session.id}</TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{session.studentName}</div>
+                                  <div className="text-xs text-gray-400">{session.isStudent ? "Student" : "Professional"}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center text-xs text-gray-300 mb-1">
+                                    <Mail className="w-3 h-3 mr-1" /> {session.email}
+                                  </div>
+                                  <div className="flex items-center text-xs text-gray-300">
+                                    <Phone className="w-3 h-3 mr-1" /> {session.phone}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center text-xs text-gray-300 mb-1">
+                                    <Calendar className="w-3 h-3 mr-1" /> {session.formattedDate}
+                                  </div>
+                                  <div className="flex items-center text-xs text-gray-300">
+                                    <Clock className="w-3 h-3 mr-1" /> {session.formattedTime}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="max-w-[200px] truncate" title={session.topic}>
+                                    {session.topic}
+                                  </div>
+                                  {session.notes && (
+                                    <div className="text-xs text-gray-400 mt-1 max-w-[200px] truncate" title={session.notes}>
+                                      {session.notes}
+                                    </div>
+                                  )}
+                                </TableCell>
+                                <TableCell>{session.duration} min</TableCell>
+                                <TableCell>
+                                  <Badge 
+                                    variant={session.paymentStatus === "Paid" ? "default" : "outline"}
+                                    className={session.paymentStatus === "Paid" ? "bg-green-700 hover:bg-green-600" : ""}
+                                  >
+                                    {session.paymentStatus}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {session.googleMeetLink ? (
+                                    <div className="flex flex-col gap-2">
+                                      <a 
+                                        href={session.googleMeetLink} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-blue-400 hover:text-blue-300 flex items-center text-xs"
+                                      >
+                                        <LinkIcon className="w-3 h-3 mr-1" />
+                                        Open Link
+                                      </a>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-6 text-xs"
+                                        onClick={() => openMeetLinkDialog(session)}
+                                      >
+                                        Edit
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="border-green-700 text-green-400 hover:bg-green-900/30 text-xs"
+                                      onClick={() => openMeetLinkDialog(session)}
+                                    >
+                                      Add Link
+                                    </Button>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge 
+                                    variant={
+                                      session.status === 'cancelled' 
+                                        ? "destructive" 
+                                        : session.status === 'completed' 
+                                          ? "secondary"
+                                          : "default"
+                                    }
+                                    className="capitalize"
+                                  >
+                                    {session.status}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      </div>
+      
+      {/* Meet Link Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedSession?.googleMeetLink ? "Update" : "Add"} Google Meet Link
+            </DialogTitle>
+            <DialogDescription>
+              {selectedSession ? (
+                <div className="mt-2 space-y-1 text-gray-300">
+                  <p><span className="font-medium">Session:</span> #{selectedSession.id}</p>
+                  <p><span className="font-medium">Student:</span> {selectedSession.studentName}</p>
+                  <p><span className="font-medium">Date:</span> {selectedSession.formattedDate} at {selectedSession.formattedTime}</p>
+                </div>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="meetLink">Google Meet Link</Label>
+              <Input
+                id="meetLink"
+                placeholder="https://meet.google.com/..."
+                value={meetLink}
+                onChange={(e) => setMeetLink(e.target.value)}
+                className="bg-gray-800 border-gray-700"
+              />
             </div>
           </div>
-
-          <Tabs 
-            defaultValue="sessions" 
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid grid-cols-3 w-full max-w-md mb-6">
-              <TabsTrigger value="sessions">Project Sessions</TabsTrigger>
-              <TabsTrigger value="training">AI Training Data</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="sessions">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>Project Guidance Sessions</CardTitle>
-                      <CardDescription>
-                        Manage all project guidance sessions
-                      </CardDescription>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => exportData(sessions || [], "project_sessions")}
-                      disabled={!sessions || sessions.length === 0}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {sessionsLoading ? (
-                    <div className="h-40 flex items-center justify-center">
-                      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-                    </div>
-                  ) : !sessions || sessions.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No project guidance sessions found
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Topic</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead>User Type</TableHead>
-                            <TableHead>Paid</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {sessions.map((session: any) => (
-                            <TableRow key={session.id}>
-                              <TableCell>{session.id}</TableCell>
-                              <TableCell>{session.studentName}</TableCell>
-                              <TableCell>{session.email}</TableCell>
-                              <TableCell className="max-w-xs truncate">
-                                {session.topic}
-                              </TableCell>
-                              <TableCell>
-                                {new Date(session.date).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell>{session.duration} min</TableCell>
-                              <TableCell>
-                                {session.isStudent ? "Student" : "Professional"}
-                              </TableCell>
-                              <TableCell>
-                                {session.paymentId ? (
-                                  <span className="text-green-600 font-medium">
-                                    Yes
-                                  </span>
-                                ) : (
-                                  <span className="text-red-600 font-medium">
-                                    No
-                                  </span>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Button variant="ghost" size="icon">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="training">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>AI Training Data</CardTitle>
-                      <CardDescription>
-                        Manage training data for the AI system
-                      </CardDescription>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => exportData(trainingData || [], "ai_training_data")}
-                      disabled={!trainingData || trainingData.length === 0}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {trainingDataLoading ? (
-                    <div className="h-40 flex items-center justify-center">
-                      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-                    </div>
-                  ) : !trainingData || trainingData.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No AI training data found
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Question</TableHead>
-                            <TableHead>Answer</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Created At</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {trainingData.map((data: any) => (
-                            <TableRow key={data.id}>
-                              <TableCell>{data.id}</TableCell>
-                              <TableCell className="max-w-xs truncate">
-                                {data.question}
-                              </TableCell>
-                              <TableCell className="max-w-xs truncate">
-                                {data.answer}
-                              </TableCell>
-                              <TableCell>{data.category}</TableCell>
-                              <TableCell>
-                                {new Date(data.createdAt).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Button variant="ghost" size="icon">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon">
-                                    <Trash className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="users">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>Users</CardTitle>
-                      <CardDescription>
-                        Manage registered users
-                      </CardDescription>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => exportData(users || [], "users")}
-                      disabled={!users || users.length === 0}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {usersLoading ? (
-                    <div className="h-40 flex items-center justify-center">
-                      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-                    </div>
-                  ) : !users || users.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No users found
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Username</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Tokens</TableHead>
-                            <TableHead>Created At</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {users.map((user: any) => (
-                            <TableRow key={user.id}>
-                              <TableCell>{user.id}</TableCell>
-                              <TableCell>{user.username}</TableCell>
-                              <TableCell>{user.email}</TableCell>
-                              <TableCell>{user.tokens}</TableCell>
-                              <TableCell>
-                                {new Date(user.createdAt).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Button variant="ghost" size="icon">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateMeetLink}
+              disabled={isUpdating}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Save Link
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
-};
-
-export default AdminDashboard;
+}
