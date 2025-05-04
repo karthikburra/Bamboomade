@@ -35,7 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, Clock, User, Phone, Mail } from "lucide-react";
+import { Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, CalendarClock, Clock, User, Phone, Mail } from "lucide-react";
 
 interface Session {
   id: number;
@@ -317,12 +317,32 @@ export default function AdminDashboard() {
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="flex items-center text-xs text-gray-300 mb-1">
-                                    <Calendar className="w-3 h-3 mr-1" /> {session.formattedDate}
+                                  {/* Current session date/time (highlighted) */}
+                                  <div className="flex flex-col gap-1 mb-1">
+                                    <div className="flex items-center text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
+                                      <Calendar className="w-3.5 h-3.5 mr-1.5 text-green-400" /> {session.formattedDate}
+                                    </div>
+                                    <div className="flex items-center text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
+                                      <Clock className="w-3.5 h-3.5 mr-1.5 text-green-400" /> {session.formattedTime}
+                                    </div>
                                   </div>
-                                  <div className="flex items-center text-xs text-gray-300">
-                                    <Clock className="w-3 h-3 mr-1" /> {session.formattedTime}
-                                  </div>
+                                  
+                                  {/* Show history if rescheduled */}
+                                  {(session.status === 'rescheduled' || 
+                                    (session.notes && session.notes.toLowerCase().includes('rescheduled'))) && (
+                                    <div className="mt-1 border-t border-gray-700 pt-1">
+                                      <div className="text-xs text-blue-400 flex items-center mb-0.5">
+                                        <CalendarClock className="w-3 h-3 mr-1" /> Rescheduled
+                                      </div>
+                                      <div className="text-xs text-gray-400">
+                                        Originally booked for: {(() => {
+                                          if (!session.notes) return "Unknown date";
+                                          const dateMatch = session.notes.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+                                          return dateMatch ? dateMatch[0] : "Unknown date";
+                                        })()}
+                                      </div>
+                                    </div>
+                                  )}
                                 </TableCell>
                                 <TableCell>
                                   <div className="max-w-[200px] truncate" title={session.topic}>
