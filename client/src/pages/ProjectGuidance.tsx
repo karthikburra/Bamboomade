@@ -84,10 +84,6 @@ function ProjectGuidance() {
   
   // Rescheduling state
   const [verificationEmail, setVerificationEmail] = useState<string>("");
-  const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
-  const [verificationCode, setVerificationCode] = useState<string>("");
-  const [userEnteredCode, setUserEnteredCode] = useState<string>("");
-  const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
   const [userSessions, setUserSessions] = useState<any[] | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
@@ -152,21 +148,36 @@ function ProjectGuidance() {
   });
   
   const getCost = () => {
-    // Return cost based on selected duration
-    switch (selectedDuration) {
-      case 5:
-        return 5;
-      case 30:
-        return 1505;
-      case 35:
-        return 1755;
-      case 60:
-        return 2505;
-      case 90:
-        return 3505;
-      default:
-        // Fallback calculation (should not happen)
-        return (selectedDuration / 60) * 2505 + 5;
+    // Get the user type (student/professional)
+    const isStudent = form.getValues().isStudent;
+    
+    // Return cost based on user type and selected duration
+    if (isStudent) {
+      // Student pricing
+      switch (selectedDuration) {
+        case 30:
+          return 500;  // INR 500 for 30 minutes (student)
+        case 60:
+          return 800;  // INR 800 for 1 hour (student)
+        case 90:
+          return 1200; // INR 1200 for 90 minutes (student - extrapolated)
+        default:
+          // Fallback calculation for other durations
+          return (selectedDuration / 30) * 500;
+      }
+    } else {
+      // Professional pricing
+      switch (selectedDuration) {
+        case 30:
+          return 1000; // INR 1000 for 30 minutes (professional)
+        case 60:
+          return 1500; // INR 1500 for 1 hour (professional)
+        case 90:
+          return 2250; // INR 2250 for 90 minutes (professional - extrapolated)
+        default:
+          // Fallback calculation for other durations
+          return (selectedDuration / 30) * 1000;
+      }
     }
   };
   
@@ -294,82 +305,48 @@ function ProjectGuidance() {
     });
   };
   
-  // Verification Code Functions
-  const generateRandomCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-  
-  const { mutate: sendVerificationCode, isPending: isSendingCode } = useMutation({
+  // Fetch sessions by email
+  const { mutate: fetchUserSessionsByEmail, isPending: isFetchingSessions } = useMutation({
     mutationFn: async (email: string) => {
-      setIsVerifying(true);
-      const code = generateRandomCode();
-      setVerificationCode(code);
+      if (!email) {
+        return Promise.reject("Email is required");
+      }
       
-      const response = await apiRequest("POST", "/api/send-verification-code", {
-        email,
-        code,
-        purpose: "access"
-      });
-      
+      const response = await apiRequest("GET", `/api/sessions-by-email?email=${email}`);
       const data = await response.json();
       return data;
     },
-    onSuccess: () => {
-      toast({
-        title: "Verification Code Sent",
-        description: "Please check your email for the verification code.",
-      });
+    onSuccess: (data) => {
+      if (data.sessions && data.sessions.length > 0) {
+        setUserSessions(data.sessions);
+        setSelectedSessionId(data.sessions[0].id);
+        
+        toast({
+          title: "Sessions Found",
+          description: "Your sessions have been loaded successfully.",
+        });
+      } else {
+        setUserSessions([]);
+        
+        toast({
+          title: "No Sessions Found",
+          description: "We couldn't find any sessions associated with this email.",
+        });
+      }
     },
     onError: (error) => {
       toast({
-        title: "Failed to Send Code",
+        title: "Failed to Fetch Sessions",
         description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
-      setIsVerifying(false);
+      setUserSessions([]);
     }
   });
   
-  const verifyCode = () => {
-    if (userEnteredCode === verificationCode) {
-      setIsEmailVerified(true);
-      
-      // Fetch user sessions by email (for existing bookings display)
-      const fetchUserSessions = async () => {
-        try {
-          const response = await apiRequest("GET", `/api/sessions-by-email?email=${verificationEmail}`);
-          const data = await response.json();
-          
-          if (data.sessions && data.sessions.length > 0) {
-            setUserSessions(data.sessions);
-            setSelectedSessionId(data.sessions[0].id);
-          } else {
-            setUserSessions([]);
-          }
-        } catch (error) {
-          console.error("Error fetching user sessions:", error);
-          setUserSessions([]);
-        }
-      };
-      
-      fetchUserSessions();
-      
-      toast({
-        title: "Email Verified",
-        description: "You can now view, reschedule, or cancel your sessions.",
-      });
-    } else {
-      toast({
-        title: "Invalid Code",
-        description: "The verification code you entered is incorrect. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-  
   const { mutate: rescheduleSession, isPending: isReschedulingSession } = useMutation({
     mutationFn: async () => {
-      if (!selectedDate || !selectedTime || !sessionId) {
+      if (!selectedDate || !selectedTime || !selectedSessionId) {
         return Promise.reject("Missing required information for rescheduling");
       }
       
@@ -378,7 +355,7 @@ function ProjectGuidance() {
       sessionDate.setHours(hours, minutes);
       
       const reschedulingData = {
-        sessionId,
+        sessionId: selectedSessionId,
         email: verificationEmail,
         newDate: sessionDate.toISOString(),
         newDuration: selectedDuration
@@ -397,10 +374,12 @@ function ProjectGuidance() {
       // Return to confirmation page
       setStep(4);
       setIsRescheduling(false);
-      setIsEmailVerified(false);
       setVerificationEmail("");
-      setUserEnteredCode("");
-      setVerificationCode("");
+      
+      // Refresh sessions list
+      if (verificationEmail) {
+        fetchUserSessionsByEmail(verificationEmail);
+      }
     },
     onError: (error) => {
       toast({
@@ -442,24 +421,10 @@ function ProjectGuidance() {
         description: "Your session has been cancelled. You will receive a confirmation email with refund details.",
       });
       
-      // Refresh the sessions list
-      const fetchUserSessions = async () => {
-        try {
-          const response = await apiRequest("GET", `/api/sessions-by-email?email=${verificationEmail}`);
-          const data = await response.json();
-          
-          if (data.sessions && data.sessions.length > 0) {
-            setUserSessions(data.sessions);
-          } else {
-            setUserSessions([]);
-          }
-        } catch (error) {
-          console.error("Error fetching user sessions:", error);
-          setUserSessions([]);
-        }
-      };
-      
-      fetchUserSessions();
+      // Refresh the sessions list if email is available
+      if (verificationEmail) {
+        fetchUserSessionsByEmail(verificationEmail);
+      }
     },
     onError: (error) => {
       toast({
