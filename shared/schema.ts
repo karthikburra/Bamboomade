@@ -50,6 +50,12 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   notes: text("notes"),
   paymentConfirmed: boolean("payment_confirmed").default(false),
   paymentId: text("payment_id"),
+  status: text("status").default("active"), // active, cancelled, completed
+  cancellationReason: text("cancellation_reason"),
+  cancellationDate: timestamp("cancellation_date"),
+  refundAmount: integer("refund_amount"),
+  refundPercentage: integer("refund_percentage"),
+  amount: integer("amount"), // Total amount paid for the session
 });
 
 export const insertProjectGuidanceSchema = createInsertSchema(projectGuidances).pick({
