@@ -294,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           topic: session.topic,
           notes: session.notes || '',
           paymentStatus: session.paymentConfirmed ? "Paid" : "Pending",
-          status: session.status || (session.cancelled ? 'cancelled' : 'pending'),
+          status: session.status || 'pending',
           googleMeetLink: session.googleMeetLink || '',
           isStudent: session.isStudent
         };

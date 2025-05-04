@@ -50,12 +50,14 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   notes: text("notes"),
   paymentConfirmed: boolean("payment_confirmed").default(false),
   paymentId: text("payment_id"),
-  status: text("status").default("active"), // active, cancelled, completed
+  status: text("status").default("active"), // active, pending, confirmed, cancelled, completed
   cancellationReason: text("cancellation_reason"),
   cancellationDate: timestamp("cancellation_date"),
   refundAmount: integer("refund_amount"),
   refundPercentage: integer("refund_percentage"),
   amount: integer("amount"), // Total amount paid for the session
+  googleMeetLink: text("google_meet_link"), // Link for Google Meet session
+  isStudent: boolean("is_student").default(true), // Whether the booking is for a student or professional
 });
 
 export const insertProjectGuidanceSchema = createInsertSchema(projectGuidances).pick({

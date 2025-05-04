@@ -28,6 +28,7 @@ export interface IStorage {
   createProjectGuidance(session: InsertProjectGuidance): Promise<ProjectGuidance>;
   updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined>;
   cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined>;
   
   // Chat message operations
@@ -280,6 +281,12 @@ export class MemStorage implements IStorage {
 
   async createProjectGuidance(insertSession: InsertProjectGuidance): Promise<ProjectGuidance> {
     const id = this.currentProjectGuidanceId++;
+    
+    // Extract isStudent from insertSession if available
+    const isStudentValue = 'isStudent' in insertSession 
+      ? (insertSession as any).isStudent 
+      : true; // Default to true if not specified
+      
     const session: ProjectGuidance = { 
       id,
       date: insertSession.date,
@@ -291,12 +298,14 @@ export class MemStorage implements IStorage {
       notes: insertSession.notes || null,
       paymentConfirmed: false,
       paymentId: null,
-      status: "active",
+      status: "pending",
       cancellationReason: null,
       cancellationDate: null,
       refundAmount: null,
       refundPercentage: null,
-      amount: null
+      amount: null,
+      googleMeetLink: null,
+      isStudent: isStudentValue
     };
     this.projectGuidances.set(id, session);
     return session;
@@ -341,6 +350,19 @@ export class MemStorage implements IStorage {
       cancellationDate: new Date(),
       refundAmount: refundAmount,
       refundPercentage: refundPercentage
+    };
+    this.projectGuidances.set(id, updatedSession);
+    return updatedSession;
+  }
+  
+  async updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined> {
+    const session = await this.getProjectGuidance(id);
+    if (!session) return undefined;
+    
+    const updatedSession: ProjectGuidance = { 
+      ...session, 
+      googleMeetLink,
+      status: "confirmed"
     };
     this.projectGuidances.set(id, updatedSession);
     return updatedSession;
