@@ -1,7 +1,19 @@
 import { Helmet } from "react-helmet";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { BookText, CalendarCheck, Calendar as CalendarIcon, CalendarClock, CheckCircle, GraduationCap, Briefcase, User, AlertCircle } from "lucide-react";
+import { 
+  BookText, 
+  CalendarCheck, 
+  Calendar as CalendarIcon, 
+  CalendarClock, 
+  CheckCircle, 
+  GraduationCap, 
+  Briefcase, 
+  User, 
+  AlertCircle, 
+  X,
+  BanIcon 
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,6 +35,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -53,7 +74,7 @@ type ProjectGuidanceFormValues = z.infer<typeof projectGuidanceFormSchema>;
 
 function ProjectGuidance() {
   const { toast } = useToast();
-  const [step, setStep] = useState(1); // 1: Details, 2: Schedule, 3: Payment, 4: Confirmation, 5: Reschedule
+  const [step, setStep] = useState(1); // 1: Details, 2: Schedule, 3: Payment, 4: Confirmation, 5: Reschedule, 6: Cancel
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<number>(60); // Default 60 minutes
@@ -68,6 +89,16 @@ function ProjectGuidance() {
   const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
   const [userSessions, setUserSessions] = useState<any[] | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+  
+  // Cancellation state
+  const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState<boolean>(false);
+  const [cancellationReason, setCancellationReason] = useState<string>("");
+  const [sessionToCancelId, setSessionToCancelId] = useState<number | null>(null);
+  const [cancellationSuccess, setCancellationSuccess] = useState<boolean>(false);
+  const [cancellationDetails, setCancellationDetails] = useState<{
+    refundPercentage: number;
+    refundAmount: number;
+  } | null>(null);
   
   // Check if returning from payment flow
   useEffect(() => {
@@ -378,12 +409,164 @@ function ProjectGuidance() {
     }
   });
   
+  const { mutate: cancelSession, isPending: isCancellingSession } = useMutation({
+    mutationFn: async () => {
+      if (!sessionToCancelId || !cancellationReason) {
+        return Promise.reject("Missing required information for cancellation");
+      }
+      
+      const cancellationData = {
+        sessionId: sessionToCancelId,
+        email: verificationEmail,
+        reason: cancellationReason
+      };
+      
+      const response = await apiRequest("POST", "/api/cancel-session", cancellationData);
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: (data) => {
+      // Record the refund details
+      setCancellationDetails({
+        refundPercentage: data.refundDetails.percentage,
+        refundAmount: data.refundDetails.amount
+      });
+      
+      setCancellationSuccess(true);
+      setIsCancellationDialogOpen(false);
+      
+      toast({
+        title: "Session Cancelled",
+        description: "Your session has been cancelled. You will receive a confirmation email with refund details.",
+      });
+      
+      // Refresh the sessions list
+      const fetchUserSessions = async () => {
+        try {
+          const response = await apiRequest("GET", `/api/sessions-by-email?email=${verificationEmail}`);
+          const data = await response.json();
+          
+          if (data.sessions && data.sessions.length > 0) {
+            setUserSessions(data.sessions);
+          } else {
+            setUserSessions([]);
+          }
+        } catch (error) {
+          console.error("Error fetching user sessions:", error);
+          setUserSessions([]);
+        }
+      };
+      
+      fetchUserSessions();
+    },
+    onError: (error) => {
+      toast({
+        title: "Cancellation Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    }
+  });
+  
   return (
     <>
       <Helmet>
         <title>Project Guidance | BambooMade</title>
         <meta name="description" content="Book a project guidance session with bamboo architecture experts to get personalized guidance for your academic or professional bamboo projects." />
       </Helmet>
+      
+      {/* Cancellation Dialog */}
+      <Dialog 
+        open={isCancellationDialogOpen} 
+        onOpenChange={setIsCancellationDialogOpen}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancel Session</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this session? Your refund will be processed according to our cancellation policy.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-md p-3 my-3">
+            <h4 className="text-sm font-medium text-amber-800 dark:text-amber-400">Cancellation Policy</h4>
+            <ul className="mt-2 text-xs text-amber-700 dark:text-amber-300 space-y-1">
+              <li>• 100% refund: more than 7 days before session</li>
+              <li>• 75% refund: 3-7 days before session</li>
+              <li>• 50% refund: 1-3 days before session</li>
+              <li>• 25% refund: less than 24 hours before session</li>
+              <li>• No refund: after scheduled start time</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-3 pt-2">
+            <label className="text-sm font-medium">Reason for Cancellation</label>
+            <Textarea 
+              placeholder="Please provide a reason for cancellation..."
+              className="w-full h-24"
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+            />
+          </div>
+          
+          <DialogFooter className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:justify-end sm:space-x-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCancellationDialogOpen(false);
+                setCancellationReason("");
+              }}
+            >
+              Keep My Session
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!cancellationReason || isCancellingSession}
+              onClick={() => cancelSession()}
+            >
+              {isCancellingSession ? "Cancelling..." : "Cancel Session"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Cancellation Success View */}
+      {cancellationSuccess && cancellationDetails && (
+        <Dialog 
+          open={cancellationSuccess} 
+          onOpenChange={setCancellationSuccess}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Session Cancelled Successfully</DialogTitle>
+              <DialogDescription>
+                Your session has been cancelled, and your refund has been processed.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md p-4 my-4">
+              <h4 className="text-sm font-medium text-green-800 dark:text-green-400">Refund Details</h4>
+              <div className="mt-2 text-sm text-green-700 dark:text-green-300">
+                <p><strong>Refund Percentage:</strong> {cancellationDetails.refundPercentage}%</p>
+                <p><strong>Refund Amount:</strong> ₹{cancellationDetails.refundAmount}</p>
+                <p className="text-xs mt-2">Your refund will be processed to your original payment method within 7-10 business days.</p>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  setCancellationSuccess(false);
+                  setCancellationDetails(null);
+                }}
+                className="w-full"
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
       
       <div className="bg-background py-12">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
@@ -993,7 +1176,20 @@ function ProjectGuidance() {
                                         <p><span className="font-medium">Time:</span> {session.time}</p>
                                         <p><span className="font-medium">Duration:</span> {session.duration} minutes</p>
                                       </div>
-                                      <div className="mt-2 flex justify-end">
+                                      <div className="mt-2 flex justify-end gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="text-xs border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                          onClick={(e) => {
+                                            e.stopPropagation(); // Prevent parent onClick from firing
+                                            setSessionToCancelId(session.id);
+                                            setIsCancellationDialogOpen(true);
+                                          }}
+                                        >
+                                          <BanIcon className="w-3 h-3 mr-1" />
+                                          Cancel
+                                        </Button>
                                         <Button
                                           size="sm"
                                           variant="outline"
