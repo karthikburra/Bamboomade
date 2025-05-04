@@ -456,3 +456,115 @@ BambooMade Team
     return false;
   }
 }
+
+/**
+ * Send a cancellation confirmation email with refund details
+ */
+export async function sendCancellationEmail(
+  sessionId: number,
+  studentName: string,
+  email: string,
+  topic: string,
+  sessionDate: Date,
+  reason: string,
+  refundPercentage: number,
+  refundAmount: number
+): Promise<boolean> {
+  try {
+    // Format date and time for display
+    const formattedDate = format(sessionDate, 'EEEE, MMMM do, yyyy');
+    const formattedTime = format(sessionDate, 'h:mm a');
+    
+    // Format cancellation date
+    const cancellationDate = new Date();
+    const formattedCancellationDate = format(cancellationDate, 'MMMM do, yyyy');
+    
+    return await sendEmail({
+      to: email,
+      subject: "Your BambooMade Session Has Been Cancelled",
+      text: `
+Hello ${studentName},
+
+Your BambooMade Project Guidance session has been cancelled as requested.
+
+CANCELLED SESSION DETAILS:
+Date: ${formattedDate}
+Time: ${formattedTime}
+Topic: ${topic}
+Cancellation Date: ${formattedCancellationDate}
+Reason: ${reason}
+
+REFUND DETAILS:
+Refund Percentage: ${refundPercentage}%
+Refund Amount: ₹${refundAmount}
+
+According to our cancellation policy:
+- 100% refund for cancellations more than 7 days before the session
+- 75% refund for cancellations 3-7 days before the session
+- 50% refund for cancellations 1-3 days before the session
+- 25% refund for cancellations less than 24 hours before the session
+- No refund for cancellations after the session's scheduled start time
+
+Your refund will be processed within 7-10 business days to your original payment method.
+
+If you have any questions, please contact us at:
+Email: projects@bamboomade.in
+Phone/WhatsApp: +91 8971690163
+
+Thank you,
+BambooMade Team
+      `,
+      html: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <div style="background-color: #1E3A29; padding: 20px; text-align: center;">
+    <h2 style="color: #ffffff; margin: 0;">BambooMade</h2>
+  </div>
+  <div style="padding: 20px; border: 1px solid #e5e5e5; border-top: none;">
+    <h3>Session Cancellation Confirmation</h3>
+    <p>Hello ${studentName},</p>
+    <p>Your BambooMade Project Guidance session has been cancelled as requested.</p>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; margin: 20px 0;">
+      <h4 style="margin-top: 0; color: #2e7d32;">Cancelled Session Details:</h4>
+      <p><strong>Date:</strong> ${formattedDate}</p>
+      <p><strong>Time:</strong> ${formattedTime}</p>
+      <p><strong>Topic:</strong> ${topic}</p>
+      <p><strong>Cancellation Date:</strong> ${formattedCancellationDate}</p>
+      <p><strong>Reason:</strong> ${reason}</p>
+    </div>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; margin: 20px 0; border-left: 4px solid #2e7d32;">
+      <h4 style="margin-top: 0; color: #2e7d32;">Refund Details:</h4>
+      <p><strong>Refund Percentage:</strong> ${refundPercentage}%</p>
+      <p><strong>Refund Amount:</strong> ₹${refundAmount}</p>
+    </div>
+    
+    <div style="background-color: #f9f9f9; padding: 15px; margin: 20px 0; border-left: 4px solid #607d8b;">
+      <h4 style="margin-top: 0; color: #607d8b;">Cancellation Policy:</h4>
+      <ul style="padding-left: 20px; margin-bottom: 0;">
+        <li>100% refund for cancellations more than 7 days before the session</li>
+        <li>75% refund for cancellations 3-7 days before the session</li>
+        <li>50% refund for cancellations 1-3 days before the session</li>
+        <li>25% refund for cancellations less than 24 hours before the session</li>
+        <li>No refund for cancellations after the session's scheduled start time</li>
+      </ul>
+    </div>
+    
+    <p>Your refund will be processed within 7-10 business days to your original payment method.</p>
+    
+    <div style="margin: 20px 0; padding-top: 20px; border-top: 1px solid #e5e5e5;">
+      <p>If you have any questions, please contact us at:</p>
+      <p>Email: <a href="mailto:projects@bamboomade.in" style="color: #2e7d32;">projects@bamboomade.in</a></p>
+      <p>Phone/WhatsApp: <a href="https://wa.me/918971690163" style="color: #2e7d32;">+91 8971690163</a></p>
+    </div>
+    
+    <p>Thank you,<br>BambooMade Team</p>
+  </div>
+</div>
+      `
+    });
+  } catch (error) {
+    console.error("Failed to send cancellation email:", error);
+    return false;
+  }
+}
