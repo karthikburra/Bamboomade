@@ -12,7 +12,8 @@ import {
   User, 
   AlertCircle, 
   X,
-  BanIcon 
+  BanIcon,
+  Calendar as CalendarIconLucide
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
@@ -604,7 +605,7 @@ function ProjectGuidance() {
                       <Separator className="w-10 my-4 mx-2" />
                       <div className={`flex items-center ${step >= 3 ? "text-primary-600" : "text-muted-foreground"}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${step >= 3 ? "bg-primary-100 text-primary-600" : "bg-muted text-muted-foreground"}`}>
-                          <Calendar size={16} />
+                          <CalendarIconLucide size={16} />
                         </div>
                         <span>Payment</span>
                       </div>
@@ -1423,7 +1424,7 @@ function ProjectGuidance() {
                   
                   <div className="flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                      <Calendar className="w-4 h-4 text-green-600" />
+                      <CalendarIconLucide className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
                       <h3 className="text-base font-medium">2. Receive Confirmation</h3>
