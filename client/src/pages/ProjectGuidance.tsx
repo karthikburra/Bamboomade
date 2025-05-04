@@ -350,6 +350,86 @@ function ProjectGuidance() {
     }
   });
   
+  // Email verification functions
+  const sendVerificationCode = async () => {
+    if (!verificationEmail) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsSendingCode(true);
+      const response = await apiRequest("POST", "/api/send-verification-code", { email: verificationEmail });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Verification Code Sent",
+          description: "Please check your email for the verification code",
+        });
+        setIsVerifying(true);
+      } else {
+        toast({
+          title: "Failed to Send Code",
+          description: data.error || "Please try again",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send verification code. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+  
+  const verifyCode = async () => {
+    if (!userEnteredCode || !verificationEmail) {
+      toast({
+        title: "Information Required",
+        description: "Please enter the verification code",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const response = await apiRequest("POST", "/api/verify-code", { 
+        email: verificationEmail,
+        code: userEnteredCode 
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Email Verified",
+          description: "Your email has been verified",
+        });
+        setIsEmailVerified(true);
+        fetchUserSessionsByEmail(verificationEmail);
+      } else {
+        toast({
+          title: "Invalid Code",
+          description: data.error || "The verification code is incorrect",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to verify code. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const { mutate: rescheduleSession, isPending: isReschedulingSession } = useMutation({
     mutationFn: async () => {
       if (!selectedDate || !selectedTime || !selectedSessionId) {
@@ -381,6 +461,8 @@ function ProjectGuidance() {
       setStep(4);
       setIsRescheduling(false);
       setVerificationEmail("");
+      setIsEmailVerified(false);
+      setUserEnteredCode("");
       
       // Refresh sessions list
       if (verificationEmail) {
@@ -1017,7 +1099,7 @@ function ProjectGuidance() {
                                   });
                                   return;
                                 }
-                                sendVerificationCode(verificationEmail);
+                                sendVerificationCode();
                               }}
                               className="w-full bg-green-600 hover:bg-green-700"
                               disabled={isSendingCode}
@@ -1060,7 +1142,7 @@ function ProjectGuidance() {
                               <button 
                                 type="button"
                                 className="text-sm text-green-600 dark:text-green-400 hover:underline"
-                                onClick={() => sendVerificationCode(verificationEmail)}
+                                onClick={() => sendVerificationCode()}
                                 disabled={isSendingCode}
                               >
                                 {isSendingCode ? "Sending..." : "Resend Code"}
