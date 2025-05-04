@@ -1317,12 +1317,13 @@ function ProjectGuidance() {
                                           {selectedDate ? format(selectedDate, "PPP") : "Select a date"}
                                         </Button>
                                       </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-0">
+                                      <PopoverContent className="w-auto p-0" align="start">
                                         <Calendar
                                           mode="single"
                                           selected={selectedDate}
                                           onSelect={setSelectedDate}
                                           initialFocus
+                                          className="rounded-md border"
                                           disabled={(date) => {
                                             // Disable dates in the past and weekends
                                             const today = new Date();
