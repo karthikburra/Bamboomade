@@ -22,7 +22,7 @@ export default function PricingAndRefundPolicy() {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-gray-900 dark:bg-gray-900 p-6 rounded-lg border border-green-800 dark:border-green-800">
               <h4 className="text-lg font-medium mb-2 text-green-300 dark:text-green-300">Student Rates</h4>
-              <p className="text-3xl font-bold mb-4 text-white dark:text-white">₹2,505 <span className="text-lg font-normal text-gray-400 dark:text-gray-400">per hour</span></p>
+              <p className="text-3xl font-bold mb-4 text-white dark:text-white">₹800 <span className="text-lg font-normal text-gray-400 dark:text-gray-400">per hour</span></p>
               <ul className="space-y-2 text-gray-300 dark:text-gray-300">
                 <li className="flex items-start">
                   <span className="text-green-500 dark:text-green-500 mr-2">✓</span>
@@ -49,7 +49,7 @@ export default function PricingAndRefundPolicy() {
             
             <div className="bg-gray-900 dark:bg-gray-900 p-6 rounded-lg border border-green-800 dark:border-green-800">
               <h4 className="text-lg font-medium mb-2 text-green-300 dark:text-green-300">Professional Rates</h4>
-              <p className="text-3xl font-bold mb-4 text-white dark:text-white">₹5,000 <span className="text-lg font-normal text-gray-400 dark:text-gray-400">per hour</span></p>
+              <p className="text-3xl font-bold mb-4 text-white dark:text-white">₹1,500 <span className="text-lg font-normal text-gray-400 dark:text-gray-400">per hour</span></p>
               <ul className="space-y-2 text-gray-300 dark:text-gray-300">
                 <li className="flex items-start">
                   <span className="text-green-500 dark:text-green-500 mr-2">✓</span>
@@ -80,22 +80,41 @@ export default function PricingAndRefundPolicy() {
             <p className="mb-4 text-gray-300 dark:text-gray-300">
               We offer flexible session durations to accommodate different project needs:
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <h4 className="text-lg font-medium mb-3 text-green-300 dark:text-green-300">Student Pricing</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-green-800 dark:border-green-800 text-center">
                 <p className="font-medium text-green-400 dark:text-green-400 mb-1">30 minutes</p>
+                <p className="text-xl font-bold mb-1">₹500</p>
                 <p className="text-sm text-gray-400 dark:text-gray-400">Quick consultation</p>
               </div>
               <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-green-800 dark:border-green-800 text-center">
                 <p className="font-medium text-green-400 dark:text-green-400 mb-1">60 minutes</p>
+                <p className="text-xl font-bold mb-1">₹800</p>
                 <p className="text-sm text-gray-400 dark:text-gray-400">Standard session</p>
               </div>
               <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-green-800 dark:border-green-800 text-center">
                 <p className="font-medium text-green-400 dark:text-green-400 mb-1">90 minutes</p>
+                <p className="text-xl font-bold mb-1">₹1,200</p>
                 <p className="text-sm text-gray-400 dark:text-gray-400">Extended guidance</p>
               </div>
+            </div>
+
+            <h4 className="text-lg font-medium mb-3 text-green-300 dark:text-green-300">Professional Pricing</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-green-800 dark:border-green-800 text-center">
-                <p className="font-medium text-green-400 dark:text-green-400 mb-1">120 minutes</p>
-                <p className="text-sm text-gray-400 dark:text-gray-400">Comprehensive support</p>
+                <p className="font-medium text-green-400 dark:text-green-400 mb-1">30 minutes</p>
+                <p className="text-xl font-bold mb-1">₹1,000</p>
+                <p className="text-sm text-gray-400 dark:text-gray-400">Quick consultation</p>
+              </div>
+              <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-green-800 dark:border-green-800 text-center">
+                <p className="font-medium text-green-400 dark:text-green-400 mb-1">60 minutes</p>
+                <p className="text-xl font-bold mb-1">₹1,500</p>
+                <p className="text-sm text-gray-400 dark:text-gray-400">Standard session</p>
+              </div>
+              <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-green-800 dark:border-green-800 text-center">
+                <p className="font-medium text-green-400 dark:text-green-400 mb-1">90 minutes</p>
+                <p className="text-xl font-bold mb-1">₹2,250</p>
+                <p className="text-sm text-gray-400 dark:text-gray-400">Extended guidance</p>
               </div>
             </div>
             <p className="text-gray-300 dark:text-gray-300">
