@@ -144,6 +144,14 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
           <p className="text-sm sm:text-base text-primary-400 text-center">
             &copy; {new Date().getFullYear()} BambooMade. All rights reserved.
           </p>
+          <div className="mt-4 text-center">
+            <Link 
+              href="/admin-login" 
+              className="text-xs text-primary-500 hover:text-primary-400 opacity-60 hover:opacity-100"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

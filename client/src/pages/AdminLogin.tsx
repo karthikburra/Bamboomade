@@ -37,7 +37,7 @@ export default function AdminLogin() {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/auth/login", {
+      const response = await apiRequest("POST", "/api/auth/admin-login", {
         email,
         password,
       });
