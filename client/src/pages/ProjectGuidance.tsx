@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { BookText, CalendarCheck, Calendar, CheckCircle, GraduationCap, Briefcase, User } from "lucide-react";
+import { BookText, CalendarCheck, Calendar, CalendarClock, CheckCircle, GraduationCap, Briefcase, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -46,11 +46,19 @@ type ProjectGuidanceFormValues = z.infer<typeof projectGuidanceFormSchema>;
 
 function ProjectGuidance() {
   const { toast } = useToast();
-  const [step, setStep] = useState(1); // 1: Schedule, 2: Details, 3: Payment, 4: Confirmation
+  const [step, setStep] = useState(1); // 1: Details, 2: Schedule, 3: Payment, 4: Confirmation, 5: Reschedule
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<number>(60); // Default 60 minutes
   const [sessionId, setSessionId] = useState<number | null>(null);
+  
+  // Rescheduling state
+  const [verificationEmail, setVerificationEmail] = useState<string>("");
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
+  const [verificationCode, setVerificationCode] = useState<string>("");
+  const [userEnteredCode, setUserEnteredCode] = useState<string>("");
+  const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
   
   // Check if returning from payment flow
   useEffect(() => {
@@ -243,6 +251,102 @@ function ProjectGuidance() {
       variant: "destructive",
     });
   };
+  
+  // Verification Code Functions
+  const generateRandomCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+  
+  const { mutate: sendVerificationCode, isPending: isSendingCode } = useMutation({
+    mutationFn: async (email: string) => {
+      setIsVerifying(true);
+      const code = generateRandomCode();
+      setVerificationCode(code);
+      
+      const response = await apiRequest("POST", "/api/send-verification-code", {
+        email,
+        code,
+        purpose: "reschedule"
+      });
+      
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Verification Code Sent",
+        description: "Please check your email for the verification code.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to Send Code",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+      setIsVerifying(false);
+    }
+  });
+  
+  const verifyCode = () => {
+    if (userEnteredCode === verificationCode) {
+      setIsEmailVerified(true);
+      toast({
+        title: "Email Verified",
+        description: "You can now reschedule your session.",
+      });
+    } else {
+      toast({
+        title: "Invalid Code",
+        description: "The verification code you entered is incorrect. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const { mutate: rescheduleSession, isPending: isReschedulingSession } = useMutation({
+    mutationFn: async () => {
+      if (!selectedDate || !selectedTime || !sessionId) {
+        return Promise.reject("Missing required information for rescheduling");
+      }
+      
+      const sessionDate = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.split(":").map(Number);
+      sessionDate.setHours(hours, minutes);
+      
+      const reschedulingData = {
+        sessionId,
+        email: verificationEmail,
+        newDate: sessionDate.toISOString(),
+        newDuration: selectedDuration
+      };
+      
+      const response = await apiRequest("POST", "/api/reschedule-session", reschedulingData);
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Session Rescheduled",
+        description: "Your session has been successfully rescheduled. We'll send you an updated Google Meet link.",
+      });
+      
+      // Return to confirmation page
+      setStep(4);
+      setIsRescheduling(false);
+      setIsEmailVerified(false);
+      setVerificationEmail("");
+      setUserEnteredCode("");
+      setVerificationCode("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Rescheduling Failed",
+        description: error instanceof Error ? error.message : "Please try again",
+        variant: "destructive",
+      });
+    }
+  });
   
   return (
     <>
@@ -579,10 +683,54 @@ function ProjectGuidance() {
                             <p className="font-medium">{selectedDuration} minutes</p>
                           </div>
                           <div>
+                            <p className="text-gray-500 dark:text-gray-400">Session Type:</p>
+                            <p className="font-medium">{form.getValues().isStudent ? "Student" : "Professional"}</p>
+                          </div>
+                          <div>
                             <p className="text-gray-500 dark:text-gray-400">Topic:</p>
                             <p className="font-medium">{form.getValues().topic}</p>
                           </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Amount Paid:</p>
+                            <p className="font-medium">₹{getCost().toLocaleString()}</p>
+                          </div>
                         </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-6">
+                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
+                          Your Information
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Name:</p>
+                            <p className="font-medium">{form.getValues().studentName}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Email:</p>
+                            <p className="font-medium">{form.getValues().email}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500 dark:text-gray-400">Phone:</p>
+                            <p className="font-medium">{form.getValues().phone}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-6">
+                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
+                          Need to Reschedule?
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                          If you need to change your session date or time, please use the button below. You'll need to verify your email address.
+                        </p>
+                        <Button 
+                          onClick={() => setStep(5)}
+                          className="w-full bg-amber-600 hover:bg-amber-700"
+                        >
+                          <CalendarClock className="mr-2 h-4 w-4" />
+                          Reschedule My Session
+                        </Button>
                       </div>
                       
                       <div className="border-t border-gray-100 dark:border-gray-700 pt-5 mt-4">
@@ -621,6 +769,228 @@ function ProjectGuidance() {
                         >
                           Return Home
                         </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {step === 5 && (
+                    <div className="py-6">
+                      <div className="mb-6">
+                        <h3 className="text-lg font-medium mb-4">Reschedule Your Session</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                          To reschedule your session, we need to verify your email address first.
+                        </p>
+                        
+                        {!isVerifying && !isEmailVerified && (
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-1">Email Address</label>
+                                <Input 
+                                  type="email" 
+                                  placeholder="Enter the email you used for booking" 
+                                  value={verificationEmail}
+                                  onChange={(e) => setVerificationEmail(e.target.value)}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={() => {
+                                if (!verificationEmail) {
+                                  toast({
+                                    title: "Email Required",
+                                    description: "Please enter your email address",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                sendVerificationCode(verificationEmail);
+                              }}
+                              className="w-full bg-green-600 hover:bg-green-700"
+                              disabled={isSendingCode}
+                            >
+                              {isSendingCode ? "Sending Code..." : "Send Verification Code"}
+                            </Button>
+                            <Button 
+                              onClick={() => setStep(4)}
+                              variant="outline" 
+                              className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {isVerifying && !isEmailVerified && (
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Verification Code</label>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                We've sent a 6-digit code to {verificationEmail}
+                              </p>
+                              <Input 
+                                type="text" 
+                                placeholder="Enter the 6-digit code" 
+                                value={userEnteredCode}
+                                onChange={(e) => setUserEnteredCode(e.target.value)}
+                                className="w-full"
+                                maxLength={6}
+                              />
+                            </div>
+                            <Button 
+                              onClick={verifyCode}
+                              className="w-full bg-green-600 hover:bg-green-700"
+                            >
+                              Verify Code
+                            </Button>
+                            <div className="text-center mt-4">
+                              <button 
+                                type="button"
+                                className="text-sm text-green-600 dark:text-green-400 hover:underline"
+                                onClick={() => sendVerificationCode(verificationEmail)}
+                                disabled={isSendingCode}
+                              >
+                                {isSendingCode ? "Sending..." : "Resend Code"}
+                              </button>
+                              <span className="mx-2 text-gray-400">|</span>
+                              <button 
+                                type="button"
+                                className="text-sm text-green-600 dark:text-green-400 hover:underline"
+                                onClick={() => {
+                                  setIsVerifying(false);
+                                  setVerificationEmail("");
+                                  setUserEnteredCode("");
+                                }}
+                              >
+                                Change Email
+                              </button>
+                            </div>
+                            <Button 
+                              onClick={() => setStep(4)}
+                              variant="outline" 
+                              className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {isEmailVerified && (
+                          <div>
+                            <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md p-4">
+                              <div className="flex items-center">
+                                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+                                <p className="text-sm text-green-600 dark:text-green-400">Email verified successfully</p>
+                              </div>
+                            </div>
+                            
+                            <h4 className="text-base font-medium mb-4">Select New Date & Time</h4>
+                            <div className="mb-6">
+                              <label className="block text-sm font-medium mb-2">Select Session Duration</label>
+                              <div className="grid grid-cols-3 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedDuration(30)}
+                                  className={`text-center py-2 px-3 text-sm rounded-md ${
+                                    selectedDuration === 30 
+                                      ? "bg-green-600 text-white"
+                                      : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  }`}
+                                >
+                                  30 min
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedDuration(60)}
+                                  className={`text-center py-2 px-3 text-sm rounded-md ${
+                                    selectedDuration === 60 
+                                      ? "bg-green-600 text-white"
+                                      : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  }`}
+                                >
+                                  60 min
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedDuration(90)}
+                                  className={`text-center py-2 px-3 text-sm rounded-md ${
+                                    selectedDuration === 90
+                                      ? "bg-green-600 text-white"
+                                      : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                  }`}
+                                >
+                                  90 min
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                              <div>
+                                <BookingCalendar
+                                  onSelectDate={setSelectedDate}
+                                  selectedDate={selectedDate}
+                                />
+                              </div>
+                              <div>
+                                <h4 className="text-base font-medium mb-4">Available Time Slots</h4>
+                                {selectedDate ? (
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time) => (
+                                      <button
+                                        key={time}
+                                        type="button"
+                                        onClick={() => setSelectedTime(time)}
+                                        className={`py-2 px-4 text-center text-sm rounded-md ${
+                                          selectedTime === time
+                                            ? "bg-green-600 text-white"
+                                            : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                        }`}
+                                      >
+                                        {time}
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md text-center">
+                                    <p className="text-gray-500 dark:text-gray-400">
+                                      Please select a date first
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex space-x-4">
+                              <Button 
+                                onClick={() => {
+                                  if (!selectedDate || !selectedTime) {
+                                    toast({
+                                      title: "Missing Information",
+                                      description: "Please select a date and time for your rescheduled session",
+                                      variant: "destructive",
+                                    });
+                                    return;
+                                  }
+                                  
+                                  // Submit the rescheduling request
+                                  rescheduleSession();
+                                }}
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                                disabled={isReschedulingSession}
+                              >
+                                {isReschedulingSession ? "Updating..." : "Confirm Reschedule"}
+                              </Button>
+                              <Button 
+                                onClick={() => setStep(4)}
+                                variant="outline" 
+                                className="flex-1 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
