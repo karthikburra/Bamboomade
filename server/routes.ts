@@ -379,6 +379,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Temporary route for getting all sessions without email verification (for testing only)
+  app.get("/api/all-sessions", async (req, res) => {
+    try {
+      // Get all sessions
+      const allSessions = await storage.getAllProjectGuidances();
+      
+      // Format session data for client
+      const formattedSessions = allSessions.map(session => {
+        const sessionDate = new Date(session.date);
+        return {
+          id: session.id,
+          date: session.date,
+          formattedDate: format(sessionDate, "MMMM d, yyyy"),
+          formattedTime: format(sessionDate, "h:mm a"),
+          email: session.email,
+          topic: session.topic,
+          duration: session.duration,
+          paymentStatus: session.paymentId ? 'Paid' : 'Pending',
+          studentName: session.studentName,
+          status: session.status || 'scheduled'
+        };
+      });
+      
+      res.json({ 
+        sessions: formattedSessions,
+        message: formattedSessions.length > 0 
+          ? "All existing sessions in the system (for testing purposes)." 
+          : "No sessions found in the system."
+      });
+    } catch (error) {
+      console.error("Error fetching all sessions:", error);
+      res.status(500).json({ message: "Failed to fetch sessions", error: (error as Error).message });
+    }
+  });
+  
   app.get("/api/project-guidance/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id, 10);

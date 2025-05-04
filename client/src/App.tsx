@@ -21,6 +21,7 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailed from "@/pages/PaymentFailed";
 import OurWorks from "@/pages/OurWorks";
+import AllSessions from "@/pages/AllSessions";
 import NotFound from "@/pages/not-found";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
       <Route path="/payment-success" component={PaymentSuccessPage} />
       <Route path="/payment-failed" component={PaymentFailed} />
+      <Route path="/all-sessions" component={AllSessions} />
       
       {/* Workshop Detail Pages */}
       <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
