@@ -14,7 +14,10 @@ import {
   AlertCircle, 
   X,
   BanIcon,
-  Calendar as CalendarIconLucide
+  Calendar as CalendarIconLucide,
+  Phone,
+  Clock,
+  Tag
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
@@ -935,106 +938,141 @@ function ProjectGuidance() {
                   {step === 4 && (
                     <div className="py-6">
                       <div className="flex flex-col items-center justify-center mb-6">
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
-                          <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                        <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                          <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
                         </div>
-                        <h3 className="text-xl font-bold text-green-600 dark:text-green-400">Payment Successful!</h3>
-                        <p className="text-gray-600 dark:text-gray-300 mt-2 text-center">
-                          We will send you a Google Meet link within 4 hours
+                        <h3 className="text-2xl font-bold text-green-600 dark:text-green-400">Payment Successful!</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mt-2 text-center max-w-lg">
+                          Thank you for booking a project guidance session. We will send you a Google Meet link within 4 hours.
                         </p>
                       </div>
                       
-                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-6">
-                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
-                          Session Details
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Date:</p>
-                            <p className="font-medium">{selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : ""}</p>
+                      <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 border border-gray-700 rounded-lg p-6 mb-6 shadow-lg">
+                        <div className="flex items-center mb-4">
+                          <CalendarClock className="h-5 w-5 text-green-400 mr-2" />
+                          <h4 className="text-lg font-semibold text-gray-100">
+                            Session Details
+                          </h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Date</p>
+                            <p className="font-medium text-white">{selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : ""}</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Time:</p>
-                            <p className="font-medium">{selectedTime} IST</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Time</p>
+                            <p className="font-medium text-white">{selectedTime} IST</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Duration:</p>
-                            <p className="font-medium">{selectedDuration} minutes</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Duration</p>
+                            <p className="font-medium text-white">{selectedDuration} minutes</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Session Type:</p>
-                            <p className="font-medium">{form.getValues().isStudent ? "Student" : "Professional"}</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Session Type</p>
+                            <p className="font-medium text-white">{form.getValues().isStudent ? "Student" : "Professional"}</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Topic:</p>
-                            <p className="font-medium">{form.getValues().topic}</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Topic</p>
+                            <p className="font-medium text-white">{form.getValues().topic}</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Amount Paid:</p>
-                            <p className="font-medium">₹{getCost().toLocaleString()}</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Amount Paid</p>
+                            <p className="font-medium text-white">₹{getCost().toLocaleString()}</p>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-6">
-                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
-                          Your Information
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Name:</p>
-                            <p className="font-medium">{form.getValues().studentName}</p>
+                      <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 border border-gray-700 rounded-lg p-6 mb-6 shadow-lg">
+                        <div className="flex items-center mb-4">
+                          <User className="h-5 w-5 text-green-400 mr-2" />
+                          <h4 className="text-lg font-semibold text-gray-100">
+                            Your Information
+                          </h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Name</p>
+                            <p className="font-medium text-white">{form.getValues().studentName}</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Email:</p>
-                            <p className="font-medium">{form.getValues().email}</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Email</p>
+                            <p className="font-medium text-white">{form.getValues().email}</p>
                           </div>
-                          <div>
-                            <p className="text-gray-500 dark:text-gray-400">Phone:</p>
-                            <p className="font-medium">{form.getValues().phone}</p>
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Phone</p>
+                            <p className="font-medium text-white">{form.getValues().phone}</p>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-lg p-4 mb-6">
-                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
-                          Need to Reschedule?
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                          If you need to change your session date or time, please use the button below. You'll need to verify your email address.
-                        </p>
-                        <Button 
-                          onClick={() => setStep(5)}
-                          className="w-full bg-amber-600 hover:bg-amber-700"
-                        >
-                          <CalendarClock className="mr-2 h-4 w-4" />
-                          Reschedule My Session
-                        </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="bg-gradient-to-br from-amber-900/30 to-amber-800/20 border border-amber-900/40 rounded-lg p-6 shadow-lg">
+                          <div className="flex items-center mb-3">
+                            <CalendarClock className="h-5 w-5 text-amber-400 mr-2" />
+                            <h4 className="text-lg font-semibold text-amber-100">
+                              Need to Reschedule?
+                            </h4>
+                          </div>
+                          <p className="text-sm text-amber-200/80 mb-4">
+                            If you need to change your session date or time, you can manage your session directly from the sessions page.
+                          </p>
+                          <Button 
+                            onClick={() => setStep(5)}
+                            className="w-full bg-amber-600 hover:bg-amber-700 text-white border-amber-700"
+                          >
+                            <CalendarClock className="mr-2 h-4 w-4" />
+                            Reschedule Session
+                          </Button>
+                        </div>
+                        
+                        <div className="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-900/40 rounded-lg p-6 shadow-lg">
+                          <div className="flex items-center mb-3">
+                            <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                            <h4 className="text-lg font-semibold text-green-100">
+                              View All Sessions
+                            </h4>
+                          </div>
+                          <p className="text-sm text-green-200/80 mb-4">
+                            You can view and manage all your booked sessions, including this one, from the sessions page.
+                          </p>
+                          <Link href="/all-sessions">
+                            <Button 
+                              className="w-full bg-green-600 hover:bg-green-700 text-white border-green-700"
+                            >
+                              View My Sessions
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                       
-                      <div className="border-t border-gray-100 dark:border-gray-700 pt-5 mt-4">
-                        <h4 className="text-base font-medium mb-3 text-gray-800 dark:text-gray-200">
-                          Contact Information
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                      <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 border border-gray-700 rounded-lg p-6 mt-6 shadow-lg">
+                        <div className="flex items-center mb-4">
+                          <Phone className="h-5 w-5 text-green-400 mr-2" />
+                          <h4 className="text-lg font-semibold text-gray-100">
+                            Contact Information
+                          </h4>
+                        </div>
+                        <p className="text-sm text-gray-300 mb-4">
                           For any queries regarding your session, please contact us:
                         </p>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-gray-500 dark:text-gray-400">Email:</span>
-                            <a href="mailto:projects@bamboomade.in" className="text-green-600 dark:text-green-400 hover:underline">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Email</p>
+                            <a href="mailto:projects@bamboomade.in" className="font-medium text-green-400 hover:text-green-300">
                               projects@bamboomade.in
                             </a>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-gray-500 dark:text-gray-400">Phone:</span>
-                            <a href="tel:+918971690163" className="text-green-600 dark:text-green-400 hover:underline">
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Phone</p>
+                            <a href="tel:+918971690163" className="font-medium text-green-400 hover:text-green-300">
                               +91 8971690163
                             </a>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-gray-500 dark:text-gray-400">WhatsApp:</span>
-                            <a href="https://wa.me/918971690163" className="text-green-600 dark:text-green-400 hover:underline">
+                          <div className="bg-gray-800/60 p-3 rounded-md">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">WhatsApp</p>
+                            <a href="https://wa.me/918971690163" className="font-medium text-green-400 hover:text-green-300">
                               +91 8971690163
                             </a>
                           </div>
