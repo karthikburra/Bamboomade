@@ -1,13 +1,20 @@
 import { Helmet } from "react-helmet";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { BookText, CalendarCheck, Calendar, CalendarClock, CheckCircle, GraduationCap, Briefcase, User, AlertCircle } from "lucide-react";
+import { BookText, CalendarCheck, Calendar as CalendarIcon, CalendarClock, CheckCircle, GraduationCap, Briefcase, User, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 import {
   Card,
@@ -966,7 +973,10 @@ function ProjectGuidance() {
                                           ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
                                           : 'border-gray-200 dark:border-gray-700'
                                       }`}
-                                      onClick={() => setSelectedSessionId(session.id)}
+                                      onClick={() => {
+                                        setSelectedSessionId(session.id);
+                                        setSessionId(session.id);
+                                      }}
                                     >
                                       <div className="flex items-center justify-between mb-2">
                                         <h5 className="font-medium text-sm">{session.topic}</h5>
@@ -992,7 +1002,11 @@ function ProjectGuidance() {
                                               ? 'border-green-500 text-green-600'
                                               : 'border-gray-300 text-gray-600'
                                           }`}
-                                          onClick={() => setSelectedSessionId(session.id)}
+                                          onClick={(e) => {
+                                            e.stopPropagation(); // Prevent parent onClick from firing
+                                            setSelectedSessionId(session.id);
+                                            setSessionId(session.id);
+                                          }}
                                         >
                                           {selectedSessionId === session.id ? 'Selected' : 'Select'}
                                         </Button>
