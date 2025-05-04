@@ -38,13 +38,11 @@ interface Session {
 }
 
 export default function AllSessions() {
-  const [userEmail, setUserEmail] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-
   // Fetch all sessions
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/all-sessions"],
     queryFn: async () => {
+      // Direct fetch without any email verification
       const response = await apiRequest("GET", "/api/all-sessions");
       return response.json();
     }
@@ -73,15 +71,8 @@ export default function AllSessions() {
     );
   }
 
-  const allSessions = data?.sessions || [];
-  
-  // Filter sessions by email if user has entered one
-  const sessions = userEmail
-    ? allSessions.filter(
-        (session: Session) => 
-          session.email.toLowerCase() === userEmail.toLowerCase()
-      )
-    : allSessions;
+  // Display all sessions directly
+  const sessions = data?.sessions || [];
 
   return (
     <div className="min-h-screen dark bg-gray-950 text-white pt-8 pb-12">
@@ -100,45 +91,24 @@ export default function AllSessions() {
           <h1 className="text-2xl md:text-3xl font-bold">Your Project Guidance Sessions</h1>
         </div>
         
-        {/* Email search box */}
+        {/* Direct access to sessions - No email verification required */}
         <Card className="mb-8 bg-gray-900 border-gray-800">
           <CardHeader>
-            <CardTitle className="text-lg">Find Your Sessions</CardTitle>
+            <CardTitle className="text-lg">Your Recent Sessions</CardTitle>
             <CardDescription>
-              Enter your email to filter sessions
+              View and manage all your booked project guidance sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email address"
-                value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
-                className="bg-gray-800 border-gray-700"
-              />
-              <Button 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => setIsSearching(!!userEmail)}
-                disabled={!userEmail}
-              >
-                Find My Sessions
-              </Button>
+              <Link href="/project-guidance">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  Book a New Session
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
-
-        {/* Display when user has filtered by email */}
-        {userEmail && (
-          <div className="mb-6 bg-green-900/20 border border-green-800 rounded-md p-4">
-            <div className="flex items-center">
-              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-              <p className="text-sm text-green-400">
-                Showing sessions for <span className="font-medium">{userEmail}</span>
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Sessions list */}
         {sessions.length === 0 ? (
@@ -146,9 +116,7 @@ export default function AllSessions() {
             <CardHeader>
               <CardTitle>No Sessions Found</CardTitle>
               <CardDescription>
-                {userEmail 
-                  ? "We couldn't find any sessions booked with this email address." 
-                  : "No project guidance sessions have been booked yet."}
+                No project guidance sessions have been booked yet.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center py-8">
@@ -163,7 +131,7 @@ export default function AllSessions() {
         ) : (
           <>
             <h2 className="text-xl font-medium mb-4">
-              {userEmail ? 'Your Sessions' : 'All Sessions'} ({sessions.length})
+              All Sessions ({sessions.length})
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {sessions.map((session: Session) => (
