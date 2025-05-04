@@ -355,7 +355,7 @@ function ProjectGuidance() {
       
       toast({
         title: "Email Verified",
-        description: "You can now reschedule your session.",
+        description: "You can now view, reschedule, or cancel your sessions.",
       });
     } else {
       toast({
@@ -621,7 +621,17 @@ function ProjectGuidance() {
                   
                   {step === 1 && (
                     <div>
-                      <h3 className="text-lg font-medium mb-4">Your Information</h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium">Your Information</h3>
+                        <Button
+                          variant="outline"
+                          className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          onClick={() => setStep(5)}
+                        >
+                          <CalendarIconLucide className="mr-2 h-4 w-4" />
+                          Access My Sessions
+                        </Button>
+                      </div>
                       <Form {...form}>
                         <form onSubmit={(e) => {
                           e.preventDefault();
@@ -990,9 +1000,9 @@ function ProjectGuidance() {
                   {step === 5 && (
                     <div className="py-6">
                       <div className="mb-6">
-                        <h3 className="text-lg font-medium mb-4">Reschedule Your Session</h3>
+                        <h3 className="text-lg font-medium mb-4">Manage Your Sessions</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-                          To reschedule your session, we need to verify your email address first.
+                          To view, reschedule, or cancel your sessions, we need to verify your email address first.
                         </p>
                         
                         {!isVerifying && !isEmailVerified && (
