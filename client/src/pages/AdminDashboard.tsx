@@ -155,6 +155,11 @@ export default function AdminDashboard() {
     
   const upcomingSessions = sessions.filter((s: Session) => 
     s.status !== 'cancelled' && s.status !== 'completed' && s.googleMeetLink);
+  
+  // Add rescheduled sessions category - detect by special flag or by comparing original date with current date  
+  const rescheduledSessions = sessions.filter((s: Session) => 
+    s.status === 'rescheduled' || 
+    (s.notes && s.notes.toLowerCase().includes('rescheduled')));
     
   const completedSessions = sessions.filter((s: Session) => 
     s.status === 'completed');
@@ -178,7 +183,7 @@ export default function AdminDashboard() {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
           <Card className="bg-gray-900 border-gray-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg">Total Sessions</CardTitle>
@@ -206,6 +211,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           
+          <Card className="bg-blue-900/20 border-blue-900">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg text-blue-400">Rescheduled</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-blue-500">{rescheduledSessions.length}</p>
+            </CardContent>
+          </Card>
+          
           <Card className="bg-red-900/20 border-red-900">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg text-red-400">Cancelled</CardTitle>
@@ -224,6 +238,9 @@ export default function AdminDashboard() {
             <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700">
               Upcoming ({upcomingSessions.length})
             </TabsTrigger>
+            <TabsTrigger value="rescheduled" className="data-[state=active]:bg-blue-700">
+              Rescheduled ({rescheduledSessions.length})
+            </TabsTrigger>
             <TabsTrigger value="completed" className="data-[state=active]:bg-green-700">
               Completed ({completedSessions.length})
             </TabsTrigger>
@@ -235,7 +252,7 @@ export default function AdminDashboard() {
             </TabsTrigger>
           </TabsList>
           
-          {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
+          {["pending", "upcoming", "rescheduled", "completed", "cancelled", "all"].map((tab) => {
             let displaySessions;
             let emptyMessage = "";
             
@@ -247,6 +264,10 @@ export default function AdminDashboard() {
               case "upcoming":
                 displaySessions = upcomingSessions;
                 emptyMessage = "No upcoming sessions with Google Meet links set.";
+                break;
+              case "rescheduled":
+                displaySessions = rescheduledSessions;
+                emptyMessage = "No rescheduled sessions found.";
                 break;
               case "completed":
                 displaySessions = completedSessions;
@@ -269,6 +290,7 @@ export default function AdminDashboard() {
                     <CardDescription>
                       {tab === "pending" ? "Sessions requiring Google Meet links" : 
                        tab === "upcoming" ? "Sessions with Google Meet links set" :
+                       tab === "rescheduled" ? "Sessions that have been rescheduled by users" :
                        `All ${tab} sessions`}
                     </CardDescription>
                   </CardHeader>
@@ -382,11 +404,22 @@ export default function AdminDashboard() {
                                         ? "destructive" 
                                         : session.status === 'completed' 
                                           ? "secondary"
+                                          : session.status === 'rescheduled' || 
+                                            (session.notes && session.notes.toLowerCase().includes('rescheduled'))
+                                            ? "outline"
                                           : "default"
                                     }
-                                    className="capitalize"
+                                    className={`capitalize ${
+                                      session.status === 'rescheduled' || 
+                                      (session.notes && session.notes.toLowerCase().includes('rescheduled'))
+                                        ? "border-blue-500 text-blue-400"
+                                        : ""
+                                    }`}
                                   >
-                                    {session.status}
+                                    {session.status === 'rescheduled' || 
+                                     (session.notes && session.notes.toLowerCase().includes('rescheduled'))
+                                      ? "Rescheduled" 
+                                      : session.status}
                                   </Badge>
                                 </TableCell>
                               </TableRow>
