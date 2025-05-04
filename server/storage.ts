@@ -26,7 +26,9 @@ export interface IStorage {
   getAllProjectGuidances(): Promise<ProjectGuidance[]>;
   getProjectGuidance(id: number): Promise<ProjectGuidance | undefined>;
   createProjectGuidance(session: InsertProjectGuidance): Promise<ProjectGuidance>;
-  updateProjectGuidancePayment(id: number, paymentId: string): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number): Promise<ProjectGuidance | undefined>;
+  cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined>;
   
   // Chat message operations
   getChatMessagesByUserId(userId: number): Promise<ChatMessage[]>;
@@ -288,20 +290,57 @@ export class MemStorage implements IStorage {
       topic: insertSession.topic,
       notes: insertSession.notes || null,
       paymentConfirmed: false,
-      paymentId: null
+      paymentId: null,
+      status: "active",
+      cancellationReason: null,
+      cancellationDate: null,
+      refundAmount: null,
+      refundPercentage: null,
+      amount: null
     };
     this.projectGuidances.set(id, session);
     return session;
   }
 
-  async updateProjectGuidancePayment(id: number, paymentId: string): Promise<ProjectGuidance | undefined> {
+  async updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined> {
     const session = await this.getProjectGuidance(id);
     if (!session) return undefined;
     
     const updatedSession: ProjectGuidance = { 
       ...session, 
       paymentConfirmed: true, 
-      paymentId 
+      paymentId,
+      amount: amount || null,
+      status: "active"
+    };
+    this.projectGuidances.set(id, updatedSession);
+    return updatedSession;
+  }
+  
+  async updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number): Promise<ProjectGuidance | undefined> {
+    const session = await this.getProjectGuidance(id);
+    if (!session) return undefined;
+    
+    const updatedSession: ProjectGuidance = { 
+      ...session, 
+      date: newDate,
+      duration: newDuration || session.duration
+    };
+    this.projectGuidances.set(id, updatedSession);
+    return updatedSession;
+  }
+  
+  async cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined> {
+    const session = await this.getProjectGuidance(id);
+    if (!session) return undefined;
+    
+    const updatedSession: ProjectGuidance = { 
+      ...session, 
+      status: "cancelled",
+      cancellationReason: reason,
+      cancellationDate: new Date(),
+      refundAmount: refundAmount,
+      refundPercentage: refundPercentage
     };
     this.projectGuidances.set(id, updatedSession);
     return updatedSession;

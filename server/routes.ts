@@ -564,15 +564,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         )[0];
       }
       
-      // Update the session with new date/time
-      const updatedSession = { 
-        ...selectedSession,
-        date: new Date(newDate),
-        duration: newDuration || selectedSession.duration
-      };
-      
-      // In a real implementation, you would update the session in the database
-      // For demo purposes, we'll just log the changes and return success
+      // Update the session with new date/time using storage method
+      const updatedSession = await storage.updateProjectGuidanceSession(
+        selectedSession.id,
+        new Date(newDate),
+        newDuration || selectedSession.duration
+      );
       console.log('Session rescheduled:', {
         sessionId: selectedSession.id,
         email,
@@ -603,6 +600,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error rescheduling session:", error);
       res.status(500).json({ message: "Failed to reschedule session", error: (error as Error).message });
+    }
+  });
+  
+  // Route for cancelling a session with refund
+  app.post("/api/cancel-session", async (req, res) => {
+    try {
+      const { email, sessionId, reason } = req.body;
+      
+      if (!email || !sessionId || !reason) {
+        return res.status(400).json({ message: "Email, session ID, and cancellation reason are required" });
+      }
+      
+      // Get all sessions
+      const allSessions = await storage.getAllProjectGuidances();
+      
+      // Filter sessions by email (case insensitive)
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (userSessions.length === 0) {
+        return res.status(404).json({ 
+          message: "No sessions found for this email address"
+        });
+      }
+      
+      // Find the specific session 
+      const selectedSession = userSessions.find(session => session.id === parseInt(sessionId));
+      
+      if (!selectedSession) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      if (selectedSession.status === "cancelled") {
+        return res.status(400).json({ message: "This session has already been cancelled" });
+      }
+      
+      if (selectedSession.status === "completed") {
+        return res.status(400).json({ message: "Completed sessions cannot be cancelled" });
+      }
+      
+      // Calculate refund amount based on the cancellation policy
+      const sessionDate = new Date(selectedSession.date);
+      const now = new Date();
+      const timeUntilSession = sessionDate.getTime() - now.getTime();
+      const daysUntilSession = timeUntilSession / (1000 * 60 * 60 * 24);
+      
+      let refundPercentage = 0;
+      let refundAmount = 0;
+      
+      if (daysUntilSession > 7) {
+        // More than 7 days before session: 100% refund
+        refundPercentage = 100;
+      } else if (daysUntilSession > 3) {
+        // 3-7 days before session: 75% refund
+        refundPercentage = 75;
+      } else if (daysUntilSession > 1) {
+        // 1-3 days before session: 50% refund
+        refundPercentage = 50;
+      } else if (daysUntilSession > 0) {
+        // Less than 24 hours before session: 25% refund
+        refundPercentage = 25;
+      } else {
+        // After session scheduled start time: 0% refund
+        refundPercentage = 0;
+      }
+      
+      if (selectedSession.amount) {
+        refundAmount = Math.round(selectedSession.amount * (refundPercentage / 100));
+      }
+      
+      // Cancel the session
+      const updatedSession = await storage.cancelProjectGuidanceSession(
+        selectedSession.id,
+        reason,
+        refundAmount,
+        refundPercentage
+      );
+      
+      console.log('Session cancelled:', {
+        sessionId: selectedSession.id,
+        email,
+        date: selectedSession.date,
+        reason,
+        refundPercentage,
+        refundAmount
+      });
+      
+      // Send cancellation confirmation email
+      // This will be added to email-service.ts
+      const { sendCancellationEmail } = require('./email-service');
+      if (typeof sendCancellationEmail === 'function') {
+        await sendCancellationEmail(
+          selectedSession.id,
+          selectedSession.studentName,
+          email,
+          selectedSession.topic,
+          new Date(selectedSession.date),
+          reason,
+          refundPercentage,
+          refundAmount
+        ).catch(err => console.error("Failed to send cancellation email:", err));
+      }
+      
+      // Return success
+      res.json({ 
+        success: true, 
+        message: "Session cancelled successfully",
+        session: updatedSession,
+        refundDetails: {
+          percentage: refundPercentage,
+          amount: refundAmount
+        }
+      });
+    } catch (error) {
+      console.error("Error cancelling session:", error);
+      res.status(500).json({ message: "Failed to cancel session", error: (error as Error).message });
     }
   });
 
