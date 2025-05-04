@@ -1001,9 +1001,20 @@ function ProjectGuidance() {
                     <div className="py-6">
                       <div className="mb-6">
                         <h3 className="text-lg font-medium mb-4">Manage Your Sessions</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                           To view, reschedule, or cancel your sessions, we need to verify your email address first.
                         </p>
+                        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-md p-3">
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">
+                            <span className="font-medium">Email verification temporary bypass:</span> Due to verification email issues, you can use the temporary link below to see all sessions.
+                          </p>
+                          <a 
+                            href="/all-sessions" 
+                            className="text-xs text-blue-700 dark:text-blue-400 underline font-medium hover:text-blue-800 dark:hover:text-blue-300"
+                          >
+                            View All Sessions (No Verification Required)
+                          </a>
+                        </div>
                         
                         {!isVerifying && !isEmailVerified && (
                           <div className="space-y-4">

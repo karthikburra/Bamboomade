@@ -77,7 +77,12 @@ export default function AllSessions() {
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">All Project Guidance Sessions</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">All Project Guidance Sessions</h1>
+          <a href="/project-guidance" className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium">
+            Back to Booking
+          </a>
+        </div>
         <p className="text-muted-foreground mb-6">
           This is a temporary admin view to see all sessions in the system without email verification.
         </p>
