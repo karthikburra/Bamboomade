@@ -5,7 +5,15 @@ import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, ins
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
 import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
-import { sendBookingConfirmationEmail, initializeEmailService, generateGoogleMeetLink, generateGoogleCalendarLink } from "./email-service";
+import { 
+  sendBookingConfirmationEmail, 
+  initializeEmailService, 
+  generateGoogleMeetLink, 
+  generateGoogleCalendarLink,
+  sendVerificationCodeEmail,
+  sendRescheduledSessionEmail,
+  sendCancellationEmail
+} from "./email-service";
 import { initializeSheetsService, updateProjectGuidanceSession, addUserToSheet } from "./sheets-service";
 import { format, addMinutes } from "date-fns";
 import { ZodError } from "zod";
@@ -502,7 +510,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For simplicity in the demo, we'll just send it and validate in memory
       
       // Send verification email
-      const { sendVerificationCodeEmail } = require('./email-service');
       const emailSent = await sendVerificationCodeEmail(
         email,
         code,
@@ -582,7 +589,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Send email notification about the reschedule
-      const { sendRescheduledSessionEmail } = require('./email-service');
       await sendRescheduledSessionEmail(
         selectedSession.id,
         selectedSession.studentName,
@@ -691,20 +697,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Send cancellation confirmation email
-      // This will be added to email-service.ts
-      const { sendCancellationEmail } = require('./email-service');
-      if (typeof sendCancellationEmail === 'function') {
-        await sendCancellationEmail(
-          selectedSession.id,
-          selectedSession.studentName,
-          email,
-          selectedSession.topic,
-          new Date(selectedSession.date),
-          reason,
-          refundPercentage,
-          refundAmount
-        ).catch(err => console.error("Failed to send cancellation email:", err));
-      }
+      await sendCancellationEmail(
+        selectedSession.id,
+        selectedSession.studentName,
+        email,
+        selectedSession.topic,
+        new Date(selectedSession.date),
+        reason,
+        refundPercentage,
+        refundAmount
+      ).catch(err => console.error("Failed to send cancellation email:", err));
       
       // Return success
       res.json({ 
