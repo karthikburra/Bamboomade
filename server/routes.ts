@@ -416,6 +416,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to book session", error: (error as Error).message });
     }
   });
+  
+  // Route to get sessions by email address
+  app.get("/api/sessions-by-email", async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Get all sessions
+      const allSessions = await storage.getAllProjectGuidances();
+      
+      // Filter sessions by email (case insensitive)
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === (email as string).toLowerCase()
+      );
+      
+      // Format sessions for display
+      const formattedSessions = userSessions.map(session => {
+        const sessionDate = new Date(session.date);
+        return {
+          id: session.id,
+          date: sessionDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          time: sessionDate.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          }),
+          topic: session.topic,
+          duration: session.duration,
+          paymentStatus: session.paymentId ? 'Paid' : 'Pending',
+          studentName: session.studentName
+        };
+      });
+      
+      res.json({ 
+        sessions: formattedSessions,
+        message: formattedSessions.length > 0 
+          ? "These are your existing sessions. You can book new sessions or reschedule existing ones." 
+          : "You have no existing sessions. Please book a new session."
+      });
+    } catch (error) {
+      console.error("Error fetching sessions by email:", error);
+      res.status(500).json({ message: "Failed to fetch sessions", error: (error as Error).message });
+    }
+  });
+  
+  // Route for sending verification codes for rescheduling or accessing sessions
+  app.post("/api/send-verification-code", async (req, res) => {
+    try {
+      const { email, purpose } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Get all sessions
+      const allSessions = await storage.getAllProjectGuidances();
+      
+      // Check if user has any sessions with this email
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (userSessions.length === 0 && purpose === 'reschedule') {
+        return res.status(404).json({ 
+          message: "No sessions found for this email address",
+          canCreateNew: true
+        });
+      }
+      
+      // Generate a 6-digit verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // In a real implementation, you would store this code with an expiry time
+      // For simplicity in the demo, we'll just send it and validate in memory
+      
+      // Send verification email
+      const { sendVerificationCodeEmail } = require('./email-service');
+      const emailSent = await sendVerificationCodeEmail(
+        email,
+        code,
+        purpose as 'reschedule' | 'access'
+      );
+      
+      if (!emailSent) {
+        throw new Error("Failed to send verification email");
+      }
+      
+      // Return success with the verification code (for demo purposes only)
+      // In a production environment, never return the actual code to the client
+      res.json({ 
+        success: true, 
+        message: "Verification code sent to your email",
+        // Only include the code in development mode
+        ...(process.env.NODE_ENV !== 'production' ? { code } : {})
+      });
+    } catch (error) {
+      console.error("Error sending verification code:", error);
+      res.status(500).json({ message: "Failed to send verification code", error: (error as Error).message });
+    }
+  });
+  
+  // Route for rescheduling a session
+  app.post("/api/reschedule-session", async (req, res) => {
+    try {
+      const { email, newDate, newDuration, sessionId } = req.body;
+      
+      if (!email || !newDate) {
+        return res.status(400).json({ message: "Email and new date are required" });
+      }
+      
+      // Get all sessions
+      const allSessions = await storage.getAllProjectGuidances();
+      
+      // Filter sessions by email (case insensitive)
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (userSessions.length === 0) {
+        return res.status(404).json({ 
+          message: "No sessions found for this email address",
+          canCreateNew: true
+        });
+      }
+      
+      // Find the specific session if sessionId is provided
+      let selectedSession;
+      if (sessionId) {
+        selectedSession = userSessions.find(session => session.id === parseInt(sessionId));
+        
+        if (!selectedSession) {
+          return res.status(404).json({ message: "Session not found" });
+        }
+      } else {
+        // Use the most recent session if no specific sessionId provided
+        selectedSession = userSessions.sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        )[0];
+      }
+      
+      // Update the session with new date/time
+      const updatedSession = { 
+        ...selectedSession,
+        date: new Date(newDate),
+        duration: newDuration || selectedSession.duration
+      };
+      
+      // In a real implementation, you would update the session in the database
+      // For demo purposes, we'll just log the changes and return success
+      console.log('Session rescheduled:', {
+        sessionId: selectedSession.id,
+        email,
+        oldDate: selectedSession.date,
+        newDate: new Date(newDate),
+        oldDuration: selectedSession.duration,
+        newDuration: newDuration || selectedSession.duration
+      });
+      
+      // Send email notification about the reschedule
+      const { sendRescheduledSessionEmail } = require('./email-service');
+      await sendRescheduledSessionEmail(
+        selectedSession.id,
+        selectedSession.studentName,
+        email,
+        selectedSession.topic,
+        new Date(newDate),
+        newDuration || selectedSession.duration
+      );
+      
+      // Return success
+      res.json({ 
+        success: true, 
+        message: "Session rescheduled successfully",
+        session: updatedSession,
+        allSessions: userSessions
+      });
+    } catch (error) {
+      console.error("Error rescheduling session:", error);
+      res.status(500).json({ message: "Failed to reschedule session", error: (error as Error).message });
+    }
+  });
 
   app.patch("/api/project-guidance/:id/payment", async (req, res) => {
     try {

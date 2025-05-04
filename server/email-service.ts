@@ -144,6 +144,115 @@ interface BookingEmailData {
 /**
  * Send a booking confirmation email with a Google Meet link
  */
+/**
+ * Send a generic email
+ */
+export async function sendEmail(options: {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+  cc?: string;
+}): Promise<boolean> {
+  if (!emailServiceEnabled || !transporter) {
+    console.error('Email service not initialized, cannot send email');
+    return false;
+  }
+  
+  try {
+    // Compose email content
+    const mailOptions = {
+      from: '"BambooMade" <projects@bamboomade.in>',
+      to: options.to,
+      cc: options.cc || 'bamboomade.in@gmail.com',
+      subject: options.subject,
+      text: options.text,
+      html: options.html || options.text
+    };
+    
+    // If we're in dev mode but we have real SMTP credentials configured,
+    // we'll both log AND actually send the email
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('========== EMAIL CONTENT (DEV MODE) ==========');
+      console.log('To:', mailOptions.to);
+      console.log('Subject:', mailOptions.subject);
+      console.log('==========================================');
+      
+      // If we don't have real credentials configured, just return after logging
+      if (!process.env.EMAIL_PASSWORD) {
+        console.log('Skipping actual email sending in development mode without EMAIL_PASSWORD');
+        return true;
+      }
+      
+      console.log('EMAIL_PASSWORD is configured, sending actual email in development mode');
+    }
+    
+    // Send email (in production or dev mode with credentials)
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`Email sent to ${options.to}, Subject: ${options.subject}, Message ID: ${info.messageId}`);
+      return true;
+    } catch (sendError) {
+      console.error('Error sending email through SMTP:', sendError);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return false;
+  }
+}
+
+/**
+ * Send a verification code email for rescheduling or accessing sessions
+ */
+export async function sendVerificationCodeEmail(
+  email: string,
+  code: string,
+  purpose: 'reschedule' | 'access'
+): Promise<boolean> {
+  const purposeText = purpose === 'reschedule' 
+    ? 'rescheduling your BambooMade project guidance session' 
+    : 'accessing your BambooMade sessions';
+  
+  return await sendEmail({
+    to: email,
+    subject: "Your Verification Code for BambooMade",
+    text: `
+Hello,
+
+Your verification code for ${purposeText} is: ${code}
+
+This code will expire in 15 minutes.
+
+If you didn't request this code, please ignore this email.
+
+Regards,
+BambooMade Team
+    `,
+    html: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <div style="background-color: #1E3A29; padding: 20px; text-align: center;">
+    <h2 style="color: #ffffff; margin: 0;">BambooMade</h2>
+  </div>
+  <div style="padding: 20px; border: 1px solid #e5e5e5; border-top: none;">
+    <h3>Your Verification Code</h3>
+    <p>Hello,</p>
+    <p>You requested a verification code for ${purposeText}.</p>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+      ${code}
+    </div>
+    
+    <p>This code will expire in 15 minutes.</p>
+    <p>If you didn't request this code, please ignore this email.</p>
+    
+    <p>Regards,<br>BambooMade Team</p>
+  </div>
+</div>
+    `
+  });
+}
+
 export async function sendBookingConfirmationEmail(bookingData: BookingEmailData): Promise<boolean> {
   if (!emailServiceEnabled || !transporter) {
     console.error('Email service not initialized, cannot send email');
@@ -255,45 +364,95 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
       Nagole, Hyderabad-500068, India
     `;
     
-    // Message options
-    const mailOptions = {
-      from: '"BambooMade" <projects@bamboomade.in>',
+    return await sendEmail({
       to: bookingData.studentEmail,
-      cc: 'bamboomade.in@gmail.com',
       subject: 'Your BambooMade Project Guidance Session Confirmed',
       text: textContent,
       html: htmlContent
-    };
-    
-    // If we're in dev mode but we have real SMTP credentials configured,
-    // we'll both log AND actually send the email
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('========== EMAIL CONTENT (DEV MODE) ==========');
-      console.log('To:', mailOptions.to);
-      console.log('Subject:', mailOptions.subject);
-      console.log('Meet Link:', meetLink);
-      console.log('==========================================');
-      
-      // If we don't have real credentials configured, just return after logging
-      if (!process.env.EMAIL_PASSWORD) {
-        console.log('Skipping actual email sending in development mode without EMAIL_PASSWORD');
-        return true;
-      }
-      
-      console.log('EMAIL_PASSWORD is configured, sending actual email in development mode');
-    }
-    
-    // Send email (in production or dev mode with credentials)
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`Booking confirmation email sent to ${bookingData.studentEmail} for session #${bookingData.sessionId}, Message ID: ${info.messageId}`);
-      return true;
-    } catch (sendError) {
-      console.error('Error sending email through SMTP:', sendError);
-      return false;
-    }
+    });
   } catch (error) {
     console.error('Error sending booking confirmation email:', error);
+    return false;
+  }
+}
+
+/**
+ * Send a session rescheduled confirmation email
+ */
+export async function sendRescheduledSessionEmail(
+  sessionId: number,
+  studentName: string,
+  email: string,
+  topic: string,
+  newDate: Date,
+  duration: number
+): Promise<boolean> {
+  try {
+    // Format date and time for display
+    const formattedDate = format(newDate, 'EEEE, MMMM do, yyyy');
+    const formattedTime = format(newDate, 'h:mm a');
+    
+    // Calculate end time
+    const endTime = new Date(newDate);
+    endTime.setMinutes(endTime.getMinutes() + duration);
+    const formattedEndTime = format(endTime, 'h:mm a');
+    
+    return await sendEmail({
+      to: email,
+      subject: "Your BambooMade Session Has Been Rescheduled",
+      text: `
+Hello ${studentName},
+
+Your BambooMade Project Guidance session has been successfully rescheduled.
+
+NEW SESSION DETAILS:
+Date: ${formattedDate}
+Time: ${formattedTime} - ${formattedEndTime} IST
+Duration: ${duration} minutes
+Topic: ${topic}
+
+We'll send you an updated Google Meet link for your session within 4 hours.
+
+If you have any questions, please contact us at:
+Email: projects@bamboomade.in
+Phone/WhatsApp: +91 8971690163
+
+Thank you,
+BambooMade Team
+      `,
+      html: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <div style="background-color: #1E3A29; padding: 20px; text-align: center;">
+    <h2 style="color: #ffffff; margin: 0;">BambooMade</h2>
+  </div>
+  <div style="padding: 20px; border: 1px solid #e5e5e5; border-top: none;">
+    <h3>Session Rescheduled Successfully</h3>
+    <p>Hello ${studentName},</p>
+    <p>Your BambooMade Project Guidance session has been successfully rescheduled.</p>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; margin: 20px 0;">
+      <h4 style="margin-top: 0; color: #2e7d32;">New Session Details:</h4>
+      <p><strong>Date:</strong> ${formattedDate}</p>
+      <p><strong>Time:</strong> ${formattedTime} - ${formattedEndTime} IST</p>
+      <p><strong>Duration:</strong> ${duration} minutes</p>
+      <p><strong>Topic:</strong> ${topic}</p>
+    </div>
+    
+    <p>We'll send you an updated Google Meet link for your session within 4 hours.</p>
+    
+    <div style="margin: 20px 0; padding-top: 20px; border-top: 1px solid #e5e5e5;">
+      <p>If you have any questions, please contact us at:</p>
+      <p>Email: <a href="mailto:projects@bamboomade.in" style="color: #2e7d32;">projects@bamboomade.in</a></p>
+      <p>Phone/WhatsApp: <a href="https://wa.me/918971690163" style="color: #2e7d32;">+91 8971690163</a></p>
+    </div>
+    
+    <p>Thank you,<br>BambooMade Team</p>
+  </div>
+</div>
+      `
+    });
+  } catch (error) {
+    console.error("Failed to send rescheduled session email:", error);
     return false;
   }
 }

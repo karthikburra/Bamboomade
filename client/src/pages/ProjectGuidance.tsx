@@ -876,7 +876,53 @@ function ProjectGuidance() {
                           </div>
                         )}
                         
-                        {isEmailVerified && (
+                        {isEmailVerified && !userSessions && (
+                          <div className="space-y-4">
+                            <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md p-4">
+                              <div className="flex items-center">
+                                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+                                <p className="text-sm text-green-600 dark:text-green-400">Email verified successfully</p>
+                              </div>
+                            </div>
+                            
+                            <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-md p-4">
+                              <div className="flex items-start">
+                                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2 mt-0.5" />
+                                <div>
+                                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">No sessions found</p>
+                                  <p className="text-xs text-amber-500 dark:text-amber-300 mt-1">
+                                    We couldn't find any existing sessions for this email. Would you like to book a new session instead?
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex space-x-4">
+                              <Button 
+                                onClick={() => {
+                                  setStep(1);
+                                  form.setValue("email", verificationEmail);
+                                  setIsEmailVerified(false);
+                                  setVerificationEmail("");
+                                  setUserEnteredCode("");
+                                  setUserSessions(null);
+                                }}
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                              >
+                                Book New Session
+                              </Button>
+                              <Button 
+                                onClick={() => setStep(4)}
+                                variant="outline" 
+                                className="flex-1 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {isEmailVerified && userSessions && (
                           <div>
                             <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md p-4">
                               <div className="flex items-center">
@@ -884,6 +930,102 @@ function ProjectGuidance() {
                                 <p className="text-sm text-green-600 dark:text-green-400">Email verified successfully</p>
                               </div>
                             </div>
+                            
+                            {userSessions.length > 0 ? (
+                              <div className="mb-6">
+                                <h4 className="text-base font-medium mb-4">Your Existing Sessions</h4>
+                                <div className="space-y-3">
+                                  {userSessions.map((session, index) => (
+                                    <div 
+                                      key={session.id}
+                                      className={`p-4 border rounded-md ${
+                                        selectedSessionId === session.id 
+                                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
+                                          : 'border-gray-200 dark:border-gray-700'
+                                      }`}
+                                      onClick={() => setSelectedSessionId(session.id)}
+                                    >
+                                      <div className="flex items-center justify-between mb-2">
+                                        <h5 className="font-medium text-sm">{session.topic}</h5>
+                                        <span className={`text-xs px-2 py-1 rounded-full ${
+                                          session.paymentStatus === 'Paid' 
+                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400'
+                                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
+                                        }`}>
+                                          {session.paymentStatus}
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                                        <p><span className="font-medium">Date:</span> {session.date}</p>
+                                        <p><span className="font-medium">Time:</span> {session.time}</p>
+                                        <p><span className="font-medium">Duration:</span> {session.duration} minutes</p>
+                                      </div>
+                                      <div className="mt-2 flex justify-end">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className={`text-xs ${
+                                            selectedSessionId === session.id
+                                              ? 'border-green-500 text-green-600'
+                                              : 'border-gray-300 text-gray-600'
+                                          }`}
+                                          onClick={() => setSelectedSessionId(session.id)}
+                                        >
+                                          {selectedSessionId === session.id ? 'Selected' : 'Select'}
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                <div className="mt-6 mb-2">
+                                  <div className="flex justify-between items-center">
+                                    <h4 className="text-base font-medium">Reschedule Selected Session</h4>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-blue-600 hover:text-blue-700 p-0 h-auto"
+                                      onClick={() => {
+                                        setStep(1);
+                                        form.setValue("email", verificationEmail);
+                                        setIsEmailVerified(false);
+                                        setVerificationEmail("");
+                                        setUserEnteredCode("");
+                                        setSelectedSessionId(null);
+                                      }}
+                                    >
+                                      <span className="underline">Book New Session Instead</span>
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="mb-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900 rounded-md p-4">
+                                <div className="flex items-start">
+                                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2 mt-0.5" />
+                                  <div>
+                                    <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">No sessions found</p>
+                                    <p className="text-xs text-amber-500 dark:text-amber-300 mt-1">
+                                      We couldn't find any existing sessions for this email. Would you like to book a new session instead?
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="mt-4">
+                                  <Button 
+                                    onClick={() => {
+                                      setStep(1);
+                                      form.setValue("email", verificationEmail);
+                                      setIsEmailVerified(false);
+                                      setVerificationEmail("");
+                                      setUserEnteredCode("");
+                                    }}
+                                    className="w-full bg-green-600 hover:bg-green-700"
+                                  >
+                                    Book New Session
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                             
                             <h4 className="text-base font-medium mb-4">Select New Date & Time</h4>
                             <div className="mb-6">
@@ -928,8 +1070,8 @@ function ProjectGuidance() {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                               <div>
                                 <BookingCalendar
-                                  onSelectDate={setSelectedDate}
                                   selectedDate={selectedDate}
+                                  onChange={setSelectedDate}
                                 />
                               </div>
                               <div>
