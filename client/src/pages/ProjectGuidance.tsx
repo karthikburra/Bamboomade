@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { Link } from "wouter";
 import { 
   BookText, 
   CalendarCheck, 
@@ -1004,16 +1005,20 @@ function ProjectGuidance() {
                         <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                           To view, reschedule, or cancel your sessions, we need to verify your email address first.
                         </p>
-                        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900 rounded-md p-3">
-                          <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">
-                            <span className="font-medium">Email verification temporary bypass:</span> Due to verification email issues, you can use the temporary link below to see all sessions.
+                        <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md p-4">
+                          <p className="text-sm text-green-600 dark:text-green-400">
+                            <span className="font-semibold">Quick access:</span> You can view and manage your sessions without email verification using the link below.
                           </p>
-                          <a 
-                            href="/all-sessions" 
-                            className="text-xs text-blue-700 dark:text-blue-400 underline font-medium hover:text-blue-800 dark:hover:text-blue-300"
-                          >
-                            View All Sessions (No Verification Required)
-                          </a>
+                          <div className="mt-3">
+                            <Link href="/all-sessions">
+                              <Button 
+                                variant="outline" 
+                                className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              >
+                                View My Sessions
+                              </Button>
+                            </Link>
+                          </div>
                         </div>
                         
                         {!isVerifying && !isEmailVerified && (

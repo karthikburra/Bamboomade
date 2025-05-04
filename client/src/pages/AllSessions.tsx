@@ -8,7 +8,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -20,7 +22,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft } from "lucide-react";
+import { Link } from "wouter";
 
 interface Session {
   id: number;
@@ -35,6 +38,9 @@ interface Session {
 }
 
 export default function AllSessions() {
+  const [userEmail, setUserEmail] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
   // Fetch all sessions
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/all-sessions"],
@@ -46,16 +52,16 @@ export default function AllSessions() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex justify-center items-center h-screen dark bg-gray-950 text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-green-500" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="p-6 bg-destructive/10">
+      <div className="container mx-auto px-4 py-8 dark bg-gray-950 text-white min-h-screen">
+        <Card className="p-6 bg-red-900/30 border-red-800">
           <CardHeader>
             <CardTitle>Error Loading Sessions</CardTitle>
           </CardHeader>
@@ -67,96 +73,169 @@ export default function AllSessions() {
     );
   }
 
-  const sessions = data?.sessions || [];
+  const allSessions = data?.sessions || [];
+  
+  // Filter sessions by email if user has entered one
+  const sessions = userEmail
+    ? allSessions.filter(
+        (session: Session) => 
+          session.email.toLowerCase() === userEmail.toLowerCase()
+      )
+    : allSessions;
 
   return (
-    <>
+    <div className="min-h-screen dark bg-gray-950 text-white pt-8 pb-12">
       <Helmet>
-        <title>All Sessions | BambooMade</title>
-        <meta name="description" content="View all project guidance sessions" />
+        <title>Your Sessions | BambooMade</title>
+        <meta name="description" content="View your project guidance sessions" />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">All Project Guidance Sessions</h1>
-          <a href="/project-guidance" className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium">
-            Back to Booking
-          </a>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center mb-6">
+          <Link href="/project-guidance">
+            <Button variant="ghost" className="mr-4 p-2" aria-label="Back to Project Guidance">
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold">Your Project Guidance Sessions</h1>
         </div>
-        <p className="text-muted-foreground mb-6">
-          This is a temporary admin view to see all sessions in the system without email verification.
-        </p>
-
-        <Card>
+        
+        {/* Email search box */}
+        <Card className="mb-8 bg-gray-900 border-gray-800">
           <CardHeader>
-            <CardTitle>Sessions ({sessions.length})</CardTitle>
+            <CardTitle className="text-lg">Find Your Sessions</CardTitle>
             <CardDescription>
-              All booked project guidance sessions in the system
+              Enter your email to filter sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {sessions.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-lg font-medium">No sessions found</p>
-                <p className="text-muted-foreground">No project guidance sessions have been booked yet.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableCaption>List of all project guidance sessions</TableCaption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Topic</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Payment</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sessions.map((session: Session) => (
-                      <TableRow key={session.id}>
-                        <TableCell>{session.id}</TableCell>
-                        <TableCell className="font-medium">{session.studentName}</TableCell>
-                        <TableCell>{session.email}</TableCell>
-                        <TableCell>{session.formattedDate}</TableCell>
-                        <TableCell>{session.formattedTime}</TableCell>
-                        <TableCell>{session.topic}</TableCell>
-                        <TableCell>{session.duration} min</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={session.paymentStatus === 'Paid' ? "default" : "outline"}
-                            className={session.paymentStatus === 'Paid' ? "bg-green-500 hover:bg-green-600" : ""}
-                          >
-                            {session.paymentStatus}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={
-                              session.status === 'cancelled' 
-                                ? "destructive" 
-                                : session.status === 'completed' 
-                                  ? "secondary"
-                                  : "default"
-                            }
-                          >
-                            {session.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
+            <div className="flex flex-col md:flex-row gap-3">
+              <Input
+                type="email"
+                placeholder="Enter your email address"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                className="bg-gray-800 border-gray-700"
+              />
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => setIsSearching(!!userEmail)}
+                disabled={!userEmail}
+              >
+                Find My Sessions
+              </Button>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Display when user has filtered by email */}
+        {userEmail && (
+          <div className="mb-6 bg-green-900/20 border border-green-800 rounded-md p-4">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+              <p className="text-sm text-green-400">
+                Showing sessions for <span className="font-medium">{userEmail}</span>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Sessions list */}
+        {sessions.length === 0 ? (
+          <Card className="bg-gray-900 border-gray-800">
+            <CardHeader>
+              <CardTitle>No Sessions Found</CardTitle>
+              <CardDescription>
+                {userEmail 
+                  ? "We couldn't find any sessions booked with this email address." 
+                  : "No project guidance sessions have been booked yet."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center py-8">
+              <p className="text-gray-400 mb-4">Would you like to book a new session?</p>
+              <Link href="/project-guidance">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  Book a Session
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <h2 className="text-xl font-medium mb-4">
+              {userEmail ? 'Your Sessions' : 'All Sessions'} ({sessions.length})
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {sessions.map((session: Session) => (
+                <Card key={session.id} className="bg-gray-900 border-gray-800 overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{session.topic}</CardTitle>
+                      <Badge 
+                        variant={
+                          session.status === 'cancelled' 
+                            ? "destructive" 
+                            : session.status === 'completed' 
+                              ? "secondary"
+                              : "default"
+                        }
+                        className="capitalize"
+                      >
+                        {session.status}
+                      </Badge>
+                    </div>
+                    <CardDescription>
+                      Session #{session.id}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pb-3 space-y-3">
+                    <div className="flex items-center text-sm">
+                      <Calendar className="mr-2 h-4 w-4 text-green-500" />
+                      <span>{session.formattedDate}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Clock className="mr-2 h-4 w-4 text-green-500" />
+                      <span>{session.formattedTime} ({session.duration} minutes)</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <User className="mr-2 h-4 w-4 text-green-500" />
+                      <span>{session.studentName}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Tag className="mr-2 h-4 w-4 text-green-500" />
+                      <Badge 
+                        variant={session.paymentStatus === 'Paid' ? "default" : "outline"}
+                        className={session.paymentStatus === 'Paid' ? "bg-green-700 hover:bg-green-600" : ""}
+                      >
+                        {session.paymentStatus}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="bg-gray-800/50 pt-3 flex justify-end">
+                    <Link href={`/project-guidance?session=${session.id}`}>
+                      <Button 
+                        variant="outline" 
+                        className="border-green-700 text-green-500 hover:bg-green-900/30"
+                        disabled={session.status === 'cancelled'}
+                      >
+                        Manage Session
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="mt-8 text-center">
+          <Link href="/project-guidance">
+            <Button className="bg-green-600 hover:bg-green-700">
+              Back to Project Guidance
+            </Button>
+          </Link>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
