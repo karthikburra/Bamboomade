@@ -88,6 +88,12 @@ function ProjectGuidance() {
   const [userSessions, setUserSessions] = useState<any[] | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   
+  // Email verification state
+  const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
+  const [userEnteredCode, setUserEnteredCode] = useState<string>("");
+  const [isSendingCode, setIsSendingCode] = useState<boolean>(false);
+  
   // Cancellation state
   const [isCancellationDialogOpen, setIsCancellationDialogOpen] = useState<boolean>(false);
   const [cancellationReason, setCancellationReason] = useState<string>("");
@@ -1445,17 +1451,32 @@ function ProjectGuidance() {
                   <CardTitle>Session Pricing</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
+                  <h4 className="font-medium text-green-700 dark:text-green-400 mb-2">Student Pricing</h4>
                   <div className="flex justify-between items-center pb-2 border-b">
                     <span>30-minute Quick Review</span>
-                    <span className="font-medium">₹1,505</span>
+                    <span className="font-medium">₹500</span>
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b">
                     <span>1-hour Detailed Guidance</span>
-                    <span className="font-medium">₹2,505</span>
+                    <span className="font-medium">₹800</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b mb-4">
+                    <span>90-minute Comprehensive Review</span>
+                    <span className="font-medium">₹1,200</span>
+                  </div>
+                  
+                  <h4 className="font-medium text-green-700 dark:text-green-400 mb-2">Professional Pricing</h4>
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span>30-minute Quick Review</span>
+                    <span className="font-medium">₹1,000</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span>1-hour Detailed Guidance</span>
+                    <span className="font-medium">₹1,500</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>90-minute Comprehensive Review</span>
-                    <span className="font-medium">₹3,505</span>
+                    <span className="font-medium">₹2,250</span>
                   </div>
                   <div className="mt-4 text-xs text-muted-foreground space-y-2">
                     <p>
