@@ -486,6 +486,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         session => session.email.toLowerCase() === email.toLowerCase()
       );
       
+      // Only check for existing sessions if purpose is 'reschedule'
+      // For 'access', we'll still send the code even if there are no sessions yet
       if (userSessions.length === 0 && purpose === 'reschedule') {
         return res.status(404).json({ 
           message: "No sessions found for this email address",

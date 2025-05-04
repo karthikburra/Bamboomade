@@ -307,7 +307,7 @@ function ProjectGuidance() {
       const response = await apiRequest("POST", "/api/send-verification-code", {
         email,
         code,
-        purpose: "reschedule"
+        purpose: "access"
       });
       
       const data = await response.json();
