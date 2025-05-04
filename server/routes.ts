@@ -273,6 +273,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Admin session management routes
+  app.get("/api/admin/sessions", isAdmin, async (req, res) => {
+    try {
+      const allSessions = await storage.getAllProjectGuidances();
+      
+      // Format the sessions for the admin dashboard
+      const formattedSessions = allSessions.map(session => {
+        const sessionDate = new Date(session.date);
+        
+        return {
+          id: session.id,
+          studentName: session.studentName,
+          email: session.email,
+          phone: session.phone,
+          date: session.date,
+          formattedDate: format(sessionDate, 'MMM dd, yyyy'),
+          formattedTime: format(sessionDate, 'hh:mm a'),
+          duration: session.duration,
+          topic: session.topic,
+          notes: session.notes || '',
+          paymentStatus: session.paymentConfirmed ? "Paid" : "Pending",
+          status: session.status || (session.cancelled ? 'cancelled' : 'pending'),
+          googleMeetLink: session.googleMeetLink || '',
+          isStudent: session.isStudent
+        };
+      });
+      
+      res.json({ 
+        success: true,
+        sessions: formattedSessions
+      });
+    } catch (error) {
+      console.error("Error fetching admin sessions:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch sessions",
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  app.post("/api/admin/update-meet-link", isAdmin, async (req, res) => {
+    try {
+      const { sessionId, googleMeetLink } = req.body;
+      
+      if (!sessionId || !googleMeetLink) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Session ID and Google Meet link are required" 
+        });
+      }
+      
+      // Update the session with the Google Meet link
+      const updatedSession = await storage.updateProjectGuidanceMeetLink(
+        parseInt(sessionId, 10),
+        googleMeetLink
+      );
+      
+      if (!updatedSession) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Session not found" 
+        });
+      }
+      
+      // Send email notification to the student with the Google Meet link
+      const sessionDate = new Date(updatedSession.date);
+      
+      // Create a calendar link with the Google Meet link
+      const calendarLink = generateGoogleCalendarLink(
+        updatedSession.id,
+        googleMeetLink,
+        sessionDate,
+        updatedSession.duration,
+        updatedSession.topic,
+        updatedSession.studentName
+      );
+      
+      // Send email with the updated information
+      await sendBookingConfirmationEmail({
+        sessionId: updatedSession.id,
+        studentName: updatedSession.studentName,
+        studentEmail: updatedSession.email,
+        sessionDate,
+        sessionDuration: updatedSession.duration,
+        sessionTopic: updatedSession.topic
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Google Meet link updated successfully",
+        session: updatedSession,
+        calendarLink
+      });
+    } catch (error) {
+      console.error("Error updating Google Meet link:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update Google Meet link",
+        error: (error as Error).message
+      });
+    }
+  });
+  
   // Google Authentication
   const googleAuthSchema = z.object({
     idToken: z.string(),

@@ -51,6 +51,7 @@ interface Session {
   studentName: string;
   status: string;
   googleMeetLink?: string;
+  isStudent?: boolean;
 }
 
 export default function AdminDashboard() {
@@ -63,20 +64,12 @@ export default function AdminDashboard() {
 
   // Check if user is authenticated and is admin
   const { data: userData, isLoading: isAuthLoading } = useQuery({
-    queryKey: ["/api/auth/check-admin"],
+    queryKey: ["/api/auth/admin-check"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/auth/check-admin");
+      const response = await apiRequest("GET", "/api/auth/admin-check");
       return response.json();
     },
-    retry: false,
-    onError: () => {
-      toast({
-        title: "Authentication Error",
-        description: "You must be logged in as an admin to view this page.",
-        variant: "destructive",
-      });
-      setLocation("/admin-login");
-    },
+    retry: false
   });
 
   // Redirect to login if not admin
@@ -133,8 +126,8 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      await apiRequest("POST", "/api/auth/logout");
-      navigate("/admin-login");
+      await apiRequest("POST", "/api/auth/admin-logout");
+      setLocation("/admin-login");
     } catch (error) {
       console.error("Logout error:", error);
     }
