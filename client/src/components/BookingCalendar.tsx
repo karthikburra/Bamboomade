@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface BookingCalendarProps {
+// Full interface for complete booking flow
+interface BookingCalendarFullProps {
   selectedDate: Date | undefined;
   setSelectedDate: (date: Date | undefined) => void;
   selectedTime: string;
@@ -25,6 +26,15 @@ interface BookingCalendarProps {
   selectedDuration: number;
   setSelectedDuration: (duration: number) => void;
 }
+
+// Simplified interface for rescheduling flow
+interface BookingCalendarSimpleProps {
+  selectedDate: Date | undefined;
+  onChange: (date: Date | undefined) => void;
+}
+
+// Unified interface type using discriminated union
+type BookingCalendarProps = BookingCalendarFullProps | BookingCalendarSimpleProps;
 
 const timeSlots = [
   "09:00", "10:00", "11:00", "12:00", 
@@ -39,14 +49,24 @@ const durations = [
   { value: 90, label: "90 minutes - ₹3,505" }
 ];
 
-const BookingCalendar: React.FC<BookingCalendarProps> = ({
-  selectedDate,
-  setSelectedDate,
-  selectedTime,
-  setSelectedTime,
-  selectedDuration,
-  setSelectedDuration
-}) => {
+// Type guard to determine which interface we're using
+function isFullProps(props: BookingCalendarProps): props is BookingCalendarFullProps {
+  return 'setSelectedTime' in props && 'setSelectedDuration' in props;
+}
+
+const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
+  // Determine which props interface we're using
+  const { selectedDate } = props;
+  
+  // Handle date selection based on which props we received
+  const handleDateSelect = (date: Date | undefined) => {
+    if (isFullProps(props)) {
+      props.setSelectedDate(date);
+    } else {
+      props.onChange(date);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -68,7 +88,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={setSelectedDate}
+              onSelect={handleDateSelect}
               initialFocus
               disabled={(date) => {
                 // Disable dates in the past and weekends
@@ -82,45 +102,50 @@ const BookingCalendar: React.FC<BookingCalendarProps> = ({
         </Popover>
       </div>
 
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium">Select Time</h3>
-        <Select
-          value={selectedTime}
-          onValueChange={setSelectedTime}
-          disabled={!selectedDate}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a time" />
-          </SelectTrigger>
-          <SelectContent>
-            {timeSlots.map((time) => (
-              <SelectItem key={time} value={time}>
-                {time}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Only render time and duration selectors for full booking flow */}
+      {isFullProps(props) && (
+        <>
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium">Select Time</h3>
+            <Select
+              value={props.selectedTime}
+              onValueChange={props.setSelectedTime}
+              disabled={!selectedDate}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeSlots.map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="space-y-2">
-        <h3 className="text-lg font-medium">Select Duration</h3>
-        <Select
-          value={selectedDuration.toString()}
-          onValueChange={(value) => setSelectedDuration(parseInt(value))}
-          disabled={!selectedDate || !selectedTime}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select duration" />
-          </SelectTrigger>
-          <SelectContent>
-            {durations.map((duration) => (
-              <SelectItem key={duration.value} value={duration.value.toString()}>
-                {duration.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium">Select Duration</h3>
+            <Select
+              value={props.selectedDuration.toString()}
+              onValueChange={(value) => props.setSelectedDuration(parseInt(value))}
+              disabled={!selectedDate || !props.selectedTime}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select duration" />
+              </SelectTrigger>
+              <SelectContent>
+                {durations.map((duration) => (
+                  <SelectItem key={duration.value} value={duration.value.toString()}>
+                    {duration.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
     </div>
   );
 };

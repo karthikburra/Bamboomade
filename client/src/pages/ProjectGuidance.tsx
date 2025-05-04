@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { BookText, CalendarCheck, Calendar, CalendarClock, CheckCircle, GraduationCap, Briefcase, User } from "lucide-react";
+import { BookText, CalendarCheck, Calendar, CalendarClock, CheckCircle, GraduationCap, Briefcase, User, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -59,6 +59,8 @@ function ProjectGuidance() {
   const [userEnteredCode, setUserEnteredCode] = useState<string>("");
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
+  const [userSessions, setUserSessions] = useState<any[] | null>(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   
   // Check if returning from payment flow
   useEffect(() => {
@@ -291,6 +293,27 @@ function ProjectGuidance() {
   const verifyCode = () => {
     if (userEnteredCode === verificationCode) {
       setIsEmailVerified(true);
+      
+      // Fetch user sessions by email (for existing bookings display)
+      const fetchUserSessions = async () => {
+        try {
+          const response = await apiRequest("GET", `/api/sessions-by-email?email=${verificationEmail}`);
+          const data = await response.json();
+          
+          if (data.sessions && data.sessions.length > 0) {
+            setUserSessions(data.sessions);
+            setSelectedSessionId(data.sessions[0].id);
+          } else {
+            setUserSessions([]);
+          }
+        } catch (error) {
+          console.error("Error fetching user sessions:", error);
+          setUserSessions([]);
+        }
+      };
+      
+      fetchUserSessions();
+      
       toast({
         title: "Email Verified",
         description: "You can now reschedule your session.",
@@ -1069,10 +1092,39 @@ function ProjectGuidance() {
                             
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                               <div>
-                                <BookingCalendar
-                                  selectedDate={selectedDate}
-                                  onChange={setSelectedDate}
-                                />
+                                <div className="space-y-6">
+                                  <div className="space-y-2">
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className={cn(
+                                            "w-full justify-start text-left font-normal",
+                                            !selectedDate && "text-muted-foreground"
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {selectedDate ? format(selectedDate, "PPP") : "Select a date"}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                          mode="single"
+                                          selected={selectedDate}
+                                          onSelect={setSelectedDate}
+                                          initialFocus
+                                          disabled={(date) => {
+                                            // Disable dates in the past and weekends
+                                            const today = new Date();
+                                            today.setHours(0, 0, 0, 0);
+                                            const day = date.getDay();
+                                            return date < today || day === 0 || day === 6;
+                                          }}
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                </div>
                               </div>
                               <div>
                                 <h4 className="text-base font-medium mb-4">Available Time Slots</h4>
