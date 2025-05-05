@@ -203,6 +203,30 @@ export class MemStorage implements IStorage {
     ];
     
     testProjectGuidances.forEach(session => this.createProjectGuidance(session));
+    
+    // Create sample available time slots for demonstration
+    const today = new Date();
+    
+    // Generate dates for the next 7 days
+    for (let i = 1; i <= 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      // Skip weekends (Saturday and Sunday)
+      if (date.getDay() === 0 || date.getDay() === 6) continue;
+      
+      // Format date as YYYY-MM-DD
+      const formattedDate = date.toISOString().split('T')[0];
+      
+      // Default available time slots
+      const timeSlots = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00"];
+      
+      this.createAvailableTimeSlot({
+        date: formattedDate,
+        slots: timeSlots,
+        createdBy: 1 // Admin user ID
+      });
+    }
   }
 
   // User operations
@@ -438,6 +462,56 @@ export class MemStorage implements IStorage {
     }
     
     return purchase;
+  }
+  
+  // Available time slots operations
+  async getAllAvailableTimeSlots(): Promise<AvailableTimeSlot[]> {
+    return Array.from(this.availableTimeSlots.values());
+  }
+  
+  async getAvailableTimeSlotById(id: number): Promise<AvailableTimeSlot | undefined> {
+    return this.availableTimeSlots.get(id);
+  }
+  
+  async getAvailableTimeSlotByDate(date: string): Promise<AvailableTimeSlot | undefined> {
+    return Array.from(this.availableTimeSlots.values()).find(
+      (slot) => slot.date === date
+    );
+  }
+  
+  async createAvailableTimeSlot(insertSlot: InsertAvailableTimeSlot): Promise<AvailableTimeSlot> {
+    const id = this.currentAvailableTimeSlotId++;
+    const slot: AvailableTimeSlot = {
+      ...insertSlot,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.availableTimeSlots.set(id, slot);
+    return slot;
+  }
+  
+  async updateAvailableTimeSlot(id: number, slots: string[]): Promise<AvailableTimeSlot | undefined> {
+    const slot = await this.getAvailableTimeSlotById(id);
+    if (!slot) return undefined;
+    
+    const updatedSlot: AvailableTimeSlot = {
+      ...slot,
+      slots,
+      updatedAt: new Date()
+    };
+    
+    this.availableTimeSlots.set(id, updatedSlot);
+    return updatedSlot;
+  }
+  
+  async deleteAvailableTimeSlot(id: number): Promise<boolean> {
+    const exists = this.availableTimeSlots.has(id);
+    if (!exists) return false;
+    
+    this.availableTimeSlots.delete(id);
+    return true;
   }
 }
 
