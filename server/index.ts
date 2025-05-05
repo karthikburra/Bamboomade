@@ -16,10 +16,11 @@ app.use(express.static(path.join(import.meta.dirname, '..', 'public')));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'bamboomade-session-secret',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: { 
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    secure: process.env.NODE_ENV === 'production' ? 'auto' : false,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (extended from 24 hours)
+    sameSite: 'lax'
   }
 }));
 

@@ -36,11 +36,21 @@ try {
 // Admin authentication middleware
 const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   // Check if the user is authenticated and is an admin
-  if (!req.session || !req.session.adminUser) {
+  if (!req.session) {
+    return res.status(401).json({
+      message: "Session not initialized. Please try logging in again.",
+    });
+  }
+  
+  if (!req.session.adminUser) {
+    console.log("Admin auth failed - no admin user in session");
     return res.status(401).json({
       message: "Unauthorized. Admin access required.",
     });
   }
+  
+  // Additional logging to help diagnose issues
+  console.log(`Admin auth successful for ${req.session.adminUser.email}`);
   next();
 };
 
@@ -195,21 +205,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin authentication routes
   app.post("/api/auth/admin-login", async (req, res) => {
     try {
+      console.log("Admin login attempt");
       const { email, password } = req.body;
       
       if (!email || !password) {
+        console.log("Admin login failed: Missing email or password");
         return res.status(400).json({ message: "Email and password are required" });
       }
       
       // Only allow specific email (info@bamboomade.in)
       if (email.toLowerCase() !== "info@bamboomade.in") {
+        console.log(`Admin login rejected: Unauthorized email: ${email}`);
         return res.status(401).json({ message: "Unauthorized access" });
       }
+      
+      console.log("Admin login: Email authorized, checking user...");
       
       // Find user or create one if it doesn't exist
       let user = await storage.getUserByEmail(email.toLowerCase());
       
       if (!user) {
+        console.log("Admin login: Creating new admin user");
         // Create admin user if doesn't exist
         user = await storage.createUser({
           username: "admin",
@@ -218,11 +234,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: "admin",
         });
       } else {
+        console.log("Admin login: Existing user found, validating password");
         // For existing users, we use hardcoded password for the demo
         // In a real application, you would use bcrypt.compare with stored hash
         const adminPassword = "bamboomade2023"; // In production, use environment variables
         
         if (password !== adminPassword) {
+          console.log("Admin login failed: Invalid password");
           return res.status(401).json({ message: "Invalid credentials" });
         }
         
@@ -231,25 +249,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Ensure user has admin flag
         if (!user.isAdmin) {
+          console.log("Admin login: Updating user admin status");
           user = await storage.updateUserAdminStatus(user.id, true);
         }
       }
       
       // Set user and admin flag in session
       if (user) {
+        console.log(`Admin login: Setting session for user ID ${user.id}`);
         req.session.userId = user.id;
         req.session.adminUser = {
           email,
           isAdmin: true
         };
+        
+        // Force session save to ensure it's stored before sending response
+        req.session.save((err) => {
+          if (err) {
+            console.error("Admin login: Error saving session:", err);
+          } else {
+            console.log("Admin login: Session saved successfully");
+          }
+          
+          res.json({ 
+            message: "Admin login successful",
+            email,
+            isAdmin: true
+          });
+        });
+      } else {
+        console.log("Admin login failed: User not created/found");
+        res.status(500).json({ message: "Failed to create or retrieve admin user" });
       }
-      
-      res.json({ 
-        message: "Admin login successful",
-        email,
-        isAdmin: true
-      });
     } catch (error) {
+      console.error("Admin login error:", error);
       res.status(500).json({ message: "Login failed", error: (error as Error).message });
     }
   });
@@ -263,9 +296,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   app.get("/api/auth/admin-check", (req, res) => {
+    console.log("Admin check request");
+    
+    if (!req.session) {
+      console.log("Admin check: No session object found");
+      return res.status(401).json({ message: "Session not initialized" });
+    }
+    
+    console.log("Admin check: Session object exists, checking adminUser property");
+    console.log("Admin check: Session keys:", Object.keys(req.session));
+    
     if (!req.session.adminUser) {
+      console.log("Admin check: adminUser property not found in session");
       return res.status(401).json({ message: "Not authenticated as admin" });
     }
+    
+    console.log(`Admin check: Admin user found - ${req.session.adminUser.email}`);
     
     res.json({
       isAdmin: true,
