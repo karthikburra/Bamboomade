@@ -168,8 +168,6 @@ function ProjectGuidance() {
           return 500;  // INR 500 for 30 minutes (student)
         case 60:
           return 800;  // INR 800 for 1 hour (student)
-        case 90:
-          return 1200; // INR 1200 for 90 minutes (student - extrapolated)
         default:
           // Fallback calculation for other durations
           return (selectedDuration / 30) * 500;
@@ -181,8 +179,6 @@ function ProjectGuidance() {
           return 1000; // INR 1000 for 30 minutes (professional)
         case 60:
           return 1500; // INR 1500 for 1 hour (professional)
-        case 90:
-          return 2250; // INR 2250 for 90 minutes (professional - extrapolated)
         default:
           // Fallback calculation for other durations
           return (selectedDuration / 30) * 1000;
@@ -1576,13 +1572,9 @@ function ProjectGuidance() {
                     <span>30-minute Quick Review</span>
                     <span className="font-medium">₹500</span>
                   </div>
-                  <div className="flex justify-between items-center pb-2 border-b">
+                  <div className="flex justify-between items-center pb-2 border-b mb-4">
                     <span>1-hour Detailed Guidance</span>
                     <span className="font-medium">₹800</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-2 border-b mb-4">
-                    <span>90-minute Comprehensive Review</span>
-                    <span className="font-medium">₹1,200</span>
                   </div>
                   
                   <h4 className="font-medium text-green-700 dark:text-green-400 mb-2">Professional Pricing</h4>
@@ -1590,13 +1582,9 @@ function ProjectGuidance() {
                     <span>30-minute Quick Review</span>
                     <span className="font-medium">₹1,000</span>
                   </div>
-                  <div className="flex justify-between items-center pb-2 border-b">
+                  <div className="flex justify-between items-center">
                     <span>1-hour Detailed Guidance</span>
                     <span className="font-medium">₹1,500</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>90-minute Comprehensive Review</span>
-                    <span className="font-medium">₹2,250</span>
                   </div>
                   <div className="mt-4 text-xs text-muted-foreground space-y-2">
                     <p>
