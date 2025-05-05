@@ -14,14 +14,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { 
-  Menu, X, Sparkles, MessageSquareText, ChevronDown
+  Menu, X, Sparkles, MessageSquareText
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
 
@@ -94,30 +88,18 @@ const Navbar: React.FC = () => {
 
         <div className="flex flex-1 items-center justify-end space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
           {!isMobile ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
-                >
-                  <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-                  <span className="hidden sm:inline">AI Chat</span>
-                  <span className="sm:hidden">AI</span>
-                  <Badge className="ml-1 sm:ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
-                  <ChevronDown className="ml-1 sm:ml-2 h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="border-green-800">
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <ScrollLink href="/ai-chat" className="flex items-center w-full">
-                    <Sparkles className="mr-2 h-4 w-4 text-green-400" />
-                    <span>Chat with AI</span>
-                  </ScrollLink>
-                </DropdownMenuItem>
-                {/* "Add to WhatsApp" option hidden as requested */}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ScrollLink href="/ai-chat">
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
+              >
+                <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                <span className="hidden sm:inline">AI Chat</span>
+                <span className="sm:hidden">AI</span>
+                <Badge className="ml-1 sm:ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
+              </Button>
+            </ScrollLink>
           ) : (
             <ScrollLink href="/ai-chat">
               <Button 
