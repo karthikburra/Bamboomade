@@ -183,11 +183,18 @@ export default function AllSessions() {
             </CardHeader>
             <CardContent className="text-center py-8">
               <p className="text-gray-400 mb-4">Would you like to book a new session?</p>
-              <Link href="/project-guidance">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  Book a Session
-                </Button>
-              </Link>
+              <div className="flex justify-center space-x-3">
+                <Link href="/">
+                  <Button variant="secondary" className="border-gray-700">
+                    Back to Home
+                  </Button>
+                </Link>
+                <Link href="/project-guidance">
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    Book a Session
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         ) : (
@@ -254,6 +261,21 @@ export default function AllSessions() {
                   </CardFooter>
                 </Card>
               ))}
+            </div>
+            
+            <div className="mt-8 text-center">
+              <div className="flex justify-center space-x-3">
+                <Link href="/">
+                  <Button variant="secondary" className="border-gray-700">
+                    Back to Home
+                  </Button>
+                </Link>
+                <Link href="/project-guidance">
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    Book a New Session
+                  </Button>
+                </Link>
+              </div>
             </div>
           </>
         )}
