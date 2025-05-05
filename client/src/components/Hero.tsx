@@ -168,12 +168,16 @@ const Hero: React.FC = () => {
                 <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
-            <WhatsAppContact 
-              phoneNumber="+918971690163"
-              message="Hello, I'm interested in BambooMade workshops. I'd like to inquire about your services."
-              className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 bg-green-600 hover:bg-green-700 text-white"
-              size="lg"
-            />
+            <Link href="/contact" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="default"
+                className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Contact Us
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
