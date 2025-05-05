@@ -147,7 +147,17 @@ const Hero: React.FC = () => {
           <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-sm sm:text-base md:text-lg text-white max-w-3xl">
             <p className="mt-1 sm:mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
           </div>
-          <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full">
+            <Link href="/project-guidance" className="w-full sm:w-auto">
+              <Button
+                size="lg"
+                variant="default"
+                className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-medium border border-green-400 shadow-lg shadow-green-900/50 transition-all duration-300 transform hover:scale-105"
+              >
+                Get Project Guidance
+                <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+              </Button>
+            </Link>
             <Link href="/gallery" className="w-full sm:w-auto">
               <Button
                 size="lg"
