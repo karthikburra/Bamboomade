@@ -548,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Temporary route for getting all sessions without email verification (for testing only)
+  // Route for accessing all sessions with email verification
   app.get("/api/all-sessions", async (req, res) => {
     try {
       // Get all sessions
@@ -557,29 +557,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Format session data for client
       const formattedSessions = allSessions.map(session => {
         const sessionDate = new Date(session.date);
+        const sessionEndTime = addMinutes(sessionDate, session.duration);
+        
+        // Generate Google Meet link for confirmed sessions
+        let googleMeetLink = null;
+        let calendarLink = null;
+        
+        if (session.paymentConfirmed && session.googleMeetLink) {
+          // Use the stored Google Meet link if available
+          googleMeetLink = session.googleMeetLink;
+        } else if (session.paymentConfirmed) {
+          // Generate a link if payment is confirmed but link not stored
+          googleMeetLink = generateGoogleMeetLink(
+            session.id,
+            sessionDate,
+            session.studentName
+          );
+        }
+        
+        // Generate calendar link for confirmed sessions
+        if (session.paymentConfirmed && googleMeetLink) {
+          calendarLink = generateGoogleCalendarLink(
+            session.id,
+            googleMeetLink,
+            sessionDate,
+            session.duration,
+            session.topic,
+            session.studentName
+          );
+        }
+        
         return {
           id: session.id,
           date: session.date,
           formattedDate: format(sessionDate, "MMMM d, yyyy"),
           formattedTime: format(sessionDate, "h:mm a"),
+          formattedEndTime: format(sessionEndTime, "h:mm a"),
           email: session.email,
           topic: session.topic,
           duration: session.duration,
-          paymentStatus: session.paymentId ? 'Paid' : 'Pending',
+          paymentStatus: session.paymentConfirmed ? 'Paid' : 'Pending',
           studentName: session.studentName,
-          status: session.status || 'scheduled'
+          status: session.status || 'scheduled',
+          googleMeetLink: googleMeetLink,
+          calendarLink: calendarLink,
+          isRescheduled: !!session.originalDate,
+          originalDate: session.originalDate ? format(new Date(session.originalDate), "MMMM d, yyyy") : null
         };
       });
       
       res.json({ 
         sessions: formattedSessions,
-        message: formattedSessions.length > 0 
-          ? "All existing sessions in the system (for testing purposes)." 
-          : "No sessions found in the system."
+        success: true
       });
     } catch (error) {
       console.error("Error fetching all sessions:", error);
-      res.status(500).json({ message: "Failed to fetch sessions", error: (error as Error).message });
+      res.status(500).json({ success: false, message: "Failed to fetch sessions", error: (error as Error).message });
     }
   });
   

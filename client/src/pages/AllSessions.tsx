@@ -22,19 +22,24 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft } from "lucide-react";
+import { CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft, Video, ExternalLink, RotateCcw } from "lucide-react";
 import { Link } from "wouter";
 
 interface Session {
   id: number;
   formattedDate: string;
   formattedTime: string;
+  formattedEndTime: string;
   email: string;
   topic: string;
   duration: number;
   paymentStatus: string;
   studentName: string;
   status: string;
+  googleMeetLink?: string | null;
+  calendarLink?: string | null;
+  isRescheduled?: boolean;
+  originalDate?: string | null;
 }
 
 export default function AllSessions() {
@@ -232,7 +237,7 @@ export default function AllSessions() {
                     </div>
                     <div className="flex items-center text-sm">
                       <Clock className="mr-2 h-4 w-4 text-green-500" />
-                      <span>{session.formattedTime} ({session.duration} minutes)</span>
+                      <span>{session.formattedTime} - {session.formattedEndTime} ({session.duration} minutes)</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <User className="mr-2 h-4 w-4 text-green-500" />
@@ -247,8 +252,51 @@ export default function AllSessions() {
                         {session.paymentStatus}
                       </Badge>
                     </div>
+                    
+                    {session.isRescheduled && (
+                      <div className="flex items-center text-sm text-amber-400">
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        <span>Rescheduled from {session.originalDate}</span>
+                      </div>
+                    )}
+                    
+                    {session.googleMeetLink && (
+                      <div className="mt-2 pt-2 border-t border-gray-800">
+                        <div className="flex items-center text-sm text-green-400 mb-2">
+                          <Video className="mr-2 h-4 w-4" />
+                          <span className="font-medium">Google Meet Link Available</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <a 
+                            href={session.googleMeetLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center text-xs bg-green-700/30 text-green-400 p-1.5 px-2 rounded hover:bg-green-700/50 transition-colors"
+                          >
+                            <ExternalLink className="mr-1 h-3 w-3" />
+                            Join Meeting
+                          </a>
+                          {session.calendarLink && (
+                            <a 
+                              href={session.calendarLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center text-xs bg-blue-700/30 text-blue-400 p-1.5 px-2 rounded hover:bg-blue-700/50 transition-colors"
+                            >
+                              <Calendar className="mr-1 h-3 w-3" />
+                              Add to Calendar
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
-                  <CardFooter className="bg-gray-800/50 pt-3 flex justify-end">
+                  <CardFooter className="bg-gray-800/50 pt-3 flex flex-wrap gap-2 justify-end">
+                    {session.paymentStatus === 'Paid' && !session.googleMeetLink && (
+                      <div className="text-xs text-gray-400 mr-auto">
+                        The Google Meet link will be available 4 hours before the session
+                      </div>
+                    )}
                     <Link href={`/project-guidance?session=${session.id}`}>
                       <Button 
                         variant="outline" 
