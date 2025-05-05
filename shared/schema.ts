@@ -45,12 +45,15 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   email: text("email").notNull(),
   phone: text("phone").notNull(),
   date: timestamp("date").notNull(),
+  originalDate: timestamp("original_date"), // Original date before rescheduling
   duration: integer("duration").notNull(), // in minutes
   topic: text("topic").notNull(),
   notes: text("notes"),
   paymentConfirmed: boolean("payment_confirmed").default(false),
   paymentId: text("payment_id"),
-  status: text("status").default("active"), // active, pending, confirmed, cancelled, completed
+  status: text("status").default("active"), // active, pending, confirmed, cancelled, completed, rescheduled
+  rescheduledBy: text("rescheduled_by"), // 'admin' or 'user'
+  rescheduledDate: timestamp("rescheduled_date"), // When the rescheduling occurred
   cancellationReason: text("cancellation_reason"),
   cancellationDate: timestamp("cancellation_date"),
   refundAmount: integer("refund_amount"),

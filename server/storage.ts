@@ -28,7 +28,7 @@ export interface IStorage {
   getProjectGuidance(id: number): Promise<ProjectGuidance | undefined>;
   createProjectGuidance(session: InsertProjectGuidance): Promise<ProjectGuidance>;
   updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined>;
-  updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined>;
   cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined>;
   
@@ -342,7 +342,10 @@ export class MemStorage implements IStorage {
       refundPercentage: null,
       amount: null,
       googleMeetLink: null,
-      isStudent: isStudentValue
+      isStudent: isStudentValue,
+      originalDate: null,
+      rescheduledBy: null,
+      rescheduledDate: null
     };
     this.projectGuidances.set(id, session);
     return session;
@@ -363,14 +366,21 @@ export class MemStorage implements IStorage {
     return updatedSession;
   }
   
-  async updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number): Promise<ProjectGuidance | undefined> {
+  async updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined> {
     const session = await this.getProjectGuidance(id);
     if (!session) return undefined;
+    
+    // Store the original date if this is the first time rescheduling
+    const originalDate = session.originalDate || session.date;
     
     const updatedSession: ProjectGuidance = { 
       ...session, 
       date: newDate,
-      duration: newDuration || session.duration
+      originalDate: originalDate,
+      duration: newDuration || session.duration,
+      status: "rescheduled",
+      rescheduledBy: rescheduledBy,
+      rescheduledDate: new Date()
     };
     this.projectGuidances.set(id, updatedSession);
     return updatedSession;

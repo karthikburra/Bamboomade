@@ -314,6 +314,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Route for admin to reschedule a session
+  app.post("/api/admin/reschedule-session", isAdmin, async (req, res) => {
+    try {
+      const { sessionId, newDate, newDuration } = req.body;
+      
+      if (!sessionId || !newDate) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Session ID and new date are required" 
+        });
+      }
+      
+      // Get the session
+      const session = await storage.getProjectGuidance(parseInt(sessionId));
+      
+      if (!session) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Session not found" 
+        });
+      }
+      
+      // Update the session with new date/time using storage method
+      const updatedSession = await storage.updateProjectGuidanceSession(
+        session.id,
+        new Date(newDate),
+        newDuration || session.duration,
+        'admin' // Indicate that this was rescheduled by an admin
+      );
+      
+      console.log('Session rescheduled by admin:', {
+        sessionId: session.id,
+        email: session.email,
+        oldDate: session.date,
+        newDate: new Date(newDate),
+        oldDuration: session.duration,
+        newDuration: newDuration || session.duration
+      });
+      
+      // Send email notification about the reschedule
+      await sendRescheduledSessionEmail(
+        session.id,
+        session.studentName,
+        session.email,
+        session.topic,
+        new Date(newDate),
+        newDuration || session.duration
+      ).catch(err => console.error("Failed to send admin reschedule email:", err));
+      
+      // Return success
+      res.json({ 
+        success: true, 
+        message: "Session rescheduled successfully by admin",
+        session: updatedSession
+      });
+    } catch (error) {
+      console.error("Error in admin rescheduling session:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to reschedule session", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
   app.post("/api/admin/update-meet-link", isAdmin, async (req, res) => {
     try {
       const { sessionId, googleMeetLink } = req.body;
@@ -673,7 +738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Route for rescheduling a session
+  // Route for rescheduling a session by user
   app.post("/api/reschedule-session", async (req, res) => {
     try {
       const { email, newDate, newDuration, sessionId } = req.body;
@@ -716,7 +781,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedSession = await storage.updateProjectGuidanceSession(
         selectedSession.id,
         new Date(newDate),
-        newDuration || selectedSession.duration
+        newDuration || selectedSession.duration,
+        'user' // Indicate that this was rescheduled by the user
       );
       console.log('Session rescheduled:', {
         sessionId: selectedSession.id,
