@@ -640,8 +640,24 @@ function ProjectGuidance() {
                   <CardTitle>Book Your Project Guidance Session</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-6">
-                    <div className="flex justify-between mb-4">
+                  <div className="mb-6 overflow-x-auto">
+                    {/* Mobile progress indicator (shown only on small screens) */}
+                    <div className="md:hidden flex items-center justify-center mb-4">
+                      <div className="text-sm font-medium">
+                        Step {step} of 4: {step === 1 ? "Details" : step === 2 ? "Schedule" : step === 3 ? "Payment" : "Confirmed"}
+                      </div>
+                    </div>
+                    
+                    {/* Mobile progress bar */}
+                    <div className="md:hidden w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mb-4">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full transition-all duration-300 ease-in-out"
+                        style={{ width: `${(step/4) * 100}%` }}
+                      ></div>
+                    </div>
+                    
+                    {/* Desktop stepper (hidden on mobile) */}
+                    <div className="hidden md:flex justify-between mb-4">
                       <div className={`flex items-center ${step >= 1 ? "text-primary-600" : "text-muted-foreground"}`}>
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-2 ${step >= 1 ? "bg-primary-100 text-primary-600" : "bg-muted text-muted-foreground"}`}>
                           <GraduationCap size={16} />
@@ -674,15 +690,15 @@ function ProjectGuidance() {
                   
                   {step === 1 && (
                     <div>
-                      <div className="flex justify-between items-center mb-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
                         <h3 className="text-lg font-medium">Your Information</h3>
-                        <Link href="/all-sessions">
+                        <Link href="/all-sessions" className="w-full sm:w-auto">
                           <Button
                             variant="outline"
-                            className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                            className="w-full sm:w-auto border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                           >
                             <CalendarIconLucide className="mr-2 h-4 w-4" />
-                            Access My Sessions
+                            <span className="whitespace-nowrap">Access My Sessions</span>
                           </Button>
                         </Link>
                       </div>
@@ -837,21 +853,27 @@ function ProjectGuidance() {
                         isStudent={form.getValues().isStudent}
                       />
                       
-                      <div className="flex justify-between mt-6">
+                      <div className="flex flex-col sm:flex-row justify-between gap-3 mt-6">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => setStep(1)}
+                          className="order-2 sm:order-1"
                         >
                           Back
                         </Button>
                         <Button 
                           type="button" 
                           onClick={() => onSubmit(form.getValues())}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-green-600 hover:bg-green-700 order-1 sm:order-2"
                           disabled={!selectedDate || !selectedTime || isPending}
                         >
-                          {isPending ? "Processing..." : "Book and Continue to Payment"}
+                          {isPending ? "Processing..." : 
+                            <span className="flex items-center">
+                              <span className="hidden sm:inline">Book and Continue to Payment</span>
+                              <span className="sm:hidden">Continue to Payment</span>
+                            </span>
+                          }
                         </Button>
                       </div>
                     </div>
@@ -904,13 +926,14 @@ function ProjectGuidance() {
                             </div>
                           </div>
                           
-                          <div className="flex justify-between mt-6">
+                          <div className="flex justify-start mt-6">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => setStep(2)}
+                              className="w-full sm:w-auto"
                             >
-                              Back
+                              Back to Schedule
                             </Button>
                           </div>
                         </div>
@@ -1115,39 +1138,41 @@ function ProjectGuidance() {
                             <div className="grid grid-cols-1 gap-4">
                               <div>
                                 <label className="block text-sm font-medium mb-1">Email Address</label>
-                                <Input 
-                                  type="email" 
-                                  placeholder="Enter the email you used for booking" 
-                                  value={verificationEmail}
-                                  onChange={(e) => setVerificationEmail(e.target.value)}
-                                  className="w-full"
-                                />
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <Input 
+                                    type="email" 
+                                    placeholder="Enter the email you used for booking" 
+                                    value={verificationEmail}
+                                    onChange={(e) => setVerificationEmail(e.target.value)}
+                                    className="w-full"
+                                  />
+                                  <Button 
+                                    onClick={() => {
+                                      if (!verificationEmail) {
+                                        toast({
+                                          title: "Email Required",
+                                          description: "Please enter your email address",
+                                          variant: "destructive",
+                                        });
+                                        return;
+                                      }
+                                      sendVerificationCode();
+                                    }}
+                                    className="w-full sm:w-auto whitespace-nowrap bg-green-600 hover:bg-green-700"
+                                    disabled={isSendingCode}
+                                  >
+                                    {isSendingCode ? "Sending..." : "Send Code"}
+                                  </Button>
+                                </div>
+                                <Button 
+                                  onClick={() => setStep(4)}
+                                  variant="outline" 
+                                  className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                >
+                                  Cancel
+                                </Button>
                               </div>
                             </div>
-                            <Button 
-                              onClick={() => {
-                                if (!verificationEmail) {
-                                  toast({
-                                    title: "Email Required",
-                                    description: "Please enter your email address",
-                                    variant: "destructive",
-                                  });
-                                  return;
-                                }
-                                sendVerificationCode();
-                              }}
-                              className="w-full bg-green-600 hover:bg-green-700"
-                              disabled={isSendingCode}
-                            >
-                              {isSendingCode ? "Sending Code..." : "Send Verification Code"}
-                            </Button>
-                            <Button 
-                              onClick={() => setStep(4)}
-                              variant="outline" 
-                              className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-                            >
-                              Cancel
-                            </Button>
                           </div>
                         )}
                         
