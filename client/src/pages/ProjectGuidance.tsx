@@ -1037,7 +1037,7 @@ function ProjectGuidance() {
                           <p className="text-sm text-green-200/80 mb-4">
                             You can view and manage all your booked sessions, including this one, from the sessions page.
                           </p>
-                          <Link href="/all-sessions">
+                          <Link href={`/all-sessions?email=${form.getValues().email}`}>
                             <Button 
                               className="w-full bg-green-600 hover:bg-green-700 text-white border-green-700"
                             >

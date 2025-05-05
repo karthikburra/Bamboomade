@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -38,6 +38,20 @@ interface Session {
 }
 
 export default function AllSessions() {
+  const [emailFilter, setEmailFilter] = useState("");
+  const [isFiltering, setIsFiltering] = useState(false);
+  
+  // Check if email was passed as URL parameter
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    
+    if (email) {
+      setEmailFilter(email);
+      setIsFiltering(true);
+    }
+  }, []);
+
   // Fetch all sessions
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/all-sessions"],
@@ -71,8 +85,14 @@ export default function AllSessions() {
     );
   }
 
-  // Display all sessions directly
-  const sessions = data?.sessions || [];
+  const allSessions = data?.sessions || [];
+  
+  // Only show sessions if a user has entered their email
+  // Don't display any sessions by default
+  const sessions = emailFilter && isFiltering
+    ? allSessions.filter((session: Session) => 
+        session.email.toLowerCase() === emailFilter.toLowerCase())
+    : [];
 
   return (
     <div className="min-h-screen dark bg-gray-950 text-white pt-8 pb-12">
@@ -91,32 +111,74 @@ export default function AllSessions() {
           <h1 className="text-2xl md:text-3xl font-bold">Your Project Guidance Sessions</h1>
         </div>
         
-        {/* Direct access to sessions - No email verification required */}
+        {/* Email filter form */}
         <Card className="mb-8 bg-gray-900 border-gray-800">
           <CardHeader>
-            <CardTitle className="text-lg">Your Recent Sessions</CardTitle>
+            <CardTitle className="text-lg">Find Your Sessions</CardTitle>
             <CardDescription>
-              View and manage all your booked project guidance sessions
+              Enter your email address to see your booked sessions
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1">
+                <Input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={emailFilter}
+                  onChange={(e) => setEmailFilter(e.target.value)}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => setIsFiltering(!!emailFilter)}
+                disabled={!emailFilter}
+              >
+                Find My Sessions
+              </Button>
               <Link href="/project-guidance">
-                <Button className="bg-green-600 hover:bg-green-700">
+                <Button variant="outline" className="border-green-600 text-green-500">
                   Book a New Session
                 </Button>
               </Link>
             </div>
           </CardContent>
         </Card>
+        
+        {/* Display when user has filtered by email */}
+        {emailFilter && isFiltering && (
+          <div className="mb-6 bg-green-900/20 border border-green-800 rounded-md p-4">
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+              <p className="text-sm text-green-400">
+                Showing sessions for <span className="font-medium">{emailFilter}</span>
+                <Button 
+                  variant="link" 
+                  className="text-xs text-green-400 p-0 h-auto ml-2"
+                  onClick={() => {
+                    setEmailFilter("");
+                    setIsFiltering(false);
+                  }}
+                >
+                  Clear filter
+                </Button>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Sessions list */}
         {sessions.length === 0 ? (
           <Card className="bg-gray-900 border-gray-800">
             <CardHeader>
-              <CardTitle>No Sessions Found</CardTitle>
+              <CardTitle>
+                {emailFilter && isFiltering ? "No Sessions Found" : "Enter Your Email"}
+              </CardTitle>
               <CardDescription>
-                No project guidance sessions have been booked yet.
+                {emailFilter && isFiltering 
+                  ? `No project guidance sessions found for ${emailFilter}`
+                  : "Please enter your email address above to see your booked sessions"}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center py-8">
