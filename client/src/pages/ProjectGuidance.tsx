@@ -1170,9 +1170,10 @@ function ProjectGuidance() {
                                 <Button 
                                   onClick={() => setStep(4)}
                                   variant="outline" 
-                                  className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                  className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center justify-center"
                                 >
-                                  Cancel
+                                  <ArrowLeft className="mr-2 h-4 w-4" />
+                                  <span>Cancel</span>
                                 </Button>
                               </div>
                             </div>
@@ -1226,9 +1227,10 @@ function ProjectGuidance() {
                             <Button 
                               onClick={() => setStep(4)}
                               variant="outline" 
-                              className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                              className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center justify-center"
                             >
-                              Cancel
+                              <ArrowLeft className="mr-2 h-4 w-4" />
+                              <span>Cancel</span>
                             </Button>
                           </div>
                         )}
@@ -1273,7 +1275,7 @@ function ProjectGuidance() {
                                 variant="outline" 
                                 className="flex-1 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                               >
-                                Cancel
+                                <ArrowLeft className="mr-2 h-4 w-4"/><span>Cancel</span>
                               </Button>
                             </div>
                           </div>
