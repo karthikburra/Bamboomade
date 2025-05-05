@@ -173,12 +173,12 @@ const Navbar: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   aria-label="Toggle menu"
-                  className="h-9 w-9 sm:h-10 sm:w-10"
+                  className="h-9 w-9 sm:h-10 sm:w-10 text-green-400 hover:bg-gray-800 hover:text-green-300"
                 >
                   {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </Button>
               </SheetTrigger>
-              <SheetContent className="w-[85%] sm:max-w-sm px-4 sm:px-6">
+              <SheetContent className="w-[85%] sm:max-w-sm px-4 sm:px-6 bg-gray-900 border-l border-green-800/50 text-white">
                 <SheetHeader className="pb-2 sm:pb-3">
                   <div className="flex items-center space-x-2 sm:space-x-3 mb-1 sm:mb-2">
                     <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-10 w-auto" />
@@ -204,7 +204,7 @@ const Navbar: React.FC = () => {
                     </ScrollLink>
                   ))}
                   
-                  <div className="space-y-2 sm:space-y-3 py-3 sm:py-4 border-t border-b border-green-900/50">
+                  <div className="space-y-2 sm:space-y-3 py-3 sm:py-4 border-t border-b border-green-800/50">
                     <div className="flex items-center text-sm sm:text-base md:text-lg font-medium text-green-300">
                       <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                       BambooMade AI Tools
