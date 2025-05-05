@@ -676,14 +676,15 @@ function ProjectGuidance() {
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-medium">Your Information</h3>
-                        <Button
-                          variant="outline"
-                          className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-                          onClick={() => setStep(5)}
-                        >
-                          <CalendarIconLucide className="mr-2 h-4 w-4" />
-                          Access My Sessions
-                        </Button>
+                        <Link href="/all-sessions">
+                          <Button
+                            variant="outline"
+                            className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                          >
+                            <CalendarIconLucide className="mr-2 h-4 w-4" />
+                            Access My Sessions
+                          </Button>
+                        </Link>
                       </div>
                       <Form {...form}>
                         <form onSubmit={(e) => {
