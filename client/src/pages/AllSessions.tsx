@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -22,8 +23,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft, Video, ExternalLink, RotateCcw } from "lucide-react";
+import { 
+  CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft, Video, 
+  ExternalLink, RotateCcw, Copy, Check, Info
+} from "lucide-react";
 import { Link } from "wouter";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Session {
   id: number;
@@ -45,6 +55,8 @@ interface Session {
 export default function AllSessions() {
   const [emailFilter, setEmailFilter] = useState("");
   const [isFiltering, setIsFiltering] = useState(false);
+  const [copiedLinks, setCopiedLinks] = useState<{ [key: number]: boolean }>({});
+  const { toast } = useToast();
   
   // Check if email was passed as URL parameter
   useEffect(() => {
@@ -56,6 +68,39 @@ export default function AllSessions() {
       setIsFiltering(true);
     }
   }, []);
+  
+  // Copy to clipboard function
+  const copyToClipboard = (text: string | null | undefined, sessionId: number) => {
+    if (!text) {
+      toast({
+        title: "Copy Failed",
+        description: "No valid link available to copy.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedLinks({ ...copiedLinks, [sessionId]: true });
+      toast({
+        title: "Link Copied!",
+        description: "Google Meet link copied to clipboard.",
+        variant: "default",
+      });
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedLinks((prev) => ({ ...prev, [sessionId]: false }));
+      }, 2000);
+    }).catch((err) => {
+      console.error('Failed to copy: ', err);
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy link to clipboard.",
+        variant: "destructive",
+      });
+    });
+  };
 
   // Fetch all sessions
   const { data, isLoading, error } = useQuery({
@@ -204,9 +249,29 @@ export default function AllSessions() {
           </Card>
         ) : (
           <>
-            <h2 className="text-xl font-medium mb-4">
-              All Sessions ({sessions.length})
-            </h2>
+            <div className="mb-6">
+              <h2 className="text-xl font-medium mb-2">
+                Your Booked Sessions ({sessions.length})
+              </h2>
+              <div className="bg-gray-800/50 rounded-md p-4 border border-gray-700">
+                <div className="flex items-start">
+                  <Info className="h-5 w-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                  <div className="text-sm text-gray-300 space-y-2">
+                    <p>
+                      Below you'll find all sessions booked with your email address. 
+                      For paid sessions, Google Meet links become available approximately 4 hours before the session starts.
+                    </p>
+                    <p>
+                      <span className="text-green-400 font-medium">Important:</span> Make sure to join the Google Meet link on time for your scheduled session. 
+                      Sessions typically last either 30 minutes or 1 hour as specified during booking.
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      If you need to reschedule or have questions about your session, please use the "Manage Session" button.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {sessions.map((session: Session) => (
                 <Card key={session.id} className="bg-gray-900 border-gray-800 overflow-hidden">
@@ -253,7 +318,7 @@ export default function AllSessions() {
                       </Badge>
                     </div>
                     
-                    {session.isRescheduled && (
+                    {session.isRescheduled && session.originalDate && (
                       <div className="flex items-center text-sm text-amber-400">
                         <RotateCcw className="mr-2 h-4 w-4" />
                         <span>Rescheduled from {session.originalDate}</span>
@@ -262,10 +327,37 @@ export default function AllSessions() {
                     
                     {session.googleMeetLink && (
                       <div className="mt-2 pt-2 border-t border-gray-800">
-                        <div className="flex items-center text-sm text-green-400 mb-2">
-                          <Video className="mr-2 h-4 w-4" />
-                          <span className="font-medium">Google Meet Link Available</span>
+                        <div className="flex items-center justify-between text-sm text-green-400 mb-2">
+                          <div className="flex items-center">
+                            <Video className="mr-2 h-4 w-4" />
+                            <span className="font-medium">Google Meet Link Available</span>
+                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6 text-green-400 hover:text-green-300 hover:bg-green-900/20"
+                                  onClick={() => copyToClipboard(session.googleMeetLink, session.id)}
+                                >
+                                  {copiedLinks[session.id] ? 
+                                    <Check className="h-3.5 w-3.5" /> : 
+                                    <Copy className="h-3.5 w-3.5" />
+                                  }
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                <p className="text-xs">Copy link to clipboard</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
+                        
+                        <div className="bg-gray-800/50 rounded p-2 mb-2 overflow-hidden text-xs text-gray-400 flex items-center">
+                          <span className="truncate">{session.googleMeetLink}</span>
+                        </div>
+                        
                         <div className="flex flex-wrap gap-2">
                           <a 
                             href={session.googleMeetLink} 
