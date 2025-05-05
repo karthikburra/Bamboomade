@@ -137,36 +137,11 @@ export default function AllSessions() {
 
   const allSessions = data?.sessions || [];
   
-  // Email search debugging information
-  useEffect(() => {
-    if (emailFilter && isFiltering) {
-      console.log(`Searching for sessions with email: ${emailFilter}`);
-      console.log(`Available sessions:`, allSessions);
-      console.log(`Session emails:`, allSessions.map(s => s.email));
-      
-      // Check for case-insensitive matches
-      const matches = allSessions.filter(session => 
-        session.email.toLowerCase() === emailFilter.toLowerCase()
-      );
-      console.log(`Found ${matches.length} matching sessions with case-insensitive search`);
-      
-      // Check for partial matches (contains)
-      const partialMatches = allSessions.filter(session => 
-        session.email.toLowerCase().includes(emailFilter.toLowerCase())
-      );
-      console.log(`Found ${partialMatches.length} partial matching sessions`);
-    }
-  }, [emailFilter, isFiltering, allSessions]);
-  
   // Only show sessions if a user has entered their email
   // Don't display any sessions by default
   const sessions = emailFilter && isFiltering
-    ? allSessions.filter((session: Session) => {
-        // Try both exact case-insensitive match or partial match (contains)
-        const exactMatch = session.email.toLowerCase() === emailFilter.toLowerCase();
-        const partialMatch = session.email.toLowerCase().includes(emailFilter.toLowerCase());
-        return exactMatch || partialMatch;
-      })
+    ? allSessions.filter((session: Session) => 
+        session.email.toLowerCase() === emailFilter.toLowerCase())
     : [];
 
   return (

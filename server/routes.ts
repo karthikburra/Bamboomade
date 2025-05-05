@@ -674,83 +674,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all sessions
       const allSessions = await storage.getAllProjectGuidances();
       
-      // Log for debugging
-      console.log(`Searching for sessions with email: ${email}`);
-      console.log(`Available emails:`, allSessions.map(s => s.email));
+      // Filter sessions by email (case insensitive)
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === (email as string).toLowerCase()
+      );
       
-      // Filter sessions by email with more flexible matching
-      // Allow both exact and partial matches
-      const userSessions = allSessions.filter(session => {
-        // Try both exact case-insensitive match or partial match (contains)
-        const exactMatch = session.email.toLowerCase() === (email as string).toLowerCase();
-        const partialMatch = session.email.toLowerCase().includes((email as string).toLowerCase());
-        return exactMatch || partialMatch;
-      });
-      
-      console.log(`Found ${userSessions.length} matching sessions`);
-      
-      // Format sessions to match the all-sessions endpoint format
+      // Format sessions for display
       const formattedSessions = userSessions.map(session => {
         const sessionDate = new Date(session.date);
-        const sessionEndTime = addMinutes(sessionDate, session.duration);
-        
-        // Generate Google Meet link for confirmed sessions
-        let googleMeetLink = null;
-        let calendarLink = null;
-        
-        if (session.paymentConfirmed && session.googleMeetLink) {
-          // Use the stored Google Meet link if available
-          googleMeetLink = session.googleMeetLink;
-        } else if (session.paymentConfirmed) {
-          // Generate a link if payment is confirmed but link not stored
-          googleMeetLink = generateGoogleMeetLink(
-            session.id,
-            sessionDate,
-            session.studentName
-          );
-        }
-        
-        // Generate calendar link for confirmed sessions
-        if (session.paymentConfirmed && googleMeetLink) {
-          calendarLink = generateGoogleCalendarLink(
-            session.id,
-            googleMeetLink,
-            sessionDate,
-            session.duration,
-            session.topic,
-            session.studentName
-          );
-        }
-        
         return {
           id: session.id,
-          date: session.date,
-          formattedDate: format(sessionDate, "MMMM d, yyyy"),
-          formattedTime: format(sessionDate, "h:mm a"),
-          formattedEndTime: format(sessionEndTime, "h:mm a"),
-          email: session.email,
+          date: sessionDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          time: sessionDate.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+          }),
           topic: session.topic,
           duration: session.duration,
-          paymentStatus: session.paymentConfirmed ? 'Paid' : 'Pending',
-          studentName: session.studentName,
-          status: session.status || 'scheduled',
-          googleMeetLink: googleMeetLink,
-          calendarLink: calendarLink,
-          isRescheduled: !!session.originalDate,
-          originalDate: session.originalDate ? format(new Date(session.originalDate), "MMMM d, yyyy") : null
+          paymentStatus: session.paymentId ? 'Paid' : 'Pending',
+          studentName: session.studentName
         };
       });
       
       res.json({ 
         sessions: formattedSessions,
-        success: true,
         message: formattedSessions.length > 0 
           ? "These are your existing sessions. You can book new sessions or reschedule existing ones." 
           : "You have no existing sessions. Please book a new session."
       });
     } catch (error) {
       console.error("Error fetching sessions by email:", error);
-      res.status(500).json({ success: false, message: "Failed to fetch sessions", error: (error as Error).message });
+      res.status(500).json({ message: "Failed to fetch sessions", error: (error as Error).message });
     }
   });
   
@@ -766,12 +726,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all sessions
       const allSessions = await storage.getAllProjectGuidances();
       
-      // Check if user has any sessions with this email (with flexible matching)
-      const userSessions = allSessions.filter(session => {
-        const exactMatch = session.email.toLowerCase() === email.toLowerCase();
-        const partialMatch = session.email.toLowerCase().includes(email.toLowerCase());
-        return exactMatch || partialMatch;
-      });
+      // Check if user has any sessions with this email
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === email.toLowerCase()
+      );
       
       // Only check for existing sessions if purpose is 'reschedule'
       // For 'access', we'll still send the code even if there are no sessions yet
@@ -825,15 +783,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all sessions
       const allSessions = await storage.getAllProjectGuidances();
       
-      // Filter sessions by email with flexible matching
-      const userSessions = allSessions.filter(session => {
-        const exactMatch = session.email.toLowerCase() === email.toLowerCase();
-        const partialMatch = session.email.toLowerCase().includes(email.toLowerCase());
-        return exactMatch || partialMatch;
-      });
-      
-      console.log(`Reschedule - Searching for sessions with email: ${email}`);
-      console.log(`Reschedule - Found ${userSessions.length} matching sessions`);
+      // Filter sessions by email (case insensitive)
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === email.toLowerCase()
+      );
       
       if (userSessions.length === 0) {
         return res.status(404).json({ 
@@ -908,15 +861,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all sessions
       const allSessions = await storage.getAllProjectGuidances();
       
-      // Filter sessions by email with flexible matching
-      const userSessions = allSessions.filter(session => {
-        const exactMatch = session.email.toLowerCase() === email.toLowerCase();
-        const partialMatch = session.email.toLowerCase().includes(email.toLowerCase());
-        return exactMatch || partialMatch;
-      });
-      
-      console.log(`Cancel - Searching for sessions with email: ${email}`);
-      console.log(`Cancel - Found ${userSessions.length} matching sessions`);
+      // Filter sessions by email (case insensitive)
+      const userSessions = allSessions.filter(
+        session => session.email.toLowerCase() === email.toLowerCase()
+      );
       
       if (userSessions.length === 0) {
         return res.status(404).json({ 
