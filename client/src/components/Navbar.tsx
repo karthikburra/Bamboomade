@@ -112,21 +112,7 @@ const Navbar: React.FC = () => {
             </ScrollLink>
           )}
           
-          {/* Theme toggle removed - dark mode only */}
-
-          {user && user.tokens !== undefined && user.isAdmin !== undefined ? (
-            <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-              {/* Admin and token display removed */}
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={handleLogout}
-                className="text-xs sm:text-sm h-8 sm:h-9 md:h-10 bg-green-600 hover:bg-green-700 text-white"
-              >
-                {isMobile ? "Exit" : "Logout"}
-              </Button>
-            </div>
-          ) : null}
+          {/* Theme toggle, admin buttons, token display, and logout button removed */}
 
           {isMobile && (
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
