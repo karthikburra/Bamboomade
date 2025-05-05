@@ -743,36 +743,51 @@ export default function AdminDashboard() {
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  {session.googleMeetLink ? (
-                                    <div className="flex flex-col gap-2">
-                                      <a 
-                                        href={session.googleMeetLink} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="text-blue-400 hover:text-blue-300 flex items-center text-xs"
-                                      >
-                                        <LinkIcon className="w-3 h-3 mr-1" />
-                                        Open Link
-                                      </a>
+                                  <div className="flex flex-col gap-2">
+                                    {session.googleMeetLink ? (
+                                      <>
+                                        <a 
+                                          href={session.googleMeetLink} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="text-blue-400 hover:text-blue-300 flex items-center text-xs"
+                                        >
+                                          <LinkIcon className="w-3 h-3 mr-1" />
+                                          Open Link
+                                        </a>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm" 
+                                          className="h-6 text-xs"
+                                          onClick={() => openMeetLinkDialog(session)}
+                                        >
+                                          Edit
+                                        </Button>
+                                      </>
+                                    ) : (
                                       <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="h-6 text-xs"
+                                        variant="outline" 
+                                        size="sm"
+                                        className="border-green-700 text-green-400 hover:bg-green-900/30 text-xs"
                                         onClick={() => openMeetLinkDialog(session)}
                                       >
-                                        Edit
+                                        Add Link
                                       </Button>
-                                    </div>
-                                  ) : (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      className="border-green-700 text-green-400 hover:bg-green-900/30 text-xs"
-                                      onClick={() => openMeetLinkDialog(session)}
-                                    >
-                                      Add Link
-                                    </Button>
-                                  )}
+                                    )}
+                                    
+                                    {/* Always show reschedule button for upcoming sessions */}
+                                    {session.status !== 'cancelled' && session.status !== 'completed' && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="border-blue-700 text-blue-400 hover:bg-blue-900/30 text-xs mt-1"
+                                        onClick={() => openRescheduleDialog(session)}
+                                      >
+                                        <CalendarRange className="w-3 h-3 mr-1" />
+                                        Reschedule
+                                      </Button>
+                                    )}
+                                  </div>
                                 </TableCell>
                                 <TableCell>
                                   <Badge 
