@@ -171,8 +171,8 @@ const Hero: React.FC = () => {
             <Link href="/contact" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                variant="default"
-                className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 bg-green-600 hover:bg-green-700 text-white"
+                variant="outline"
+                className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 Contact Us
