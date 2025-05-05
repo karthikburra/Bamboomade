@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 // Full interface for complete booking flow
 interface BookingCalendarFullProps {
@@ -60,24 +62,99 @@ function isFullProps(props: BookingCalendarProps): props is BookingCalendarFullP
   return 'setSelectedTime' in props && 'setSelectedDuration' in props;
 }
 
+// Define interface for available time slots
+interface AvailableSlot {
+  date: string;
+  slots: string[];
+}
+
 const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   // Determine which props interface we're using
   const { selectedDate } = props;
+  
+  // Add state for popover open/close
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+  
+  // Fetch available time slots from API
+  const { data: availableSlots, isLoading: isLoadingSlots } = useQuery({
+    queryKey: ["/api/available-slots"],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest("GET", "/api/available-slots");
+        return response.json();
+      } catch (error) {
+        console.error("Failed to fetch available slots:", error);
+        return { slots: [] }; // Return empty slots on error
+      }
+    },
+    // Keep the data fresh, but not too frequent
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  
+  // Get available time slots for the selected date
+  const getAvailableTimeSlotsForDate = (date: Date | undefined): string[] => {
+    if (!date || !availableSlots || !availableSlots.slots) {
+      return timeSlots; // Return default slots if no data
+    }
+    
+    // Format the date to match the API format (YYYY-MM-DD)
+    const formattedDate = format(date, "yyyy-MM-dd");
+    
+    // Find the matching slot for this date
+    const matchingSlot = availableSlots.slots.find(
+      (slot: AvailableSlot) => slot.date === formattedDate
+    );
+    
+    return matchingSlot ? matchingSlot.slots : timeSlots;
+  };
   
   // Handle date selection based on which props we received
   const handleDateSelect = (date: Date | undefined) => {
     if (isFullProps(props)) {
       props.setSelectedDate(date);
+      // Reset time selection when date changes
+      props.setSelectedTime("");
+      // Auto close the date popover when a date is selected
+      setDatePopoverOpen(false);
     } else {
       props.onChange(date);
+      setDatePopoverOpen(false);
     }
+  };
+  
+  // Get available slots for the currently selected date
+  const availableTimeSlots = getAvailableTimeSlotsForDate(selectedDate);
+  
+  // Function to check if a date should be disabled
+  const isDateDisabled = (date: Date) => {
+    // Disable dates in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Format the date to match the API format (YYYY-MM-DD)
+    const formattedDate = format(date, "yyyy-MM-dd");
+    
+    // Check if this date has any available slots
+    if (availableSlots && availableSlots.slots) {
+      const matchingSlot = availableSlots.slots.find(
+        (slot: AvailableSlot) => slot.date === formattedDate
+      );
+      
+      // If matchingSlot doesn't exist or has no time slots, disable the date
+      if (!matchingSlot || matchingSlot.slots.length === 0) {
+        return true;
+      }
+    }
+    
+    // Default behavior - disable past dates
+    return date < today;
   };
   
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-lg font-medium">Select Date</h3>
-        <Popover>
+        <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -96,13 +173,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               selected={selectedDate}
               onSelect={handleDateSelect}
               initialFocus
-              disabled={(date) => {
-                // Disable dates in the past and weekends
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const day = date.getDay();
-                return date < today || day === 0 || day === 6;
-              }}
+              disabled={isDateDisabled}
             />
           </PopoverContent>
         </Popover>
@@ -115,27 +186,38 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
             <h3 className="text-lg font-medium">Select Time</h3>
             <Select
               value={props.selectedTime}
-              onValueChange={props.setSelectedTime}
+              onValueChange={(time) => {
+                props.setSelectedTime(time);
+                // Auto-close dropdown when time is selected
+                document.body.click(); // Hack to force close the dropdown
+              }}
               disabled={!selectedDate}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
-                {timeSlots.map((time) => (
+                {availableTimeSlots.map((time) => (
                   <SelectItem key={time} value={time}>
                     {time}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {isLoadingSlots && (
+              <p className="text-xs text-green-600">Loading available time slots...</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <h3 className="text-lg font-medium">Select Duration</h3>
             <Select
               value={props.selectedDuration.toString()}
-              onValueChange={(value) => props.setSelectedDuration(parseInt(value))}
+              onValueChange={(value) => {
+                props.setSelectedDuration(parseInt(value));
+                // Auto-close dropdown when duration is selected
+                document.body.click(); // Hack to force close the dropdown
+              }}
               disabled={!selectedDate || !props.selectedTime}
             >
               <SelectTrigger>

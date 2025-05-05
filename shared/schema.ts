@@ -135,3 +135,22 @@ export type InsertAiTrainingData = z.infer<typeof insertAiTrainingDataSchema>;
 
 export type TokenPurchase = typeof tokenPurchases.$inferSelect;
 export type InsertTokenPurchase = z.infer<typeof insertTokenPurchaseSchema>;
+
+// Available time slots for project guidance
+export const availableTimeSlots = pgTable("available_time_slots", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull(), // Format: YYYY-MM-DD
+  slots: json("slots").$type<string[]>().notNull(), // Array of time slots like ["09:00", "10:00"]
+  createdBy: integer("created_by").notNull(), // Admin who created this availability
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertAvailableTimeSlotsSchema = createInsertSchema(availableTimeSlots).pick({
+  date: true,
+  slots: true,
+  createdBy: true,
+});
+
+export type AvailableTimeSlot = typeof availableTimeSlots.$inferSelect;
+export type InsertAvailableTimeSlot = z.infer<typeof insertAvailableTimeSlotsSchema>;

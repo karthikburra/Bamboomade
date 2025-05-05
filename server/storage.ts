@@ -4,7 +4,8 @@ import {
   projectGuidances, type ProjectGuidance, type InsertProjectGuidance,
   chatMessages, type ChatMessage, type InsertChatMessage,
   aiTrainingData, type AiTrainingData, type InsertAiTrainingData,
-  tokenPurchases, type TokenPurchase, type InsertTokenPurchase
+  tokenPurchases, type TokenPurchase, type InsertTokenPurchase,
+  availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot
 } from "@shared/schema";
 
 export interface IStorage {
@@ -42,6 +43,14 @@ export interface IStorage {
   // Token purchase operations
   getTokenPurchasesByUserId(userId: number): Promise<TokenPurchase[]>;
   createTokenPurchase(purchase: InsertTokenPurchase): Promise<TokenPurchase>;
+  
+  // Available time slots operations
+  getAllAvailableTimeSlots(): Promise<AvailableTimeSlot[]>;
+  getAvailableTimeSlotById(id: number): Promise<AvailableTimeSlot | undefined>;
+  getAvailableTimeSlotByDate(date: string): Promise<AvailableTimeSlot | undefined>;
+  createAvailableTimeSlot(slot: InsertAvailableTimeSlot): Promise<AvailableTimeSlot>;
+  updateAvailableTimeSlot(id: number, slots: string[]): Promise<AvailableTimeSlot | undefined>;
+  deleteAvailableTimeSlot(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -51,6 +60,7 @@ export class MemStorage implements IStorage {
   private chatMessages: Map<number, ChatMessage>;
   private aiTrainingData: Map<number, AiTrainingData>;
   private tokenPurchases: Map<number, TokenPurchase>;
+  private availableTimeSlots: Map<number, AvailableTimeSlot>;
   
   private currentUserId: number;
   private currentProjectId: number;
@@ -58,6 +68,7 @@ export class MemStorage implements IStorage {
   private currentChatMessageId: number;
   private currentAiTrainingDataId: number;
   private currentTokenPurchaseId: number;
+  private currentAvailableTimeSlotId: number;
 
   constructor() {
     this.users = new Map();
@@ -66,6 +77,7 @@ export class MemStorage implements IStorage {
     this.chatMessages = new Map();
     this.aiTrainingData = new Map();
     this.tokenPurchases = new Map();
+    this.availableTimeSlots = new Map();
     
     this.currentUserId = 1;
     this.currentProjectId = 1;
@@ -73,6 +85,7 @@ export class MemStorage implements IStorage {
     this.currentChatMessageId = 1;
     this.currentAiTrainingDataId = 1;
     this.currentTokenPurchaseId = 1;
+    this.currentAvailableTimeSlotId = 1;
     
     this.seedData();
   }
