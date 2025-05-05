@@ -116,22 +116,7 @@ const Navbar: React.FC = () => {
 
           {user && user.tokens !== undefined && user.isAdmin !== undefined ? (
             <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-              {!isMobile && (
-                <span className="text-xs sm:text-sm md:text-base text-green-400 mr-1 sm:mr-2 md:mr-3">
-                  {user.tokens} tokens
-                </span>
-              )}
-              {user.isAdmin && !isMobile && (
-                <ScrollLink href="/admin">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="text-xs sm:text-sm h-8 sm:h-9 md:h-10 border-green-700 text-green-400 hover:bg-green-900/30"
-                  >
-                    Admin
-                  </Button>
-                </ScrollLink>
-              )}
+              {/* Admin and token display removed */}
               <Button 
                 variant="default" 
                 size="sm" 
@@ -200,20 +185,10 @@ const Navbar: React.FC = () => {
                     {/* "Add to WhatsApp" option hidden as requested */}
                   </div>
                   
-                  {user && user.isAdmin && (
-                    <ScrollLink
-                      href="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
-                    >
-                      Admin Dashboard
-                    </ScrollLink>
-                  )}
-                  {user && user.tokens !== undefined && (
+                  {/* Admin dashboard link removed */}
+                  {user && (
                     <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50">
-                      <p className="text-xs sm:text-sm md:text-base text-green-400 mb-2 sm:mb-3">
-                        Available tokens: {user.tokens}
-                      </p>
+                      {/* Token display removed */}
                       <Button 
                         variant="default" 
                         size="sm" 
