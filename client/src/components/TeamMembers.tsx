@@ -1,8 +1,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SiLinkedin } from "react-icons/si";
-import karthikImage from "@assets/karthik burra.png";
-import dollyImage from "@assets/Dolly_Chandrawanshi.jpeg";
+import karthikImage from "@assets/karthik_new.jpg";
+import dollyImage from "@assets/dolly_new.jpg";
 import krishnaiahPic from "@assets/krishnaiah.png";
 import narenderPic from "@assets/narender.png";
 import anjilammaPic from "@assets/anjilamma.png";
