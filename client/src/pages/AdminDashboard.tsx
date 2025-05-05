@@ -786,6 +786,207 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add Available Slot Dialog */}
+      <Dialog open={isAddSlotDialogOpen} onOpenChange={setIsAddSlotDialogOpen}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Available Booking Date</DialogTitle>
+            <DialogDescription>
+              Add a new date with available time slots for project guidance bookings.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white"
+                min={new Date().toISOString().split('T')[0]}
+              />
+              <p className="text-xs text-gray-400">Select a date in the future</p>
+            </div>
+            
+            <div className="space-y-2 border-t border-gray-800 pt-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="time">Time Slots</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="time"
+                    type="time"
+                    value={newTimeSlot}
+                    onChange={(e) => setNewTimeSlot(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white w-32"
+                  />
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    onClick={addTimeToSelectedSlots}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              {selectedSlots.length > 0 ? (
+                <div className="mt-3 border border-gray-800 rounded-md p-3 bg-gray-800/50">
+                  <div className="flex flex-wrap gap-2 max-w-md">
+                    {selectedSlots.map((time) => (
+                      <Badge 
+                        key={time} 
+                        variant="secondary"
+                        className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
+                      >
+                        <Clock className="w-3 h-3" /> 
+                        {time}
+                        <button 
+                          onClick={() => removeTimeFromSelectedSlots(time)}
+                          className="ml-1 text-blue-300 hover:text-blue-100 rounded-full"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-3 text-sm text-gray-500 bg-gray-800/30 border border-gray-800 rounded-md">
+                  <AlertTriangle className="w-4 h-4 mx-auto mb-1 text-amber-500" />
+                  <p>No time slots added yet</p>
+                  <p className="text-xs mt-1">Add at least one time slot using the time picker above</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter className="border-t border-gray-800 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAddSlotDialogOpen(false)}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddTimeSlot} 
+              disabled={isAddingSlot || !newDate || selectedSlots.length === 0}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isAddingSlot ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" /> 
+                  Add Date
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Available Slot Dialog */}
+      <Dialog open={isEditSlotDialogOpen} onOpenChange={setIsEditSlotDialogOpen}>
+        <DialogContent className="bg-gray-900 text-white border-gray-700 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Available Time Slots</DialogTitle>
+            <DialogDescription>
+              Modify the available time slots for this date.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="editTime">Time Slots</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="editTime"
+                  type="time"
+                  value={newTimeSlot}
+                  onChange={(e) => setNewTimeSlot(e.target.value)}
+                  className="bg-gray-800 border-gray-700 text-white flex-1"
+                />
+                <Button 
+                  type="button" 
+                  onClick={addTimeToSelectedSlots}
+                  className="bg-blue-600 hover:bg-blue-700"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              {selectedSlots.length > 0 ? (
+                <div className="mt-3 border border-gray-800 rounded-md p-3 bg-gray-800/50">
+                  <div className="flex flex-wrap gap-2 max-w-md">
+                    {selectedSlots.map((time) => (
+                      <Badge 
+                        key={time} 
+                        variant="secondary"
+                        className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
+                      >
+                        <Clock className="w-3 h-3" /> 
+                        {time}
+                        <button 
+                          onClick={() => removeTimeFromSelectedSlots(time)}
+                          className="ml-1 text-blue-300 hover:text-blue-100 rounded-full"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-3 text-sm text-gray-500 bg-gray-800/30 border border-gray-800 rounded-md">
+                  <AlertTriangle className="w-4 h-4 mx-auto mb-1 text-amber-500" />
+                  <p>No time slots added yet</p>
+                  <p className="text-xs mt-1">Add at least one time slot using the time picker above</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter className="border-t border-gray-800 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsEditSlotDialogOpen(false);
+                setEditingSlotId(null);
+                setSelectedSlots([]);
+              }}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleUpdateTimeSlot} 
+              disabled={isUpdatingSlot || selectedSlots.length === 0}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isUpdatingSlot ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" /> 
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
