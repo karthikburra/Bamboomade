@@ -2,8 +2,12 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
 import ChatInterface from "@/components/ChatInterface";
+import useScrollTop from "@/hooks/use-scroll-top";
 
 const AIChat: React.FC = () => {
+  // Ensure page scrolls to top when component mounts
+  useScrollTop();
+  
   // Simple no-op handler since we're not tracking tokens anymore
   const handleTokensUsed = (usedTokens: number) => {
     // No-op, we don't track tokens anymore

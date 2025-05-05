@@ -23,8 +23,13 @@ const ScrollLink: React.FC<ScrollLinkProps> = ({
       onClick(e);
     }
     
-    // Scroll to top
+    // Scroll to top immediately
     window.scrollTo(0, 0);
+    
+    // Add a slight delay to ensure the scroll works even after the page renders
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
   };
 
   return (

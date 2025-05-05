@@ -9,7 +9,15 @@ export const ScrollToTop: React.FC = () => {
   
   useEffect(() => {
     // Scroll to top when location changes
+    // Add a small timeout to ensure the new page has started rendering
     window.scrollTo(0, 0);
+    
+    // Add a slight delay to ensure the scroll works even after the page renders
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, [location]);
 
   return null; // This component doesn't render anything
