@@ -38,8 +38,15 @@ import { Label } from "@/components/ui/label";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
-  X, AlertTriangle
+  X, AlertTriangle, CalendarRange
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format, parseISO } from "date-fns";
 
 interface AvailableTimeSlot {
@@ -286,6 +293,47 @@ export default function AdminDashboard() {
     setSelectedSession(session);
     setMeetLink(session.googleMeetLink || "");
     setIsDialogOpen(true);
+  };
+  
+  const openRescheduleDialog = (session: Session) => {
+    setSelectedSession(session);
+    // Default to current date and time if available
+    const sessionDate = new Date(session.date);
+    setRescheduleDate(sessionDate.toISOString().split('T')[0]); // YYYY-MM-DD
+    setRescheduleTime(sessionDate.toTimeString().substring(0, 5)); // HH:MM
+    setRescheduleDuration(session.duration);
+    setIsRescheduleDialogOpen(true);
+  };
+  
+  const handleRescheduleSession = () => {
+    if (!selectedSession) return;
+    
+    if (!rescheduleDate || !rescheduleTime) {
+      toast({
+        title: "Error",
+        description: "Please select both date and time for rescheduling.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!rescheduleDuration || rescheduleDuration <= 0) {
+      toast({
+        title: "Error",
+        description: "Please select a valid duration for the session.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Combine date and time into a single ISO string
+    const newDateTime = new Date(`${rescheduleDate}T${rescheduleTime}:00`);
+    
+    rescheduleSession({
+      sessionId: selectedSession.id,
+      newDate: newDateTime.toISOString(),
+      newDuration: rescheduleDuration
+    });
   };
   
   // Availability management functions
@@ -825,6 +873,93 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Reschedule Session Dialog */}
+      <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Reschedule Session</DialogTitle>
+            <DialogDescription>
+              {selectedSession ? (
+                <div className="mt-2 space-y-1 text-gray-300">
+                  <p><span className="font-medium">Session:</span> #{selectedSession.id}</p>
+                  <p><span className="font-medium">Student:</span> {selectedSession.studentName}</p>
+                  <p><span className="font-medium">Current Date:</span> {selectedSession.formattedDate} at {selectedSession.formattedTime}</p>
+                  <p><span className="font-medium">Current Duration:</span> {selectedSession.duration} minutes</p>
+                </div>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="rescheduleDate">New Date</Label>
+              <Input
+                id="rescheduleDate"
+                type="date"
+                value={rescheduleDate}
+                onChange={(e) => setRescheduleDate(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white"
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="rescheduleTime">New Time</Label>
+              <Input
+                id="rescheduleTime"
+                type="time"
+                value={rescheduleTime}
+                onChange={(e) => setRescheduleTime(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="rescheduleDuration">Duration (minutes)</Label>
+              <Select 
+                value={rescheduleDuration.toString()} 
+                onValueChange={(value) => setRescheduleDuration(parseInt(value))}
+              >
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectItem value="30">30 minutes</SelectItem>
+                  <SelectItem value="60">60 minutes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRescheduleDialogOpen(false)}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRescheduleSession}
+              disabled={isRescheduling}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isRescheduling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Rescheduling...
+                </>
+              ) : (
+                <>
+                  <CalendarRange className="mr-2 h-4 w-4" />
+                  Reschedule Session
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Add Available Slot Dialog */}
       <Dialog open={isAddSlotDialogOpen} onOpenChange={setIsAddSlotDialogOpen}>
         <DialogContent className="bg-gray-900 text-white border-gray-700 sm:max-w-md">
