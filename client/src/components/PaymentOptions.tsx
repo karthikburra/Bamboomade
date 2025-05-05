@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import PhonePePaymentForm from "@/components/PhonePePaymentForm";
 import RazorpayPaymentForm from "@/components/RazorpayPaymentForm";
-import { Check, CreditCard } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 
 interface PaymentOptionsProps {
   amount: number;
@@ -17,8 +14,6 @@ interface PaymentOptionsProps {
   onFailure: (error: string) => void;
 }
 
-type PaymentGateway = 'phonepe' | 'razorpay';
-
 const PaymentOptions = ({
   amount,
   sessionId,
@@ -28,7 +23,6 @@ const PaymentOptions = ({
   onSuccess,
   onFailure
 }: PaymentOptionsProps) => {
-  const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>('phonepe');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const handleContinue = () => {
@@ -47,56 +41,33 @@ const PaymentOptions = ({
       {!showPaymentForm ? (
         <Card className="bg-gray-900 border-green-800/30 text-white">
           <CardHeader>
-            <CardTitle className="text-xl text-green-400">Choose Payment Method</CardTitle>
+            <CardTitle className="text-xl text-green-400">Payment Information</CardTitle>
             <CardDescription className="text-gray-400">
-              Select your preferred payment gateway to proceed
+              Proceed to pay securely with Razorpay
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <RadioGroup 
-              value={selectedGateway} 
-              onValueChange={(value) => setSelectedGateway(value as PaymentGateway)}
-              className="space-y-4"
-            >
-              <div className={`flex items-center space-x-2 rounded-md border p-4 
-                ${selectedGateway === 'phonepe' ? 'border-green-500 bg-green-900/20' : 'border-gray-700'}`}>
-                <RadioGroupItem value="phonepe" id="phonepe" className="border-green-500" />
-                <Label htmlFor="phonepe" className="flex flex-1 items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-purple-700 p-2 rounded">
-                      <span className="font-bold text-white">PhonePe</span>
-                    </div>
-                    <span className="text-sm text-gray-300">UPI, Cards, Netbanking</span>
-                  </div>
-                  {selectedGateway === 'phonepe' && (
-                    <Check className="h-5 w-5 text-green-500" />
-                  )}
-                </Label>
+            <div className="flex items-center justify-between p-4 rounded-md border border-green-500 bg-green-900/20">
+              <div className="flex items-center gap-2">
+                <div className="bg-blue-700 p-2 rounded">
+                  <span className="font-bold text-white">Razorpay</span>
+                </div>
+                <span className="text-sm text-gray-300">Cards, UPI, Wallets, NetBanking</span>
               </div>
-
-              <div className={`flex items-center space-x-2 rounded-md border p-4
-                ${selectedGateway === 'razorpay' ? 'border-green-500 bg-green-900/20' : 'border-gray-700'}`}>
-                <RadioGroupItem value="razorpay" id="razorpay" className="border-green-500" />
-                <Label htmlFor="razorpay" className="flex flex-1 items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-blue-700 p-2 rounded">
-                      <span className="font-bold text-white">Razorpay</span>
-                    </div>
-                    <span className="text-sm text-gray-300">Cards, UPI, Wallets</span>
-                  </div>
-                  {selectedGateway === 'razorpay' && (
-                    <Check className="h-5 w-5 text-green-500" />
-                  )}
-                </Label>
-              </div>
-            </RadioGroup>
+            </div>
+            
+            <div className="mt-4 text-sm text-gray-400">
+              <p>• We accept all major credit/debit cards</p>
+              <p>• UPI payments from all apps</p>
+              <p>• Secure payment processing</p>
+            </div>
           </CardContent>
           <CardFooter>
             <Button 
               onClick={handleContinue} 
               className="w-full bg-green-600 hover:bg-green-700"
             >
-              <CreditCard className="mr-2 h-4 w-4" /> Continue to Payment
+              <CreditCard className="mr-2 h-4 w-4" /> Proceed to Payment
             </Button>
           </CardFooter>
         </Card>
@@ -107,31 +78,19 @@ const PaymentOptions = ({
             onClick={handleBack} 
             className="mb-4 border-green-700 text-green-400 hover:bg-green-900/30"
           >
-            ← Back to Payment Options
+            ← Back to Payment Information
           </Button>
           
-          {selectedGateway === 'phonepe' ? (
-            <PhonePePaymentForm
-              amount={amount}
-              sessionId={sessionId}
-              customerName={customerName}
-              customerEmail={customerEmail}
-              customerPhone={customerPhone}
-              onSuccess={onSuccess}
-              onFailure={onFailure}
-            />
-          ) : (
-            <RazorpayPaymentForm
-              amount={amount}
-              orderId={orderId}
-              sessionId={sessionId}
-              customerName={customerName}
-              customerEmail={customerEmail}
-              customerPhone={customerPhone}
-              onSuccess={onSuccess}
-              onFailure={onFailure}
-            />
-          )}
+          <RazorpayPaymentForm
+            amount={amount}
+            orderId={orderId}
+            sessionId={sessionId}
+            customerName={customerName}
+            customerEmail={customerEmail}
+            customerPhone={customerPhone}
+            onSuccess={onSuccess}
+            onFailure={onFailure}
+          />
         </div>
       )}
     </div>

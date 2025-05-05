@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
-import { initiatePhonePePayment, checkPhonePePaymentStatus } from "./phonepe-service";
+// PhonePe service removed
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 
   sendBookingConfirmationEmail, 
@@ -1025,110 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // PhonePe Payment Routes
-  app.post("/api/payments/phonepe/initiate", async (req, res) => {
-    try {
-      const { amount, sessionId, customerName, customerPhone, customerEmail } = req.body;
-      
-      // Log information for debugging
-      console.log("PhonePe payment initiation:", {
-        amount,
-        sessionId,
-        customerName: customerName ? "✓" : "✗", // For privacy, just log if present
-        customerPhone: customerPhone ? "✓" : "✗", // For privacy, just log if present
-        customerEmail: customerEmail ? "✓" : "✗", // For privacy, just log if present
-        clientIdExists: !!process.env.PHONEPE_CLIENT_ID,
-        clientSecretExists: !!process.env.PHONEPE_CLIENT_SECRET
-      });
-      
-      if (!amount || !customerName || !customerPhone || !customerEmail) {
-        return res.status(400).json({ 
-          success: false,
-          message: "Missing required payment information" 
-        });
-      }
-      
-      // sessionId is required for booking confirmation, but we'll allow the payment to proceed
-      // in case we want to handle the session creation after payment in some flows
-      if (!sessionId) {
-        console.warn("PhonePe payment initiated without sessionId");
-      }
-
-      // Verify that the required environment variables are set
-      if (!process.env.PHONEPE_CLIENT_ID || !process.env.PHONEPE_CLIENT_SECRET) {
-        console.error("Missing PhonePe credentials in environment variables");
-        return res.status(500).json({
-          success: false,
-          message: "Payment service configuration error"
-        });
-      }
-
-      // Generate a unique order ID that includes the session ID for better tracking
-      const orderId = sessionId 
-        ? `ORDER_${Date.now()}_${sessionId}` 
-        : `ORDER_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-      
-      console.log(`PhonePe payment request for order: ${orderId}`);
-      
-      // Initialize PhonePe payment
-      const paymentResult = await initiatePhonePePayment(
-        amount,
-        orderId,
-        customerName,
-        customerPhone,
-        customerEmail
-      );
-      
-      // Log the payment result (excluding sensitive info)
-      console.log("PhonePe payment result:", {
-        success: paymentResult.success,
-        hasPaymentLink: !!paymentResult.paymentLink,
-        hasError: !!paymentResult.error
-      });
-      
-      if (paymentResult.success) {
-        // For development/testing, store the pending payment in memory
-        // In production, this should be stored in the database
-        const pendingPaymentData = {
-          amount,
-          sessionId,
-          customerName,
-          customerPhone,
-          customerEmail
-        };
-        
-        // Store in global variable for testing if session is not available
-        if (!req.session) {
-          console.log("Session not available, using global storage for pending payment");
-          global.pendingPayments = global.pendingPayments || {};
-          global.pendingPayments[orderId] = pendingPaymentData;
-        } else {
-          if (!req.session.pendingPayments) {
-            req.session.pendingPayments = {};
-          }
-          req.session.pendingPayments[orderId] = pendingPaymentData;
-        }
-        
-        res.json({
-          success: true,
-          paymentLink: paymentResult.paymentLink,
-          transactionId: paymentResult.transactionId
-        });
-      } else {
-        console.error("PhonePe payment failed:", paymentResult.error);
-        res.status(400).json({
-          success: false,
-          message: paymentResult.error || "Failed to initialize payment"
-        });
-      }
-    } catch (error) {
-      console.error("PhonePe payment initiation error:", error);
-      res.status(500).json({ 
-        success: false,
-        message: "Payment initiation failed",
-        error: (error as Error).message
-      });
-    }
-  });
+  // PhonePe payment endpoints removed
 
   app.get("/api/payments/phonepe/callback", async (req, res) => {
     try {
