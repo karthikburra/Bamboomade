@@ -1102,7 +1102,7 @@ function ProjectGuidance() {
                             <span className="font-semibold">Quick access:</span> You can view and manage your sessions without email verification using the link below.
                           </p>
                           <div className="mt-3">
-                            <Link href="/all-sessions">
+                            <Link href={`/all-sessions?email=${verificationEmail}`}>
                               <Button 
                                 variant="outline" 
                                 className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
