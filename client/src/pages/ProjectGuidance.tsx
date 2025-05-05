@@ -17,7 +17,8 @@ import {
   Calendar as CalendarIconLucide,
   Phone,
   Clock,
-  Tag
+  Tag,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
@@ -931,9 +932,11 @@ function ProjectGuidance() {
                               type="button"
                               variant="outline"
                               onClick={() => setStep(2)}
-                              className="w-full sm:w-auto"
+                              className="w-full sm:w-auto flex items-center"
                             >
-                              Back to Schedule
+                              <ArrowLeft className="mr-2 h-4 w-4 inline" />
+                              <span className="hidden sm:inline">Back to Schedule</span>
+                              <span className="sm:hidden">Back</span>
                             </Button>
                           </div>
                         </div>
