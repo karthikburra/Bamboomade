@@ -258,13 +258,6 @@ export default function AllSessions() {
           </>
         )}
 
-        <div className="mt-8 text-center">
-          <Link href="/project-guidance">
-            <Button className="bg-green-600 hover:bg-green-700">
-              Back to Project Guidance
-            </Button>
-          </Link>
-        </div>
       </div>
     </div>
   );
