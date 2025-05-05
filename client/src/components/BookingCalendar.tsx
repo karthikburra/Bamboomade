@@ -44,17 +44,15 @@ const timeSlots = [
   "13:00", "14:00", "15:00", "16:00"
 ];
 
-// Define separate duration options for students and professionals
+// Define separate duration options for students and professionals (removed 90 minutes option)
 const studentDurations = [
   { value: 30, label: "30 minutes - ₹500" },
-  { value: 60, label: "60 minutes - ₹800" },
-  { value: 90, label: "90 minutes - ₹1,200" }
+  { value: 60, label: "60 minutes - ₹800" }
 ];
 
 const professionalDurations = [
   { value: 30, label: "30 minutes - ₹1,000" },
-  { value: 60, label: "60 minutes - ₹1,500" },
-  { value: 90, label: "90 minutes - ₹2,250" }
+  { value: 60, label: "60 minutes - ₹1,500" }
 ];
 
 // Type guard to determine which interface we're using

@@ -1931,9 +1931,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return new Date(a.date).getTime() - new Date(b.date).getTime();
       });
       
+      // Get all confirmed sessions to check for time slot conflicts
+      const allSessions = await storage.getAllProjectGuidances();
+      const bookedSlots = {};
+      
+      // Create a map of all booked slots by date and time
+      allSessions.forEach(session => {
+        if (session.paymentConfirmed && session.status !== 'cancelled') {
+          const sessionDate = new Date(session.date);
+          const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
+          const sessionTimeStr = format(sessionDate, "HH:mm");
+          
+          if (!bookedSlots[sessionDateStr]) {
+            bookedSlots[sessionDateStr] = [];
+          }
+          
+          // Add the booked time slot
+          bookedSlots[sessionDateStr].push(sessionTimeStr);
+        }
+      });
+      
+      // Add booking status information to the available slots
+      const enhancedSlots = availableSlots.map(slot => {
+        const bookedTimesForDate = bookedSlots[slot.date] || [];
+        
+        // Mark which specific time slots are already booked
+        const slotsWithStatus = slot.slots.map(timeSlot => {
+          const isBooked = bookedTimesForDate.includes(timeSlot);
+          return {
+            time: timeSlot,
+            isBooked
+          };
+        });
+        
+        // Calculate if all slots for this date are booked
+        const allSlotsBooked = slotsWithStatus.every(s => s.isBooked);
+        
+        return {
+          ...slot,
+          slotsWithStatus,
+          allSlotsBooked
+        };
+      });
+      
       res.json({
         success: true,
-        slots: availableSlots
+        slots: enhancedSlots
       });
     } catch (error) {
       console.error("Error fetching available time slots:", error);
