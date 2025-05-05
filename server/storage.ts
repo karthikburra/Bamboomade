@@ -481,15 +481,24 @@ export class MemStorage implements IStorage {
   
   async createAvailableTimeSlot(insertSlot: InsertAvailableTimeSlot): Promise<AvailableTimeSlot> {
     const id = this.currentAvailableTimeSlotId++;
-    const slot: AvailableTimeSlot = {
-      ...insertSlot,
+    
+    // Create properly typed slot data
+    const slotData: AvailableTimeSlot = {
       id,
+      date: insertSlot.date,
+      slots: [], // Initialize as empty array first
+      createdBy: insertSlot.createdBy,
       createdAt: new Date(),
       updatedAt: new Date()
     };
     
-    this.availableTimeSlots.set(id, slot);
-    return slot;
+    // Then safely add the slots
+    if (insertSlot.slots && Array.isArray(insertSlot.slots)) {
+      slotData.slots = insertSlot.slots.map(slot => String(slot));
+    }
+    
+    this.availableTimeSlots.set(id, slotData);
+    return slotData;
   }
   
   async updateAvailableTimeSlot(id: number, slots: string[]): Promise<AvailableTimeSlot | undefined> {
