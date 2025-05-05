@@ -66,6 +66,8 @@ interface Session {
   status: string;
   googleMeetLink?: string;
   isStudent?: boolean;
+  rescheduledBy?: 'user' | 'admin';
+  originalDate?: string;
 }
 
 export default function AdminDashboard() {
@@ -73,6 +75,12 @@ export default function AdminDashboard() {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [meetLink, setMeetLink] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Reschedule session state
+  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState("");
+  const [rescheduleTime, setRescheduleTime] = useState("");
+  const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
   
   // Availability management state
   const [newDate, setNewDate] = useState("");
@@ -221,6 +229,36 @@ export default function AdminDashboard() {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update Google Meet link.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Reschedule a session (admin only)
+  const { mutate: rescheduleSession, isPending: isRescheduling } = useMutation({
+    mutationFn: async ({ sessionId, newDate, newDuration }: { sessionId: number; newDate: string; newDuration: number }) => {
+      const response = await apiRequest("POST", "/api/admin/reschedule-session", {
+        sessionId,
+        newDate,
+        newDuration,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Session rescheduled successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sessions"] });
+      setIsRescheduleDialogOpen(false);
+      setRescheduleDate("");
+      setRescheduleTime("");
+      setRescheduleDuration(0);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to reschedule session.",
         variant: "destructive",
       });
     },
