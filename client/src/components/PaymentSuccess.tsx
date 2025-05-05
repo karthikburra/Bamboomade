@@ -85,10 +85,14 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-green-500 mb-4" />
-        <p className="text-green-600 dark:text-green-400">Retrieving your session details...</p>
-      </div>
+      <Card className="max-w-xl mx-auto bg-white dark:bg-gray-900 border-green-200/50 dark:border-green-800/30">
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-green-600 dark:text-green-500 mb-4" />
+            <p className="text-green-600 dark:text-green-400">Retrieving your session details...</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -99,13 +103,13 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
   };
 
   return (
-    <Card className="max-w-xl mx-auto bg-gray-900 border-green-800/30 text-white">
-      <CardHeader className="bg-green-900/30 border-b border-green-800/30">
+    <Card className="max-w-xl mx-auto bg-white dark:bg-gray-900 border-green-200/50 dark:border-green-800/30 text-gray-800 dark:text-white">
+      <CardHeader className="bg-green-50 dark:bg-green-900/30 border-b border-green-100 dark:border-green-800/30">
         <div className="flex items-center space-x-2">
-          <CheckCircle className="h-8 w-8 text-green-500" />
+          <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-500" />
           <div>
-            <CardTitle className="text-xl text-green-400">Payment Successful!</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-xl text-green-600 dark:text-green-400">Payment Successful!</CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
               We will send you a Google Meet link within 4 hours
             </CardDescription>
           </div>
@@ -116,54 +120,54 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
         {sessionDetails && (
           <>
             <div className="space-y-2">
-              <h3 className="text-lg font-medium text-green-400">Session Details</h3>
+              <h3 className="text-lg font-medium text-green-600 dark:text-green-400">Session Details</h3>
               <div className="space-y-1 text-sm">
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Date:</span>
-                  <span className="font-medium text-white">{formatDate(sessionDetails.date)}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Date:</span>
+                  <span className="font-medium text-gray-800 dark:text-white">{formatDate(sessionDetails.date)}</span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Time:</span>
-                  <span className="font-medium text-white">
+                  <span className="text-gray-600 dark:text-gray-400">Time:</span>
+                  <span className="font-medium text-gray-800 dark:text-white">
                     {formatTime(sessionDetails.date)} - {getEndTime(sessionDetails.date, sessionDetails.duration)}
                   </span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Duration:</span>
-                  <span className="font-medium text-white">{sessionDetails.duration} minutes</span>
+                  <span className="text-gray-600 dark:text-gray-400">Duration:</span>
+                  <span className="font-medium text-gray-800 dark:text-white">{sessionDetails.duration} minutes</span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Topic:</span>
-                  <span className="font-medium text-white">{sessionDetails.topic}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Topic:</span>
+                  <span className="font-medium text-gray-800 dark:text-white">{sessionDetails.topic}</span>
                 </p>
                 <p className="flex justify-between">
-                  <span className="text-gray-400">Payment ID:</span>
-                  <span className="font-medium text-gray-300 text-xs">{paymentId}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-300 text-xs">{paymentId}</span>
                 </p>
               </div>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-green-800/30 mt-5">
-              <h3 className="text-lg font-medium text-green-400 mt-4">Contact Information</h3>
-              <p className="text-sm text-gray-300">
+            <div className="space-y-2 pt-4 border-t border-green-100 dark:border-green-800/30 mt-5">
+              <h3 className="text-lg font-medium text-green-600 dark:text-green-400 mt-4">Contact Information</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 For any queries regarding your session, please contact us:
               </p>
               <div className="space-y-2 mt-3">
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-400">Email:</span>
-                  <a href="mailto:projects@bamboomade.in" className="text-green-400 hover:underline">
+                  <span className="text-gray-600 dark:text-gray-400">Email:</span>
+                  <a href="mailto:projects@bamboomade.in" className="text-green-600 dark:text-green-400 hover:underline">
                     projects@bamboomade.in
                   </a>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-400">Phone:</span>
-                  <a href="tel:+918971690163" className="text-green-400 hover:underline">
+                  <span className="text-gray-600 dark:text-gray-400">Phone:</span>
+                  <a href="tel:+918971690163" className="text-green-600 dark:text-green-400 hover:underline">
                     +91 8971690163
                   </a>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-gray-400">WhatsApp:</span>
-                  <a href="https://wa.me/918971690163" className="text-green-400 hover:underline">
+                  <span className="text-gray-600 dark:text-gray-400">WhatsApp:</span>
+                  <a href="https://wa.me/918971690163" className="text-green-600 dark:text-green-400 hover:underline">
                     +91 8971690163
                   </a>
                 </div>
@@ -176,7 +180,7 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
       <CardFooter className="flex-col space-y-3">
         <Button 
           variant="outline" 
-          className="w-full flex items-center border-green-700 text-green-400 hover:bg-green-900/30"
+          className="w-full flex items-center border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
           onClick={() => window.open(getCalendarLink(), '_blank')}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
