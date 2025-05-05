@@ -1173,7 +1173,7 @@ function ProjectGuidance() {
                                   className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center justify-center"
                                 >
                                   <ArrowLeft className="mr-2 h-4 w-4" />
-                                  <span>Cancel</span>
+                                  <span>Back</span>
                                 </Button>
                               </div>
                             </div>
@@ -1230,7 +1230,7 @@ function ProjectGuidance() {
                               className="w-full mt-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center justify-center"
                             >
                               <ArrowLeft className="mr-2 h-4 w-4" />
-                              <span>Cancel</span>
+                              <span>Back</span>
                             </Button>
                           </div>
                         )}
@@ -1273,9 +1273,9 @@ function ProjectGuidance() {
                               <Button 
                                 onClick={() => setStep(4)}
                                 variant="outline" 
-                                className="flex-1 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                                className="flex-1 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center justify-center"
                               >
-                                <ArrowLeft className="mr-2 h-4 w-4"/><span>Cancel</span>
+                                <ArrowLeft className="mr-2 h-4 w-4"/><span>Back</span>
                               </Button>
                             </div>
                           </div>
