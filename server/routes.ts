@@ -1933,7 +1933,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get all confirmed sessions to check for time slot conflicts
       const allSessions = await storage.getAllProjectGuidances();
-      const bookedSlots = {};
+      
+      // Define a properly typed map for booked slots
+      const bookedSlots: Record<string, string[]> = {};
       
       // Create a map of all booked slots by date and time
       allSessions.forEach(session => {

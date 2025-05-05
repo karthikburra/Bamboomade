@@ -60,10 +60,21 @@ function isFullProps(props: BookingCalendarProps): props is BookingCalendarFullP
   return 'setSelectedTime' in props && 'setSelectedDuration' in props;
 }
 
-// Define interface for available time slots
+// Define interfaces for available time slots with booking status
+interface TimeSlotWithStatus {
+  time: string;
+  isBooked: boolean;
+}
+
 interface AvailableSlot {
+  id: number;
   date: string;
   slots: string[];
+  slotsWithStatus?: TimeSlotWithStatus[];
+  allSlotsBooked?: boolean;
+  createdAt: Date;
+  createdBy: number;
+  updatedAt: Date;
 }
 
 const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
@@ -89,10 +100,14 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  // Get available time slots for the selected date
-  const getAvailableTimeSlotsForDate = (date: Date | undefined): string[] => {
+  // Get available time slot information for the selected date
+  const getSlotInfoForDate = (date: Date | undefined): { 
+    availableSlots: string[],
+    slotsWithStatus?: TimeSlotWithStatus[],
+    allSlotsBooked?: boolean
+  } => {
     if (!date || !availableSlots || !availableSlots.slots) {
-      return timeSlots; // Return default slots if no data
+      return { availableSlots: timeSlots }; // Return default slots if no data
     }
     
     // Format the date to match the API format (YYYY-MM-DD)
@@ -103,7 +118,16 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       (slot: AvailableSlot) => slot.date === formattedDate
     );
     
-    return matchingSlot ? matchingSlot.slots : timeSlots;
+    if (!matchingSlot) {
+      return { availableSlots: timeSlots };
+    }
+    
+    // Return both the available slots and booking status information
+    return {
+      availableSlots: matchingSlot.slots,
+      slotsWithStatus: matchingSlot.slotsWithStatus,
+      allSlotsBooked: matchingSlot.allSlotsBooked
+    };
   };
   
   // Handle date selection based on which props we received
@@ -120,10 +144,19 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     }
   };
   
-  // Get available slots for the currently selected date
-  const availableTimeSlots = getAvailableTimeSlotsForDate(selectedDate);
+  // Get slot information for the currently selected date
+  const slotInfo = getSlotInfoForDate(selectedDate);
+  const availableTimeSlots = slotInfo.availableSlots;
+  const slotsWithStatus = slotInfo.slotsWithStatus || [];
   
-  // Function to check if a date should be disabled
+  // Check if a specific time slot is booked
+  const isTimeSlotBooked = (time: string): boolean => {
+    if (!slotsWithStatus || slotsWithStatus.length === 0) return false;
+    const slot = slotsWithStatus.find(s => s.time === time);
+    return slot ? slot.isBooked : false;
+  };
+  
+  // Function to check if a date should be disabled or has special styling
   const isDateDisabled = (date: Date) => {
     // Disable dates in the past
     const today = new Date();
@@ -140,6 +173,11 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       
       // If matchingSlot doesn't exist or has no time slots, disable the date
       if (!matchingSlot || matchingSlot.slots.length === 0) {
+        return true;
+      }
+      
+      // If all slots for this date are booked, disable it
+      if (matchingSlot.allSlotsBooked) {
         return true;
       }
     }
@@ -172,6 +210,22 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               onSelect={handleDateSelect}
               initialFocus
               disabled={isDateDisabled}
+              modifiers={{
+                booked: (date) => {
+                  // Check if all slots for this date are booked
+                  if (!availableSlots || !availableSlots.slots) return false;
+                  
+                  const formattedDate = format(date, "yyyy-MM-dd");
+                  const matchingSlot = availableSlots.slots.find(
+                    (slot: AvailableSlot) => slot.date === formattedDate
+                  );
+                  
+                  return matchingSlot ? !!matchingSlot.allSlotsBooked : false;
+                }
+              }}
+              modifiersClassNames={{
+                booked: "bg-red-100 text-red-800 hover:bg-red-100 focus:bg-red-100"
+              }}
             />
           </PopoverContent>
         </Popover>
@@ -195,15 +249,33 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
-                {availableTimeSlots.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {time}
-                  </SelectItem>
-                ))}
+                {availableTimeSlots.map((time) => {
+                  const booked = isTimeSlotBooked(time);
+                  return (
+                    <div key={time} className="relative">
+                      <SelectItem 
+                        key={time} 
+                        value={time}
+                        disabled={booked}
+                        className={booked ? "text-gray-400 line-through" : ""}
+                      >
+                        {time}
+                        {booked && (
+                          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                            Booked
+                          </span>
+                        )}
+                      </SelectItem>
+                    </div>
+                  );
+                })}
               </SelectContent>
             </Select>
             {isLoadingSlots && (
               <p className="text-xs text-green-600">Loading available time slots...</p>
+            )}
+            {slotInfo.allSlotsBooked && (
+              <p className="text-xs text-amber-600">All time slots for this date are booked. Please select another date.</p>
             )}
           </div>
 
