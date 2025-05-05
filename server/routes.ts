@@ -1921,6 +1921,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint to get available time slots for bookings
+  app.get("/api/available-slots", async (req, res) => {
+    try {
+      const availableSlots = await storage.getAllAvailableTimeSlots();
+      
+      // Sort slots by date
+      availableSlots.sort((a, b) => {
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
+      
+      res.json({
+        success: true,
+        slots: availableSlots
+      });
+    } catch (error) {
+      console.error("Error fetching available time slots:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch available time slots", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Admin: Add a new available time slot
+  app.post("/api/admin/available-slots", isAdmin, async (req, res) => {
+    try {
+      const { date, slots } = req.body;
+      
+      if (!date || !slots || !Array.isArray(slots)) {
+        return res.status(400).json({
+          success: false,
+          message: "Date and slots array are required"
+        });
+      }
+      
+      // Check if this date already exists
+      const existingSlot = await storage.getAvailableTimeSlotByDate(date);
+      if (existingSlot) {
+        return res.status(400).json({
+          success: false,
+          message: "A time slot for this date already exists. Use PUT to update it."
+        });
+      }
+      
+      const userId = req.session.userId || 1; // Default to admin ID 1 if not logged in
+      
+      const newSlot = await storage.createAvailableTimeSlot({
+        date,
+        slots,
+        createdBy: userId
+      });
+      
+      res.status(201).json({
+        success: true,
+        slot: newSlot
+      });
+    } catch (error) {
+      console.error("Error creating available time slot:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to create available time slot",
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  // Admin: Update an existing available time slot
+  app.put("/api/admin/available-slots/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { slots } = req.body;
+      
+      if (!slots || !Array.isArray(slots)) {
+        return res.status(400).json({
+          success: false,
+          message: "Slots array is required"
+        });
+      }
+      
+      const updatedSlot = await storage.updateAvailableTimeSlot(id, slots);
+      
+      if (!updatedSlot) {
+        return res.status(404).json({
+          success: false,
+          message: "Available time slot not found"
+        });
+      }
+      
+      res.json({
+        success: true,
+        slot: updatedSlot
+      });
+    } catch (error) {
+      console.error("Error updating available time slot:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to update available time slot",
+        error: (error as Error).message
+      });
+    }
+  });
+  
+  // Admin: Delete an available time slot
+  app.delete("/api/admin/available-slots/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      const result = await storage.deleteAvailableTimeSlot(id);
+      
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          message: "Available time slot not found"
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "Available time slot deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting available time slot:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to delete available time slot",
+        error: (error as Error).message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

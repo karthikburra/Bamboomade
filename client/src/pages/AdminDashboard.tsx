@@ -35,7 +35,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, CalendarClock, Clock, User, Phone, Mail } from "lucide-react";
+import { 
+  Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
+  CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
+  X, AlertTriangle
+} from "lucide-react";
+import { format, parseISO } from "date-fns";
+
+interface AvailableTimeSlot {
+  id: number;
+  date: string; // ISO format date string like "2023-05-15"
+  slots: string[]; // Array of time slots like ["09:00", "10:00", "11:00"]
+  createdAt: Date;
+  createdBy: number;
+  updatedAt: Date;
+}
 
 interface Session {
   id: number;
@@ -55,9 +69,19 @@ interface Session {
 }
 
 export default function AdminDashboard() {
+  // Session management state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [meetLink, setMeetLink] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Availability management state
+  const [newDate, setNewDate] = useState("");
+  const [newTimeSlot, setNewTimeSlot] = useState("");
+  const [editingSlotId, setEditingSlotId] = useState<number | null>(null);
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [isAddSlotDialogOpen, setIsAddSlotDialogOpen] = useState(false);
+  const [isEditSlotDialogOpen, setIsEditSlotDialogOpen] = useState(false);
+  
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -87,6 +111,93 @@ export default function AdminDashboard() {
       return response.json();
     },
     enabled: Boolean(userData?.isAdmin),
+  });
+  
+  // Fetch available time slots
+  const { data: availableSlotsData, isLoading: isAvailableSlotsLoading } = useQuery({
+    queryKey: ["/api/available-slots"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/available-slots");
+      return response.json();
+    },
+    enabled: Boolean(userData?.isAdmin),
+  });
+  
+  // Add a new available time slot
+  const { mutate: addTimeSlot, isPending: isAddingSlot } = useMutation({
+    mutationFn: async ({ date, slots }: { date: string; slots: string[] }) => {
+      const response = await apiRequest("POST", "/api/admin/available-slots", {
+        date,
+        slots,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Available time slot added successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/available-slots"] });
+      setIsAddSlotDialogOpen(false);
+      setNewDate("");
+      setSelectedSlots([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add available time slot.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Update an existing available time slot
+  const { mutate: updateTimeSlot, isPending: isUpdatingSlot } = useMutation({
+    mutationFn: async ({ id, slots }: { id: number; slots: string[] }) => {
+      const response = await apiRequest("PUT", `/api/admin/available-slots/${id}`, {
+        slots,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Available time slot updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/available-slots"] });
+      setIsEditSlotDialogOpen(false);
+      setEditingSlotId(null);
+      setSelectedSlots([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update available time slot.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Delete an available time slot
+  const { mutate: deleteTimeSlot, isPending: isDeletingSlot } = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/admin/available-slots/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Available time slot deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/available-slots"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete available time slot.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Update Google Meet link for a session
@@ -137,6 +248,78 @@ export default function AdminDashboard() {
     setSelectedSession(session);
     setMeetLink(session.googleMeetLink || "");
     setIsDialogOpen(true);
+  };
+  
+  // Availability management functions
+  const handleAddTimeSlot = () => {
+    if (!newDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (selectedSlots.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please add at least one time slot.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addTimeSlot({
+      date: newDate,
+      slots: selectedSlots,
+    });
+  };
+  
+  const handleUpdateTimeSlot = () => {
+    if (!editingSlotId) return;
+    
+    if (selectedSlots.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please add at least one time slot.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateTimeSlot({
+      id: editingSlotId,
+      slots: selectedSlots,
+    });
+  };
+  
+  const openEditSlotDialog = (slot: AvailableTimeSlot) => {
+    setEditingSlotId(slot.id);
+    setSelectedSlots([...slot.slots]);
+    setIsEditSlotDialogOpen(true);
+  };
+  
+  const addTimeToSelectedSlots = () => {
+    if (!newTimeSlot) return;
+    
+    // Check if this time slot already exists
+    if (selectedSlots.includes(newTimeSlot)) {
+      toast({
+        title: "Error",
+        description: "This time slot is already added.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Add new time slot
+    setSelectedSlots([...selectedSlots, newTimeSlot].sort());
+    setNewTimeSlot("");
+  };
+  
+  const removeTimeFromSelectedSlots = (time: string) => {
+    setSelectedSlots(selectedSlots.filter(t => t !== time));
   };
 
   if (isAuthLoading) {
@@ -233,8 +416,118 @@ export default function AdminDashboard() {
             <TabsTrigger value="all" className="data-[state=active]:bg-green-700">
               All Sessions
             </TabsTrigger>
+            <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600">
+              Availability
+            </TabsTrigger>
           </TabsList>
           
+          {/* Availability management tab */}
+          <TabsContent value="availability" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Available Time Slots</CardTitle>
+                    <CardDescription>
+                      Manage available dates and times for project guidance bookings
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      setNewDate("");
+                      setSelectedSlots([]);
+                      setIsAddSlotDialogOpen(true);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700" 
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Add Date
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isAvailableSlotsLoading ? (
+                  <div className="flex justify-center p-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                  </div>
+                ) : availableSlotsData?.slots?.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No available time slots have been added yet.</p>
+                    <p className="mt-2">Click "Add Date" to create your first available booking date.</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-gray-800 overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-gray-800">
+                        <TableRow className="hover:bg-gray-800/80">
+                          <TableHead className="text-gray-300">ID</TableHead>
+                          <TableHead className="text-gray-300">Date</TableHead>
+                          <TableHead className="text-gray-300">Available Times</TableHead>
+                          <TableHead className="text-gray-300 text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody className="divide-y divide-gray-800">
+                        {availableSlotsData?.slots?.map((slot: AvailableTimeSlot) => (
+                          <TableRow key={slot.id} className="hover:bg-gray-800/50 bg-gray-900">
+                            <TableCell className="font-mono">{slot.id}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-2 text-blue-400" />
+                                <span className="font-medium">
+                                  {format(parseISO(slot.date), 'MMMM d, yyyy')}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-400 mt-1">
+                                {format(parseISO(slot.date), 'EEEE')}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-1.5 max-w-md">
+                                {slot.slots.sort().map((time) => (
+                                  <Badge 
+                                    key={time} 
+                                    variant="secondary"
+                                    className="bg-blue-900/30 text-blue-300 border-blue-800"
+                                  >
+                                    <Clock className="w-3 h-3 mr-1" /> {time}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="border-blue-700 text-blue-400 hover:bg-blue-900/30"
+                                onClick={() => openEditSlotDialog(slot)}
+                              >
+                                <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="border-red-700 text-red-400 hover:bg-red-900/30"
+                                onClick={() => {
+                                  if (window.confirm(`Are you sure you want to delete this date and all its time slots? This action cannot be undone.`)) {
+                                    deleteTimeSlot(slot.id);
+                                  }
+                                }}
+                                disabled={isDeletingSlot}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Session management tabs */}
           {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
             let displaySessions;
             let emptyMessage = "";
