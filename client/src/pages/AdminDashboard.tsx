@@ -15,7 +15,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "../components/ui/card";
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "../components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "../components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -788,7 +788,7 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {availableSlotsData.map((slot: AvailableTimeSlot) => {
+                      {Array.isArray(availableSlotsData) && availableSlotsData.map((slot: AvailableTimeSlot) => {
                         const date = new Date(slot.date);
                         const availableSlotsCount = slot.slots?.length || 0;
                         const allSlotsBooked = slot.allSlotsBooked || false;
