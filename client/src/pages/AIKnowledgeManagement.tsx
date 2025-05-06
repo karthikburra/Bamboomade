@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { Link } from "wouter";
 
 // UI Components
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -261,12 +260,6 @@ const AIKnowledgeManagement: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <h1 className="text-3xl font-bold mr-4">AI Knowledge Management</h1>
-          <Button 
-            variant="secondary" 
-            onClick={() => window.location.href = '/admin'}
-          >
-            Back to Admin Dashboard
-          </Button>
         </div>
         <div className="flex gap-2">
           <Button
