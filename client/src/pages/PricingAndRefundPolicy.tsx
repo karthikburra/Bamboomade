@@ -231,7 +231,7 @@ export default function PricingAndRefundPolicy() {
             </p>
             
             <p>
-              For inquiries about bulk bookings or institutional rates, please contact us directly at projects@bamboomade.in.
+              For inquiries about bulk bookings or institutional rates, please contact us directly at Info@bamboomade.in.
             </p>
             
             <p className="text-sm text-gray-400 dark:text-gray-400 mt-8">

@@ -1220,8 +1220,8 @@ function ProjectGuidance() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                           <div className="bg-gray-800/60 p-3 rounded-md">
                             <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Email</p>
-                            <a href="mailto:projects@bamboomade.in" className="font-medium text-green-400 hover:text-green-300">
-                              projects@bamboomade.in
+                            <a href="mailto:Info@bamboomade.in" className="font-medium text-green-400 hover:text-green-300">
+                              Info@bamboomade.in
                             </a>
                           </div>
                           <div className="bg-gray-800/60 p-3 rounded-md">
