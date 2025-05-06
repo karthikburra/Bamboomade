@@ -1624,13 +1624,13 @@ export default function AdminDashboard() {
           
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setIsRescheduleDialogOpen(false);
                 setSelectedRescheduleDate(undefined);
                 setAvailableTimeSlots([]);
               }}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              className="bg-gray-800 text-gray-300 hover:bg-gray-700"
             >
               Cancel
             </Button>
@@ -1989,14 +1989,14 @@ export default function AdminDashboard() {
           
           <DialogFooter className="border-t border-gray-800 pt-4">
             <Button 
-              variant="outline" 
+              variant="secondary" 
               onClick={() => {
                 setIsAddSlotDialogOpen(false);
                 setBulkMode(false);
                 setDateRange({start: "", end: ""});
                 setSelectedSlots([]);
               }}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              className="bg-gray-800 text-gray-300 hover:bg-gray-700"
             >
               Cancel
             </Button>
@@ -2167,13 +2167,13 @@ export default function AdminDashboard() {
           
           <DialogFooter className="border-t border-gray-800 pt-4">
             <Button 
-              variant="outline" 
+              variant="secondary" 
               onClick={() => {
                 setIsEditSlotDialogOpen(false);
                 setEditingSlotId(null);
                 setSelectedSlots([]);
               }}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              className="bg-gray-800 text-gray-300 hover:bg-gray-700"
             >
               Cancel
             </Button>
@@ -2248,9 +2248,9 @@ export default function AdminDashboard() {
           
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setIsCancelDialogOpen(false)}
-              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+              className="bg-gray-800 text-gray-300 hover:bg-gray-700"
             >
               Keep Session
             </Button>

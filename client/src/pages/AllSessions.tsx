@@ -874,8 +874,8 @@ export default function AllSessions() {
                                     <DialogFooter>
                                       <DialogClose asChild>
                                         <Button 
-                                          variant="outline" 
-                                          className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                                          variant="secondary" 
+                                          className="bg-gray-800 text-gray-300 hover:bg-gray-700"
                                         >
                                           Cancel
                                         </Button>
