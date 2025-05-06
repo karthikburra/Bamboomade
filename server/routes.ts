@@ -1958,6 +1958,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Define a properly typed map for booked slots
       const bookedSlots: Record<string, string[]> = {};
       const pendingSlots: Record<string, string[]> = {}; // Track pending (not yet paid) sessions
+      const refundedSlots: Record<string, string[]> = {}; // Track sessions pending refund
       
       // Get original time slot details for the session being rescheduled (if any)
       let excludedSessionDate: string | undefined;
@@ -1967,6 +1968,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let confirmedSessionCount = 0;
       let pendingSessionCount = 0;
       let cancelledSessionCount = 0;
+      let refundedSessionCount = 0;
       
       // Create a map of all booked slots by date and time
       allSessions.forEach(session => {
@@ -1986,6 +1988,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           excludedSessionTime = format(sessionDate, "HH:mm");
           console.log(`Excluding session ${sessionIdToExclude} at ${excludedSessionDate} ${excludedSessionTime} from booking checks`);
           return; // Skip adding to booked slots
+        }
+        
+        // NEW: Handle sessions with refund pending
+        if (session.status === 'refund-pending' || session.status === 'refunded') {
+          if (!refundedSlots[sessionDateStr]) {
+            refundedSlots[sessionDateStr] = [];
+          }
+          
+          // Add the refunded time slot
+          refundedSlots[sessionDateStr].push(sessionTimeStr);
+          refundedSessionCount++;
+          return; // Skip further processing of this session
         }
         
         // Consider confirmed sessions (either paid or manually confirmed by admin)
