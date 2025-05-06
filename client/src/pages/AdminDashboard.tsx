@@ -49,7 +49,8 @@ import {
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
-  SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon
+  SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
+  Info
 } from "lucide-react";
 import {
   Select,
@@ -381,12 +382,19 @@ export default function AdminDashboard() {
         // Get only non-booked time slots for this date
         let availableTimes = dateSlot.slotsWithStatus
           .filter((s: any) => !s.isBooked)
-          .map((s: any) => s.time);
+          .map((s: any) => s.time)
+          // Ensure that we're only showing full-hour slots (remove any :30 time slots)
+          .filter((time: string) => time.endsWith(":00"));
+        
+        // Sort times chronologically
+        availableTimes.sort();
         
         setAvailableRescheduleTimeSlots(availableTimes);
+        console.log(`Loaded ${availableTimes.length} available full-hour slots for ${formattedDate}`);
       } else {
         // No slots exist for this date
         setAvailableRescheduleTimeSlots([]);
+        console.log(`No slots found for date ${formattedDate}`);
       }
     } catch (error) {
       console.error("Failed to fetch slots for reschedule date:", error);
@@ -411,9 +419,12 @@ export default function AdminDashboard() {
       setSelectedRescheduleTimeSlot("");
       setAvailableRescheduleTimeSlots([]);
       
-      // Set duration from selected session
+      // Set duration from selected session, enforcing 60-minute sessions only
       if (selectedSession) {
-        setRescheduleDuration(selectedSession.duration);
+        // Force 60-minute session duration
+        const sessionDuration = 60;
+        setRescheduleDuration(sessionDuration);
+        console.log(`Setting reschedule duration to ${sessionDuration}min for session ID ${selectedSession.id}`);
       }
     }
   }, [isRescheduleDialogOpen]);
