@@ -128,26 +128,35 @@ export default function AllSessions() {
   const calculateRefundAmount = (session: Session) => {
     if (!session) return { percentage: 0, amount: 0, policy: "No refund available" };
     
+    // Get the session price based on duration and student status
+    const originalPrice = getSessionPrice(session);
+    
+    // Add some debugging to verify the price calculation
+    console.log(`Calculating refund for ${session.duration}-minute session, isStudent: ${session.isStudent}, Price: ₹${originalPrice}`);
+    
     const sessionDate = new Date(session.formattedDate);
     const now = new Date();
     const hoursDifference = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
     
+    // Round to 2 decimal places for proper money formatting
+    const formatAmount = (amount: number) => Math.round(amount * 100) / 100;
+    
     if (hoursDifference > 48) {
       return { 
         percentage: 95, 
-        amount: getSessionPrice(session) * 0.95, 
+        amount: formatAmount(originalPrice * 0.95), 
         policy: "More than 48 hours: 95% refund (5% processing fee)" 
       };
     } else if (hoursDifference >= 24 && hoursDifference <= 48) {
       return { 
         percentage: 75, 
-        amount: getSessionPrice(session) * 0.75, 
+        amount: formatAmount(originalPrice * 0.75), 
         policy: "24-48 hours: 75% refund" 
       };
     } else if (hoursDifference < 24 && hoursDifference > 0) {
       return { 
         percentage: 50, 
-        amount: getSessionPrice(session) * 0.5, 
+        amount: formatAmount(originalPrice * 0.5), 
         policy: "Less than 24 hours: 50% refund" 
       };
     } else {
@@ -967,17 +976,26 @@ export default function AllSessions() {
                                       <span>Original Amount:</span> 
                                       <span className="font-medium">₹{getSessionPrice(sessionToCancel)}</span>
                                     </p>
-                                    <p className="flex justify-between text-gray-300">
-                                      <span>Refund Percentage:</span> 
-                                      <span className="font-medium">{calculateRefundAmount(sessionToCancel).percentage}%</span>
-                                    </p>
-                                    <p className="flex justify-between text-white font-medium border-t border-red-800 pt-2">
-                                      <span>Refund Amount:</span> 
-                                      <span>₹{calculateRefundAmount(sessionToCancel).amount}</span>
-                                    </p>
-                                    <p className="text-xs text-gray-400">
-                                      ({calculateRefundAmount(sessionToCancel).policy})
-                                    </p>
+                                    {/* Compute refund details only once to avoid multiple calculations */}
+                                    {(() => {
+                                      const refundDetails = calculateRefundAmount(sessionToCancel);
+                                      return (
+                                        <>
+                                          <p className="flex justify-between text-gray-300">
+                                            <span>Refund Percentage:</span> 
+                                            <span className="font-medium">{refundDetails.percentage}%</span>
+                                          </p>
+                                          <p className="flex justify-between text-white font-medium border-t border-red-800 pt-2">
+                                            <span>Refund Amount:</span> 
+                                            <span>₹{refundDetails.amount}</span>
+                                          </p>
+                                          <p className="text-xs text-gray-400">
+                                            ({refundDetails.policy})
+                                          </p>
+                                        </>
+                                      )
+                                    })()}
+                                    
                                   </div>
                                 )}
                               </div>

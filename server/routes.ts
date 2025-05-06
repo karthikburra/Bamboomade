@@ -883,7 +883,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           googleMeetLink: googleMeetLink,
           calendarLink: calendarLink,
           isRescheduled: !!session.originalDate,
-          originalDate: session.originalDate ? formatInIST(new Date(session.originalDate), "MMMM d, yyyy") : null
+          originalDate: session.originalDate ? formatInIST(new Date(session.originalDate), "MMMM d, yyyy") : null,
+          // Explicitly include the isStudent field from the database
+          isStudent: session.isStudent
         };
       });
       
