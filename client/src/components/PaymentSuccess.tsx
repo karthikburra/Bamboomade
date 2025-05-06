@@ -181,9 +181,9 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
         <Button 
           variant="default" 
           className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
-          onClick={() => window.location.href = "/find-session"}
+          onClick={() => window.location.href = "/view-my-sessions"}
         >
-          View My Session
+          View My Sessions
         </Button>
         
         <Button 

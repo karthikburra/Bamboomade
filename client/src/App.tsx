@@ -55,6 +55,7 @@ function Router() {
       <Route path="/payment-success" component={PaymentSuccessPage} />
       <Route path="/payment-failed" component={PaymentFailed} />
       <Route path="/all-sessions" component={AllSessions} />
+      <Route path="/view-my-sessions" component={AllSessions} />
       
       {/* Workshop Detail Pages */}
       <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
