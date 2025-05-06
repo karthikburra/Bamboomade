@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Send, AlertTriangle } from "lucide-react";
+import { Loader2, Send, AlertTriangle, ChevronDown } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
 import { Link } from "wouter";
 import TokenCounter from "./TokenCounter";
@@ -67,10 +67,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     }
   }, [chatHistory, messages.length]);
 
-  // Scroll to bottom whenever messages change
+  // Auto-scroll only when the user sends a message, not when receiving responses
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
+  
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (shouldAutoScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      setShouldAutoScroll(false);
+    }
+  }, [messages, shouldAutoScroll]);
   
   // Submit initial question from homepage if available
   useEffect(() => {
@@ -80,6 +85,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       // Use setTimeout to ensure the input is set before submitting
       const timer = setTimeout(() => {
         if (!isProcessing) {
+          // Set shouldAutoScroll to true for initial question too
+          setShouldAutoScroll(true);
           handleSendMessage();
           // Clear from session storage to avoid resubmitting if user navigates back
           sessionStorage.removeItem("initialQuestion");
@@ -110,6 +117,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsProcessing(true);
+    // Only auto-scroll when user sends a message
+    setShouldAutoScroll(true);
 
     try {
       const { response, tokensUsed, remainingTokens } = await processAiChat(userMessage.content);
@@ -164,7 +173,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     <div className="flex flex-col h-[70vh]">
       <Card className="flex-grow flex flex-col overflow-hidden">
         <ScrollArea className="flex-grow p-4">
-          <div className="space-y-4">
+          <div className="space-y-4 relative">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -189,6 +198,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 </div>
               </div>
+            )}
+            {/* Manual scroll button */}
+            {messages.length > 3 && (
+              <Button
+                size="icon"
+                variant="outline"
+                className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-md opacity-70 hover:opacity-100"
+                onClick={() => {
+                  setShouldAutoScroll(true);
+                }}
+              >
+                <ChevronDown size={16} />
+              </Button>
             )}
             {/* Login prompt removed */}
             <div ref={messagesEndRef} />
