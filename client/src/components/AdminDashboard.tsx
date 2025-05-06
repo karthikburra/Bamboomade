@@ -142,7 +142,7 @@ const AdminDashboard: React.FC = () => {
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return format(date, 'MMM d, yyyy h:mm a');
+      return format(date, 'MMM d, yyyy HH:mm');
     } catch (error) {
       return dateString;
     }
