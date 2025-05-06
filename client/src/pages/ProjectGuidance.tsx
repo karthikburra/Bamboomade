@@ -1526,17 +1526,17 @@ function ProjectGuidance() {
                                   <>
                                     {/* Informational text about booking status */}
                                     <div className="mb-3 text-xs flex flex-wrap gap-2">
-                                      <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                                        <div className="w-3 h-3 bg-green-600 rounded-full mr-1"></div>
-                                        <span className="font-medium text-gray-800 dark:text-gray-200">Selected</span>
+                                      <div className="flex items-center bg-green-600 px-2 py-1 rounded-full">
+                                        <div className="w-3 h-3 bg-white rounded-full mr-1"></div>
+                                        <span className="font-medium text-white">Selected</span>
                                       </div>
-                                      <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                                        <div className="w-3 h-3 bg-gray-400 dark:bg-gray-600 rounded-full mr-1"></div>
-                                        <span className="font-medium text-gray-800 dark:text-gray-200">Available</span>
+                                      <div className="flex items-center bg-gray-300 dark:bg-gray-700 px-2 py-1 rounded-full">
+                                        <div className="w-3 h-3 bg-white rounded-full mr-1"></div>
+                                        <span className="font-medium text-gray-800 dark:text-white">Available</span>
                                       </div>
-                                      <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                                      <div className="flex items-center bg-gray-400 dark:bg-gray-600 px-2 py-1 rounded-full">
                                         <div className="w-3 h-3 bg-red-400 dark:bg-red-600 rounded-full mr-1"></div>
-                                        <span className="font-medium text-gray-800 dark:text-gray-200">Booked</span>
+                                        <span className="font-medium text-white">Booked</span>
                                       </div>
                                     </div>
                                   
@@ -1552,10 +1552,10 @@ function ProjectGuidance() {
                                             disabled={booked}
                                             className={`py-2 px-4 text-center text-sm rounded-md relative ${
                                               selectedTime === time
-                                                ? "bg-green-600 text-white"
+                                                ? "bg-green-600 text-white font-medium"
                                                 : booked
-                                                ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-75"
-                                                : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                                ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-75 text-gray-500 dark:text-gray-400"
+                                                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
                                             }`}
                                           >
                                             {time}
