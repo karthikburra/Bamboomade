@@ -441,10 +441,16 @@ export default function AdminDashboard() {
     }
     
     // Check if time slot is available (double-check)
-    if (!availableTimeSlots.includes(rescheduleTime) && 
-        // Exception: If it's the same time as the current session, it should be allowed
-        !(new Date(selectedSession.date).toTimeString().substring(0, 5) === rescheduleTime && 
-          new Date(selectedSession.date).toISOString().split('T')[0] === rescheduleDate)) {
+    const isTimeSlotAvailable = availableTimeSlots.some(slot => 
+      slot.time === rescheduleTime && !slot.isBooked
+    );
+    
+    // Exception: If it's the same time as the current session, it should be allowed
+    const isOriginalSessionTime = 
+      new Date(selectedSession.date).toTimeString().substring(0, 5) === rescheduleTime && 
+      new Date(selectedSession.date).toISOString().split('T')[0] === rescheduleDate;
+    
+    if (!isTimeSlotAvailable && !isOriginalSessionTime) {
       toast({
         title: "Error",
         description: "The selected time slot is no longer available. Please choose another time.",
@@ -1430,8 +1436,8 @@ export default function AdminDashboard() {
                 {selectedRescheduleDate ? (
                   availableTimeSlots.length > 0 ? (
                     <Select 
-                      onValueChange={(time) => {
-                        setRescheduleTime(time);
+                      onValueChange={(timeValue) => {
+                        setRescheduleTime(timeValue);
                       }}
                     >
                       <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -1444,14 +1450,14 @@ export default function AdminDashboard() {
                           
                           return (
                             <SelectItem 
-                              key={typeof timeSlot === 'string' ? timeSlot : timeSlot.time}
-                              value={typeof timeSlot === 'string' ? timeSlot : timeSlot.time}
+                              key={timeSlot.time}
+                              value={timeSlot.time}
                               disabled={isConflict}
                               className={`
                                 ${isConflict ? 'text-gray-500 line-through bg-gray-800/60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-700'}
                               `}
                             >
-                              {typeof timeSlot === 'string' ? timeSlot : timeSlot.time}
+                              {timeSlot.time}
                               {isConflict && (
                                 <span className="ml-2 text-xs text-gray-500">
                                   (Booked)
