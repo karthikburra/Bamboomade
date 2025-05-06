@@ -73,23 +73,23 @@ const AIChatPrompt: React.FC = () => {
             <button
               type="button"
               className="px-2 py-0.5 text-[10px] rounded-full border border-primary/40 bg-gradient-to-r from-zinc-800 to-primary/10 text-zinc-100 hover:from-zinc-700 hover:to-primary/20 hover:text-white hover:border-primary/50 transition-all hover:shadow-md hover:shadow-primary/10 animate-pulse animation-delay-100 opacity-80 hover:opacity-100"
-              onClick={() => setQuestion("What are sustainable bamboo construction techniques?")}
+              onClick={() => setQuestion("Tell me about the National Bamboo Mission")}
             >
-              Construction techniques
+              National Bamboo Mission
             </button>
             <button
               type="button"
               className="px-2 py-0.5 text-[10px] rounded-full border border-primary/40 bg-gradient-to-r from-zinc-800 to-primary/10 text-zinc-100 hover:from-zinc-700 hover:to-primary/20 hover:text-white hover:border-primary/50 transition-all hover:shadow-md hover:shadow-primary/10 animate-pulse animation-delay-300 opacity-80 hover:opacity-100"
-              onClick={() => setQuestion("Tell me about bamboo joinery methods")}
+              onClick={() => setQuestion("What are the popular bamboo species for construction?")}
             >
-              Joinery methods
+              Bamboo Species
             </button>
             <button
               type="button"
               className="px-2 py-0.5 text-[10px] rounded-full border border-primary/40 bg-gradient-to-r from-zinc-800 to-primary/10 text-zinc-100 hover:from-zinc-700 hover:to-primary/20 hover:text-white hover:border-primary/50 transition-all hover:shadow-md hover:shadow-primary/10 animate-pulse animation-delay-500 opacity-80 hover:opacity-100"
-              onClick={() => setQuestion("What workshops do you offer?")}
+              onClick={() => setQuestion("Are there any upcoming bamboo events or workshops?")}
             >
-              Workshops
+              Future Bamboo Events
             </button>
           </div>
         </div>
