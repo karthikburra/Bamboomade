@@ -82,12 +82,47 @@ export default {
             height: "0",
           },
         },
+        "gradient-x": {
+          "0%": { 
+            backgroundPosition: "0% 50%",
+            backgroundSize: "200% 200%"
+          },
+          "50%": { 
+            backgroundPosition: "100% 50%",
+            backgroundSize: "200% 200%"
+          },
+          "100%": { 
+            backgroundPosition: "0% 50%",
+            backgroundSize: "200% 200%"
+          }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "gradient-x": "gradient-x 15s ease infinite",
+        "pulse": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+      },
+      // Custom animation delay utilities
+      animationDelay: {
+        '100': '100ms',
+        '300': '300ms',
+        '500': '500ms',
+        '700': '700ms',
+        '1000': '1000ms',
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"), 
+    require("@tailwindcss/typography"),
+    // Add animation delay utilities
+    function({ addUtilities, theme, e }) {
+      const animationDelays = theme('animationDelay', {});
+      const utilities = Object.entries(animationDelays).map(([key, value]) => ({
+        [`.${e(`animation-delay-${key}`)}`]: { 'animation-delay': value }
+      }));
+      addUtilities(utilities);
+    }
+  ],
 } satisfies Config;
