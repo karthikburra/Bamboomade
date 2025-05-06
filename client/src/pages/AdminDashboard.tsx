@@ -463,15 +463,45 @@ export default function AdminDashboard() {
       const dateSlot = allSlots.find((slot: any) => slot.date === formattedDate);
       
       if (dateSlot) {
-        // Get only non-booked time slots for this date
-        let availableTimes = dateSlot.slotsWithStatus
+        // Get all time slots for this date
+        const allTimeSlots = dateSlot.slotsWithStatus.map((s: any) => ({
+          time: s.time,
+          isBooked: s.isBooked
+        }));
+
+        // Create an array of non-booked time slots
+        let availableTimes = allTimeSlots
           .filter((s: any) => !s.isBooked)
           .map((s: any) => s.time);
+        
+        // If we're rescheduling a session, also include its original time slot 
+        // in the available times list if it's on the same date
+        if (selectedSession && formattedDate === format(new Date(selectedSession.date), "yyyy-MM-dd")) {
+          const sessionTimeStr = format(new Date(selectedSession.date), "HH:mm");
+          const isTimeSlotInList = availableTimes.includes(sessionTimeStr);
+          
+          // If the original time is not already in the list (because it's booked by this session),
+          // add it back to the available time slots
+          if (!isTimeSlotInList) {
+            console.log(`Adding original session time ${sessionTimeStr} back to available slots for rescheduling`);
+            availableTimes.push(sessionTimeStr);
+            // Sort the times for consistency
+            availableTimes.sort();
+          }
+        }
         
         // Special case handling for May 11 at 9:00 AM (known booked time)
         if (formattedDate === "2025-05-11" && availableTimes.includes("09:00")) {
           console.log("Admin Dashboard: Removing May 11 9:00 AM slot as it's known to be booked");
-          availableTimes = availableTimes.filter((time: string) => time !== "09:00");
+          
+          // But keep it if it's the original session time
+          const isOriginalSession = selectedSession && 
+            format(new Date(selectedSession.date), "yyyy-MM-dd") === "2025-05-11" && 
+            format(new Date(selectedSession.date), "HH:mm") === "09:00";
+            
+          if (!isOriginalSession) {
+            availableTimes = availableTimes.filter((time: string) => time !== "09:00");
+          }
         }
         
         setAvailableTimeSlots(availableTimes);
