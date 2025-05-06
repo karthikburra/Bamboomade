@@ -418,10 +418,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Parse date for validation
+      const parsedDate = new Date(newDate);
+      
+      // Check if this time slot is already booked (excluding the current session)
+      const isBooked = await isTimeSlotBooked(parsedDate, session.id);
+      if (isBooked) {
+        return res.status(400).json({
+          success: false,
+          message: "Time slot conflict",
+          errors: "This time slot is already booked. Please select another time."
+        });
+      }
+      
       // Update the session with new date/time using storage method
       const updatedSession = await storage.updateProjectGuidanceSession(
         session.id,
-        new Date(newDate),
+        parsedDate,
         newDuration || session.duration,
         'admin' // Indicate that this was rescheduled by an admin
       );
@@ -430,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: session.id,
         email: session.email,
         oldDate: session.date,
-        newDate: new Date(newDate),
+        newDate: parsedDate,
         oldDuration: session.duration,
         newDuration: newDuration || session.duration
       });
@@ -441,7 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         session.studentName,
         session.email,
         session.topic,
-        new Date(newDate),
+        parsedDate,
         newDuration || session.duration
       ).catch(err => console.error("Failed to send admin reschedule email:", err));
       
@@ -744,6 +757,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if this time slot is already booked
+      const isBooked = await isTimeSlotBooked(parsedDate);
+      if (isBooked) {
+        return res.status(400).json({
+          message: "Time slot conflict",
+          errors: "This time slot is already booked. Please select another time."
+        });
+      }
+      
       // Create the session with all the fields
       const session = await storage.createProjectGuidance({
         studentName,
@@ -916,6 +938,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedSession = userSessions.sort((a, b) => 
           new Date(b.date).getTime() - new Date(a.date).getTime()
         )[0];
+      }
+      
+      // Check if this time slot is already booked (excluding the current session)
+      const isBooked = await isTimeSlotBooked(parsedDate, selectedSession.id);
+      if (isBooked) {
+        return res.status(400).json({
+          message: "Time slot conflict",
+          errors: "This time slot is already booked. Please select another time."
+        });
       }
       
       // Update the session with new date/time using storage method
