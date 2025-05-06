@@ -484,36 +484,68 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
-                {/* Only show available (non-booked) times */}
-                {availableTimeSlots
-                  .filter(time => !isTimeSlotBooked(time)) // Filter out booked slots
-                  .map((time) => (
+                {/* Show all times, but gray out and disable booked ones */}
+                {slotsWithStatus.map((slot) => {
+                  const time = slot.time;
+                  const isBooked = slot.isBooked;
+                  
+                  return (
                     <div key={time} className="relative">
                       <SelectItem 
                         value={time}
+                        disabled={isBooked}
                         className={cn(
                           "justify-between",
-                          props.selectedTime === time ? "font-medium" : ""
+                          props.selectedTime === time ? "font-medium" : "",
+                          isBooked ? "text-gray-500 line-through bg-gray-800/60 cursor-not-allowed" : "cursor-pointer hover:bg-gray-700"
                         )}
                       >
                         <div className="flex justify-between items-center w-full">
                           <span>{time}</span>
                           <div className="ml-9">
-                            {props.selectedTime === time && (
+                            {props.selectedTime === time && !isBooked && (
                               <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
                                 Selected
+                              </span>
+                            )}
+                            {isBooked && (
+                              <span className="text-xs text-gray-500">
+                                (Booked)
                               </span>
                             )}
                           </div>
                         </div>
                       </SelectItem>
                     </div>
-                  ))}
+                  );
+                })}
                 
-                {/* We don't show booked time slots in the dropdown */}
+                {/* If there are available slots but no slotsWithStatus, show the original list */}
+                {slotsWithStatus.length === 0 && availableTimeSlots.map((time) => (
+                  <div key={time} className="relative">
+                    <SelectItem 
+                      value={time}
+                      className={cn(
+                        "justify-between",
+                        props.selectedTime === time ? "font-medium" : ""
+                      )}
+                    >
+                      <div className="flex justify-between items-center w-full">
+                        <span>{time}</span>
+                        <div className="ml-9">
+                          {props.selectedTime === time && (
+                            <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                              Selected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  </div>
+                ))}
                 
                 {/* Show message if no time slots are available or all are booked */}
-                {(availableTimeSlots.length === 0 || availableTimeSlots.every(time => isTimeSlotBooked(time))) && !isLoadingSlots && (
+                {(availableTimeSlots.length === 0 || (slotsWithStatus.length > 0 && slotsWithStatus.every(slot => slot.isBooked))) && !isLoadingSlots && (
                   <div className="px-2 py-4 text-center text-sm text-muted-foreground">
                     No available time slots for this date
                   </div>
