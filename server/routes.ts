@@ -2077,7 +2077,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Processing slots: ${confirmedSessionCount} confirmed, ${pendingSessionCount} pending, ${cancelledSessionCount} cancelled`);
       
       // Log all sessions for debugging
-      console.log(`DEBUG: All sessions for this date:`, allSessionDetails);
+      if (Object.keys(allSessionDetails).length > 0) {
+        console.log(`DEBUG: All sessions:`, allSessionDetails);
+      } else {
+        console.log(`DEBUG: No sessions found`);
+      }
       
       // Add booking status information to the available slots
       const enhancedSlots = availableSlots.map(slot => {

@@ -40,9 +40,11 @@ interface BookingCalendarSimpleProps {
 // Unified interface type using discriminated union
 type BookingCalendarProps = BookingCalendarFullProps | BookingCalendarSimpleProps;
 
+// We use the standard time slots here, while admin has access to additional early/late slots
 const timeSlots = [
   "09:00", "10:00", "11:00", "12:00", 
-  "13:00", "14:00", "15:00", "16:00"
+  "13:00", "14:00", "15:00", "16:00",
+  "17:00", "18:00", "19:00", "20:00"
 ];
 
 // Define separate duration options for students and professionals
