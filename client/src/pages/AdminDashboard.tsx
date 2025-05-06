@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "../hooks/use-toast";
+import { apiRequest } from "../lib/queryClient";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
-import { formatInIST } from "@/lib/date-utils";
-import { cn } from "@/lib/utils";
+import { formatInIST } from "../lib/date-utils";
+import { cn } from "../lib/utils";
 import {
   Card,
   CardContent,
@@ -303,7 +303,19 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/project-guidance");
       const data = await response.json();
+      console.log("Fetched sessions data:", data);
       return data;
+    }
+  });
+  
+  // Fetch available slots
+  const { data: availableSlotsData, isLoading: isAvailableSlotsLoading } = useQuery({
+    queryKey: ["/api/available-slots"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/available-slots");
+      const data = await response.json();
+      console.log("Fetched available slots data:", data);
+      return data.slots;
     }
   });
   
@@ -743,10 +755,75 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-400">
-                  <p>No available time slots have been added yet.</p>
-                  <p className="mt-2">Click "Add Date" to create your first available booking date.</p>
-                </div>
+                {isAvailableSlotsLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                  </div>
+                ) : !availableSlotsData || availableSlotsData.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No available time slots have been added yet.</p>
+                    <p className="mt-2">Click "Add Date" to create your first available booking date.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <div className="bg-gray-800 rounded-md px-3 py-1 text-sm text-gray-300">
+                        <span className="font-semibold">{availableSlotsData.length}</span> available dates
+                      </div>
+                      
+                      <div className="flex items-center gap-1 ml-auto">
+                        <div className="flex items-center gap-1">
+                          <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                          <span className="text-xs text-gray-400">All slots available</span>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          <div className="h-3 w-3 rounded-full bg-amber-500"></div>
+                          <span className="text-xs text-gray-400">Some slots booked</span>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                          <span className="text-xs text-gray-400">All slots booked</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {availableSlotsData.map((slot: AvailableTimeSlot) => {
+                        const date = new Date(slot.date);
+                        const availableSlotsCount = slot.slots?.length || 0;
+                        const allSlotsBooked = slot.allSlotsBooked || false;
+                        const someSlotsBooked = slot.slotsWithStatus?.some(s => s.isBooked) || false;
+                        
+                        let statusColor = 'bg-green-500';
+                        if (allSlotsBooked) {
+                          statusColor = 'bg-red-500';
+                        } else if (someSlotsBooked) {
+                          statusColor = 'bg-amber-500';
+                        }
+                        
+                        return (
+                          <div 
+                            key={slot.id} 
+                            className="bg-gray-800 border border-gray-700 rounded-md p-3 hover:bg-gray-750 transition-colors flex items-center"
+                          >
+                            <div className={`h-3 w-3 rounded-full ${statusColor} mr-3`}></div>
+                            <div className="flex-grow">
+                              <p className="font-medium">{formatInIST(date, 'EEE, MMM d, yyyy')}</p>
+                              <p className="text-sm text-gray-400">
+                                {allSlotsBooked 
+                                  ? 'All slots booked' 
+                                  : `${availableSlotsCount - (slot.slotsWithStatus?.filter(s => s.isBooked).length || 0)}/${availableSlotsCount} slots available`}
+                              </p>
+                            </div>
+                            <Button size="sm" variant="outline" className="ml-auto">
+                              <Eye className="h-4 w-4 mr-1" /> View
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
