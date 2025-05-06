@@ -132,6 +132,9 @@ function ProjectGuidance() {
     refundAmount: number;
   } | null>(null);
   
+  // Time conflict state
+  const [isTimeConflictDialogOpen, setIsTimeConflictDialogOpen] = useState<boolean>(false);
+  
   // Fetch available time slots from API for blocking already booked slots
   const { data: availableSlots } = useQuery({
     queryKey: ["/api/available-slots"],
@@ -270,6 +273,14 @@ function ProjectGuidance() {
       console.log("Submitting project guidance session:", sessionData);
       
       const response = await apiRequest("POST", "/api/project-guidance", sessionData);
+      
+      // If the response is not ok, store it and throw an error
+      if (!response.ok) {
+        const error = new Error("Session booking failed");
+        (error as any).response = response;
+        throw error;
+      }
+      
       const data = await response.json();
       return data;
     },
@@ -299,7 +310,18 @@ function ProjectGuidance() {
       // If payment initiation fails, the initiatePayment function will 
       // fall back to the regular payment screen (setStep(3))
     },
-    onError: (error) => {
+    onError: async (error: any) => {
+      // Check if this is a time slot conflict error from the server
+      if (error.response) {
+        const errorData = await error.response.json();
+        if (errorData.message === "Time slot conflict") {
+          // Show the time conflict dialog instead of a toast
+          setIsTimeConflictDialogOpen(true);
+          return;
+        }
+      }
+      
+      // For other errors, show a generic toast message
       toast({
         title: "Booking Failed",
         description: error instanceof Error ? error.message : "Please try again",
@@ -592,6 +614,43 @@ function ProjectGuidance() {
         <title>Project Guidance | BambooMade</title>
         <meta name="description" content="Book a project guidance session with bamboo architecture experts to get personalized guidance for your academic or professional bamboo projects." />
       </Helmet>
+      
+      {/* Time Conflict Dialog */}
+      <Dialog 
+        open={isTimeConflictDialogOpen} 
+        onOpenChange={setIsTimeConflictDialogOpen}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-amber-600 dark:text-amber-500">
+              <AlertCircle className="h-5 w-5 mr-2" /> 
+              Time Slot Already Booked
+            </DialogTitle>
+            <DialogDescription>
+              The time slot you've selected is already booked by another user. Please select a different time slot.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4 my-4">
+            <p className="text-sm text-amber-800 dark:text-amber-400">
+              Our calendar automatically updates to show available time slots. Another user may have just booked this slot before you completed your booking.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setIsTimeConflictDialogOpen(false);
+                // Go back to the schedule step
+                setStep(2);
+              }}
+              className="w-full bg-amber-600 hover:bg-amber-700"
+            >
+              Select Another Time
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Cancellation Dialog */}
       <Dialog 
