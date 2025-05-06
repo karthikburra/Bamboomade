@@ -1414,15 +1414,28 @@ export default function AdminDashboard() {
                         <SelectValue placeholder="Select available time" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-700 text-white max-h-[300px]">
-                        {availableTimeSlots.map((time) => (
-                          <SelectItem 
-                            key={time} 
-                            value={time}
-                            className="cursor-pointer hover:bg-gray-700"
-                          >
-                            {time}
-                          </SelectItem>
-                        ))}
+                        {availableTimeSlots.map((timeSlot) => {
+                          // Check if this time slot has a conflict
+                          const isConflict = timeSlot.isBooked;
+                          
+                          return (
+                            <SelectItem 
+                              key={typeof timeSlot === 'string' ? timeSlot : timeSlot.time}
+                              value={typeof timeSlot === 'string' ? timeSlot : timeSlot.time}
+                              disabled={isConflict}
+                              className={`
+                                ${isConflict ? 'text-gray-500 line-through bg-gray-800/60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-700'}
+                              `}
+                            >
+                              {typeof timeSlot === 'string' ? timeSlot : timeSlot.time}
+                              {isConflict && (
+                                <span className="ml-2 text-xs text-gray-500">
+                                  (Booked)
+                                </span>
+                              )}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   ) : (
