@@ -25,9 +25,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft, Video, 
+  CheckCircle, Loader2, Calendar, User, Tag, ChevronLeft, Video, 
   ExternalLink, RotateCcw, Copy, Check, Info, XCircle, AlertTriangle,
-  RefreshCcw, MessageSquare, Clock8
+  RefreshCcw, MessageSquare
 } from "lucide-react";
 // Using Link from wouter
 import { 

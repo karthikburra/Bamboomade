@@ -38,7 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
-  CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
+  User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search
 } from "lucide-react";
 import {
@@ -1010,7 +1010,7 @@ export default function AdminDashboard() {
                                     (session.notes && session.notes.toLowerCase().includes('rescheduled'))) && (
                                     <div className="mt-1 border-t border-gray-700 pt-1">
                                       <div className="text-xs text-blue-400 flex items-center mb-0.5">
-                                        <CalendarClock className="w-3 h-3 mr-1" /> Rescheduled
+                                        Rescheduled
                                       </div>
                                       <div className="text-xs text-gray-400">
                                         Originally: {(() => {
