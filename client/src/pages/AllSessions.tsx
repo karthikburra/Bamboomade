@@ -259,7 +259,7 @@ export default function AllSessions() {
                   <div className="text-sm text-gray-300 space-y-2">
                     <p>
                       Below you'll find all sessions booked with your email address. 
-                      For paid sessions, Google Meet links become available approximately 4 hours before the session starts.
+                      For paid sessions, Google Meet links will be visible as soon as they're updated by the administrator.
                     </p>
                     <p>
                       <span className="text-green-400 font-medium">Important:</span> Make sure to join the Google Meet link on time for your scheduled session. 
@@ -386,7 +386,7 @@ export default function AllSessions() {
                   <CardFooter className="bg-gray-800/50 pt-3 flex flex-wrap gap-2 justify-end">
                     {session.paymentStatus === 'Paid' && !session.googleMeetLink && (
                       <div className="text-xs text-gray-400 mr-auto">
-                        The Google Meet link will be available 4 hours before the session
+                        The Google Meet link will be added by the administrator soon
                       </div>
                     )}
                     <Link href={`/project-guidance?session=${session.id}`}>

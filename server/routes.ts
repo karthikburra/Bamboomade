@@ -605,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const sessionDate = new Date(session.date);
         const sessionEndTime = addMinutes(sessionDate, session.duration);
         
-        // Generate Google Meet link for confirmed sessions
+        // Always show Google Meet link when available for paid sessions
         let googleMeetLink = null;
         let calendarLink = null;
         
