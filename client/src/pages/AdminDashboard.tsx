@@ -1692,7 +1692,7 @@ export default function AdminDashboard() {
                         variant="secondary"
                         className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
                       >
-                        <Clock className="w-3 h-3 flex-shrink-0" /> 
+
                         {time}
                         <button 
                           onClick={() => removeTimeFromSelectedSlots(time)}
@@ -1861,7 +1861,7 @@ export default function AdminDashboard() {
                         variant="secondary"
                         className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
                       >
-                        <Clock className="w-3 h-3" /> 
+
                         {time}
                         <button 
                           onClick={() => removeTimeFromSelectedSlots(time)}

@@ -768,7 +768,7 @@ export default function AllSessions() {
                                                 size="sm" 
                                                 className="text-xs text-muted-foreground hover:text-foreground"
                                               >
-                                                <Calendar className="h-3 w-3 mr-1" /> View Calendar
+                                                View Calendar
                                               </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
