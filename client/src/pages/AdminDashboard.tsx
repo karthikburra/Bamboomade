@@ -762,6 +762,56 @@ export default function AdminDashboard() {
   }, []);
   
   // Handle bulk time slot creation
+  const { mutate: bulkAddTimeSlots, isPending: isBulkAdding } = useMutation({
+    mutationFn: async ({ dates, slots }: { dates: string[]; slots: string[] }) => {
+      const response = await apiRequest("POST", "/api/admin/bulk-available-slots", {
+        dates,
+        slots,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const { results } = data;
+      if (results.success && results.success.length > 0) {
+        if (results.failures && results.failures.length > 0) {
+          toast({
+            title: "Partial Success",
+            description: `Added ${results.success.length} dates, but failed for ${results.failures.length} dates.`,
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: `Added time slots for all ${results.success.length} dates successfully.`,
+          });
+          
+          // Reset state on complete success
+          setIsAddSlotDialogOpen(false);
+          setNewDate("");
+          setSelectedSlots([]);
+          setDateRange({start: "", end: ""});
+          setBulkMode(false);
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add any time slots. Check the console for details.",
+          variant: "destructive",
+        });
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/available-slots"] });
+    },
+    onError: (error) => {
+      console.error("Bulk time slot creation error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process time slots. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleBulkTimeSlotCreation = async () => {
     if (selectedSlots.length === 0) {
       toast({
@@ -786,55 +836,19 @@ export default function AdminDashboard() {
     
     console.log("Bulk creating time slots for dates:", dates);
     
+    // Simple confirmation for large date ranges
+    if (dates.length > 10) {
+      if (!window.confirm(`You're about to create time slots for ${dates.length} dates. Continue?`)) {
+        return;
+      }
+    }
+    
     try {
-      // We'll handle each date one by one to better identify issues
-      let successCount = 0;
-      let errorCount = 0;
-      
-      // Process dates in sequence to avoid overwhelming the server
-      for (const date of dates) {
-        try {
-          await addTimeSlot({
-            date,
-            slots: selectedSlots,
-          });
-          successCount++;
-          console.log(`Successfully added slots for ${date}`);
-        } catch (error) {
-          console.error(`Error adding slots for ${date}:`, error);
-          errorCount++;
-          
-          // Skip this date but continue with others
-          continue;
-        }
-      }
-      
-      // Show appropriate toast based on results
-      if (successCount > 0 && errorCount === 0) {
-        toast({
-          title: "Success",
-          description: `Added time slots for all ${successCount} dates successfully.`,
-        });
-        
-        // Reset state on complete success
-        setIsAddSlotDialogOpen(false);
-        setNewDate("");
-        setSelectedSlots([]);
-        setDateRange({start: "", end: ""});
-        setBulkMode(false);
-      } else if (successCount > 0 && errorCount > 0) {
-        toast({
-          title: "Partial Success",
-          description: `Added time slots for ${successCount} dates, but failed for ${errorCount} dates.`,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to add any time slots. Check the console for details.",
-          variant: "destructive",
-        });
-      }
+      // Use the new bulk API endpoint
+      bulkAddTimeSlots({
+        dates,
+        slots: selectedSlots,
+      });
     } catch (error) {
       console.error("Bulk time slot creation error:", error);
       toast({
@@ -1960,26 +1974,35 @@ export default function AdminDashboard() {
             <Button 
               onClick={bulkMode ? handleBulkTimeSlotCreation : handleAddTimeSlot}
               className="bg-blue-600 hover:bg-blue-700"
-              disabled={isAddingSlot || 
+              disabled={(bulkMode ? isBulkAdding : isAddingSlot) || 
                          (!newDate && !bulkMode) || 
                          (bulkMode && (!dateRange.start || !dateRange.end)) || 
                          selectedSlots.length === 0}
             >
-              {isAddingSlot ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
-                  Adding...
-                </>
-              ) : bulkMode ? (
-                <>
-                  <CalendarRange className="w-4 h-4 mr-2" /> 
-                  Add Multiple Dates
-                </>
+              {bulkMode ? (
+                isBulkAdding ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
+                    Adding Dates...
+                  </>
+                ) : (
+                  <>
+                    <CalendarRange className="w-4 h-4 mr-2" /> 
+                    Add Multiple Dates
+                  </>
+                )
               ) : (
-                <>
-                  <Calendar className="w-4 h-4 mr-2" /> 
-                  Add Date
-                </>
+                isAddingSlot ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="w-4 h-4 mr-2" /> 
+                    Add Date
+                  </>
+                )
               )}
             </Button>
           </DialogFooter>

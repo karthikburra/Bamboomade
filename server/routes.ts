@@ -2294,6 +2294,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Admin: Bulk create available time slots
+  app.post("/api/admin/bulk-available-slots", isAdmin, async (req, res) => {
+    try {
+      const { dates, slots } = req.body;
+      
+      if (!dates || !Array.isArray(dates) || dates.length === 0 || !slots || !Array.isArray(slots) || slots.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Array of dates and slots are required"
+        });
+      }
+      
+      console.log(`[AdminAPI] Bulk creating time slots for ${dates.length} dates with ${slots.length} slots each`);
+      
+      const userId = req.session.userId || 1; // Default to admin ID 1 if not logged in
+      
+      const results = {
+        success: [] as { date: string, id: number }[],
+        failures: [] as { date: string, reason: string }[]
+      };
+      
+      // Process each date one by one
+      for (const date of dates) {
+        try {
+          // Check if this date already exists
+          const existingSlot = await storage.getAvailableTimeSlotByDate(date);
+          
+          if (existingSlot) {
+            console.log(`[AdminAPI] Date ${date} already exists with ID ${existingSlot.id} - skipping`);
+            results.failures.push({ 
+              date, 
+              reason: "Date already exists" 
+            });
+            continue;
+          }
+          
+          // Create the new slot
+          const newSlot = await storage.createAvailableTimeSlot({
+            date,
+            slots,
+            createdBy: userId
+          });
+          
+          console.log(`[AdminAPI] Successfully created time slot for date ${date} with ID ${newSlot.id}`);
+          results.success.push({ date, id: newSlot.id });
+          
+        } catch (error) {
+          console.error(`[AdminAPI] Error creating time slot for date ${date}:`, error);
+          results.failures.push({ 
+            date, 
+            reason: (error as Error).message 
+          });
+        }
+        
+        // Add a small delay to prevent database connection issues
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
+      // Return results even if there are some failures
+      res.status(results.success.length > 0 ? 201 : 400).json({
+        success: results.success.length > 0,
+        results
+      });
+      
+    } catch (error) {
+      console.error("Error in bulk time slot creation:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to process bulk time slots",
+        error: (error as Error).message
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
