@@ -1881,6 +1881,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Test endpoint for OpenAI connection
+  app.get('/api/test-openai', async (req, res) => {
+    try {
+      console.log("Testing OpenAI connection...");
+      console.log(`API Key being used: ${process.env.OPENAI_API_KEY?.substring(0, 7)}...`);
+      
+      const response = {
+        status: 'checking',
+        apiKeyPresent: !!process.env.OPENAI_API_KEY,
+        apiKeyType: process.env.OPENAI_API_KEY?.startsWith('sk-') ? 'OpenAI' : 
+                   (process.env.OPENAI_API_KEY?.startsWith('sk-proj') ? 'Project Key' : 'Unknown'),
+        diagnostics: {}
+      };
+      
+      // Import OpenAI directly instead of using the service
+      const { default: OpenAI } = await import('openai');
+      
+      try {
+        console.log("Initializing OpenAI with direct key...");
+        const openai = new OpenAI({ 
+          apiKey: process.env.OPENAI_API_KEY 
+        });
+        
+        console.log("Making test API call...");
+        const testCompletion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "user", content: "Hello, this is a test. Reply with a single word: 'Working'" }
+          ],
+          max_tokens: 10,
+          temperature: 0,
+        });
+        
+        response.status = 'success';
+        response.diagnostics = {
+          model: testCompletion.model,
+          output: testCompletion.choices[0].message.content,
+          responseTime: `${testCompletion.usage?.total_tokens || 0} tokens used`
+        };
+      } catch (error) {
+        console.error("Direct OpenAI test failed:", error);
+        response.status = 'failed';
+        response.diagnostics = {
+          error: error.message,
+          type: error.type || 'Unknown',
+          code: error.code || 'Unknown'
+        };
+      }
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error in OpenAI test endpoint:", error);
+      res.status(500).json({ 
+        status: 'error',
+        message: 'Internal server error during OpenAI test',
+        error: error.message
+      });
+    }
+  });
+  
   // AI Knowledge Base endpoints (admin only)
   app.get("/api/ai-knowledge", isAdmin, async (req, res) => {
     try {
