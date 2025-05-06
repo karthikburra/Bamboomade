@@ -1128,6 +1128,10 @@ function ProjectGuidance() {
                             <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Session Type</p>
                             <p className="font-medium text-white">{form.getValues().isStudent ? "Student" : "Professional"}</p>
                           </div>
+                          <div className="bg-gray-800/60 p-3 rounded-md md:col-span-2">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Payment ID</p>
+                            <p className="font-medium text-white break-all">{paymentId || "Payment completed"}</p>
+                          </div>
                           <div className="bg-gray-800/60 p-3 rounded-md">
                             <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Topic</p>
                             <p className="font-medium text-white">{form.getValues().topic}</p>
