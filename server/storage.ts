@@ -62,6 +62,10 @@ export interface IStorage {
   createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent>;
   updateAiKnowledgeContent(id: number, updates: Partial<AiKnowledgeContent>): Promise<AiKnowledgeContent | undefined>;
   deleteAiKnowledgeContent(id: number): Promise<boolean>;
+  
+  // Secure AI Knowledge Content backup & restore
+  exportAiKnowledgeContentBackup(): Promise<{ data: AiKnowledgeContent[], timestamp: string, checksum: string }>;
+  importAiKnowledgeContentBackup(backup: { data: AiKnowledgeContent[], timestamp: string, checksum: string }): Promise<{ success: boolean, imported: number, errors: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -484,6 +488,92 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in getAllAiKnowledgeContent:", error);
       return [];
+    }
+  }
+  
+  // Secure backup of all AI Knowledge Content for future deployments
+  async exportAiKnowledgeContentBackup(): Promise<{ data: AiKnowledgeContent[], timestamp: string, checksum: string }> {
+    try {
+      const knowledgeData = await db.select().from(aiKnowledgeContent);
+      const timestamp = new Date().toISOString();
+      
+      // Create a checksum for data integrity verification
+      const dataString = JSON.stringify(knowledgeData);
+      const checksum = require('crypto').createHash('sha256').update(dataString).digest('hex');
+      
+      return {
+        data: knowledgeData,
+        timestamp,
+        checksum
+      };
+    } catch (error) {
+      console.error("Database error in exportAiKnowledgeContentBackup:", error);
+      throw error;
+    }
+  }
+  
+  // Import AI Knowledge Content backup with verification
+  async importAiKnowledgeContentBackup(backup: { 
+    data: AiKnowledgeContent[], 
+    timestamp: string, 
+    checksum: string 
+  }): Promise<{ success: boolean, imported: number, errors: number }> {
+    try {
+      // Verify the checksum to ensure data integrity
+      const dataString = JSON.stringify(backup.data);
+      const calculatedChecksum = require('crypto').createHash('sha256').update(dataString).digest('hex');
+      
+      if (calculatedChecksum !== backup.checksum) {
+        throw new Error("Backup data integrity check failed: checksum mismatch");
+      }
+      
+      let imported = 0;
+      let errors = 0;
+      
+      // Process each item - either insert new or update existing
+      for (const item of backup.data) {
+        try {
+          // Check if this content already exists by title
+          const [existingContent] = await db.select()
+            .from(aiKnowledgeContent)
+            .where(eq(aiKnowledgeContent.title, item.title));
+          
+          if (existingContent) {
+            // Update existing content
+            await db.update(aiKnowledgeContent)
+              .set({
+                content: item.content,
+                source: item.source,
+                contentType: item.contentType,
+                status: item.status,
+                updatedAt: new Date()
+              })
+              .where(eq(aiKnowledgeContent.id, existingContent.id));
+          } else {
+            // Insert new content
+            await db.insert(aiKnowledgeContent)
+              .values({
+                title: item.title,
+                content: item.content,
+                source: item.source,
+                contentType: item.contentType,
+                status: item.status,
+                createdBy: item.createdBy,
+                createdAt: new Date(),
+                updatedAt: new Date()
+              });
+          }
+          imported++;
+        } catch (itemError) {
+          console.error("Error importing item:", itemError);
+          errors++;
+        }
+      }
+      
+      return { success: true, imported, errors };
+    } catch (error) {
+      console.error("Database error in importAiKnowledgeContentBackup:", error);
+      throw error;
     }
   }
 
