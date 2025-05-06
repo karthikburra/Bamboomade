@@ -582,7 +582,6 @@ export default function AllSessions() {
                       <span>{session.formattedDate}</span>
                     </div>
                     <div className="flex items-center text-sm">
-                      <Clock className="mr-2 h-4 w-4 text-green-500" />
                       <span>{session.formattedTime} - {session.formattedEndTime} ({session.duration} minutes)</span>
                     </div>
                     <div className="flex items-center text-sm">
@@ -901,7 +900,6 @@ export default function AllSessions() {
                                   className="h-9 border-gray-700 text-gray-500 cursor-not-allowed opacity-70"
                                   disabled
                                 >
-                                  <Clock8 className="h-3.5 w-3.5 mr-1.5" />
                                   Can't Reschedule
                                 </Button>
                               );
