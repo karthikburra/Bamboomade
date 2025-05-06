@@ -296,41 +296,18 @@ export default function AllSessions() {
   
   // Check if email was passed as URL parameter or if user is viewing their own sessions
   useEffect(() => {
-    // If coming from the user view route, automatically fetch user sessions
-    if (isUserView) {
-      // Get the user's email from authentication state
-      // We'll use an API call to get the current user's data
-      const fetchUserData = async () => {
-        try {
-          const response = await apiRequest("GET", "/api/auth/me");
-          const userData = await response.json();
-          
-          if (userData && userData.email) {
-            setEmailFilter(userData.email);
-            setIsFiltering(true);
-          } else {
-            // If not authenticated, redirect to login page
-            window.location.href = '/login';
-          }
-        } catch (error) {
-          console.error("Failed to fetch user data:", error);
-          // If API call fails, user is likely not authenticated
-          window.location.href = '/login';
-        }
-      };
-      
-      fetchUserData();
-    } else {
-      // For the regular all-sessions page, check URL parameters
-      const params = new URLSearchParams(window.location.search);
-      const email = params.get("email");
-      
-      if (email) {
-        setEmailFilter(email);
-        setIsFiltering(true);
-      }
+    // Get parameters from URL for both routes
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    
+    if (email) {
+      setEmailFilter(email);
+      setIsFiltering(true);
     }
-  }, [isUserView]);
+    
+    // If on the "view-my-sessions" path, we should prompt for email with a cleaner UI
+    // but not force login - we'll update the UI below
+  }, []);
   
   // Copy to clipboard function
   const copyToClipboard = (text: string | null | undefined, sessionId: number) => {
@@ -426,42 +403,45 @@ export default function AllSessions() {
           </h1>
         </div>
         
-        {/* Email filter form - only show on regular sessions page, not on user view */}
-        {!isUserView && (
-          <Card className="mb-8 bg-gray-900 border-gray-800">
-            <CardHeader>
-              <CardTitle className="text-lg">Find Your Sessions</CardTitle>
-              <CardDescription>
-                Enter your email address to see your booked sessions
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex-1">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email address"
-                    value={emailFilter}
-                    onChange={(e) => setEmailFilter(e.target.value)}
-                    className="bg-gray-800 border-gray-700"
-                  />
-                </div>
-                <Button 
-                  className="bg-green-600 hover:bg-green-700"
-                  onClick={() => setIsFiltering(!!emailFilter)}
-                  disabled={!emailFilter}
-                >
-                  Find My Sessions
-                </Button>
-                <Link href="/project-guidance">
-                  <Button variant="outline" className="border-green-600 text-green-500">
-                    Book a New Session
-                  </Button>
-                </Link>
+        {/* Email filter form - shown on both regular sessions page and user view with different styling */}
+        <Card className={`mb-8 ${isUserView ? 'bg-gray-900/70 border-green-800/50' : 'bg-gray-900 border-gray-800'}`}>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {isUserView ? "My Project Guidance Sessions" : "Find Your Sessions"}
+            </CardTitle>
+            <CardDescription>
+              {isUserView 
+                ? "Enter the email address you used when booking your session"
+                : "Enter your email address to see your booked sessions"
+              }
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1">
+                <Input
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={emailFilter}
+                  onChange={(e) => setEmailFilter(e.target.value)}
+                  className="bg-gray-800 border-gray-700"
+                />
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => setIsFiltering(!!emailFilter)}
+                disabled={!emailFilter}
+              >
+                {isUserView ? "View My Sessions" : "Find My Sessions"}
+              </Button>
+              <Link href="/project-guidance">
+                <Button variant="outline" className="border-green-600 text-green-500">
+                  Book a New Session
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
         
         {/* Display when user has filtered by email */}
         {emailFilter && isFiltering && (
@@ -487,22 +467,45 @@ export default function AllSessions() {
 
         {/* Sessions list */}
         {sessions.length === 0 ? (
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className={`${isUserView ? 'bg-gray-900/70 border-green-800/50' : 'bg-gray-900 border-gray-800'}`}>
             <CardHeader>
               <CardTitle>
-                {emailFilter && isFiltering ? "No Sessions Found" : (isUserView ? "No Sessions Yet" : "Enter Your Email")}
+                {emailFilter && isFiltering ? "No Sessions Found" : (isUserView ? "View Your Sessions" : "Enter Your Email")}
               </CardTitle>
               <CardDescription>
                 {emailFilter && isFiltering 
                   ? `No project guidance sessions found for ${emailFilter}`
                   : (isUserView 
-                     ? "You haven't booked any guidance sessions yet." 
+                     ? "Enter the email address you used for booking to see your sessions" 
                      : "Please enter your email address above to see your booked sessions")}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center py-8">
-              <p className="text-gray-400 mb-4">Would you like to book a new session?</p>
-              <div className="flex justify-center space-x-3">
+              {emailFilter && isFiltering ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-amber-900/20 border border-amber-800/40 rounded-md text-left">
+                    <h3 className="text-amber-400 flex items-center text-sm font-medium mb-2">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Possible reasons why no sessions were found:
+                    </h3>
+                    <ul className="list-disc pl-6 text-sm text-gray-300 space-y-1">
+                      <li>The email address you entered might be different from the one you used during booking</li>
+                      <li>You might not have any booked sessions yet</li>
+                      <li>Your payment might still be processing</li>
+                    </ul>
+                  </div>
+                  
+                  <p className="text-gray-400">Would you like to book a new session instead?</p>
+                </div>
+              ) : (
+                <p className="text-gray-400 mb-4">
+                  {isUserView 
+                    ? "Enter your email address above to view all your booked sessions"
+                    : "Would you like to book a new session?"}
+                </p>
+              )}
+              
+              <div className="flex justify-center space-x-3 mt-4">
                 <Link href="/">
                   <Button variant="secondary" className="border-gray-700">
                     Back to Home
