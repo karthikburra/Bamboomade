@@ -13,8 +13,20 @@ const IST_MINUTES_OFFSET = 30;
 export function formatInIST(date: Date | string, formatStr: string): string {
   try {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    // Check if this date is already in IST format (from server log data)
+    // If the dateObj's hours are between 0-5 and minutes are 0-30, it might be local timezone
+    // This is a basic heuristic to avoid double-conversion
+    const localHour = dateObj.getHours();
+    const localMinute = dateObj.getMinutes();
+    
+    // Debugging logs
+    console.log(`Date to format: ${dateObj.toISOString()} (Local display: ${dateObj.toString()})`);
+    
     // Add 5 hours and 30 minutes to convert from UTC to IST
     const istDate = addMinutes(addHours(dateObj, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
+    console.log(`After IST conversion: ${istDate.toISOString()} (Local display: ${istDate.toString()})`);
+    
     return format(istDate, formatStr);
   } catch (error) {
     console.error('Error formatting date in IST:', error);
@@ -76,4 +88,32 @@ export function isISTToday(date: Date): boolean {
 export function formatISOInIST(date: Date): string {
   const istDate = addMinutes(addHours(date, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
   return formatISO(istDate);
+}
+
+/**
+ * Special function to format session dates for display
+ * Session dates are stored in UTC in the database
+ * @param date Session date to format (stored in UTC)
+ * @param formatStr Format string
+ * @returns Formatted date string
+ */
+export function formatSessionDate(date: Date | string, formatStr: string): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    // Use direct formatting to see the actual date value
+    const directFormat = format(dateObj, formatStr);
+    console.log(`Direct format (no conversion): ${dateObj.toISOString()} -> ${directFormat}`);
+    
+    // Add 5 hours and 30 minutes to convert from UTC to IST
+    const istDate = addMinutes(addHours(dateObj, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
+    const istFormat = format(istDate, formatStr);
+    console.log(`IST format (with conversion): ${istDate.toISOString()} -> ${istFormat}`);
+    
+    // Return the IST formatted date
+    return istFormat;
+  } catch (error) {
+    console.error('Error formatting session date:', error);
+    return 'Invalid date';
+  }
 }

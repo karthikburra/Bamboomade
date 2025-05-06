@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
-import { formatInIST } from "../lib/date-utils";
+import { formatInIST, formatSessionDate } from "../lib/date-utils";
 import { cn } from "../lib/utils";
 import {
   Card,
@@ -473,10 +473,25 @@ export default function AdminDashboard() {
     
     return sessionsData.map((session: any) => {
       const sessionDate = new Date(session.date);
+      
+      // Use our specialized session date formatter for accurate display
+      const formattedDate = formatSessionDate(sessionDate, 'MMM d, yyyy');
+      const formattedTime = formatSessionDate(sessionDate, 'HH:mm');
+      
+      // Also get direct format for comparison
+      const directFormattedDate = format(sessionDate, 'MMM d, yyyy');
+      const directFormattedTime = format(sessionDate, 'HH:mm');
+      
+      console.log(`Session ${session.id} date:
+        - Database UTC time: ${session.date}
+        - Direct format: ${directFormattedDate} ${directFormattedTime}
+        - With IST conversion: ${formattedDate} ${formattedTime}
+      `);
+      
       return {
         id: session.id,
-        formattedDate: formatInIST(sessionDate, 'MMM d, yyyy'),
-        formattedTime: formatInIST(sessionDate, 'HH:mm'),
+        formattedDate,
+        formattedTime,
         date: session.date,
         email: session.email,
         phone: session.phone,
