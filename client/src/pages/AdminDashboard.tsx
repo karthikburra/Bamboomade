@@ -300,7 +300,11 @@ export default function AdminDashboard() {
       dates: string[],
       timeSlots: string[]
     }) => {
-      const response = await apiRequest("POST", "/api/available-slots", data);
+      // Use the admin bulk endpoint to add multiple dates at once
+      const response = await apiRequest("POST", "/api/admin/bulk-available-slots", {
+        dates: data.dates,
+        slots: data.timeSlots
+      });
       return response.json();
     },
     onSuccess: () => {
