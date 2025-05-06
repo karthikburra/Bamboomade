@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -25,7 +25,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft, Video, 
-  ExternalLink, RotateCcw, Copy, Check, Info
+  ExternalLink, RotateCcw, Copy, Check, Info, XCircle, AlertTriangle,
+  RefreshCcw, MessageSquare, Clock8
 } from "lucide-react";
 import { Link } from "wouter";
 import { 
@@ -34,6 +35,31 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { format, addDays, parseISO } from "date-fns";
+import { DayPicker } from "react-day-picker";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface Session {
   id: number;
@@ -57,6 +83,170 @@ export default function AllSessions() {
   const [isFiltering, setIsFiltering] = useState(false);
   const [copiedLinks, setCopiedLinks] = useState<{ [key: number]: boolean }>({});
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Cancel session states
+  const [sessionToCancel, setSessionToCancel] = useState<Session | null>(null);
+  const [cancellationReason, setCancellationReason] = useState("");
+  
+  // Reschedule session states
+  const [sessionToReschedule, setSessionToReschedule] = useState<Session | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
+  
+  // Calculate refund amount based on cancellation policy
+  const calculateRefundAmount = (session: Session) => {
+    if (!session) return { percentage: 0, amount: 0, policy: "No refund available" };
+    
+    const sessionDate = new Date(session.formattedDate);
+    const now = new Date();
+    const hoursDifference = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    if (hoursDifference > 48) {
+      return { 
+        percentage: 95, 
+        amount: getSessionPrice(session) * 0.95, 
+        policy: "More than 48 hours: 95% refund (5% processing fee)" 
+      };
+    } else if (hoursDifference >= 24 && hoursDifference <= 48) {
+      return { 
+        percentage: 75, 
+        amount: getSessionPrice(session) * 0.75, 
+        policy: "24-48 hours: 75% refund" 
+      };
+    } else if (hoursDifference < 24 && hoursDifference > 0) {
+      return { 
+        percentage: 50, 
+        amount: getSessionPrice(session) * 0.5, 
+        policy: "Less than 24 hours: 50% refund" 
+      };
+    } else {
+      return { 
+        percentage: 0, 
+        amount: 0, 
+        policy: "Missed session: No refund available" 
+      };
+    }
+  };
+  
+  // Helper to determine approximate session price
+  const getSessionPrice = (session: Session) => {
+    if (!session) return 0;
+    // Student rates: ₹500 (30 mins) / ₹800 (60 mins)
+    // Professional rates: ₹1000 (30 mins) / ₹1500 (60 mins)
+    
+    const isStudent = session.studentName.toLowerCase().includes("student");
+    
+    if (session.duration === 30) {
+      return isStudent ? 500 : 1000;
+    } else {
+      return isStudent ? 800 : 1500;
+    }
+  };
+  
+  // Cancel session mutation
+  const { mutate: cancelSession, isPending: isCancelling } = useMutation({
+    mutationFn: async () => {
+      if (!sessionToCancel) return Promise.reject("No session selected for cancellation");
+      
+      const cancellationData = {
+        sessionId: sessionToCancel.id,
+        email: emailFilter,
+        reason: cancellationReason
+      };
+      
+      const response = await apiRequest("POST", "/api/cancel-session", cancellationData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Session Cancelled",
+        description: "Your session has been cancelled successfully. Your refund will be processed according to our policy.",
+        variant: "default",
+      });
+      
+      // Reset states and refetch sessions
+      setSessionToCancel(null);
+      setCancellationReason("");
+      queryClient.invalidateQueries({ queryKey: ["/api/all-sessions"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Cancellation Failed",
+        description: error instanceof Error ? error.message : "Please try again or contact support",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Fetch available time slots for a date
+  const fetchAvailableSlots = async (date: Date) => {
+    try {
+      const formattedDate = format(date, "yyyy-MM-dd");
+      const response = await apiRequest("GET", `/api/available-slots?date=${formattedDate}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setAvailableTimeSlots(data.slots.map((slot: any) => slot.time));
+      } else {
+        setAvailableTimeSlots([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch slots:", error);
+      setAvailableTimeSlots([]);
+    }
+  };
+  
+  // Update available slots when date changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchAvailableSlots(selectedDate);
+    }
+  }, [selectedDate]);
+  
+  // Reschedule session mutation
+  const { mutate: rescheduleSession, isPending: isRescheduling } = useMutation({
+    mutationFn: async () => {
+      if (!sessionToReschedule || !selectedDate || !selectedTimeSlot) {
+        return Promise.reject("Please select a date and time for rescheduling");
+      }
+      
+      const reschedulingDate = new Date(selectedDate);
+      const [hours, minutes] = selectedTimeSlot.split(":").map(Number);
+      reschedulingDate.setHours(hours, minutes);
+      
+      const reschedulingData = {
+        sessionId: sessionToReschedule.id,
+        email: emailFilter,
+        newDate: reschedulingDate.toISOString(),
+        newDuration: sessionToReschedule.duration
+      };
+      
+      const response = await apiRequest("POST", "/api/reschedule-session", reschedulingData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Session Rescheduled",
+        description: "Your session has been rescheduled successfully.",
+        variant: "default",
+      });
+      
+      // Reset states and refetch sessions
+      setSessionToReschedule(null);
+      setSelectedDate(undefined);
+      setSelectedTimeSlot("");
+      queryClient.invalidateQueries({ queryKey: ["/api/all-sessions"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Rescheduling Failed",
+        description: error instanceof Error ? error.message : "Please try again or contact support",
+        variant: "destructive",
+      });
+    }
+  });
   
   // Check if email was passed as URL parameter
   useEffect(() => {
@@ -356,21 +546,214 @@ export default function AllSessions() {
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="bg-gray-800/50 pt-3 flex flex-wrap gap-2 justify-end">
+                  <CardFooter className="bg-gray-800/50 pt-3 flex flex-wrap gap-2 justify-between">
                     {!session.googleMeetLink && (
-                      <div className="text-xs text-gray-400 mr-auto">
+                      <div className="text-xs text-gray-400">
                         The Google Meet link will be added by the administrator soon
                       </div>
                     )}
-                    <Link href={`/project-guidance?session=${session.id}`}>
-                      <Button 
-                        variant="outline" 
-                        className="border-green-700 text-green-500 hover:bg-green-900/30"
-                        disabled={session.status === 'cancelled'}
-                      >
-                        Manage Session
-                      </Button>
-                    </Link>
+                    
+                    <div className="flex flex-wrap gap-2 ml-auto">
+                      {/* Only show for upcoming sessions that aren't cancelled */}
+                      {session.status !== 'cancelled' && session.status !== 'completed' && (
+                        <>
+                          {/* Reschedule Button */}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="h-9 border-blue-700 text-blue-400 hover:bg-blue-900/30"
+                                onClick={() => setSessionToReschedule(session)}
+                              >
+                                <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
+                                Reschedule
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-gray-900 border-gray-700 text-white">
+                              <DialogHeader>
+                                <DialogTitle className="text-white">Reschedule Your Session</DialogTitle>
+                                <DialogDescription className="text-gray-400">
+                                  Select a new date and time for your bamboo guidance session.
+                                </DialogDescription>
+                              </DialogHeader>
+                              
+                              <div className="space-y-4 py-4">
+                                <div className="flex flex-col space-y-1.5">
+                                  <Label htmlFor="rescheduleDate">Select New Date</Label>
+                                  <div className="p-3 bg-gray-800 rounded-md border border-gray-700">
+                                    <DayPicker
+                                      mode="single"
+                                      selected={selectedDate}
+                                      onSelect={setSelectedDate}
+                                      disabled={[
+                                        { before: new Date() },
+                                        { dayOfWeek: [0, 6] } // Disable weekends
+                                      ]}
+                                      className="bg-gray-800 rounded-md text-white"
+                                    />
+                                  </div>
+                                </div>
+                                
+                                {selectedDate && (
+                                  <div className="flex flex-col space-y-1.5">
+                                    <Label htmlFor="rescheduleTime">Select New Time</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                      {availableTimeSlots.length > 0 ? (
+                                        availableTimeSlots.map(slot => (
+                                          <Button
+                                            key={slot}
+                                            type="button"
+                                            size="sm"
+                                            variant={selectedTimeSlot === slot ? "default" : "outline"}
+                                            className={selectedTimeSlot === slot 
+                                              ? "bg-green-600 hover:bg-green-700 text-white" 
+                                              : "border-gray-700 text-gray-300 hover:bg-gray-800"}
+                                            onClick={() => setSelectedTimeSlot(slot)}
+                                          >
+                                            {slot}
+                                          </Button>
+                                        ))
+                                      ) : (
+                                        <div className="text-gray-400 text-sm">
+                                          No available time slots for this date. Please select another date.
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                <div className="bg-amber-900/30 border border-amber-800/50 rounded-md p-3 text-amber-300 text-sm">
+                                  <div className="flex gap-2 items-start">
+                                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium mb-1">Rescheduling Policy</p>
+                                      <p className="text-xs text-amber-300/80">
+                                        We offer one free rescheduling per booking if requested at least 24 hours 
+                                        before the scheduled session time. Subsequent reschedules or changes 
+                                        with less than 24 hours' notice will incur a ₹500 administrative fee.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <DialogFooter>
+                                <DialogClose asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </DialogClose>
+                                <Button 
+                                  className="bg-green-600 hover:bg-green-700"
+                                  disabled={!selectedDate || !selectedTimeSlot || isRescheduling}
+                                  onClick={() => rescheduleSession()}
+                                >
+                                  {isRescheduling ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      Rescheduling...
+                                    </>
+                                  ) : "Confirm Reschedule"}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          {/* Cancel Button */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="h-9 border-red-700 text-red-400 hover:bg-red-900/30"
+                                onClick={() => setSessionToCancel(session)}
+                              >
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                                Cancel
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">Cancel This Session?</AlertDialogTitle>
+                                <AlertDialogDescription className="text-gray-400">
+                                  Are you sure you want to cancel your guidance session? 
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              
+                              <div className="bg-red-900/20 border border-red-800 rounded-md p-4 my-4">
+                                <h4 className="text-sm font-medium text-red-400 mb-2">Refund Details</h4>
+                                {sessionToCancel && (
+                                  <div className="space-y-2 text-sm">
+                                    <p className="flex justify-between text-gray-300">
+                                      <span>Original Amount:</span> 
+                                      <span className="font-medium">₹{getSessionPrice(sessionToCancel)}</span>
+                                    </p>
+                                    <p className="flex justify-between text-gray-300">
+                                      <span>Refund Percentage:</span> 
+                                      <span className="font-medium">{calculateRefundAmount(sessionToCancel).percentage}%</span>
+                                    </p>
+                                    <p className="flex justify-between text-white font-medium border-t border-red-800 pt-2">
+                                      <span>Refund Amount:</span> 
+                                      <span>₹{calculateRefundAmount(sessionToCancel).amount}</span>
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                      ({calculateRefundAmount(sessionToCancel).policy})
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="mb-4">
+                                <Label htmlFor="cancellationReason" className="text-gray-300 mb-1.5 block">
+                                  Please provide a reason for cancellation:
+                                </Label>
+                                <Textarea
+                                  id="cancellationReason"
+                                  className="bg-gray-800 border-gray-700 resize-none text-white"
+                                  placeholder="Your reason for cancellation"
+                                  value={cancellationReason}
+                                  onChange={(e) => setCancellationReason(e.target.value)}
+                                />
+                              </div>
+                              
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                                  Keep My Session
+                                </AlertDialogCancel>
+                                <AlertDialogAction 
+                                  className="bg-red-600 hover:bg-red-700"
+                                  onClick={() => cancelSession()}
+                                  disabled={!cancellationReason || isCancelling}
+                                >
+                                  {isCancelling ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                      Cancelling...
+                                    </>
+                                  ) : "Confirm Cancellation"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </>
+                      )}
+                      
+                      <Link href={`/project-guidance?session=${session.id}`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="h-9 border-green-700 text-green-500 hover:bg-green-900/30"
+                          disabled={session.status === 'cancelled'}
+                        >
+                          Manage Session
+                        </Button>
+                      </Link>
+                    </div>
                   </CardFooter>
                 </Card>
               ))}
@@ -388,6 +771,18 @@ export default function AllSessions() {
                     Book a New Session
                   </Button>
                 </Link>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <a 
+                  href="https://wa.me/8971690163" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-gray-400 hover:text-gray-300 text-sm"
+                >
+                  <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                  Contact us via WhatsApp for support
+                </a>
               </div>
             </div>
             
