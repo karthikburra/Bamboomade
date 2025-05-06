@@ -263,7 +263,7 @@ const AIKnowledgeManagement: React.FC = () => {
           <h1 className="text-3xl font-bold mr-4">AI Knowledge Management</h1>
           <Button 
             variant="secondary" 
-            onClick={() => window.history.back()}
+            onClick={() => window.location.href = '/admin'}
           >
             Back to Admin Dashboard
           </Button>
