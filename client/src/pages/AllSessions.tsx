@@ -94,6 +94,7 @@ export default function AllSessions() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
   
   // Calculate refund amount based on cancellation policy
   const calculateRefundAmount = (session: Session) => {
@@ -180,40 +181,57 @@ export default function AllSessions() {
     }
   });
   
-  // Fetch available time slots for a date
-  const fetchAvailableSlots = async (date: Date) => {
+  // Fetch all available slots and dates
+  const fetchAllAvailableSlots = async () => {
     try {
-      const formattedDate = format(date, "yyyy-MM-dd");
-      const response = await apiRequest("GET", `/api/available-slots?date=${formattedDate}`);
+      const response = await apiRequest("GET", `/api/available-slots`);
       const data = await response.json();
       
       if (data.success) {
-        // Only show slots that aren't already booked
-        const availableSlots = data.slots
+        // Process all available dates that have non-booked slots
+        const dates = data.slots
           .filter((slot: any) => {
-            // Find the relevant date slot
-            const dateSlot = slot.date === formattedDate ? slot : null;
-            if (!dateSlot) return false;
-            
-            // Get available time slots
-            return dateSlot.slotsWithStatus.some((s: any) => !s.isBooked);
+            // Only include dates that have at least one non-booked time slot
+            return slot.slotsWithStatus.some((s: any) => !s.isBooked);
           })
-          .flatMap((slot: any) => {
-            // From the slots with the matching date, get only non-booked time slots
-            if (slot.date === formattedDate) {
-              return slot.slotsWithStatus
-                .filter((s: any) => !s.isBooked)
-                .map((s: any) => s.time);
-            }
-            return [];
+          .map((slot: any) => {
+            // Convert date strings to Date objects
+            return new Date(slot.date);
           });
-          
-        setAvailableTimeSlots(availableSlots);
+        
+        setAvailableDates(dates);
+        return data.slots;
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to fetch available slots:", error);
+      setAvailableDates([]);
+      return [];
+    }
+  };
+  
+  // Fetch available time slots for a specific date
+  const fetchAvailableSlots = async (date: Date) => {
+    try {
+      const formattedDate = format(date, "yyyy-MM-dd");
+      const allSlots = await fetchAllAvailableSlots();
+      
+      // Find the slot for the selected date
+      const dateSlot = allSlots.find((slot: any) => slot.date === formattedDate);
+      
+      if (dateSlot) {
+        // Get only non-booked time slots for this date
+        const availableTimes = dateSlot.slotsWithStatus
+          .filter((s: any) => !s.isBooked)
+          .map((s: any) => s.time);
+        
+        setAvailableTimeSlots(availableTimes);
       } else {
+        // No slots exist for this date
         setAvailableTimeSlots([]);
       }
     } catch (error) {
-      console.error("Failed to fetch slots:", error);
+      console.error("Failed to fetch slots for date:", error);
       setAvailableTimeSlots([]);
     }
   };
@@ -267,6 +285,11 @@ export default function AllSessions() {
       });
     }
   });
+  
+  // Load available dates when component mounts
+  useEffect(() => {
+    fetchAllAvailableSlots();
+  }, []);
   
   // Check if email was passed as URL parameter
   useEffect(() => {
