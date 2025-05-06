@@ -642,7 +642,7 @@ export default function AllSessions() {
                       </div>
                     )}
                     
-                    {session.googleMeetLink && (
+                    {session.googleMeetLink && session.status !== 'cancelled' && (
                       <div className="mt-2 pt-2 border-t border-gray-800">
                         <div className="flex items-center justify-between text-sm text-green-400 mb-2">
                           <div className="flex items-center">
@@ -690,9 +690,15 @@ export default function AllSessions() {
                     )}
                   </CardContent>
                   <CardFooter className="bg-gray-800/50 pt-3 flex flex-wrap gap-2 justify-between">
-                    {!session.googleMeetLink && (
+                    {!session.googleMeetLink && session.status !== 'cancelled' && (
                       <div className="text-xs text-gray-400">
                         The Google Meet link will be added by the administrator soon
+                      </div>
+                    )}
+                    
+                    {session.status === 'cancelled' && (
+                      <div className="text-xs text-red-400">
+                        This session has been cancelled
                       </div>
                     )}
                     
