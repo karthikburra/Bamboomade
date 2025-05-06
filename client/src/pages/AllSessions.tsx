@@ -722,7 +722,7 @@ export default function AllSessions() {
                                               <SelectValue placeholder="Select a date" />
                                             </div>
                                           </SelectTrigger>
-                                          <SelectContent>
+                                          <SelectContent className="bg-gray-800 border-gray-700 text-white">
                                             {(() => {
                                               // Generate available dates as options
                                               const dateOptions = [];
@@ -745,11 +745,11 @@ export default function AllSessions() {
                                                     key={formattedDate} 
                                                     value={formattedDate}
                                                     className={cn(
-                                                      "flex items-center",
+                                                      "flex items-center text-white data-[highlighted]:bg-gray-700",
                                                       isToday && "font-bold"
                                                     )}
                                                   >
-                                                    <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                                                    <span className={isToday ? "text-green-500" : ""}>
                                                       {displayDate}{isToday ? " (Today)" : ""}
                                                     </span>
                                                   </SelectItem>
@@ -826,12 +826,13 @@ export default function AllSessions() {
                                             <SelectTrigger>
                                               <SelectValue placeholder="Select a time" />
                                             </SelectTrigger>
-                                            <SelectContent>
+                                            <SelectContent className="bg-gray-800 border-gray-700 text-white">
                                               {availableTimeSlots.length > 0 ? (
                                                 availableTimeSlots.map((time) => (
                                                   <SelectItem 
                                                     key={time} 
                                                     value={time}
+                                                    className="text-white data-[highlighted]:bg-gray-700"
                                                   >
                                                     {time}
                                                     {selectedTimeSlot === time && (
@@ -842,7 +843,7 @@ export default function AllSessions() {
                                                   </SelectItem>
                                                 ))
                                               ) : (
-                                                <SelectItem value="no-slots" disabled>
+                                                <SelectItem value="no-slots" disabled className="text-gray-400">
                                                   No available time slots
                                                 </SelectItem>
                                               )}

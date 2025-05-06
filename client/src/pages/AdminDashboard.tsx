@@ -1534,7 +1534,7 @@ export default function AdminDashboard() {
                           <SelectItem 
                             key={date.toISOString()} 
                             value={date.toISOString()}
-                            className="cursor-pointer hover:bg-gray-700"
+                            className="text-white data-[highlighted]:bg-gray-700"
                           >
                             {format(date, "EEE, MMM d, yyyy")}
                           </SelectItem>
@@ -1575,7 +1575,9 @@ export default function AdminDashboard() {
                               value={timeSlot.time}
                               disabled={isConflict}
                               className={`
-                                ${isConflict ? 'text-gray-500 line-through bg-gray-800/60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-700'}
+                                ${isConflict 
+                                  ? 'text-gray-500 line-through bg-gray-800/60 cursor-not-allowed' 
+                                  : 'text-white data-[highlighted]:bg-gray-700'}
                               `}
                             >
                               {timeSlot.time}
@@ -1613,8 +1615,8 @@ export default function AdminDashboard() {
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-700 text-white">
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
+                  <SelectItem value="30" className="text-white data-[highlighted]:bg-gray-700">30 minutes</SelectItem>
+                  <SelectItem value="60" className="text-white data-[highlighted]:bg-gray-700">60 minutes</SelectItem>
                 </SelectContent>
               </Select>
             </div>
