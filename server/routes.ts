@@ -127,20 +127,26 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
         return true;
       }
       
-      // UPDATED: Consider ALL pending sessions as booked (not just recent ones)
+      // FIXED: Pending sessions are no longer considered when checking for conflicts
+      // Only sessions with confirmed payment should block booking
       if (session.status === 'pending') {
-        console.log(`Conflict detected: Pending session ${session.id} is reserving ${targetDateStr} ${targetTimeStr}`);
-        return true;
+        console.log(`Note: Pending session ${session.id} at ${targetDateStr} ${targetTimeStr} not considered for conflict`);
+        return false;
       }
     }
     
     // For half-hour bookings, also check if they conflict with hour slots
     if (isHalfHourBooking && sessionDateStr === targetDateStr) {
       if (hourToCheck.includes(sessionTimeStr)) {
-        // This half-hour booking conflicts with a full-hour booking
-        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
-          console.log(`Half-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
+        // FIXED: Only consider confirmed sessions for half-hour conflicts
+        if (session.paymentConfirmed || session.status === 'confirmed') {
+          console.log(`Half-hour conflict: Confirmed session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
+        }
+        
+        // Pending sessions are no longer blocking bookings
+        if (session.status === 'pending') {
+          console.log(`Note: Pending session ${session.id} at ${sessionTimeStr} not considered for half-hour conflict with ${targetTimeStr}`);
         }
       }
     }
@@ -155,9 +161,15 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       // If session is at XX:30 and conflicts with our target time at YY:00
       if (sessionMinute === 30 && 
           (sessionHour === targetHour || sessionHour + 1 === targetHour)) {
-        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
-          console.log(`Full-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
+        // FIXED: Only consider confirmed sessions for full-hour conflicts too
+        if (session.paymentConfirmed || session.status === 'confirmed') {
+          console.log(`Full-hour conflict: Confirmed session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
+        }
+        
+        // Pending sessions are no longer blocking bookings
+        if (session.status === 'pending') {
+          console.log(`Note: Pending session ${session.id} at ${sessionTimeStr} not considered for full-hour conflict with ${targetTimeStr}`);
         }
       }
     }
