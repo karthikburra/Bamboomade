@@ -1571,9 +1571,13 @@ function ProjectGuidance() {
                                                   className={booked ? "text-gray-400 line-through" : ""}
                                                 >
                                                   {time}
-                                                  {booked && (
-                                                    <span className="ml-2 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900 px-2 py-0.5 text-xs font-medium text-red-800 dark:text-red-300">
+                                                  {booked ? (
+                                                    <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
                                                       Booked
+                                                    </span>
+                                                  ) : selectedTime === time && (
+                                                    <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                                                      Selected
                                                     </span>
                                                   )}
                                                 </SelectItem>
