@@ -393,13 +393,48 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                     )}
                   >
                     <div className="flex justify-between items-center w-full">
-                      <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
-                        {displayDate}{isToday ? " (Today)" : ""}
-                      </span>
+                      {(() => {
+                        // Add booking status indicator and slot availability info
+                        if (!availableSlots || !availableSlots.slots) {
+                          return (
+                            <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                              {displayDate}{isToday ? " (Today)" : ""}
+                            </span>
+                          );
+                        }
+                        
+                        const matchingSlot: AvailableSlot | undefined = availableSlots.slots.find(
+                          (slot: AvailableSlot) => slot.date === formattedDate
+                        );
+                        
+                        if (!matchingSlot || !matchingSlot.slotsWithStatus) {
+                          return (
+                            <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                              {displayDate}{isToday ? " (Today)" : ""}
+                            </span>
+                          );
+                        }
+                        
+                        const totalSlots = matchingSlot.slotsWithStatus.length;
+                        const bookedSlots = matchingSlot.slotsWithStatus.filter(
+                          (slot: TimeSlotWithStatus) => slot.isBooked
+                        ).length;
+                        const availableSlotCount = totalSlots - bookedSlots;
+                        
+                        // Show date with available slots info
+                        return (
+                          <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                            {format(date, "do MMM")}{isToday ? " (Today)" : ""} 
+                            <span className="ml-1 text-sm font-medium">
+                              ({availableSlotCount}/{totalSlots} slots)
+                            </span>
+                          </span>
+                        );
+                      })()}
                       
-                      <div className="ml-9">
+                      <div className="ml-2">
                         {(() => {
-                      // Add booking status indicator
+                      // Keep the status indicator
                       if (!availableSlots || !availableSlots.slots) return null;
                       
                       const matchingSlot: AvailableSlot | undefined = availableSlots.slots.find(
