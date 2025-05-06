@@ -21,7 +21,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -107,6 +107,43 @@ function ProjectGuidance() {
     refundPercentage: number;
     refundAmount: number;
   } | null>(null);
+  
+  // Fetch available time slots from API for blocking already booked slots
+  const { data: availableSlots } = useQuery({
+    queryKey: ["/api/available-slots"],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest("GET", "/api/available-slots");
+        return response.json();
+      } catch (error) {
+        console.error("Failed to fetch available slots:", error);
+        return { slots: [] };
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  
+  // Helper function to check if a time slot is already booked
+  const isTimeSlotBooked = (time: string, date: Date | undefined): boolean => {
+    if (!date || !availableSlots || !availableSlots.slots) return false;
+    
+    // Format the date to match the API format (YYYY-MM-DD)
+    const formattedDate = format(date, "yyyy-MM-dd");
+    
+    // Find the matching slot for this date
+    const matchingSlot = availableSlots.slots.find(
+      (slot: any) => slot.date === formattedDate
+    );
+    
+    if (!matchingSlot || !matchingSlot.slotsWithStatus) return false;
+    
+    // Find the status for this time
+    const slotStatus = matchingSlot.slotsWithStatus.find(
+      (s: any) => s.time === time
+    );
+    
+    return slotStatus ? slotStatus.isBooked : false;
+  };
   
   // Check if returning from payment flow
   useEffect(() => {
@@ -1486,22 +1523,55 @@ function ProjectGuidance() {
                               <div>
                                 <h4 className="text-base font-medium mb-4">Available Time Slots</h4>
                                 {selectedDate ? (
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time) => (
-                                      <button
-                                        key={time}
-                                        type="button"
-                                        onClick={() => setSelectedTime(time)}
-                                        className={`py-2 px-4 text-center text-sm rounded-md ${
-                                          selectedTime === time
-                                            ? "bg-green-600 text-white"
-                                            : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                        }`}
-                                      >
-                                        {time}
-                                      </button>
-                                    ))}
-                                  </div>
+                                  <>
+                                    {/* Informational text about booking status */}
+                                    <div className="mb-3 text-xs flex flex-wrap gap-2">
+                                      <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-green-600 rounded-full mr-1"></div>
+                                        <span>Selected</span>
+                                      </div>
+                                      <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-gray-100 dark:bg-gray-800 rounded-full mr-1"></div>
+                                        <span>Available</span>
+                                      </div>
+                                      <div className="flex items-center">
+                                        <div className="w-3 h-3 bg-gray-300 dark:bg-gray-700 rounded-full mr-1"></div>
+                                        <span>Booked</span>
+                                      </div>
+                                    </div>
+                                  
+                                    {/* Time slots grid with booking status */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time) => {
+                                        const booked = isTimeSlotBooked(time, selectedDate);
+                                        return (
+                                          <button
+                                            key={time}
+                                            type="button"
+                                            onClick={() => !booked && setSelectedTime(time)}
+                                            disabled={booked}
+                                            className={`py-2 px-4 text-center text-sm rounded-md relative ${
+                                              selectedTime === time
+                                                ? "bg-green-600 text-white"
+                                                : booked
+                                                ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-75"
+                                                : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                                            }`}
+                                          >
+                                            {time}
+                                            {booked && (
+                                              <div className="absolute inset-0 flex items-center justify-center">
+                                                <div className="absolute inset-0 bg-gray-700 opacity-10 rounded-md"></div>
+                                                <span className="text-xs font-medium text-red-600 dark:text-red-400 z-10">
+                                                  Booked
+                                                </span>
+                                              </div>
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </>
                                 ) : (
                                   <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md text-center">
                                     <p className="text-gray-500 dark:text-gray-400">
