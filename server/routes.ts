@@ -2041,35 +2041,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return; // Skip adding to booked slots
         }
         
-        // Consider confirmed sessions (either paid or manually confirmed by admin)
-        if (session.paymentConfirmed || session.status === 'confirmed') {
+        // IMPROVED: Handle all non-cancelled status sessions, not just confirmed ones
+        // This ensures we catch pending, confirmed, and other statuses
+        if (session.status !== 'cancelled') {
+          // Track in the appropriate map based on status
+          const isConfirmed = session.paymentConfirmed || session.status === 'confirmed';
+          const isPending = session.status === 'pending';
+          
+          // Mark all non-cancelled sessions as booked
           if (!bookedSlots[sessionDateStr]) {
             bookedSlots[sessionDateStr] = [];
           }
           
-          // Add the booked time slot
-          bookedSlots[sessionDateStr].push(sessionTimeStr);
-          confirmedSessionCount++;
-        } 
-        // UPDATED: Track ALL pending sessions as booked (not just recent ones)
-        else if (session.status === 'pending') {
-          // Track this pending slot as unavailable
-          if (!pendingSlots[sessionDateStr]) {
-            pendingSlots[sessionDateStr] = [];
-          }
-          
-          pendingSlots[sessionDateStr].push(sessionTimeStr);
-          pendingSessionCount++;
-          
-          // FIXED: Also add to bookedSlots to ensure they show as unavailable
-          if (!bookedSlots[sessionDateStr]) {
-            bookedSlots[sessionDateStr] = [];
-          }
-          
-          // Ensure we don't duplicate entries
+          // Add the booked time slot to the main bookedSlots map
           if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
             bookedSlots[sessionDateStr].push(sessionTimeStr);
-            // Don't increment confirmedSessionCount as it's not actually confirmed
+          }
+          
+          // Also track pending sessions separately for debugging
+          if (isPending) {
+            if (!pendingSlots[sessionDateStr]) {
+              pendingSlots[sessionDateStr] = [];
+            }
+            
+            if (!pendingSlots[sessionDateStr].includes(sessionTimeStr)) {
+              pendingSlots[sessionDateStr].push(sessionTimeStr);
+              pendingSessionCount++;
+            }
+          }
+          
+          // Update the confirmed session counter if applicable
+          if (isConfirmed) {
+            confirmedSessionCount++;
+          }
+          
+          // IMPROVED: Check if this is a half-hour booking and block the adjacent hours
+          // For example, a 13:30 booking conflicts with both 13:00 and 14:00 slots
+          const isHalfHourBooking = sessionTimeStr.endsWith(":30");
+          if (isHalfHourBooking) {
+            const hour = parseInt(sessionTimeStr.split(":")[0]);
+            
+            // Block the current hour (13:00) and next hour (14:00) for a 13:30 booking
+            const currentHour = `${hour.toString().padStart(2, '0')}:00`;
+            const nextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
+            
+            // Add conflicts for both adjacent full hours
+            if (!bookedSlots[sessionDateStr].includes(currentHour)) {
+              bookedSlots[sessionDateStr].push(currentHour);
+              console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${currentHour}`);
+            }
+            
+            if (!bookedSlots[sessionDateStr].includes(nextHour)) {
+              bookedSlots[sessionDateStr].push(nextHour);
+              console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${nextHour}`);
+            }
           }
         }
       });
@@ -2113,7 +2138,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
           
           // IMPROVED: Check for half-hour bookings that would conflict with this full-hour slot
-          // For example, if checking 13:00 slot, look for sessions at 12:30 and 13:30
+          // The logic is simpler now because we already marked half-hour bookings as conflicts
+          // in the bookedSlots processing above, but we'll keep this check for redundancy
+          
+          // For full-hour slots, we already marked half-hour bookings as conflicts in the bookings
+          // processing code above, but we'll double-check here to be safe
+          
           // Extract the hour from the time slot
           const hour = parseInt(timeSlot.split(":")[0]);
           
@@ -2122,6 +2152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const previousHalfHour = `${(hour-1).toString().padStart(2, '0')}:30`;
           const nextHalfHour = `${hour.toString().padStart(2, '0')}:30`;
           
+          // Check for any conflicting half-hour bookings
           const isHalfHourConflict = (
             bookedTimesForDate.includes(previousHalfHour) || 
             pendingTimesForDate.includes(previousHalfHour) ||
@@ -2129,7 +2160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             pendingTimesForDate.includes(nextHalfHour)
           );
           
-          // If we have a conflict due to half-hour booking, log it
+          // If we have a conflict due to half-hour booking, log it for debugging
           if (isHalfHourConflict) {
             console.log(`DEBUG: Detected half-hour conflict for ${slot.date} ${timeSlot} with either ${previousHalfHour} or ${nextHalfHour}`);
           }
