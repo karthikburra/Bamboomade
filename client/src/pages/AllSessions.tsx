@@ -62,8 +62,10 @@ import { format, formatInTimeZone } from "date-fns-tz";
 
 // Helper function to format dates in IST timezone
 const formatInIST = (date: Date | string, formatStr: string) => {
+  // Ensure all time formats use 24-hour format (e.g., replace 'h:mm a' with 'HH:mm')
+  const updatedFormat = formatStr.replace('h:mm a', 'HH:mm').replace('h:mm', 'HH:mm');
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return formatInTimeZone(dateObj, 'Asia/Kolkata', formatStr);
+  return formatInTimeZone(dateObj, 'Asia/Kolkata', updatedFormat);
 };
 
 import { DayPicker } from "react-day-picker";

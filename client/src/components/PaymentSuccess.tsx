@@ -56,14 +56,14 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, 'h:mm a');
+    return format(date, 'HH:mm');
   };
 
   // Calculate end time
   const getEndTime = (dateString: string, durationMinutes: number) => {
     const date = new Date(dateString);
     date.setMinutes(date.getMinutes() + durationMinutes);
-    return format(date, 'h:mm a');
+    return format(date, 'HH:mm');
   };
 
   if (loading) {

@@ -197,7 +197,14 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   const isTimeSlotBooked = (time: string): boolean => {
     if (!slotsWithStatus || slotsWithStatus.length === 0) return false;
     const slot = slotsWithStatus.find(s => s.time === time);
-    return slot ? slot.isBooked : false;
+    const isBooked = slot ? slot.isBooked : false;
+    
+    // Log for debugging
+    if (isBooked) {
+      console.log(`Time slot ${time} is marked as booked`);
+    }
+    
+    return isBooked;
   };
   
   // Function to check if a date should be disabled or has special styling
