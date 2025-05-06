@@ -742,17 +742,6 @@ export default function AllSessions() {
                           </AlertDialog>
                         </>
                       )}
-                      
-                      <Link href={`/project-guidance?session=${session.id}`}>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="h-9 border-green-700 text-green-500 hover:bg-green-900/30"
-                          disabled={session.status === 'cancelled'}
-                        >
-                          Manage Session
-                        </Button>
-                      </Link>
                     </div>
                   </CardFooter>
                 </Card>
@@ -799,7 +788,7 @@ export default function AllSessions() {
                     Sessions typically last either 30 minutes or 1 hour as specified during booking.
                   </p>
                   <p className="text-xs text-gray-400">
-                    If you need to reschedule or have questions about your session, please use the "Manage Session" button.
+                    If you have questions about your session, please use the Contact Us link below to reach us via WhatsApp.
                   </p>
                 </div>
               </div>
