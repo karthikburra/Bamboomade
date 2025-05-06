@@ -632,9 +632,9 @@ function ProjectGuidance() {
           </DialogHeader>
           
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4 my-4">
-            <p className="text-sm text-amber-800 dark:text-amber-400">
+            <div className="text-sm text-amber-800 dark:text-amber-400">
               Our calendar automatically updates to show available time slots. Another user may have just booked this slot before you completed your booking.
-            </p>
+            </div>
           </div>
           
           <DialogFooter>
@@ -724,9 +724,9 @@ function ProjectGuidance() {
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md p-4 my-4">
               <h4 className="text-sm font-medium text-green-800 dark:text-green-400">Refund Details</h4>
               <div className="mt-2 text-sm text-green-700 dark:text-green-300">
-                <p><strong>Refund Percentage:</strong> {cancellationDetails.refundPercentage}%</p>
-                <p><strong>Refund Amount:</strong> ₹{cancellationDetails.refundAmount}</p>
-                <p className="text-xs mt-2">Your refund will be processed to your original payment method within 7-10 business days.</p>
+                <div><strong>Refund Percentage:</strong> {cancellationDetails.refundPercentage}%</div>
+                <div><strong>Refund Amount:</strong> ₹{cancellationDetails.refundAmount}</div>
+                <div className="text-xs mt-2">Your refund will be processed to your original payment method within 7-10 business days.</div>
               </div>
             </div>
             

@@ -502,17 +502,16 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                       >
                         <div className="flex justify-between items-center w-full">
                           <span>{time}</span>
-                          <div className="ml-9">
-                            {props.selectedTime === time && !isBooked && (
+                          <div className="ml-3">
+                            {isBooked ? (
+                              <span className="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                                Booked
+                              </span>
+                            ) : props.selectedTime === time ? (
                               <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
                                 Selected
                               </span>
-                            )}
-                            {isBooked && (
-                              <span className="text-xs text-gray-500">
-                                (Booked)
-                              </span>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </SelectItem>
@@ -532,7 +531,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                     >
                       <div className="flex justify-between items-center w-full">
                         <span>{time}</span>
-                        <div className="ml-9">
+                        <div className="ml-3">
                           {props.selectedTime === time && (
                             <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
                               Selected
