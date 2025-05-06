@@ -431,7 +431,7 @@ export default function AdminDashboard() {
   // Fetch available time slots for a specific date
   const fetchAvailableSlots = async (date: Date) => {
     try {
-      const formattedDate = format(date, "yyyy-MM-dd");
+      const formattedDate = formatInIST(date, "yyyy-MM-dd");
       const allSlots = await fetchAllAvailableSlots();
       
       // Find the slot for the selected date
@@ -558,7 +558,7 @@ export default function AdminDashboard() {
   const handleStartDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatInIST(date, "yyyy-MM-dd");
     setDateRange(prev => ({ ...prev, start: dateStr }));
     setStartPickerOpen(false);
     
@@ -571,7 +571,7 @@ export default function AdminDashboard() {
   const handleEndDateSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatInIST(date, "yyyy-MM-dd");
     setDateRange(prev => ({ ...prev, end: dateStr }));
     setEndPickerOpen(false);
   };
@@ -812,11 +812,11 @@ export default function AdminDashboard() {
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-2 text-blue-400" />
                                 <span className="font-medium text-sm sm:text-base">
-                                  {format(parseISO(slot.date), 'MMM d, yyyy')}
+                                  {formatInIST(parseISO(slot.date), 'MMM d, yyyy')}
                                 </span>
                               </div>
                               <div className="text-xs text-gray-400 mt-1">
-                                {format(parseISO(slot.date), 'EEEE')}
+                                {formatInIST(parseISO(slot.date), 'EEEE')}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -968,7 +968,7 @@ export default function AdminDashboard() {
                                     <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                       <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
                                       <span className="truncate">
-                                        {format(new Date(session.date), 'MMM d')}
+                                        {formatInIST(new Date(session.date), 'MMM d')}
                                       </span>
                                     </div>
                                     <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
