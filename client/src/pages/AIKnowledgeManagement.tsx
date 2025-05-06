@@ -22,7 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 // Icons
-import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon } from 'lucide-react';
+import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon, Database, Code, Search } from 'lucide-react';
 
 // Schema validation for AI knowledge content form
 const aiKnowledgeFormSchema = z.object({
@@ -65,12 +65,16 @@ const AIKnowledgeManagement: React.FC = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
+  const [isSqlDialogOpen, setIsSqlDialogOpen] = useState(false);
   const [currentContent, setCurrentContent] = useState<AiKnowledgeContent | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [importedContent, setImportedContent] = useState<string>("");
   const [backupFile, setBackupFile] = useState<File | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImportingBackup, setIsImportingBackup] = useState(false);
+  const [sqlQuery, setSqlQuery] = useState<string>("SELECT * FROM content");
+  const [sqlResult, setSqlResult] = useState<any>(null);
+  const [isExecutingSql, setIsExecutingSql] = useState(false);
   
   // Form setup
   const form = useForm<z.infer<typeof aiKnowledgeFormSchema>>({
@@ -348,6 +352,45 @@ const AIKnowledgeManagement: React.FC = () => {
       setIsImportingBackup(false);
     }
   };
+  
+  // Handle SQL query execution
+  const executeSqlQuery = async () => {
+    if (!sqlQuery.trim()) {
+      toast({
+        title: "Empty Query",
+        description: "Please enter a SQL query to execute.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsExecutingSql(true);
+      const response = await apiRequest('POST', '/api/ai-knowledge/query', { query: sqlQuery });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Query execution failed');
+      }
+      
+      const data = await response.json();
+      setSqlResult(data);
+      
+      toast({
+        title: "Query Executed",
+        description: `Found ${data.result.count} results.`,
+      });
+    } catch (error) {
+      console.error('Error executing SQL query:', error);
+      toast({
+        title: "Query Failed",
+        description: `Failed to execute query: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsExecutingSql(false);
+    }
+  };
 
   const filteredContent = knowledgeContent?.filter(item => {
     if (activeTab === "all") return true;
@@ -386,6 +429,14 @@ const AIKnowledgeManagement: React.FC = () => {
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             <span className="whitespace-nowrap">Add New Content</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+            onClick={() => setIsSqlDialogOpen(true)}
+          >
+            <Database className="mr-2 h-4 w-4" />
+            <span className="whitespace-nowrap">SQL Query</span>
           </Button>
           <Button
             variant="outline"
@@ -1054,6 +1105,142 @@ const AIKnowledgeManagement: React.FC = () => {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* SQL Query Dialog */}
+      <Dialog open={isSqlDialogOpen} onOpenChange={setIsSqlDialogOpen}>
+        <DialogContent className="max-w-3xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold dark:text-white">
+              <div className="flex items-center">
+                <Database className="mr-2 h-5 w-5" />
+                SQL-Like Knowledge Query
+              </div>
+            </DialogTitle>
+            <DialogDescription className="dark:text-gray-300">
+              Query the AI knowledge database using SQL-like syntax. 
+              Example: <code className="bg-gray-700 text-white px-1 rounded">SELECT * FROM content WHERE contentType = 'document' ORDER BY createdAt DESC LIMIT 10</code>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              <Label htmlFor="sql-query" className="text-sm font-medium dark:text-gray-200">SQL Query</Label>
+              <Textarea 
+                id="sql-query"
+                value={sqlQuery}
+                onChange={(e) => setSqlQuery(e.target.value)}
+                placeholder="SELECT * FROM content WHERE contentType = 'document' ORDER BY createdAt DESC LIMIT 10"
+                className="min-h-[100px] font-mono text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+              />
+              <div className="flex justify-between">
+                <div>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Supported fields: id, title, content, source, contentType, status, createdAt, updatedAt, createdBy
+                  </span>
+                </div>
+                <Button 
+                  onClick={executeSqlQuery} 
+                  disabled={isExecutingSql}
+                  className="ml-auto dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+                >
+                  {isExecutingSql ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                      Executing...
+                    </>
+                  ) : (
+                    <>
+                      <Code className="mr-2 h-4 w-4" />
+                      Execute Query
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+            
+            {/* Query Results */}
+            {sqlResult && (
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium dark:text-white">Results ({sqlResult.result.count})</h3>
+                  <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200">
+                    Query took {sqlResult.result.executionTime || "N/A"} ms
+                  </Badge>
+                </div>
+                
+                <ScrollArea className="h-[400px] w-full rounded border dark:border-gray-700">
+                  {sqlResult.result.count > 0 ? (
+                    <Table className="dark:text-gray-200">
+                      <TableHeader className="dark:bg-gray-900">
+                        <TableRow className="dark:border-gray-700">
+                          <TableHead className="dark:text-gray-300">Title</TableHead>
+                          <TableHead className="dark:text-gray-300">Type</TableHead>
+                          <TableHead className="dark:text-gray-300">Status</TableHead>
+                          <TableHead className="dark:text-gray-300">Created At</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sqlResult.result.data.map((item: any) => (
+                          <TableRow key={item.id} className="dark:border-gray-700 dark:hover:bg-gray-700/50">
+                            <TableCell className="font-medium truncate max-w-[200px]" title={item.title}>
+                              {item.title}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+                                {item.contentType}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant={item.status === 'active' ? 'default' : 'secondary'}
+                                className={item.status === 'active' 
+                                  ? "dark:bg-green-700 dark:text-white" 
+                                  : "dark:bg-gray-600 dark:text-gray-200"}
+                              >
+                                {item.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {new Date(item.createdAt).toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                      No results found for this query.
+                    </div>
+                  )}
+                </ScrollArea>
+                
+                <div className="border p-4 rounded dark:border-gray-700 dark:bg-gray-900">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium dark:text-gray-200">Raw Query:</span>
+                    <code className="text-xs bg-gray-800 text-white px-2 py-1 rounded">
+                      {sqlResult.result.query}
+                    </code>
+                  </div>
+                  
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <strong>Fields:</strong> {sqlResult.result.fields === '*' ? 'All fields selected' : sqlResult.result.fields?.join(', ')}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsSqlDialogOpen(false)}
+              className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
+            >
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
