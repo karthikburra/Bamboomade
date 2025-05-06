@@ -88,7 +88,13 @@ type ProjectGuidanceFormValues = z.infer<typeof projectGuidanceFormSchema>;
 
 function ProjectGuidance() {
   const { toast } = useToast();
-  const [step, setStep] = useState(1); // 1: Details, 2: Schedule, 3: Payment, 4: Confirmation, 5: Reschedule, 6: Cancel
+  const [step, setCurrentStep] = useState(1); // 1: Details, 2: Schedule, 3: Payment, 4: Confirmation, 5: Reschedule, 6: Cancel
+  
+  // Function to set step and scroll to top
+  const setStep = (newStep: number) => {
+    setCurrentStep(newStep);
+    scrollToTop();
+  };
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [selectedDuration, setSelectedDuration] = useState<number>(60); // Default 60 minutes
@@ -98,6 +104,16 @@ function ProjectGuidance() {
   const [verificationEmail, setVerificationEmail] = useState<string>("");
   const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
   const [userSessions, setUserSessions] = useState<any[] | null>(null);
+  
+  // Function to scroll to top of the page
+  const scrollToTop = () => {
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }, 100);
+  };
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   
   // Email verification state
@@ -338,6 +354,8 @@ function ProjectGuidance() {
     // When the user submits the form with date and time, book the session
     // and then immediately redirect to payment
     bookSession(values);
+    // Scroll to top after submission
+    scrollToTop();
   };
   
   const handlePaymentSuccess = (paymentId: string) => {
@@ -877,7 +895,10 @@ function ProjectGuidance() {
                           />
                           
                           <div className="flex justify-end gap-2">
-                            <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                            <Button 
+                              type="submit" 
+                              className="bg-green-600 hover:bg-green-700"
+                            >
                               Continue to Schedule
                             </Button>
                           </div>
