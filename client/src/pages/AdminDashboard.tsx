@@ -1179,25 +1179,90 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={dateRange.start}
-                      onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
-                      className="bg-gray-800 border-gray-700 text-white"
-                      min={new Date().toISOString().split('T')[0]}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="startDate"
+                        type="text"
+                        value={dateRange.start ? format(new Date(dateRange.start), 'MMM d, yyyy') : ''}
+                        onClick={() => setStartPickerOpen(true)}
+                        className="bg-gray-800 border-gray-700 text-white cursor-pointer"
+                        readOnly
+                      />
+                      <Button 
+                        type="button" 
+                        size="icon" 
+                        variant="ghost" 
+                        className="absolute right-0 top-0 h-full"
+                        onClick={() => setStartPickerOpen(true)}
+                      >
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      
+                      {startPickerOpen && (
+                        <div 
+                          ref={startDateRef} 
+                          className="absolute left-0 top-full z-50 mt-1"
+                        >
+                          <DayPicker
+                            mode="single"
+                            selected={dateRange.start ? new Date(dateRange.start) : undefined}
+                            onSelect={handleStartDateSelect}
+                            month={startDateMonth}
+                            onMonthChange={setStartDateMonth}
+                            fromDate={new Date()}
+                            footer={
+                              <div className="p-2 text-center text-sm text-gray-400">
+                                Click to select start date
+                              </div>
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="endDate">End Date</Label>
-                    <Input
-                      id="endDate"
-                      type="date"
-                      value={dateRange.end}
-                      onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
-                      className="bg-gray-800 border-gray-700 text-white"
-                      min={dateRange.start || new Date().toISOString().split('T')[0]}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="endDate"
+                        type="text"
+                        value={dateRange.end ? format(new Date(dateRange.end), 'MMM d, yyyy') : ''}
+                        onClick={() => setEndPickerOpen(true)}
+                        className="bg-gray-800 border-gray-700 text-white cursor-pointer"
+                        readOnly
+                      />
+                      <Button 
+                        type="button" 
+                        size="icon" 
+                        variant="ghost" 
+                        className="absolute right-0 top-0 h-full"
+                        onClick={() => setEndPickerOpen(true)}
+                      >
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      
+                      {endPickerOpen && (
+                        <div 
+                          ref={endDateRef} 
+                          className="absolute left-0 top-full z-50 mt-1"
+                        >
+                          <DayPicker
+                            mode="single"
+                            selected={dateRange.end ? new Date(dateRange.end) : undefined}
+                            onSelect={handleEndDateSelect}
+                            month={endDateMonth}
+                            onMonthChange={setEndDateMonth}
+                            footer={
+                              <div className="p-2 text-center text-sm text-gray-400">
+                                Click to select end date
+                              </div>
+                            }
+                            fromDate={dateRange.start ? new Date(dateRange.start) : new Date()}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {/* Days of week checkboxes */}
@@ -1239,38 +1304,96 @@ export default function AdminDashboard() {
             ) : (
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white"
-                  min={new Date().toISOString().split('T')[0]}
-                />
+                <div className="relative">
+                  <Input
+                    id="date"
+                    type="text"
+                    value={newDate ? format(new Date(newDate), 'MMM d, yyyy') : ''}
+                    onClick={() => setStartPickerOpen(true)}
+                    className="bg-gray-800 border-gray-700 text-white cursor-pointer"
+                    readOnly
+                  />
+                  <Button 
+                    type="button" 
+                    size="icon" 
+                    variant="ghost" 
+                    className="absolute right-0 top-0 h-full"
+                    onClick={() => setStartPickerOpen(true)}
+                  >
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                  
+                  {startPickerOpen && (
+                    <div 
+                      ref={startDateRef} 
+                      className="absolute left-0 top-full z-50 mt-1"
+                    >
+                      <DayPicker
+                        mode="single"
+                        selected={newDate ? new Date(newDate) : undefined}
+                        onSelect={(date) => {
+                          if (date) {
+                            setNewDate(date.toISOString().split('T')[0]);
+                            setStartPickerOpen(false);
+                          }
+                        }}
+                        month={startDateMonth}
+                        onMonthChange={setStartDateMonth}
+                        fromDate={new Date()}
+                        footer={
+                          <div className="p-2 text-center text-sm text-gray-400">
+                            Click to select date
+                          </div>
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
                 <p className="text-xs text-gray-400">Select a date in the future</p>
               </div>
             )}
             
             <div className="space-y-2 border-t border-gray-800 pt-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="time">Time Slots</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="time"
-                    type="time"
-                    value={newTimeSlot}
-                    onChange={(e) => setNewTimeSlot(e.target.value)}
-                    className="bg-gray-800 border-gray-700 text-white w-32"
-                  />
-                  <Button 
-                    type="button" 
-                    size="sm" 
-                    onClick={addTimeToSelectedSlots}
-                    className="bg-blue-600 hover:bg-blue-700"
+              <Label htmlFor="time">Time Slots</Label>
+              
+              <div className="flex flex-wrap gap-2 mt-1 mb-4">
+                {timeSlotOptions.map((time) => (
+                  <Badge 
+                    key={time} 
+                    variant={selectedSlots.includes(time) ? "default" : "outline"}
+                    className={`cursor-pointer px-3 py-1.5 ${
+                      selectedSlots.includes(time) 
+                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                        : "bg-transparent hover:bg-blue-900/20 border-blue-800 text-blue-300"
+                    } flex items-center gap-1`}
+                    onClick={() => toggleTimeSlot(time)}
                   >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
+                    {selectedSlots.includes(time) ? (
+                      <Check className="w-3 h-3" />
+                    ) : (
+                      <Clock className="w-3 h-3" />
+                    )}
+                    {time}
+                  </Badge>
+                ))}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Input
+                  id="time"
+                  type="time"
+                  value={newTimeSlot}
+                  onChange={(e) => setNewTimeSlot(e.target.value)}
+                  className="bg-gray-800 border-gray-700 text-white flex-1"
+                />
+                <Button 
+                  type="button" 
+                  size="sm" 
+                  onClick={addTimeToSelectedSlots}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
               
               {/* Quick time slot buttons */}
@@ -1281,12 +1404,12 @@ export default function AdminDashboard() {
                   size="sm"
                   className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
                   onClick={() => {
-                    const times = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00"];
+                    const times = ["09:00", "10:00", "11:00", "12:00"];
                     const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
                     setSelectedSlots(uniqueSlots.sort());
                   }}
                 >
-                  + Standard Hours
+                  + Morning Hours
                 </Button>
                 <Button
                   type="button"
@@ -1294,12 +1417,12 @@ export default function AdminDashboard() {
                   size="sm"
                   className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
                   onClick={() => {
-                    const times = ["09:30", "10:30", "11:30", "13:30", "14:30", "15:30"];
+                    const times = ["13:00", "14:00", "15:00", "16:00"];
                     const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
                     setSelectedSlots(uniqueSlots.sort());
                   }}
                 >
-                  + Half Hours
+                  + Afternoon Hours
                 </Button>
                 <Button
                   type="button"
@@ -1402,6 +1525,29 @@ export default function AdminDashboard() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="editTime">Time Slots</Label>
+              
+              <div className="flex flex-wrap gap-2 mt-1 mb-4">
+                {timeSlotOptions.map((time) => (
+                  <Badge 
+                    key={time} 
+                    variant={selectedSlots.includes(time) ? "default" : "outline"}
+                    className={`cursor-pointer px-3 py-1.5 ${
+                      selectedSlots.includes(time) 
+                        ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                        : "bg-transparent hover:bg-blue-900/20 border-blue-800 text-blue-300"
+                    } flex items-center gap-1`}
+                    onClick={() => toggleTimeSlot(time)}
+                  >
+                    {selectedSlots.includes(time) ? (
+                      <Check className="w-3 h-3" />
+                    ) : (
+                      <Clock className="w-3 h-3" />
+                    )}
+                    {time}
+                  </Badge>
+                ))}
+              </div>
+              
               <div className="flex items-center gap-2">
                 <Input
                   id="editTime"
@@ -1417,6 +1563,48 @@ export default function AdminDashboard() {
                   size="sm"
                 >
                   <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+                  onClick={() => {
+                    const times = ["09:00", "10:00", "11:00", "12:00"];
+                    const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
+                    setSelectedSlots(uniqueSlots.sort());
+                  }}
+                >
+                  + Morning Hours
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+                  onClick={() => {
+                    const times = ["13:00", "14:00", "15:00", "16:00"];
+                    const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
+                    setSelectedSlots(uniqueSlots.sort());
+                  }}
+                >
+                  + Afternoon Hours
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+                  onClick={() => {
+                    const times = ["17:00", "18:00", "19:00"];
+                    const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
+                    setSelectedSlots(uniqueSlots.sort());
+                  }}
+                >
+                  + Evening Hours
                 </Button>
               </div>
               
