@@ -464,7 +464,7 @@ export default function AllSessions() {
                 {isUserView ? "View My Sessions" : "Find My Sessions"}
               </Button>
               <Link href="/project-guidance">
-                <Button variant="outline" className="border-green-600 text-green-500">
+                <Button variant="secondary" className="bg-green-900/20 text-green-500 hover:bg-green-900/30">
                   Book a New Session
                 </Button>
               </Link>
@@ -899,9 +899,9 @@ export default function AllSessions() {
                             } else {
                               return (
                                 <Button 
-                                  variant="outline" 
+                                  variant="secondary" 
                                   size="sm"
-                                  className="h-9 border-gray-700 text-gray-500 cursor-not-allowed opacity-70"
+                                  className="h-9 bg-gray-800 text-gray-500 cursor-not-allowed opacity-70"
                                   disabled
                                 >
                                   <Clock8 className="h-3.5 w-3.5 mr-1.5" />
