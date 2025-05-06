@@ -110,7 +110,7 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <div>
             <CardTitle className="text-xl text-green-600 dark:text-green-400">Payment Successful!</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
-              We will send you a Google Meet link within 4 hours
+              Will send you Google Meet link soon. You can check in "View My Session" page.
             </CardDescription>
           </div>
         </div>
@@ -177,22 +177,32 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
         )}
       </CardContent>
       
-      <CardFooter className="flex justify-between space-x-3">
-        <Button 
-          variant="outline" 
-          className="flex-1 border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-          onClick={() => window.open(getCalendarLink(), '_blank')}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          Add to Calendar
-        </Button>
+      <CardFooter className="flex flex-col space-y-3">
+        <div className="flex justify-between space-x-3 w-full">
+          <Button 
+            variant="outline" 
+            className="flex-1 border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+            onClick={() => window.open(getCalendarLink(), '_blank')}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            Add to Calendar
+          </Button>
+          
+          <Button 
+            variant="default" 
+            className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+            onClick={() => window.location.href = "/"}
+          >
+            Return Home
+          </Button>
+        </div>
         
         <Button 
-          variant="default" 
-          className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
-          onClick={() => window.location.href = "/"}
+          variant="link" 
+          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+          onClick={() => window.location.href = "/find-session"}
         >
-          Return Home
+          View My Session
         </Button>
       </CardFooter>
     </Card>
