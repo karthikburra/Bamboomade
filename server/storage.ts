@@ -57,6 +57,7 @@ export interface IStorage {
   
   // AI Knowledge Content operations
   getAllAiKnowledgeContent(): Promise<AiKnowledgeContent[]>;
+  getActiveAiKnowledgeContent(): Promise<AiKnowledgeContent[]>; // Get only active content for AI
   getAiKnowledgeContentById(id: number): Promise<AiKnowledgeContent | undefined>;
   getAiKnowledgeContentByType(contentType: string): Promise<AiKnowledgeContent[]>;
   createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent>;
@@ -487,6 +488,18 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(aiKnowledgeContent.createdAt));
     } catch (error) {
       console.error("Database error in getAllAiKnowledgeContent:", error);
+      return [];
+    }
+  }
+  
+  // Get only active AI Knowledge Content for AI chat
+  async getActiveAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
+    try {
+      return await db.select().from(aiKnowledgeContent)
+        .where(eq(aiKnowledgeContent.status, 'active'))
+        .orderBy(desc(aiKnowledgeContent.createdAt));
+    } catch (error) {
+      console.error("Database error in getActiveAiKnowledgeContent:", error);
       return [];
     }
   }

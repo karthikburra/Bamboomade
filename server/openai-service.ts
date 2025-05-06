@@ -255,7 +255,17 @@ export async function processMessageForTraining(message: string): Promise<string
 
     // If the message needs a direct response, generate one
     if (needsResponse) {
-      const { response } = await processMessage(message);
+      // Get active knowledge content to enhance response
+      let knowledgeContent = [];
+      try {
+        // Dynamically import storage to avoid circular imports
+        const { storage } = await import('./storage');
+        knowledgeContent = await storage.getActiveAiKnowledgeContent();
+      } catch (error) {
+        console.error("Error loading knowledge content for WhatsApp message:", error);
+      }
+      
+      const { response } = await processMessage(message, [], knowledgeContent);
       return response;
     }
 
