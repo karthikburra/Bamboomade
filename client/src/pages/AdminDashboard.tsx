@@ -130,6 +130,10 @@ export default function AdminDashboard() {
   const [newTimeSlot, setNewTimeSlot] = useState("");
   const [editingSlotId, setEditingSlotId] = useState<number | null>(null);
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  
+  // View Slots Dialog states
+  const [viewSlotsDialogOpen, setViewSlotsDialogOpen] = useState(false);
+  const [selectedSlotDate, setSelectedSlotDate] = useState<Date | null>(null);
   const [isAddSlotDialogOpen, setIsAddSlotDialogOpen] = useState(false);
   const [isEditSlotDialogOpen, setIsEditSlotDialogOpen] = useState(false);
   
@@ -846,7 +850,16 @@ export default function AdminDashboard() {
                                   : `${availableSlotsCount - (slot.slotsWithStatus?.filter(s => s.isBooked).length || 0)}/${availableSlotsCount} slots available`}
                               </p>
                             </div>
-                            <Button size="sm" variant="outline" className="ml-auto">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="ml-auto"
+                              onClick={() => {
+                                // Open dialog to view slots for this date
+                                setSelectedSlotDate(date);
+                                setViewSlotsDialogOpen(true);
+                              }}
+                            >
                               <Eye className="h-4 w-4 mr-1" /> View
                             </Button>
                           </div>
@@ -1526,6 +1539,93 @@ export default function AdminDashboard() {
                     <Plus className="w-4 h-4 mr-2" /> Add Dates
                   </>
                 )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* View Slots Dialog */}
+        <Dialog open={viewSlotsDialogOpen} onOpenChange={setViewSlotsDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle>
+                Available Time Slots
+              </DialogTitle>
+              <DialogDescription>
+                {selectedSlotDate && (
+                  <span>Time slots for {formatInIST(selectedSlotDate, 'EEEE, MMMM d, yyyy')}</span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedSlotDate && availableSlotsData && (
+                <div>
+                  {availableSlotsData.map((slot: AvailableTimeSlot) => {
+                    // Check if this is the selected date
+                    if (formatInIST(selectedSlotDate, 'yyyy-MM-dd') === slot.date) {
+                      return (
+                        <div key={slot.id} className="space-y-3">
+                          <h3 className="text-lg font-medium">Time Slots</h3>
+                          
+                          {/* Available and booked slots */}
+                          {slot.slotsWithStatus && slot.slotsWithStatus.length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                              {slot.slotsWithStatus.map((timeSlot, idx) => {
+                                const isBooked = timeSlot.isBooked;
+                                const session = sessions.find(s => 
+                                  formatInIST(new Date(s.date), 'yyyy-MM-dd') === slot.date && 
+                                  formatInIST(new Date(s.date), 'HH:mm') === timeSlot.time
+                                );
+                                
+                                return (
+                                  <div 
+                                    key={idx} 
+                                    className={`p-3 rounded-md flex flex-col ${
+                                      isBooked 
+                                        ? 'bg-red-900/30 border border-red-800' 
+                                        : 'bg-green-900/30 border border-green-800'
+                                    }`}
+                                  >
+                                    <div className="flex items-center">
+                                      <span className="text-lg font-medium">{timeSlot.time}</span>
+                                      <span className={`ml-auto ${
+                                        isBooked ? 'text-red-400' : 'text-green-400'
+                                      }`}>
+                                        {isBooked ? 'Booked' : 'Available'}
+                                      </span>
+                                    </div>
+                                    
+                                    {/* If booked, show session details */}
+                                    {isBooked && session && (
+                                      <div className="mt-2 text-sm border-t border-red-800 pt-2">
+                                        <p><span className="text-gray-400">Student:</span> {session.studentName}</p>
+                                        <p><span className="text-gray-400">Topic:</span> {session.topic}</p>
+                                        <p><span className="text-gray-400">Duration:</span> {session.duration} min</p>
+                                        <p><span className="text-gray-400">Status:</span> {session.status}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p>No time slots available for this date.</p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setViewSlotsDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Close
               </Button>
             </DialogFooter>
           </DialogContent>
