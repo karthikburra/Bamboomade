@@ -468,22 +468,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const sessionDate = new Date(session.date);
         const sessionEndTime = addMinutes(sessionDate, session.duration);
         
+        // Also handle original date if the session has been rescheduled
+        const originalDate = session.originalDate ? new Date(session.originalDate) : null;
+        
         return {
           id: session.id,
           studentName: session.studentName,
           email: session.email,
           phone: session.phone,
           date: session.date,
+          originalDate: session.originalDate,
           formattedDate: formatInIST(sessionDate, "MMMM d, yyyy"),
           formattedTime: formatInIST(sessionDate, "HH:mm"),
           formattedEndTime: formatInIST(sessionEndTime, "HH:mm"),
+          // Include original date information if available
+          formattedOriginalDate: originalDate ? formatInIST(originalDate, "MMMM d, yyyy") : null,
+          formattedOriginalTime: originalDate ? formatInIST(originalDate, "HH:mm") : null,
           duration: session.duration,
           topic: session.topic,
           notes: session.notes || '',
           paymentStatus: session.paymentConfirmed ? "Paid" : "Pending",
           status: session.status || 'pending',
           googleMeetLink: session.googleMeetLink || '',
-          isStudent: session.isStudent
+          isStudent: session.isStudent,
+          isRescheduled: session.status === 'rescheduled'
         };
       });
       

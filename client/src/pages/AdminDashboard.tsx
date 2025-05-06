@@ -777,6 +777,7 @@ export default function AdminDashboard() {
                                   <TableCell>
                                     {/* Current session date/time (highlighted) */}
                                     <div className="flex flex-col gap-1 mb-1">
+                                      {/* Show current date/time */}
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
                                         <span className="truncate">
@@ -786,6 +787,22 @@ export default function AdminDashboard() {
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {session.formattedTime}
                                       </div>
+                                      
+                                      {/* Show original date/time if this is a rescheduled session */}
+                                      {session.isRescheduled && session.formattedOriginalDate && (
+                                        <div className="mt-2 space-y-1">
+                                          <div className="text-xs text-amber-400 font-medium">Originally Booked:</div>
+                                          <div className="flex items-center text-xs font-medium text-gray-300 bg-gray-800/50 px-2 py-1 rounded-md">
+                                            <Calendar className="w-3 h-3 mr-1 text-amber-400" /> 
+                                            {session.formattedOriginalDate}
+                                          </div>
+                                          {session.formattedOriginalTime && (
+                                            <div className="flex items-center text-xs font-medium text-gray-300 bg-gray-800/50 px-2 py-1 rounded-md">
+                                              <Clock className="w-3 h-3 mr-1 text-amber-400" /> {session.formattedOriginalTime}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden lg:table-cell">
