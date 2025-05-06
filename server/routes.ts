@@ -512,6 +512,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin endpoint to cancel a session with full refund
+  app.post("/api/admin/cancel-session", isAdmin, async (req, res) => {
+    try {
+      const { sessionId, reason, fullRefund = true } = req.body;
+      
+      if (!sessionId || !reason) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Missing required fields",
+          errors: "Session ID and cancellation reason are required."
+        });
+      }
+      
+      // Get the session
+      const session = await storage.getProjectGuidance(parseInt(sessionId));
+      if (!session) {
+        return res.status(404).json({ 
+          success: false,
+          message: "Session not found",
+          errors: "The requested session does not exist."
+        });
+      }
+      
+      // Check if session is already cancelled
+      if (session.status === 'cancelled') {
+        return res.status(400).json({ 
+          success: false,
+          message: "Session already cancelled",
+          errors: "This session has already been cancelled."
+        });
+      }
+      
+      // Always provide full refund for admin cancellations
+      let refundAmount = 0;
+      if (session.paymentStatus === 'Paid') {
+        // Get the session price based on duration and student status
+        const sessionPrice = session.isStudent
+          ? (session.duration === 30 ? 500 : 800)  // Student pricing
+          : (session.duration === 30 ? 1000 : 1500); // Professional pricing
+        
+        refundAmount = sessionPrice;
+      }
+      
+      // Update the session
+      const updatedSession = await storage.updateProjectGuidance(session.id, {
+        status: 'cancelled',
+        notes: `${session.notes || ''}${session.notes ? ' | ' : ''}Cancelled by admin: ${reason} with full refund.`
+      });
+      
+      console.log('Session cancelled by admin:', {
+        sessionId: session.id,
+        email: session.email,
+        date: session.date,
+        refundAmount
+      });
+      
+      // Send cancellation email notification
+      try {
+        await sendCancellationEmail(
+          session.studentName, 
+          session.email,
+          session.id,
+          new Date(session.date),
+          100, // Always 100% refund
+          refundAmount,
+          `Full refund provided as session was cancelled by admin. Reason: ${reason}`
+        );
+        console.log(`Sent cancellation confirmation email to ${session.email}`);
+      } catch (emailError) {
+        console.error("Failed to send cancellation email:", emailError);
+        // Don't fail the request if email sending fails
+      }
+      
+      // Return success
+      return res.json({
+        success: true,
+        message: "Session cancelled successfully with full refund",
+        session: updatedSession,
+        refundDetails: {
+          percentage: 100,
+          amount: refundAmount
+        }
+      });
+    } catch (error) {
+      console.error("Error in admin cancelling session:", error);
+      return res.status(500).json({ 
+        success: false,
+        message: "Failed to cancel session", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   app.post("/api/admin/update-meet-link", isAdmin, async (req, res) => {
     try {
       const { sessionId, googleMeetLink } = req.body;
