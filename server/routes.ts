@@ -2487,6 +2487,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Add Google Meet link (PATCH endpoint for client compatibility)
+  app.patch("/api/project-guidance/:id/meet-link", isAdmin, async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id, 10);
+      const { googleMeetLink } = req.body;
+      
+      if (!sessionId || !googleMeetLink) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Session ID and Google Meet link are required" 
+        });
+      }
+      
+      // First get the session to check its status
+      const session = await storage.getProjectGuidance(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Session not found" 
+        });
+      }
+      
+      // Check if the session is cancelled
+      if (session.status === 'cancelled') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Cannot add meeting link to a cancelled session" 
+        });
+      }
+      
+      // Update the session with the Google Meet link
+      const updatedSession = await storage.updateProjectGuidanceMeetLink(
+        sessionId,
+        googleMeetLink
+      );
+      
+      if (!updatedSession) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Session not found" 
+        });
+      }
+      
+      const sessionDate = new Date(updatedSession.date);
+      
+      // Create a calendar link with the Google Meet link
+      const calendarLink = generateGoogleCalendarLink(
+        updatedSession.id,
+        googleMeetLink,
+        sessionDate,
+        updatedSession.duration,
+        updatedSession.topic,
+        updatedSession.studentName
+      );
+      
+      res.json({
+        success: true,
+        message: "Google Meet link updated successfully",
+        session: updatedSession,
+        calendarLink
+      });
+    } catch (error) {
+      console.error("Error updating Google Meet link:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update Google Meet link",
+        error: (error as Error).message
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
