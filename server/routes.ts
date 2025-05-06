@@ -37,6 +37,21 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
   // For detailed logging
   console.log(`Checking time slot conflict for ${targetDateStr} ${targetTimeStr}, excluding sessionId ${sessionIdToExclude || 'none'}`);
   
+  // IMPROVED: Check if the time is a half-hour booking (like 13:30)
+  const isHalfHourBooking = targetTimeStr.endsWith(":30");
+  console.log(`Time format check: ${targetTimeStr} is ${isHalfHourBooking ? 'a half-hour booking' : 'a full-hour booking'}`);
+  
+  // If it's a half-hour booking, also check if it conflicts with an hour slot
+  // For example, a 13:30 booking conflicts with both 13:00 and 14:00 slots
+  const hourToCheck: string[] = [];
+  if (isHalfHourBooking) {
+    // For a 13:30 booking, check both 13:00 and 14:00 for conflicts
+    const hour = parseInt(targetTimeStr.split(":")[0]);
+    hourToCheck.push(`${hour.toString().padStart(2, '0')}:00`);  // Current hour (13:00)
+    hourToCheck.push(`${(hour + 1).toString().padStart(2, '0')}:00`); // Next hour (14:00)
+    console.log(`Half-hour booking detected. Will check for conflicts in both ${hourToCheck[0]} and ${hourToCheck[1]}`);
+  }
+  
   // IMPROVED: Special case handling for known dates with booking issues
   const specialCaseDates = ["2025-05-07", "2025-05-11", "2025-05-09"];
   const specialCaseTimes = ["09:00"];
@@ -85,7 +100,7 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
     const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
     const sessionTimeStr = format(sessionDate, "HH:mm");
     
-    // Check if date and time match
+    // First, check for exact time match
     if (sessionDateStr === targetDateStr && sessionTimeStr === targetTimeStr) {
       // Consider confirmed/paid sessions as conflicts
       if (session.paymentConfirmed || session.status === 'confirmed') {
@@ -97,6 +112,34 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       if (session.status === 'pending') {
         console.log(`Conflict detected: Pending session ${session.id} is reserving ${targetDateStr} ${targetTimeStr}`);
         return true;
+      }
+    }
+    
+    // For half-hour bookings, also check if they conflict with hour slots
+    if (isHalfHourBooking && sessionDateStr === targetDateStr) {
+      if (hourToCheck.includes(sessionTimeStr)) {
+        // This half-hour booking conflicts with a full-hour booking
+        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
+          console.log(`Half-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
+          return true;
+        }
+      }
+    }
+    
+    // Also check if this full-hour booking conflicts with any half-hour bookings
+    if (!isHalfHourBooking && sessionDateStr === targetDateStr) {
+      // If this is a full-hour booking (like 13:00), check for half-hour bookings (like 12:30)
+      const sessionHour = parseInt(sessionTimeStr.split(":")[0]);
+      const sessionMinute = parseInt(sessionTimeStr.split(":")[1]);
+      const targetHour = parseInt(targetTimeStr.split(":")[0]);
+      
+      // If session is at XX:30 and conflicts with our target time at YY:00
+      if (sessionMinute === 30 && 
+          (sessionHour === targetHour || sessionHour + 1 === targetHour)) {
+        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
+          console.log(`Full-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
+          return true;
+        }
       }
     }
     
@@ -2004,10 +2047,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Processing slots: ${confirmedSessionCount} confirmed, ${pendingSessionCount} pending, ${cancelledSessionCount} cancelled`);
       
+      // Log all sessions for debugging
+      console.log(`DEBUG: All sessions for this date:`, allSessionDetails);
+      
       // Add booking status information to the available slots
       const enhancedSlots = availableSlots.map(slot => {
         const bookedTimesForDate = bookedSlots[slot.date] || [];
         const pendingTimesForDate = pendingSlots[slot.date] || [];
+        
+        // Add debug logging for pending sessions
+        if (pendingTimesForDate.length > 0) {
+          console.log(`DEBUG: Pending times for date ${slot.date}:`, pendingTimesForDate);
+        }
         
         // Mark which specific time slots are already booked or pending
         const slotsWithStatus = slot.slots.map(timeSlot => {
@@ -2018,11 +2069,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
             slot.date === excludedSessionDate && 
             timeSlot === excludedSessionTime;
           
-          // Check if slot is booked or pending
-          const isBooked = !isOriginalSlot && (
+          // Check if slot is booked or pending due to exact match
+          const isExactTimeMatch = (
             bookedTimesForDate.includes(timeSlot) || 
             pendingTimesForDate.includes(timeSlot)
           );
+          
+          // IMPROVED: Check for half-hour bookings that would conflict with this full-hour slot
+          // For example, if checking 13:00 slot, look for sessions at 12:30 and 13:30
+          // Extract the hour from the time slot
+          const hour = parseInt(timeSlot.split(":")[0]);
+          
+          // Check for half-hour bookings that would conflict with this slot
+          // 12:30 would conflict with 13:00, and 13:30 would conflict with 13:00
+          const previousHalfHour = `${(hour-1).toString().padStart(2, '0')}:30`;
+          const nextHalfHour = `${hour.toString().padStart(2, '0')}:30`;
+          
+          const isHalfHourConflict = (
+            bookedTimesForDate.includes(previousHalfHour) || 
+            pendingTimesForDate.includes(previousHalfHour) ||
+            bookedTimesForDate.includes(nextHalfHour) || 
+            pendingTimesForDate.includes(nextHalfHour)
+          );
+          
+          // If we have a conflict due to half-hour booking, log it
+          if (isHalfHourConflict) {
+            console.log(`DEBUG: Detected half-hour conflict for ${slot.date} ${timeSlot} with either ${previousHalfHour} or ${nextHalfHour}`);
+          }
+          
+          // Combine all checks to determine if the slot is booked
+          const isBooked = !isOriginalSlot && (isExactTimeMatch || isHalfHourConflict);
           
           // IMPROVED: Special case handling for known dates with booking issues
           // Using the same logic as in isTimeSlotBooked function
