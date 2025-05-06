@@ -690,12 +690,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Ensure date is a proper Date object before passing to the database
+      let parsedDate: Date;
+      try {
+        // Handle ISO string or any other valid date format
+        parsedDate = new Date(date);
+        
+        // Check if the date is valid
+        if (isNaN(parsedDate.getTime())) {
+          throw new Error("Invalid date format");
+        }
+      } catch (e) {
+        console.error("Date parsing error:", e, "Received date:", date);
+        return res.status(400).json({
+          message: "Validation error",
+          errors: "Invalid date format. Please select a valid date and time."
+        });
+      }
+      
       // Create the session with all the fields
       const session = await storage.createProjectGuidance({
         studentName,
         email, 
         phone,
-        date,
+        date: parsedDate,
         duration: duration || 60, // Default to 60 if not specified
         topic,
         notes: notes || ""
@@ -826,6 +844,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email and new date are required" });
       }
       
+      // Ensure newDate is a proper Date object
+      let parsedDate: Date;
+      try {
+        parsedDate = new Date(newDate);
+        
+        // Check if the date is valid
+        if (isNaN(parsedDate.getTime())) {
+          throw new Error("Invalid date format");
+        }
+      } catch (e) {
+        console.error("Date parsing error in rescheduling:", e, "Received date:", newDate);
+        return res.status(400).json({
+          message: "Validation error",
+          errors: "Invalid date format. Please select a valid date and time."
+        });
+      }
+      
       // Get all sessions
       const allSessions = await storage.getAllProjectGuidances();
       
@@ -859,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update the session with new date/time using storage method
       const updatedSession = await storage.updateProjectGuidanceSession(
         selectedSession.id,
-        new Date(newDate),
+        parsedDate,
         newDuration || selectedSession.duration,
         'user' // Indicate that this was rescheduled by the user
       );
@@ -867,7 +902,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: selectedSession.id,
         email,
         oldDate: selectedSession.date,
-        newDate: new Date(newDate),
+        newDate: parsedDate,
         oldDuration: selectedSession.duration,
         newDuration: newDuration || selectedSession.duration
       });
@@ -878,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedSession.studentName,
         email,
         selectedSession.topic,
-        new Date(newDate),
+        parsedDate, // Use the parsed date that we already validated
         newDuration || selectedSession.duration
       );
       
@@ -934,7 +969,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Calculate refund amount based on the cancellation policy
-      const sessionDate = new Date(selectedSession.date);
+      // Ensure we have a valid date to calculate with
+      let sessionDate: Date;
+      try {
+        sessionDate = new Date(selectedSession.date);
+        
+        // Check if the date is valid
+        if (isNaN(sessionDate.getTime())) {
+          throw new Error("Invalid session date format");
+        }
+      } catch (e) {
+        console.error("Date parsing error in cancellation:", e);
+        return res.status(400).json({
+          message: "Invalid session date format",
+          errors: "Could not calculate refund amount due to invalid date."
+        });
+      }
+      
       const now = new Date();
       const timeUntilSession = sessionDate.getTime() - now.getTime();
       const daysUntilSession = timeUntilSession / (1000 * 60 * 60 * 24);
@@ -986,7 +1037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedSession.studentName,
         email,
         selectedSession.topic,
-        new Date(selectedSession.date),
+        sessionDate, // Use the parsed date that we already validated
         reason,
         refundPercentage,
         refundAmount
@@ -1070,7 +1121,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate the Google Meet link
-      const sessionDate = new Date(session.date);
+      // Ensure we have a valid date for the Google Meet link
+      let sessionDate: Date;
+      try {
+        sessionDate = new Date(session.date);
+        
+        // Check if the date is valid
+        if (isNaN(sessionDate.getTime())) {
+          throw new Error("Invalid session date format");
+        }
+      } catch (e) {
+        console.error("Date parsing error in session details:", e);
+        return res.status(400).json({
+          success: false,
+          message: "Invalid session date format",
+          error: "Could not generate meeting link due to invalid date."
+        });
+      }
+      
       const meetLink = generateGoogleMeetLink(
         session.id,
         sessionDate,
@@ -1266,7 +1334,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   await storage.updateProjectGuidancePayment(parseInt(sessionId), razorpay_payment_id);
                   
                   // Send confirmation email with Google Meet link
-                  const sessionDate = new Date(session.date);
+                  // Parse the session date
+                  let sessionDate: Date;
+                  try {
+                    sessionDate = new Date(session.date);
+                    
+                    // Check if the date is valid
+                    if (isNaN(sessionDate.getTime())) {
+                      throw new Error("Invalid session date format");
+                    }
+                  } catch (e) {
+                    console.error("Date parsing error in payment verification:", e);
+                    // Continue with a fallback date rather than failing completely
+                    sessionDate = new Date(); // Fallback to current date
+                  }
                   
                   console.log(`Attempting to send booking confirmation email for session ${sessionId} to ${session.email}`);
                   try {
