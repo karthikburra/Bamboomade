@@ -256,7 +256,7 @@ const AIKnowledgeManagement: React.FC = () => {
   }, {} as Record<string, number>) || {};
   
   return (
-    <div className="container py-6 md:py-8 bg-background text-foreground min-h-screen">
+    <div className="container px-[24px] py-6 md:py-8 bg-background text-foreground min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center">
           <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
