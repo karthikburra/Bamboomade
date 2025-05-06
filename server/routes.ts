@@ -93,29 +93,10 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
         return true;
       }
       
-      // Also consider pending sessions that are recent (created within 15 minutes)
+      // UPDATED: Consider ALL pending sessions as booked (not just recent ones)
       if (session.status === 'pending') {
-        // IMPROVED: More robust creation time handling
-        let creationTime: number;
-        try {
-          creationTime = new Date(session.createdAt || new Date()).getTime();
-          if (isNaN(creationTime)) {
-            console.warn(`Invalid creation time for session ${session.id}: ${session.createdAt}`);
-            creationTime = Date.now() - 20 * 60 * 1000; // Default to 20 minutes ago (will not be considered recent)
-          }
-        } catch (e) {
-          console.warn(`Error parsing creation time for session ${session.id}: ${e}`);
-          creationTime = Date.now() - 20 * 60 * 1000; // Default to 20 minutes ago
-        }
-        
-        const now = Date.now();
-        const timeElapsed = now - creationTime;
-        const fifteenMinutesInMs = 15 * 60 * 1000;
-        
-        if (timeElapsed < fifteenMinutesInMs) {
-          console.log(`Conflict detected: Pending session ${session.id} (created ${Math.round(timeElapsed/1000/60)} mins ago) is reserving ${targetDateStr} ${targetTimeStr}`);
-          return true;
-        }
+        console.log(`Conflict detected: Pending session ${session.id} is reserving ${targetDateStr} ${targetTimeStr}`);
+        return true;
       }
     }
     
@@ -1998,23 +1979,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           bookedSlots[sessionDateStr].push(sessionTimeStr);
           confirmedSessionCount++;
         } 
-        // Handle pending sessions that are recently created (last 15 minutes)
+        // UPDATED: Track ALL pending sessions as booked (not just recent ones)
         else if (session.status === 'pending') {
-          // Check if this is a recent session (created in the last 15 minutes)
-          const creationTime = new Date(session.createdAt || new Date()).getTime();
-          const now = new Date().getTime();
-          const timeElapsed = now - creationTime;
-          const fifteenMinutesInMs = 15 * 60 * 1000;
-          
-          if (timeElapsed < fifteenMinutesInMs) {
-            // Track as a pending slot (temporarily reserved)
-            if (!pendingSlots[sessionDateStr]) {
-              pendingSlots[sessionDateStr] = [];
-            }
-            
-            pendingSlots[sessionDateStr].push(sessionTimeStr);
-            pendingSessionCount++;
+          // Track this pending slot as unavailable
+          if (!pendingSlots[sessionDateStr]) {
+            pendingSlots[sessionDateStr] = [];
           }
+          
+          pendingSlots[sessionDateStr].push(sessionTimeStr);
+          pendingSessionCount++;
         }
       });
       
