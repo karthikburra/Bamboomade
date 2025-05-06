@@ -95,7 +95,7 @@ export function generateGoogleMeetLink(sessionId: number, date: Date, studentNam
 }
 
 /**
- * Generate a Google Calendar event link that includes projects@bamboomade.in as the host
+ * Generate a Google Calendar event link that includes Info@bamboomade.in as the host
  * This allows users to add the event to their calendar with the host information
  */
 export function generateGoogleCalendarLink(
@@ -120,16 +120,16 @@ Session ID: ${sessionId}
 Join this Google Meet link: ${meetLink}
 Topic: ${sessionTopic}
 
-This meeting is hosted by projects@bamboomade.in
+This meeting is hosted by Info@bamboomade.in
   `.trim();
   
   // Create the calendar event title
   const title = `BambooMade - ${sessionTopic}`;
 
-  // Create the Google Calendar event URL with projects@bamboomade.in as the host
+  // Create the Google Calendar event URL with Info@bamboomade.in as the host
   // add parameter adds the email as an attendee
   // src parameter sets the calendar it will be added to
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(meetLink)}&add=${encodeURIComponent('projects@bamboomade.in')}&src=${encodeURIComponent('projects@bamboomade.in')}`;
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(meetLink)}&add=${encodeURIComponent('Info@bamboomade.in')}&src=${encodeURIComponent('Info@bamboomade.in')}`;
 }
 
 interface BookingEmailData {
@@ -276,7 +276,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
     endTime.setMinutes(endTime.getMinutes() + bookingData.sessionDuration);
     const formattedEndTime = format(endTime, 'h:mm a');
 
-    // Create calendar event link that explicitly shows it's from projects@bamboomade.in
+    // Create calendar event link that explicitly shows it's from Info@bamboomade.in
     const calendarLink = generateGoogleCalendarLink(
       bookingData.sessionId,
       meetLink,
@@ -414,7 +414,7 @@ Topic: ${topic}
 We'll send you an updated Google Meet link for your session within 4 hours.
 
 If you have any questions, please contact us at:
-Email: projects@bamboomade.in
+Email: Info@bamboomade.in
 Phone/WhatsApp: +91 8971690163
 
 Thank you,
@@ -442,7 +442,7 @@ BambooMade Team
     
     <div style="margin: 20px 0; padding-top: 20px; border-top: 1px solid #e5e5e5;">
       <p>If you have any questions, please contact us at:</p>
-      <p>Email: <a href="mailto:projects@bamboomade.in" style="color: #2e7d32;">projects@bamboomade.in</a></p>
+      <p>Email: <a href="mailto:Info@bamboomade.in" style="color: #2e7d32;">Info@bamboomade.in</a></p>
       <p>Phone/WhatsApp: <a href="https://wa.me/918971690163" style="color: #2e7d32;">+91 8971690163</a></p>
     </div>
     
@@ -508,7 +508,7 @@ According to our cancellation policy:
 Your refund will be processed within 7-10 business days to your original payment method.
 
 If you have any questions, please contact us at:
-Email: projects@bamboomade.in
+Email: Info@bamboomade.in
 Phone/WhatsApp: +91 8971690163
 
 Thank you,
@@ -554,7 +554,7 @@ BambooMade Team
     
     <div style="margin: 20px 0; padding-top: 20px; border-top: 1px solid #e5e5e5;">
       <p>If you have any questions, please contact us at:</p>
-      <p>Email: <a href="mailto:projects@bamboomade.in" style="color: #2e7d32;">projects@bamboomade.in</a></p>
+      <p>Email: <a href="mailto:Info@bamboomade.in" style="color: #2e7d32;">Info@bamboomade.in</a></p>
       <p>Phone/WhatsApp: <a href="https://wa.me/918971690163" style="color: #2e7d32;">+91 8971690163</a></p>
     </div>
     

@@ -1382,7 +1382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         session.studentName
       );
       
-      // Generate calendar event link with projects@bamboomade.in as the host
+      // Generate calendar event link with Info@bamboomade.in as the host
       const calendarLink = generateGoogleCalendarLink(
         session.id,
         meetLink,
