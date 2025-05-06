@@ -48,7 +48,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, parseISO, addDays, addMonths, startOfMonth, endOfMonth, isSameMonth, getDay } from "date-fns";
+import { parseISO, addDays, addMonths, startOfMonth, endOfMonth, isSameMonth, getDay } from "date-fns";
+import { format, formatInTimeZone } from "date-fns-tz";
+
+// Helper function to format dates in IST timezone
+const formatInIST = (date: Date | string, formatStr: string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return formatInTimeZone(dateObj, 'Asia/Kolkata', formatStr);
+};
 
 interface AvailableTimeSlot {
   id: number;

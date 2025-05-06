@@ -57,7 +57,15 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { format, addDays, parseISO } from "date-fns";
+import { addDays, parseISO } from "date-fns";
+import { format, formatInTimeZone } from "date-fns-tz";
+
+// Helper function to format dates in IST timezone
+const formatInIST = (date: Date | string, formatStr: string) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return formatInTimeZone(dateObj, 'Asia/Kolkata', formatStr);
+};
+
 import { DayPicker } from "react-day-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -229,7 +237,7 @@ export default function AllSessions() {
   // Fetch available time slots for a specific date
   const fetchAvailableSlots = async (date: Date) => {
     try {
-      const formattedDate = format(date, "yyyy-MM-dd");
+      const formattedDate = formatInIST(date, "yyyy-MM-dd");
       const allSlots = await fetchAllAvailableSlots();
       
       // Find the slot for the selected date
