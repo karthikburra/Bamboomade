@@ -188,7 +188,27 @@ export default function AllSessions() {
       const data = await response.json();
       
       if (data.success) {
-        setAvailableTimeSlots(data.slots.map((slot: any) => slot.time));
+        // Only show slots that aren't already booked
+        const availableSlots = data.slots
+          .filter((slot: any) => {
+            // Find the relevant date slot
+            const dateSlot = slot.date === formattedDate ? slot : null;
+            if (!dateSlot) return false;
+            
+            // Get available time slots
+            return dateSlot.slotsWithStatus.some((s: any) => !s.isBooked);
+          })
+          .flatMap((slot: any) => {
+            // From the slots with the matching date, get only non-booked time slots
+            if (slot.date === formattedDate) {
+              return slot.slotsWithStatus
+                .filter((s: any) => !s.isBooked)
+                .map((s: any) => s.time);
+            }
+            return [];
+          });
+          
+        setAvailableTimeSlots(availableSlots);
       } else {
         setAvailableTimeSlots([]);
       }
@@ -589,7 +609,7 @@ export default function AllSessions() {
                                     <div className="space-y-4 py-4">
                                       <div className="flex flex-col space-y-1.5">
                                         <Label htmlFor="rescheduleDate">Select New Date</Label>
-                                        <div className="p-3 bg-gray-800 rounded-md border border-gray-700">
+                                        <div className="p-3 bg-gray-800 rounded-md border border-gray-700 flex justify-center max-w-full overflow-auto">
                                           <DayPicker
                                             mode="single"
                                             selected={selectedDate}
@@ -598,7 +618,18 @@ export default function AllSessions() {
                                               { before: new Date() },
                                               { dayOfWeek: [0, 6] } // Disable weekends
                                             ]}
-                                            className="bg-gray-800 rounded-md text-white"
+                                            modifiers={{
+                                              available: (date) => {
+                                                // Only show future dates that are weekdays and are at least a day away
+                                                const isWeekday = date.getDay() !== 0 && date.getDay() !== 6;
+                                                const isFuture = date > new Date();
+                                                return isWeekday && isFuture;
+                                              }
+                                            }}
+                                            modifiersStyles={{
+                                              available: { color: '#10b981', fontWeight: 'bold' }
+                                            }}
+                                            className="bg-gray-800 rounded-md text-white max-w-full sm:max-w-[300px]"
                                           />
                                         </div>
                                       </div>
@@ -606,24 +637,24 @@ export default function AllSessions() {
                                       {selectedDate && (
                                         <div className="flex flex-col space-y-1.5">
                                           <Label htmlFor="rescheduleTime">Select New Time</Label>
-                                          <div className="flex flex-wrap gap-2">
+                                          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 w-full max-h-[150px] overflow-y-auto p-1">
                                             {availableTimeSlots.length > 0 ? (
-                                              availableTimeSlots.map(slot => (
+                                              availableTimeSlots.map((slot, index) => (
                                                 <Button
-                                                  key={slot}
+                                                  key={`${slot}-${index}`}
                                                   type="button"
                                                   size="sm"
                                                   variant={selectedTimeSlot === slot ? "default" : "outline"}
                                                   className={selectedTimeSlot === slot 
-                                                    ? "bg-green-600 hover:bg-green-700 text-white" 
-                                                    : "border-gray-700 text-gray-300 hover:bg-gray-800"}
+                                                    ? "bg-green-600 hover:bg-green-700 text-white text-xs" 
+                                                    : "border-gray-700 text-gray-300 hover:bg-gray-800 text-xs"}
                                                   onClick={() => setSelectedTimeSlot(slot)}
                                                 >
                                                   {slot}
                                                 </Button>
                                               ))
                                             ) : (
-                                              <div className="text-gray-400 text-sm">
+                                              <div className="text-gray-400 text-sm col-span-full text-center py-4">
                                                 No available time slots for this date. Please select another date.
                                               </div>
                                             )}
