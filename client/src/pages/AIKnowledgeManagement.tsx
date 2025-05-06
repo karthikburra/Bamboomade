@@ -261,11 +261,12 @@ const AIKnowledgeManagement: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <h1 className="text-3xl font-bold mr-4">AI Knowledge Management</h1>
-          <Link href="/admin">
-            <Button variant="secondary">
-              Back to Admin Dashboard
-            </Button>
-          </Link>
+          <Button 
+            variant="secondary" 
+            onClick={() => window.history.back()}
+          >
+            Back to Admin Dashboard
+          </Button>
         </div>
         <div className="flex gap-2">
           <Button
