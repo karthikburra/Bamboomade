@@ -66,8 +66,8 @@ export default function PaymentSuccessPage() {
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-gray-600 dark:text-gray-400">Email:</span>
-                    <a href="mailto:projects@bamboomade.in" className="text-green-600 dark:text-green-400 hover:underline">
-                      projects@bamboomade.in
+                    <a href="mailto:Info@bamboomade.in" className="text-green-600 dark:text-green-400 hover:underline">
+                      Info@bamboomade.in
                     </a>
                   </div>
                   <div className="flex items-center space-x-2">

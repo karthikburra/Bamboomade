@@ -197,7 +197,7 @@ export default function PricingAndRefundPolicy() {
             </p>
             <div className="bg-gray-900 dark:bg-gray-900 p-5 rounded-lg border border-green-800 dark:border-green-800">
               <p className="text-gray-300 dark:text-gray-300 mb-2">
-                <span className="font-medium text-green-400 dark:text-green-400">Email:</span> projects@bamboomade.in
+                <span className="font-medium text-green-400 dark:text-green-400">Email:</span> Info@bamboomade.in
               </p>
               <p className="text-gray-300 dark:text-gray-300">
                 <span className="font-medium text-green-400 dark:text-green-400">WhatsApp:</span> +91 8971690163

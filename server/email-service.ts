@@ -19,7 +19,7 @@ export function initializeEmailService() {
       transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'projects@bamboomade.in',
+          user: 'Info@bamboomade.in',
           pass: process.env.EMAIL_PASSWORD, // App password for Gmail
         }
       });
@@ -162,7 +162,7 @@ export async function sendEmail(options: {
   try {
     // Compose email content
     const mailOptions = {
-      from: '"BambooMade" <projects@bamboomade.in>',
+      from: '"BambooMade" <Info@bamboomade.in>',
       to: options.to,
       cc: options.cc || 'bamboomade.in@gmail.com',
       subject: options.subject,
@@ -313,7 +313,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
           </a>
         </div>
         
-        <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by projects@bamboomade.in. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
+        <p style="margin-bottom: 15px;">Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by Info@bamboomade.in. If you're new to Google Meet, we recommend testing your audio and video a few minutes before the session starts.</p>
         
         <div style="margin: 20px 0;">
           <a href="${calendarLink}" style="color: #2e7d32; text-decoration: none; font-weight: bold;">
@@ -350,7 +350,7 @@ export async function sendBookingConfirmationEmail(bookingData: BookingEmailData
       
       JOIN GOOGLE MEET: ${meetLink}
       
-      Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by projects@bamboomade.in.
+      Please click the link above at the scheduled time to join the session. This Google Meet session is hosted by Info@bamboomade.in.
       
       ADD TO GOOGLE CALENDAR: ${calendarLink}
       
