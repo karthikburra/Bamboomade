@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+
 // Icons
 import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon } from 'lucide-react';
 
@@ -386,6 +387,25 @@ const AIKnowledgeManagement: React.FC = () => {
             <PlusCircle className="mr-2 h-4 w-4" />
             <span className="whitespace-nowrap">Add New Content</span>
           </Button>
+          <Button
+            variant="outline"
+            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+            onClick={handleExportBackup}
+            disabled={isExporting || knowledgeContent?.length === 0}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            <span className="whitespace-nowrap">
+              {isExporting ? "Exporting..." : "Export Backup"}
+            </span>
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+            onClick={() => setIsRestoreDialogOpen(true)}
+          >
+            <SaveAll className="mr-2 h-4 w-4" />
+            <span className="whitespace-nowrap">Restore Backup</span>
+          </Button>
         </div>
       </div>
       
@@ -582,6 +602,82 @@ const AIKnowledgeManagement: React.FC = () => {
         </TabsContent>
       </Tabs>
       
+      {/* Restore Backup Dialog */}
+      <Dialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="dark:text-gray-100">Restore Knowledge Backup</DialogTitle>
+            <DialogDescription className="dark:text-gray-300">
+              Upload a previously exported backup file to restore AI knowledge content.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-200">
+                Backup File
+              </div>
+              <Input 
+                id="backup-file" 
+                type="file" 
+                accept=".json"
+                onChange={handleFileChange}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Select a JSON backup file exported from AI Knowledge Management.
+              </p>
+            </div>
+            
+            {backupFile && (
+              <div className="p-3 border border-blue-200 rounded-md bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+                <p className="text-sm font-medium dark:text-blue-300">Selected file: {backupFile.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Size: {(backupFile.size / 1024).toFixed(2)} KB
+                </p>
+              </div>
+            )}
+            
+            <Alert className="dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-200">
+              <AlertTitle className="flex items-center text-amber-600 dark:text-amber-300">
+                <Info className="h-4 w-4 mr-2" />
+                Warning
+              </AlertTitle>
+              <AlertDescription className="dark:text-amber-200">
+                Restoring a backup will merge content with existing items. Duplicate titles will be updated with the backup version.
+              </AlertDescription>
+            </Alert>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsRestoreDialogOpen(false)}
+              className="dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 dark:border-gray-600"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleImportBackup}
+              disabled={!backupFile || isImportingBackup}
+              className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+            >
+              {isImportingBackup ? (
+                <>
+                  <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <SaveAll className="mr-2 h-4 w-4" />
+                  Restore Backup
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Add Content Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto dark:bg-gray-800 dark:border-gray-700">
