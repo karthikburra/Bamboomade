@@ -97,6 +97,20 @@ export default function AdminDashboard() {
   const [isAddSlotDialogOpen, setIsAddSlotDialogOpen] = useState(false);
   const [isEditSlotDialogOpen, setIsEditSlotDialogOpen] = useState(false);
   
+  // Bulk date selection state
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<{start: string, end: string}>({start: "", end: ""});
+  const [bulkMode, setBulkMode] = useState<boolean>(false);
+  const [selectedDays, setSelectedDays] = useState<{[key: string]: boolean}>({
+    monday: true,
+    tuesday: true,
+    wednesday: true,
+    thursday: true,
+    friday: true,
+    saturday: false,
+    sunday: false,
+  });
+  
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -406,6 +420,89 @@ export default function AdminDashboard() {
   
   const removeTimeFromSelectedSlots = (time: string) => {
     setSelectedSlots(selectedSlots.filter(t => t !== time));
+  };
+  
+  // Helper function to generate dates between start and end dates
+  const generateDatesInRange = () => {
+    if (!dateRange.start || !dateRange.end) return [];
+    
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    const dateList: string[] = [];
+    
+    // Map day index to day name
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    // Loop through each day in the range
+    const currentDate = new Date(start);
+    while (currentDate <= end) {
+      const dayName = dayNames[currentDate.getDay()];
+      
+      // Only add dates for selected days of week
+      if (selectedDays[dayName]) {
+        dateList.push(currentDate.toISOString().split('T')[0]);
+      }
+      
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return dateList;
+  };
+  
+  // Handle bulk time slot creation
+  const handleBulkTimeSlotCreation = async () => {
+    if (selectedSlots.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please add at least one time slot.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Generate list of dates based on range and selected days
+    const dates = bulkMode ? generateDatesInRange() : [newDate];
+    
+    if (dates.length === 0) {
+      toast({
+        title: "Error",
+        description: "No dates selected. Please select at least one date.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      // Create a promise for each date to add
+      const promises = dates.map(date => 
+        addTimeSlot({
+          date,
+          slots: selectedSlots,
+        })
+      );
+      
+      // Wait for all slots to be added
+      await Promise.all(promises);
+      
+      toast({
+        title: "Success",
+        description: `Added time slots for ${dates.length} dates successfully.`,
+      });
+      
+      // Reset state
+      setIsAddSlotDialogOpen(false);
+      setNewDate("");
+      setSelectedSlots([]);
+      setDateRange({start: "", end: ""});
+      setBulkMode(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add some time slots. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isAuthLoading) {
