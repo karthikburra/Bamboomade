@@ -477,34 +477,36 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
-                {/* First show available times */}
-                {availableTimeSlots.map((time) => (
-                  <div key={time} className="relative">
-                    <SelectItem 
-                      value={time}
-                      className={cn(
-                        "justify-between",
-                        props.selectedTime === time ? "font-medium" : ""
-                      )}
-                    >
-                      <div className="flex justify-between items-center w-full">
-                        <span>{time}</span>
-                        <div className="ml-9">
-                          {props.selectedTime === time && (
-                            <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
-                              Selected
-                            </span>
-                          )}
+                {/* Only show available (non-booked) times */}
+                {availableTimeSlots
+                  .filter(time => !isTimeSlotBooked(time)) // Filter out booked slots
+                  .map((time) => (
+                    <div key={time} className="relative">
+                      <SelectItem 
+                        value={time}
+                        className={cn(
+                          "justify-between",
+                          props.selectedTime === time ? "font-medium" : ""
+                        )}
+                      >
+                        <div className="flex justify-between items-center w-full">
+                          <span>{time}</span>
+                          <div className="ml-9">
+                            {props.selectedTime === time && (
+                              <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                                Selected
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </SelectItem>
-                  </div>
-                ))}
+                      </SelectItem>
+                    </div>
+                  ))}
                 
-                {/* We're no longer showing booked times in the dropdown */}
+                {/* We don't show booked time slots in the dropdown */}
                 
-                {/* Show message if no time slots are available */}
-                {availableTimeSlots.length === 0 && !isLoadingSlots && (
+                {/* Show message if no time slots are available or all are booked */}
+                {(availableTimeSlots.length === 0 || availableTimeSlots.every(time => isTimeSlotBooked(time))) && !isLoadingSlots && (
                   <div className="px-2 py-4 text-center text-sm text-muted-foreground">
                     No available time slots for this date
                   </div>
