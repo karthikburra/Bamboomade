@@ -256,9 +256,14 @@ const AIKnowledgeManagement: React.FC = () => {
   }, {} as Record<string, number>) || {};
   
   return (
-    <div className="container py-8">
+    <div className="container py-8 bg-background text-foreground">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">AI Knowledge Management</h1>
+        <div className="flex items-center">
+          <h1 className="text-3xl font-bold mr-4">AI Knowledge Management</h1>
+          <Button variant="secondary" onClick={() => window.location.href = '/admin'}>
+            Back to Admin Dashboard
+          </Button>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -410,10 +415,10 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Add Content Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto bg-background border-border">
           <DialogHeader>
-            <DialogTitle>Add New Knowledge Content</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Add New Knowledge Content</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Add content to improve the AI knowledge base. This can be documents, events, or websites.
             </DialogDescription>
           </DialogHeader>
@@ -539,10 +544,10 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Import from Google Drive Dialog */}
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-background border-border">
           <DialogHeader>
-            <DialogTitle>Import from Google Drive</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Import from Google Drive</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Enter the Google Drive document URL to extract its content.
             </DialogDescription>
           </DialogHeader>
@@ -621,10 +626,10 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Edit Content Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto bg-background border-border">
           <DialogHeader>
-            <DialogTitle>Edit Knowledge Content</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-foreground">Edit Knowledge Content</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Update the content in the AI knowledge base.
             </DialogDescription>
           </DialogHeader>
