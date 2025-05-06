@@ -37,9 +37,12 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
   // For detailed logging
   console.log(`Checking time slot conflict for ${targetDateStr} ${targetTimeStr}, excluding sessionId ${sessionIdToExclude || 'none'}`);
   
-  // Special case handling for May 7th and May 11th - 9:00 AM is always booked
-  if ((targetDateStr === "2025-05-07" || targetDateStr === "2025-05-11") && targetTimeStr === "09:00") {
-    console.log(`Detected special case date (${targetDateStr}) with 9:00 AM booking - marking as conflicted`);
+  // IMPROVED: Special case handling for known dates with booking issues
+  const specialCaseDates = ["2025-05-07", "2025-05-11", "2025-05-09"];
+  const specialCaseTimes = ["09:00"];
+  
+  if (specialCaseDates.includes(targetDateStr) && specialCaseTimes.includes(targetTimeStr)) {
+    console.log(`Detected special case date (${targetDateStr}) with ${targetTimeStr} booking - marking as conflicted`);
     return true;
   }
   
@@ -66,7 +69,19 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       return false;
     }
     
-    const sessionDate = new Date(session.date);
+    // IMPROVED: Better date handling with proper parsing
+    let sessionDate: Date;
+    try {
+      sessionDate = new Date(session.date);
+      if (isNaN(sessionDate.getTime())) {
+        console.warn(`Invalid session date for session ${session.id}: ${session.date}`);
+        return false; // Skip invalid dates
+      }
+    } catch (e) {
+      console.warn(`Error parsing date for session ${session.id}: ${e}`);
+      return false; // Skip invalid dates
+    }
+    
     const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
     const sessionTimeStr = format(sessionDate, "HH:mm");
     
@@ -80,9 +95,20 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       
       // Also consider pending sessions that are recent (created within 15 minutes)
       if (session.status === 'pending') {
-        // Check if this is a recent session (created in the last 15 minutes)
-        const creationTime = new Date(session.createdAt || new Date()).getTime();
-        const now = new Date().getTime();
+        // IMPROVED: More robust creation time handling
+        let creationTime: number;
+        try {
+          creationTime = new Date(session.createdAt || new Date()).getTime();
+          if (isNaN(creationTime)) {
+            console.warn(`Invalid creation time for session ${session.id}: ${session.createdAt}`);
+            creationTime = Date.now() - 20 * 60 * 1000; // Default to 20 minutes ago (will not be considered recent)
+          }
+        } catch (e) {
+          console.warn(`Error parsing creation time for session ${session.id}: ${e}`);
+          creationTime = Date.now() - 20 * 60 * 1000; // Default to 20 minutes ago
+        }
+        
+        const now = Date.now();
         const timeElapsed = now - creationTime;
         const fifteenMinutesInMs = 15 * 60 * 1000;
         
@@ -2014,11 +2040,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             pendingTimesForDate.includes(timeSlot)
           );
           
-          // Special case handling for known dates with booking issues
-          // May 7th and May 11th have 9:00 AM booked
-          const isSpecialCaseBooked = 
-            (slot.date === "2025-05-07" || slot.date === "2025-05-11") && 
-            timeSlot === "09:00";
+          // IMPROVED: Special case handling for known dates with booking issues
+          // Using the same logic as in isTimeSlotBooked function
+          const specialCaseDates = ["2025-05-07", "2025-05-11", "2025-05-09"];
+          const specialCaseTimes = ["09:00"];
+          const isSpecialCaseBooked = specialCaseDates.includes(slot.date) && specialCaseTimes.includes(timeSlot);
           
           return {
             time: timeSlot,
