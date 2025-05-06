@@ -256,76 +256,80 @@ const AIKnowledgeManagement: React.FC = () => {
   }, {} as Record<string, number>) || {};
   
   return (
-    <div className="container py-8 bg-background text-foreground">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container py-6 md:py-8 bg-background text-foreground min-h-screen">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center">
-          <h1 className="text-3xl font-bold mr-4">AI Knowledge Management</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
           <Button
             variant="outline"
+            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
             onClick={() => {
               setIsImportDialogOpen(true);
             }}
           >
             <Upload className="mr-2 h-4 w-4" />
-            Import from Google Drive
+            <span className="whitespace-nowrap">Import from Drive</span>
           </Button>
-          <Button onClick={() => {
-            form.reset();
-            setIsAddDialogOpen(true);
-          }}>
+          <Button 
+            className="flex-1 md:flex-none dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+            onClick={() => {
+              form.reset();
+              setIsAddDialogOpen(true);
+            }}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add New Content
+            <span className="whitespace-nowrap">Add New Content</span>
           </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Total Content</CardTitle>
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
+            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Total Content</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{knowledgeContent?.length || 0}</p>
+          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
+            <p className="text-xl md:text-3xl font-bold dark:text-white">{knowledgeContent?.length || 0}</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Documents</CardTitle>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
+            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Documents</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{contentTypeCount['document'] || 0}</p>
+          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
+            <p className="text-xl md:text-3xl font-bold dark:text-white">{contentTypeCount['document'] || 0}</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Events</CardTitle>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
+            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Events</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{contentTypeCount['event'] || 0}</p>
+          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
+            <p className="text-xl md:text-3xl font-bold dark:text-white">{contentTypeCount['event'] || 0}</p>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Websites</CardTitle>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
+            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Websites</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{contentTypeCount['webpage'] || 0}</p>
+          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
+            <p className="text-xl md:text-3xl font-bold dark:text-white">{contentTypeCount['webpage'] || 0}</p>
           </CardContent>
         </Card>
       </div>
       
-      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="document">Documents</TabsTrigger>
-          <TabsTrigger value="event">Events</TabsTrigger>
-          <TabsTrigger value="webpage">Websites</TabsTrigger>
-          <TabsTrigger value="manual">Manual</TabsTrigger>
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="mb-4 w-full flex overflow-x-auto no-scrollbar justify-start md:justify-center dark:bg-gray-800 dark:text-gray-200">
+          <TabsTrigger value="all" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">All</TabsTrigger>
+          <TabsTrigger value="document" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Documents</TabsTrigger>
+          <TabsTrigger value="event" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Events</TabsTrigger>
+          <TabsTrigger value="webpage" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Websites</TabsTrigger>
+          <TabsTrigger value="manual" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Manual</TabsTrigger>
         </TabsList>
         
         <TabsContent value={activeTab}>
@@ -334,73 +338,137 @@ const AIKnowledgeManagement: React.FC = () => {
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
             </div>
           ) : isError ? (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="dark:bg-red-900 dark:border-red-800 dark:text-white">
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>Failed to fetch knowledge content. Please try again later.</AlertDescription>
             </Alert>
           ) : filteredContent && filteredContent.length > 0 ? (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Source</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredContent.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.title}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <CardContent className="p-0 overflow-x-auto">
+                <div className="hidden md:block"> {/* Table for medium and larger screens */}
+                  <Table className="dark:text-gray-200">
+                    <TableHeader className="dark:bg-gray-900">
+                      <TableRow className="dark:border-gray-700 dark:hover:bg-gray-700/50">
+                        <TableHead className="dark:text-gray-300">Title</TableHead>
+                        <TableHead className="dark:text-gray-300">Type</TableHead>
+                        <TableHead className="dark:text-gray-300">Source</TableHead>
+                        <TableHead className="dark:text-gray-300">Status</TableHead>
+                        <TableHead className="text-right dark:text-gray-300">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredContent.map((item) => (
+                        <TableRow key={item.id} className="dark:border-gray-700 dark:hover:bg-gray-700/50">
+                          <TableCell className="font-medium dark:text-white">{item.title}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+                              {item.contentType === 'document' && <FileText className="h-3 w-3 mr-1" />}
+                              {item.contentType === 'webpage' && <LinkIcon className="h-3 w-3 mr-1" />}
+                              {item.contentType === 'event' && <Calendar className="h-3 w-3 mr-1" />}
+                              {item.contentType === 'manual' && <Info className="h-3 w-3 mr-1" />}
+                              {item.contentType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">
+                            {item.source ? (
+                              <a href={item.source} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 hover:underline flex items-center">
+                                <LinkIcon className="h-3 w-3 mr-1" />
+                                {item.source}
+                              </a>
+                            ) : (
+                              <span className="text-gray-500 dark:text-gray-400">None</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={item.status === 'active' ? 'default' : 'secondary'}
+                              className={item.status === 'active' 
+                                ? "dark:bg-green-700 dark:text-white" 
+                                : "dark:bg-gray-600 dark:text-gray-200"}
+                            >
+                              {item.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="dark:hover:bg-gray-700 dark:text-gray-200">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="dark:hover:bg-gray-700 dark:text-gray-200">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                
+                {/* Mobile card layout for small screens */}
+                <div className="md:hidden">
+                  {filteredContent.map((item) => (
+                    <div key={item.id} className="p-4 border-b dark:border-gray-700">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-medium text-lg dark:text-white">{item.title}</h3>
+                        <div className="flex space-x-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0 dark:hover:bg-gray-700 dark:text-gray-200">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="h-8 w-8 p-0 dark:hover:bg-gray-700 dark:text-gray-200">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Type:</span>
+                          <Badge variant="outline" className="ml-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
                             {item.contentType === 'document' && <FileText className="h-3 w-3 mr-1" />}
                             {item.contentType === 'webpage' && <LinkIcon className="h-3 w-3 mr-1" />}
                             {item.contentType === 'event' && <Calendar className="h-3 w-3 mr-1" />}
                             {item.contentType === 'manual' && <Info className="h-3 w-3 mr-1" />}
                             {item.contentType}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {item.source ? (
-                            <a href={item.source} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline flex items-center">
-                              <LinkIcon className="h-3 w-3 mr-1" />
-                              {item.source}
-                            </a>
-                          ) : (
-                            <span className="text-gray-500">None</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={item.status === 'active' ? 'default' : 'secondary'}>
+                        </div>
+                        
+                        <div>
+                          <span className="text-gray-500 dark:text-gray-400">Status:</span>
+                          <Badge 
+                            variant={item.status === 'active' ? 'default' : 'secondary'}
+                            className={`ml-2 ${item.status === 'active' 
+                              ? "dark:bg-green-700 dark:text-white" 
+                              : "dark:bg-gray-600 dark:text-gray-200"}`}
+                          >
                             {item.status}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                      </div>
+                      
+                      {item.source && (
+                        <div className="mt-2 text-sm truncate">
+                          <span className="text-gray-500 dark:text-gray-400">Source:</span>
+                          <a href={item.source} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 dark:text-blue-400 hover:underline inline-flex items-center">
+                            <LinkIcon className="h-3 w-3 mr-1" />
+                            {item.source}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           ) : (
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500 mb-4">No knowledge content found.</p>
-                <Button onClick={() => {
-                  form.reset();
-                  setIsAddDialogOpen(true);
-                }}>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">No knowledge content found.</p>
+                <Button 
+                  onClick={() => {
+                    form.reset();
+                    setIsAddDialogOpen(true);
+                  }}
+                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Content
                 </Button>
@@ -412,10 +480,10 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Add Content Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto bg-background border-border">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto dark:bg-gray-800 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Add New Knowledge Content</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogTitle className="dark:text-white">Add New Knowledge Content</DialogTitle>
+            <DialogDescription className="dark:text-gray-300">
               Add content to improve the AI knowledge base. This can be documents, events, or websites.
             </DialogDescription>
           </DialogHeader>
@@ -427,11 +495,15 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter a descriptive title" {...field} />
+                      <Input 
+                        placeholder="Enter a descriptive title" 
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+                        {...field} 
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -441,24 +513,24 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="contentType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content Type</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           <SelectValue placeholder="Select content type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="document">Document</SelectItem>
-                        <SelectItem value="webpage">Web Page</SelectItem>
-                        <SelectItem value="event">Event</SelectItem>
-                        <SelectItem value="manual">Manual Entry</SelectItem>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                        <SelectItem value="document" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Document</SelectItem>
+                        <SelectItem value="webpage" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Web Page</SelectItem>
+                        <SelectItem value="event" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Event</SelectItem>
+                        <SelectItem value="manual" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Manual Entry</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormDescription>
+                    <FormDescription className="dark:text-gray-400">
                       Select the type of content you are adding.
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -468,14 +540,18 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="source"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Source URL</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Source URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/document or Google Drive URL" {...field} />
+                      <Input 
+                        placeholder="https://example.com/document or Google Drive URL" 
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+                        {...field} 
+                      />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="dark:text-gray-400">
                       Enter the URL where this content can be found (optional).
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -485,18 +561,18 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Content</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Enter the content or paste from a document" 
-                        className="min-h-[200px]"
+                        className="min-h-[200px] dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         {...field} 
                       />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="dark:text-gray-400">
                       The content will be used by the AI to answer user questions.
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -506,31 +582,40 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="archived">Archived</SelectItem>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                        <SelectItem value="active" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Active</SelectItem>
+                        <SelectItem value="archived" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Archived</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormDescription>
+                    <FormDescription className="dark:text-gray-400">
                       Active content will be used by the AI. Archived content will be ignored.
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
               
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAddDialogOpen(false)}
+                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={addMutation.isPending}>
+                <Button 
+                  type="submit" 
+                  disabled={addMutation.isPending}
+                  className="dark:bg-primary dark:text-white dark:hover:bg-primary/90"
+                >
                   {addMutation.isPending ? "Adding..." : "Add Content"}
                 </Button>
               </DialogFooter>
@@ -541,10 +626,10 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Import from Google Drive Dialog */}
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="max-w-md bg-background border-border">
+        <DialogContent className="max-w-md dark:bg-gray-800 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Import from Google Drive</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogTitle className="dark:text-white">Import from Google Drive</DialogTitle>
+            <DialogDescription className="dark:text-gray-300">
               Enter the Google Drive document URL to extract its content.
             </DialogDescription>
           </DialogHeader>
@@ -556,17 +641,18 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Google Drive URL</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Google Drive URL</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="https://docs.google.com/document/d/..."
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         {...field} 
                       />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="dark:text-gray-400">
                       Paste the shared link to your Google Drive document.
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -576,11 +662,15 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter a title for this content" {...field} />
+                      <Input 
+                        placeholder="Enter a title for this content" 
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+                        {...field} 
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -590,29 +680,38 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="contentType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content Type</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           <SelectValue placeholder="Select content type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="document">Document</SelectItem>
-                        <SelectItem value="webpage">Web Page</SelectItem>
-                        <SelectItem value="event">Event</SelectItem>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                        <SelectItem value="document" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Document</SelectItem>
+                        <SelectItem value="webpage" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Web Page</SelectItem>
+                        <SelectItem value="event" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Event</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
               
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsImportDialogOpen(false)}
+                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={extractMutation.isPending}>
+                <Button 
+                  type="submit" 
+                  disabled={extractMutation.isPending}
+                  className="dark:bg-primary dark:text-white dark:hover:bg-primary/90"
+                >
                   {extractMutation.isPending ? "Extracting..." : "Extract Content"}
                 </Button>
               </DialogFooter>
@@ -623,10 +722,10 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Edit Content Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto bg-background border-border">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto dark:bg-gray-800 dark:border-gray-700">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Edit Knowledge Content</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogTitle className="dark:text-white">Edit Knowledge Content</DialogTitle>
+            <DialogDescription className="dark:text-gray-300">
               Update the content in the AI knowledge base.
             </DialogDescription>
           </DialogHeader>
@@ -638,11 +737,15 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter a descriptive title" {...field} />
+                      <Input 
+                        placeholder="Enter a descriptive title" 
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+                        {...field} 
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -652,21 +755,21 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="contentType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content Type</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           <SelectValue placeholder="Select content type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="document">Document</SelectItem>
-                        <SelectItem value="webpage">Web Page</SelectItem>
-                        <SelectItem value="event">Event</SelectItem>
-                        <SelectItem value="manual">Manual Entry</SelectItem>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                        <SelectItem value="document" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Document</SelectItem>
+                        <SelectItem value="webpage" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Web Page</SelectItem>
+                        <SelectItem value="event" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Event</SelectItem>
+                        <SelectItem value="manual" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Manual Entry</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -676,14 +779,18 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="source"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Source URL</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Source URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/document or Google Drive URL" {...field} />
+                      <Input 
+                        placeholder="https://example.com/document or Google Drive URL" 
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
+                        {...field} 
+                      />
                     </FormControl>
-                    <FormDescription>
+                    <FormDescription className="dark:text-gray-400">
                       Enter the URL where this content can be found (optional).
                     </FormDescription>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -693,15 +800,15 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Content</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Content</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Enter the content or paste from a document" 
-                        className="min-h-[200px]"
+                        className="min-h-[200px] dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         {...field} 
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
@@ -711,28 +818,37 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="dark:text-gray-200">Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="archived">Archived</SelectItem>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                        <SelectItem value="active" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Active</SelectItem>
+                        <SelectItem value="archived" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Archived</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="dark:text-red-400" />
                   </FormItem>
                 )}
               />
               
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
+                <Button 
+                  type="submit" 
+                  disabled={updateMutation.isPending}
+                  className="dark:bg-primary dark:text-white dark:hover:bg-primary/90"
+                >
                   {updateMutation.isPending ? "Saving..." : "Save Changes"}
                 </Button>
               </DialogFooter>
