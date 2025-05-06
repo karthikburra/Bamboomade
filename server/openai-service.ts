@@ -120,21 +120,64 @@ export async function processMessage(
         }\n\nUse this information if relevant to answer the user's question.`
       : '';
       
-    // Find relevant knowledge content based on simple keyword matching
+    // Find relevant knowledge content based on improved matching
     // This is a basic implementation; could use embedding-based search in the future
     const lowerCaseMessage = message.toLowerCase();
-    const relevantKnowledge = knowledgeContent
-      .filter(item => {
-        // Only use active knowledge content
-        if (item.status !== 'active') return false;
+    
+    // Extract keywords from the message (words over 3 chars, excluding common words)
+    const messageKeywords = lowerCaseMessage
+      .split(/\s+/)
+      .filter(word => word.length > 3)
+      .filter(word => !['this', 'that', 'what', 'when', 'where', 'which', 'with', 'would', 'could', 'should', 'there', 'their', 'about'].includes(word));
+    
+    // Score each knowledge content item based on keyword matches
+    const scoredContent = knowledgeContent
+      .filter(item => item.status === 'active') // Only use active knowledge content
+      .map(item => {
+        const titleLower = item.title.toLowerCase();
+        const contentLower = item.content.toLowerCase();
         
-        // Check for keyword matches in title and content
-        return item.title.toLowerCase().split(' ').some((word: string) => 
-                lowerCaseMessage.includes(word) && word.length > 3) ||
-               item.content.toLowerCase().split(' ').some((word: string) => 
-                lowerCaseMessage.includes(word) && word.length > 3);
+        // Calculate a relevance score
+        let score = 0;
+        
+        // Check for exact phrase matches (highest relevance)
+        if (titleLower.includes(lowerCaseMessage) || contentLower.includes(lowerCaseMessage)) {
+          score += 10;
+        }
+        
+        // Check for keyword matches
+        for (const keyword of messageKeywords) {
+          // Title matches are worth more
+          if (titleLower.includes(keyword)) {
+            score += 3;
+          }
+          
+          // Content matches
+          if (contentLower.includes(keyword)) {
+            score += 1;
+          }
+          
+          // Bonus for exact word matches (not just substring)
+          const titleWords = titleLower.split(/\s+/);
+          const contentWords = contentLower.split(/\s+/);
+          
+          if (titleWords.includes(keyword)) {
+            score += 2;
+          }
+          
+          if (contentWords.includes(keyword)) {
+            score += 1;
+          }
+        }
+        
+        return { item, score };
       })
+      .filter(({ score }) => score > 0) // Only include items with some relevance
+      .sort((a, b) => b.score - a.score) // Sort by descending score
+      .map(({ item }) => item)
       .slice(0, 3); // Limit to 3 most relevant items to avoid context length issues
+    
+    const relevantKnowledge = scoredContent;
     
     // Build knowledge context
     const knowledgeContext = relevantKnowledge.length > 0
