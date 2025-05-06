@@ -327,6 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Format the sessions for the admin dashboard
       const formattedSessions = allSessions.map(session => {
         const sessionDate = new Date(session.date);
+        const sessionEndTime = addMinutes(sessionDate, session.duration);
         
         return {
           id: session.id,
@@ -334,8 +335,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: session.email,
           phone: session.phone,
           date: session.date,
-          formattedDate: format(sessionDate, 'MMM dd, yyyy'),
-          formattedTime: format(sessionDate, 'hh:mm a'),
+          formattedDate: format(sessionDate, "MMMM d, yyyy"),
+          formattedTime: format(sessionDate, "h:mm a"),
+          formattedEndTime: format(sessionEndTime, "h:mm a"),
           duration: session.duration,
           topic: session.topic,
           notes: session.notes || '',
