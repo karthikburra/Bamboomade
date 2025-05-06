@@ -959,7 +959,12 @@ export default function AdminDashboard() {
                                         <Button 
                                           size="sm"
                                           className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                          onClick={() => window.open(session.googleMeetLink, '_blank')}
+                                          onClick={() => {
+                                            const meetUrl = session.googleMeetLink || '';
+                                            if (meetUrl.trim()) {
+                                              window.open(meetUrl, '_blank', 'noopener,noreferrer');
+                                            }
+                                          }}
                                         >
                                           <Video className="w-3.5 h-3.5 mr-1.5" /> 
                                           <span className="hidden sm:inline">Open Meet</span>
@@ -1002,17 +1007,7 @@ export default function AdminDashboard() {
                                       </Button>
                                     )}
                                     
-                                    {/* Web Search button - always shown */}
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      className="whitespace-nowrap border-orange-700 text-orange-400 hover:bg-orange-900/30 h-8 text-xs px-2 sm:text-sm sm:px-3 mt-1"
-                                      onClick={() => window.open('https://www.google.com/search?q=' + encodeURIComponent(session.studentName + ' ' + session.email), '_blank')}
-                                    >
-                                      <Search className="w-3 h-3 mr-1" />
-                                      <span className="hidden sm:inline">Web Search</span>
-                                      <span className="sm:hidden">Search</span>
-                                    </Button>
+
                                   </div>
                                 </TableCell>
                                 <TableCell className="hidden sm:table-cell">
