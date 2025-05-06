@@ -1988,6 +1988,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           pendingSlots[sessionDateStr].push(sessionTimeStr);
           pendingSessionCount++;
+          
+          // FIXED: Also add to bookedSlots to ensure they show as unavailable
+          if (!bookedSlots[sessionDateStr]) {
+            bookedSlots[sessionDateStr] = [];
+          }
+          
+          // Ensure we don't duplicate entries
+          if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+            bookedSlots[sessionDateStr].push(sessionTimeStr);
+            // Don't increment confirmedSessionCount as it's not actually confirmed
+          }
         }
       });
       
