@@ -536,7 +536,7 @@ export default function AllSessions() {
               
               <div className="flex justify-center space-x-3 mt-4">
                 <Link href="/">
-                  <Button variant="secondary" className="border-gray-700">
+                  <Button variant="secondary" className="bg-gray-800 text-gray-300 hover:bg-gray-700">
                     Back to Home
                   </Button>
                 </Link>
@@ -999,7 +999,7 @@ export default function AllSessions() {
             <div className="mt-8 text-center">
               <div className="flex justify-center space-x-3">
                 <Link href="/">
-                  <Button variant="secondary" className="border-gray-700">
+                  <Button variant="secondary" className="bg-gray-800 text-gray-300 hover:bg-gray-700">
                     Back to Home
                   </Button>
                 </Link>
