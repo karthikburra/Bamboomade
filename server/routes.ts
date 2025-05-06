@@ -2190,9 +2190,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      console.log(`[AdminAPI] Attempting to create available time slot for date: ${date} with ${slots.length} slots`);
+      
       // Check if this date already exists
       const existingSlot = await storage.getAvailableTimeSlotByDate(date);
       if (existingSlot) {
+        console.log(`[AdminAPI] Date ${date} already exists with ID ${existingSlot.id}`);
         return res.status(400).json({
           success: false,
           message: "A time slot for this date already exists. Use PUT to update it."
@@ -2201,16 +2204,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userId = req.session.userId || 1; // Default to admin ID 1 if not logged in
       
-      const newSlot = await storage.createAvailableTimeSlot({
-        date,
-        slots,
-        createdBy: userId
-      });
-      
-      res.status(201).json({
-        success: true,
-        slot: newSlot
-      });
+      try {
+        const newSlot = await storage.createAvailableTimeSlot({
+          date,
+          slots,
+          createdBy: userId
+        });
+        
+        console.log(`[AdminAPI] Successfully created time slot for date ${date} with ID ${newSlot.id}`);
+        
+        res.status(201).json({
+          success: true,
+          slot: newSlot
+        });
+      } catch (dbError) {
+        console.error(`[AdminAPI] Database error creating time slot for date ${date}:`, dbError);
+        throw dbError;
+      }
     } catch (error) {
       console.error("Error creating available time slot:", error);
       res.status(500).json({
