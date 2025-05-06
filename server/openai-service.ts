@@ -8,19 +8,24 @@ import { AiKnowledgeContent } from "../shared/schema";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Check if OpenAI API key is provided
-const apiKey = process.env.OPENAI_API_KEY;
-let openai: OpenAI | null = null;
-
 // Define paths for storing data
 const DATA_DIR = path.join(__dirname, '..', 'whatsapp-data');
 const TRAINING_DATA_FILE = path.join(DATA_DIR, 'training-data.json');
 
-// Only initialize OpenAI if we have an API key
-if (apiKey) {
-  openai = new OpenAI({ apiKey });
-} else {
-  console.warn("OPENAI_API_KEY is not set. The AI chat will use fallback responses.");
+// Initialize OpenAI getter function to use current environment variable
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI | null {
+  // Check if OpenAI API key is provided - check every time to pick up new env vars
+  const apiKey = process.env.OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.warn("OPENAI_API_KEY is not set. The AI chat will use fallback responses.");
+    return null;
+  }
+  
+  // Create a new instance with the current API key
+  return new OpenAI({ apiKey });
 }
 
 // Ensure directories exist
@@ -77,6 +82,9 @@ export async function processMessage(
   knowledgeContent: AiKnowledgeContent[] = []
 ): Promise<{ response: string; tokensUsed: number }> {
   try {
+    // Get current OpenAI instance with the latest API key
+    openai = getOpenAI();
+    
     // If OpenAI is not initialized (no API key), use fallback response
     if (!openai) {
       // Fallback response when no API key is provided
@@ -240,6 +248,9 @@ export async function processMessageForTraining(message: string): Promise<string
   }
 
   try {
+    // Get current OpenAI instance with the latest API key
+    openai = getOpenAI();
+    
     // Check if OpenAI is available
     if (!openai) {
       console.warn("Cannot process message for training - OpenAI API key is missing");
@@ -360,6 +371,9 @@ export async function convertWhatsAppToTrainingData(): Promise<number> {
     }
 
     // Process each relevant message into training data
+    // Get current OpenAI instance with the latest API key
+    openai = getOpenAI();
+    
     if (!openai) {
       console.warn("Cannot convert WhatsApp data to training - OpenAI API key is missing");
       return 0;
