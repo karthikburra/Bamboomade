@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { AiKnowledgeContent } from "../shared/schema";
 
 // Get directory name in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -67,12 +68,13 @@ interface WhatsAppTrainingData {
  * Process a user's message using OpenAI
  * @param message User's message
  * @param trainingData Additional context from admin-provided training data
+ * @param knowledgeContent Content from the AI Knowledge Base to enhance responses
  * @returns The AI response and number of tokens used
  */
 export async function processMessage(
   message: string, 
   trainingData: TrainingData[] = [],
-  knowledgeContent: any[] = []
+  knowledgeContent: AiKnowledgeContent[] = []
 ): Promise<{ response: string; tokensUsed: number }> {
   try {
     // If OpenAI is not initialized (no API key), use fallback response
@@ -299,7 +301,7 @@ export async function processMessageForTraining(message: string): Promise<string
     // If the message needs a direct response, generate one
     if (needsResponse) {
       // Get active knowledge content to enhance response
-      let knowledgeContent = [];
+      let knowledgeContent: AiKnowledgeContent[] = [];
       try {
         // Dynamically import storage to avoid circular imports
         const { storage } = await import('./storage');
