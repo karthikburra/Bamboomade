@@ -109,9 +109,6 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-500" />
           <div>
             <CardTitle className="text-xl text-green-600 dark:text-green-400">Payment Successful!</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Will send you Google Meet link soon. You can check in "View My Session" page.
-            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -121,6 +118,9 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <>
             <div className="space-y-2">
               <h3 className="text-lg font-medium text-green-600 dark:text-green-400">Session Details</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Will send you Google Meet link soon. You can check in "View My Session" page.
+              </p>
               <div className="space-y-1 text-sm">
                 <p className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Date:</span>
@@ -177,32 +177,21 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
         )}
       </CardContent>
       
-      <CardFooter className="flex flex-col space-y-3">
-        <div className="flex justify-between space-x-3 w-full">
-          <Button 
-            variant="outline" 
-            className="flex-1 border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-            onClick={() => window.open(getCalendarLink(), '_blank')}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            Add to Calendar
-          </Button>
-          
-          <Button 
-            variant="default" 
-            className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
-            onClick={() => window.location.href = "/"}
-          >
-            Return Home
-          </Button>
-        </div>
-        
+      <CardFooter className="flex justify-between space-x-3">
         <Button 
-          variant="link" 
-          className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+          variant="default" 
+          className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
           onClick={() => window.location.href = "/find-session"}
         >
           View My Session
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="flex-1 border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+          onClick={() => window.location.href = "/"}
+        >
+          Return Home
         </Button>
       </CardFooter>
     </Card>
