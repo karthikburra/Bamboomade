@@ -554,114 +554,135 @@ export default function AllSessions() {
                     )}
                     
                     <div className="flex flex-wrap gap-2 ml-auto">
-                      {/* Only show for upcoming sessions that aren't cancelled */}
+                      {/* Only show action buttons for upcoming sessions that aren't cancelled */}
                       {session.status !== 'cancelled' && session.status !== 'completed' && (
                         <>
-                          {/* Reschedule Button */}
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="h-9 border-blue-700 text-blue-400 hover:bg-blue-900/30"
-                                onClick={() => setSessionToReschedule(session)}
-                              >
-                                <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
-                                Reschedule
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-gray-900 border-gray-700 text-white">
-                              <DialogHeader>
-                                <DialogTitle className="text-white">Reschedule Your Session</DialogTitle>
-                                <DialogDescription className="text-gray-400">
-                                  Select a new date and time for your bamboo guidance session.
-                                </DialogDescription>
-                              </DialogHeader>
-                              
-                              <div className="space-y-4 py-4">
-                                <div className="flex flex-col space-y-1.5">
-                                  <Label htmlFor="rescheduleDate">Select New Date</Label>
-                                  <div className="p-3 bg-gray-800 rounded-md border border-gray-700">
-                                    <DayPicker
-                                      mode="single"
-                                      selected={selectedDate}
-                                      onSelect={setSelectedDate}
-                                      disabled={[
-                                        { before: new Date() },
-                                        { dayOfWeek: [0, 6] } // Disable weekends
-                                      ]}
-                                      className="bg-gray-800 rounded-md text-white"
-                                    />
-                                  </div>
-                                </div>
-                                
-                                {selectedDate && (
-                                  <div className="flex flex-col space-y-1.5">
-                                    <Label htmlFor="rescheduleTime">Select New Time</Label>
-                                    <div className="flex flex-wrap gap-2">
-                                      {availableTimeSlots.length > 0 ? (
-                                        availableTimeSlots.map(slot => (
-                                          <Button
-                                            key={slot}
-                                            type="button"
-                                            size="sm"
-                                            variant={selectedTimeSlot === slot ? "default" : "outline"}
-                                            className={selectedTimeSlot === slot 
-                                              ? "bg-green-600 hover:bg-green-700 text-white" 
-                                              : "border-gray-700 text-gray-300 hover:bg-gray-800"}
-                                            onClick={() => setSelectedTimeSlot(slot)}
-                                          >
-                                            {slot}
-                                          </Button>
-                                        ))
-                                      ) : (
-                                        <div className="text-gray-400 text-sm">
-                                          No available time slots for this date. Please select another date.
+                          {/* Calculate time difference to session */}
+                          {(() => {
+                            const sessionDate = new Date(session.formattedDate + " " + session.formattedTime);
+                            const now = new Date();
+                            const hoursDifference = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+                            
+                            // Only show reschedule button if session is more than 4 hours away
+                            if (hoursDifference > 4) {
+                              return (
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="h-9 border-blue-700 text-blue-400 hover:bg-blue-900/30"
+                                      onClick={() => setSessionToReschedule(session)}
+                                    >
+                                      <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
+                                      Reschedule
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="bg-gray-900 border-gray-700 text-white">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-white">Reschedule Your Session</DialogTitle>
+                                      <DialogDescription className="text-gray-400">
+                                        Select a new date and time for your bamboo guidance session.
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    
+                                    <div className="space-y-4 py-4">
+                                      <div className="flex flex-col space-y-1.5">
+                                        <Label htmlFor="rescheduleDate">Select New Date</Label>
+                                        <div className="p-3 bg-gray-800 rounded-md border border-gray-700">
+                                          <DayPicker
+                                            mode="single"
+                                            selected={selectedDate}
+                                            onSelect={setSelectedDate}
+                                            disabled={[
+                                              { before: new Date() },
+                                              { dayOfWeek: [0, 6] } // Disable weekends
+                                            ]}
+                                            className="bg-gray-800 rounded-md text-white"
+                                          />
+                                        </div>
+                                      </div>
+                                      
+                                      {selectedDate && (
+                                        <div className="flex flex-col space-y-1.5">
+                                          <Label htmlFor="rescheduleTime">Select New Time</Label>
+                                          <div className="flex flex-wrap gap-2">
+                                            {availableTimeSlots.length > 0 ? (
+                                              availableTimeSlots.map(slot => (
+                                                <Button
+                                                  key={slot}
+                                                  type="button"
+                                                  size="sm"
+                                                  variant={selectedTimeSlot === slot ? "default" : "outline"}
+                                                  className={selectedTimeSlot === slot 
+                                                    ? "bg-green-600 hover:bg-green-700 text-white" 
+                                                    : "border-gray-700 text-gray-300 hover:bg-gray-800"}
+                                                  onClick={() => setSelectedTimeSlot(slot)}
+                                                >
+                                                  {slot}
+                                                </Button>
+                                              ))
+                                            ) : (
+                                              <div className="text-gray-400 text-sm">
+                                                No available time slots for this date. Please select another date.
+                                              </div>
+                                            )}
+                                          </div>
                                         </div>
                                       )}
+                                      
+                                      <div className="bg-green-900/30 border border-green-800/50 rounded-md p-3 text-green-300 text-sm">
+                                        <div className="flex gap-2 items-start">
+                                          <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                          <div>
+                                            <p className="font-medium mb-1">Free Rescheduling</p>
+                                            <p className="text-xs text-green-300/80">
+                                              Rescheduling is free if done more than 4 hours before the session starts.
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
-                                
-                                <div className="bg-amber-900/30 border border-amber-800/50 rounded-md p-3 text-amber-300 text-sm">
-                                  <div className="flex gap-2 items-start">
-                                    <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                    <div>
-                                      <p className="font-medium mb-1">Rescheduling Policy</p>
-                                      <p className="text-xs text-amber-300/80">
-                                        We offer one free rescheduling per booking if requested at least 24 hours 
-                                        before the scheduled session time. Subsequent reschedules or changes 
-                                        with less than 24 hours' notice will incur a ₹500 administrative fee.
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <DialogFooter>
-                                <DialogClose asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                                  >
-                                    Cancel
-                                  </Button>
-                                </DialogClose>
+                                    
+                                    <DialogFooter>
+                                      <DialogClose asChild>
+                                        <Button 
+                                          variant="outline" 
+                                          className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </DialogClose>
+                                      <Button 
+                                        className="bg-green-600 hover:bg-green-700"
+                                        disabled={!selectedDate || !selectedTimeSlot || isRescheduling}
+                                        onClick={() => rescheduleSession()}
+                                      >
+                                        {isRescheduling ? (
+                                          <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            Rescheduling...
+                                          </>
+                                        ) : "Confirm Reschedule"}
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              );
+                            } else {
+                              return (
                                 <Button 
-                                  className="bg-green-600 hover:bg-green-700"
-                                  disabled={!selectedDate || !selectedTimeSlot || isRescheduling}
-                                  onClick={() => rescheduleSession()}
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-9 border-gray-700 text-gray-500 cursor-not-allowed opacity-70"
+                                  disabled
                                 >
-                                  {isRescheduling ? (
-                                    <>
-                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                      Rescheduling...
-                                    </>
-                                  ) : "Confirm Reschedule"}
+                                  <Clock8 className="h-3.5 w-3.5 mr-1.5" />
+                                  Can't Reschedule
                                 </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                              );
+                            }
+                          })()}
                           
                           {/* Cancel Button */}
                           <AlertDialog>
