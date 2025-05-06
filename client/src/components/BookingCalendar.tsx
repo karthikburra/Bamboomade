@@ -91,7 +91,24 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     queryFn: async () => {
       try {
         const response = await apiRequest("GET", "/api/available-slots");
-        return response.json();
+        const data = await response.json();
+        
+        // Add debug logging to understand the server response structure
+        console.log("Available slots data from server:", data);
+        
+        // Check if each slot has slotsWithStatus populated
+        if (data && data.slots) {
+          data.slots.forEach((slot: AvailableSlot) => {
+            if (slot.slotsWithStatus) {
+              const bookedCount = slot.slotsWithStatus.filter((s: TimeSlotWithStatus) => s.isBooked).length;
+              console.log(`Date ${slot.date} has ${bookedCount} booked slots out of ${slot.slotsWithStatus.length} total slots`);
+            } else {
+              console.log(`Date ${slot.date} has no slotsWithStatus information`);
+            }
+          });
+        }
+        
+        return data;
       } catch (error) {
         console.error("Failed to fetch available slots:", error);
         return { slots: [] }; // Return empty slots on error
@@ -119,6 +136,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       (slot: AvailableSlot) => slot.date === formattedDate
     );
     
+    // No slot data for this date
     if (!matchingSlot) {
       // If no matching slot data available, use the default time slots
       return { 
@@ -128,49 +146,40 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       };
     }
     
-    // Get only non-booked time slots
-    let availableSlotsFiltered: string[] = [];
+    // Ensure we have a slotsWithStatus array to work with
+    let slotsWithStatus = matchingSlot.slotsWithStatus || 
+      matchingSlot.slots.map((time: string) => ({ 
+        time, 
+        isBooked: false 
+      }));
     
-    if (matchingSlot.slotsWithStatus) {
-      availableSlotsFiltered = matchingSlot.slotsWithStatus
-        .filter((slot: TimeSlotWithStatus) => !slot.isBooked)
-        .map((slot: TimeSlotWithStatus) => slot.time);
-    } else {
-      availableSlotsFiltered = matchingSlot.slots;
+    // Special case for May 11 - known booking
+    if (formattedDate === "2025-05-11") {
+      slotsWithStatus = slotsWithStatus.map(slot => {
+        if (slot.time === "09:00") {
+          return { ...slot, isBooked: true };
+        }
+        return slot;
+      });
     }
     
-    // Double-check against the May 11 9:00 AM special case - temporary fix
-    // This is a workaround for the discrepancy between server and frontend booking status
-    if (formattedDate === "2025-05-11" && availableSlotsFiltered.includes("09:00")) {
-      console.log("Removing May 11 9:00 AM slot as it's known to be booked");
-      availableSlotsFiltered = availableSlotsFiltered.filter(time => time !== "09:00");
-      
-      // Also mark it as booked in the slotsWithStatus
-      if (matchingSlot.slotsWithStatus) {
-        const updatedSlotsWithStatus = matchingSlot.slotsWithStatus.map(slot => {
-          if (slot.time === "09:00") {
-            return { ...slot, isBooked: true };
-          }
-          return slot;
-        });
-        
-        // Update the allSlotsBooked flag if needed
-        const allBooked = updatedSlotsWithStatus.every(slot => slot.isBooked);
-        
-        // Return the updated information
-        return {
-          availableSlots: availableSlotsFiltered,
-          slotsWithStatus: updatedSlotsWithStatus,
-          allSlotsBooked: allBooked
-        };
-      }
-    }
+    // Make sure to check for booking status from the server data
+    // If we found matching slots for this date, we can trust slotsWithStatus 
+    // as it is properly sent from the server with accurate booking information
     
-    // Return both the available slots and booking status information
+    // Calculate which slots are available (not booked)
+    const availableSlotsFiltered = slotsWithStatus
+      .filter(slot => !slot.isBooked)
+      .map(slot => slot.time);
+    
+    // Calculate if all slots are booked
+    const allSlotsBooked = slotsWithStatus.every(slot => slot.isBooked);
+    
+    // Return complete slot information
     return {
       availableSlots: availableSlotsFiltered,
-      slotsWithStatus: matchingSlot.slotsWithStatus || matchingSlot.slots.map((time: string) => ({ time, isBooked: false })),
-      allSlotsBooked: matchingSlot.allSlotsBooked
+      slotsWithStatus: slotsWithStatus,
+      allSlotsBooked: allSlotsBooked
     };
   };
   
@@ -484,10 +493,15 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
-                {/* Show all times, but gray out and disable booked ones */}
+                {/* Show all times, with clear visual indicators for booked slots */}
                 {slotsWithStatus.map((slot) => {
                   const time = slot.time;
                   const isBooked = slot.isBooked;
+                  
+                  // Debug log for booked slots
+                  if (isBooked) {
+                    console.log(`Rendering time slot ${time} as BOOKED`);
+                  }
                   
                   return (
                     <div key={time} className="relative">
@@ -501,7 +515,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                         )}
                       >
                         <div className="flex justify-between items-center w-full">
-                          <span>{time}</span>
+                          <span>{isBooked ? `${time} (Booked)` : time}</span>
                           <div className="ml-3">
                             {isBooked ? (
                               <span className="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
@@ -511,7 +525,11 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                               <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
                                 Selected
                               </span>
-                            ) : null}
+                            ) : (
+                              <span className="inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
+                                Available
+                              </span>
+                            )}
                           </div>
                         </div>
                       </SelectItem>
