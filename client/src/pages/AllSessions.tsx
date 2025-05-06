@@ -970,7 +970,7 @@ export default function AllSessions() {
                               </div>
                               
                               <AlertDialogFooter>
-                                <AlertDialogCancel className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                                <AlertDialogCancel className="bg-gray-800 text-gray-300 hover:bg-gray-700">
                                   Keep My Session
                                 </AlertDialogCancel>
                                 <AlertDialogAction 
