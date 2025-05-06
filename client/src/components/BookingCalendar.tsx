@@ -439,23 +439,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                   </div>
                 ))}
                 
-                {/* Then show booked times */}
-                {selectedDate && slotsWithStatus
-                  .filter((slot: TimeSlotWithStatus) => slot.isBooked)
-                  .map((slot: TimeSlotWithStatus) => (
-                    <div key={slot.time} className="relative">
-                      <div className="px-2 py-1.5 flex items-center justify-between text-muted-foreground">
-                        <div className="flex items-center">
-                          <Ban className="h-4 w-4 mr-2 text-red-500" />
-                          <span className="text-gray-400 line-through">{slot.time}</span>
-                        </div>
-                        <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
-                          Booked
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                }
+                {/* We're no longer showing booked times in the dropdown */}
                 
                 {/* Show message if no time slots are available */}
                 {availableTimeSlots.length === 0 && !isLoadingSlots && (
