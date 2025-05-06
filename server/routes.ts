@@ -2298,16 +2298,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin: Bulk create available time slots
   app.post("/api/admin/bulk-available-slots", isAdmin, async (req, res) => {
     try {
+      console.log("[AdminAPI] Received bulk time slot creation request", req.body);
       const { dates, slots } = req.body;
       
-      if (!dates || !Array.isArray(dates) || dates.length === 0 || !slots || !Array.isArray(slots) || slots.length === 0) {
+      if (!dates || !Array.isArray(dates) || dates.length === 0) {
+        console.error("[AdminAPI] Missing or invalid dates array", dates);
         return res.status(400).json({
           success: false,
-          message: "Array of dates and slots are required"
+          message: "Valid array of dates is required",
+          results: {
+            success: [],
+            failures: []
+          }
+        });
+      }
+      
+      if (!slots || !Array.isArray(slots) || slots.length === 0) {
+        console.error("[AdminAPI] Missing or invalid slots array", slots);
+        return res.status(400).json({
+          success: false,
+          message: "Valid array of time slots is required",
+          results: {
+            success: [],
+            failures: []
+          }
         });
       }
       
       console.log(`[AdminAPI] Bulk creating time slots for ${dates.length} dates with ${slots.length} slots each`);
+      console.log(`[AdminAPI] Dates: ${dates.join(', ')}`);
+      console.log(`[AdminAPI] Slots: ${slots.join(', ')}`);
       
       const userId = req.session.userId || 1; // Default to admin ID 1 if not logged in
       
@@ -2316,9 +2336,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         failures: [] as { date: string, reason: string }[]
       };
       
+      // Limit the number of dates to process to prevent overwhelming the server
+      const maxDates = 100;
+      const datesToProcess = dates.slice(0, maxDates);
+      
+      if (dates.length > maxDates) {
+        console.warn(`[AdminAPI] Too many dates requested (${dates.length}), limiting to ${maxDates}`);
+      }
+      
       // Process each date one by one
-      for (const date of dates) {
+      for (const date of datesToProcess) {
         try {
+          if (!date || typeof date !== 'string' || !date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            console.error(`[AdminAPI] Invalid date format: ${date}`);
+            results.failures.push({ 
+              date: String(date), 
+              reason: "Invalid date format" 
+            });
+            continue;
+          }
+          
           // Check if this date already exists
           const existingSlot = await storage.getAvailableTimeSlotByDate(date);
           
@@ -2345,7 +2382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error(`[AdminAPI] Error creating time slot for date ${date}:`, error);
           results.failures.push({ 
             date, 
-            reason: (error as Error).message 
+            reason: (error as Error).message || "Unknown error" 
           });
         }
         
@@ -2353,18 +2390,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await new Promise(resolve => setTimeout(resolve, 50));
       }
       
-      // Return results even if there are some failures
-      res.status(results.success.length > 0 ? 201 : 400).json({
+      // Return results regardless of success/failure status
+      const response = {
         success: results.success.length > 0,
         results
-      });
+      };
+      
+      console.log(`[AdminAPI] Bulk creation complete. Success: ${results.success.length}, Failures: ${results.failures.length}`);
+      console.log("[AdminAPI] Sending response:", response);
+      
+      res.status(results.success.length > 0 ? 201 : 400).json(response);
       
     } catch (error) {
-      console.error("Error in bulk time slot creation:", error);
+      console.error("[AdminAPI] Fatal error in bulk time slot creation:", error);
       res.status(500).json({
         success: false,
-        message: "Failed to process bulk time slots",
-        error: (error as Error).message
+        message: "Failed to process bulk time slots due to a server error",
+        error: (error as Error).message || "Unknown error",
+        results: {
+          success: [],
+          failures: []
+        }
       });
     }
   });

@@ -764,25 +764,50 @@ export default function AdminDashboard() {
   // Handle bulk time slot creation
   const { mutate: bulkAddTimeSlots, isPending: isBulkAdding } = useMutation({
     mutationFn: async ({ dates, slots }: { dates: string[]; slots: string[] }) => {
-      const response = await apiRequest("POST", "/api/admin/bulk-available-slots", {
-        dates,
-        slots,
-      });
-      return response.json();
+      try {
+        console.log("Sending bulk create request with data:", { dates, slots });
+        const response = await apiRequest("POST", "/api/admin/bulk-available-slots", {
+          dates,
+          slots,
+        });
+        
+        const responseData = await response.json();
+        console.log("Bulk create API response:", responseData);
+        return responseData;
+      } catch (error) {
+        console.error("Error in bulk time slot creation API call:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("Bulk create mutation succeeded with data:", data);
+      
+      // Handle the case where data is not in expected format
+      if (!data || !data.results) {
+        console.error("Invalid response format from bulk create API:", data);
+        toast({
+          title: "Error",
+          description: "Received invalid response from server. Check the console.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const { results } = data;
-      if (results.success && results.success.length > 0) {
-        if (results.failures && results.failures.length > 0) {
+      const successCount = results.success?.length || 0;
+      const failureCount = results.failures?.length || 0;
+      
+      if (successCount > 0) {
+        if (failureCount > 0) {
           toast({
             title: "Partial Success",
-            description: `Added ${results.success.length} dates, but failed for ${results.failures.length} dates.`,
+            description: `Added ${successCount} dates, but failed for ${failureCount} dates.`,
             variant: "default",
           });
         } else {
           toast({
             title: "Success",
-            description: `Added time slots for all ${results.success.length} dates successfully.`,
+            description: `Added time slots for all ${successCount} dates successfully.`,
           });
           
           // Reset state on complete success
@@ -795,7 +820,9 @@ export default function AdminDashboard() {
       } else {
         toast({
           title: "Error",
-          description: "Failed to add any time slots. Check the console for details.",
+          description: failureCount > 0 
+            ? `Failed to add any dates. ${failureCount} dates had errors.` 
+            : "Failed to add any time slots. Check the console for details.",
           variant: "destructive",
         });
       }
@@ -803,10 +830,10 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/available-slots"] });
     },
     onError: (error) => {
-      console.error("Bulk time slot creation error:", error);
+      console.error("Bulk time slot creation mutation error:", error);
       toast({
         title: "Error",
-        description: "Failed to process time slots. Please try again.",
+        description: "Failed to process time slots. Please check the console for details.",
         variant: "destructive",
       });
     }
