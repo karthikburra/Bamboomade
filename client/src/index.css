@@ -14,24 +14,29 @@
 /* Day picker calendar styles */
 .rdp {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: rgb(37 99 235);
-  --rdp-background-color: rgba(37, 99, 235, 0.2);
-  --rdp-accent-color-dark: rgb(37 99 235);
-  --rdp-background-color-dark: rgba(37, 99, 235, 0.2);
+  --rdp-accent-color: rgb(22 163 74); /* Green-600 */
+  --rdp-background-color: rgba(22, 163, 74, 0.2);
+  --rdp-accent-color-dark: rgb(22 163 74);
+  --rdp-background-color-dark: rgba(22, 163, 74, 0.2);
   --rdp-outline: 2px solid var(--rdp-accent-color);
-  --rdp-outline-selected: 2px solid rgb(37 99 235);
+  --rdp-outline-selected: 2px solid rgb(22 163 74);
   margin: 1em;
 }
 
 .rdp-day_selected, 
 .rdp-day_selected:focus-visible, 
 .rdp-day_selected:hover {
-  background-color: var(--rdp-accent-color);
-  color: white;
+  background-color: var(--rdp-accent-color) !important;
+  color: white !important;
+}
+
+.rdp-day_today {
+  border: 1px solid rgb(22 163 74) !important;
+  font-weight: bold;
 }
 
 .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
-  background-color: rgba(37, 99, 235, 0.1);
+  background-color: rgba(22, 163, 74, 0.1);
 }
 
 .rdp-months {

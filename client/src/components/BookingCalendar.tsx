@@ -224,8 +224,10 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 }
               }}
               modifiersClassNames={{
-                booked: "bg-red-100 text-red-800 hover:bg-red-100 focus:bg-red-100"
+                booked: "bg-red-100 text-red-800 hover:bg-red-100 focus:bg-red-100",
+                selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
               }}
+              className="rounded-md border-gray-200 dark:border-gray-800 p-3"
             />
           </PopoverContent>
         </Popover>
