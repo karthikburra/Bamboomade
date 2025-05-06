@@ -349,7 +349,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="flex items-center ml-2">
-                                  <Check className="h-4 w-4 text-green-500" />
+                                  <span className="text-xs text-green-500">Available</span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -364,8 +364,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="flex items-center ml-2">
-                                  <Clock className="h-4 w-4 text-amber-500" />
-                                  <span className="text-xs ml-1 text-amber-500">{totalSlots - bookedSlots}/{totalSlots}</span>
+                                  <span className="text-xs text-amber-500">{totalSlots - bookedSlots}/{totalSlots}</span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -380,7 +379,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="flex items-center ml-2">
-                                  <Ban className="h-4 w-4 text-red-500" />
+                                  <span className="text-xs text-red-500">Booked</span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
