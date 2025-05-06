@@ -45,13 +45,27 @@ interface AiKnowledgeContent {
   createdBy: number;
 }
 
+// Define import schema for Google Drive link
+const googleDriveImportSchema = z.object({
+  url: z.string()
+    .url({ message: "Please enter a valid URL" })
+    .refine((val) => val.includes("drive.google.com"), {
+      message: "URL must be a Google Drive link",
+    }),
+  title: z.string().min(5, { message: "Title must be at least 5 characters." }),
+  contentType: z.string({ required_error: "Please select a content type." }),
+  status: z.string().default("active"),
+});
+
 const AIKnowledgeManagement: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [currentContent, setCurrentContent] = useState<AiKnowledgeContent | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [importedContent, setImportedContent] = useState<string>("");
   
   // Form setup
   const form = useForm<z.infer<typeof aiKnowledgeFormSchema>>({
@@ -196,13 +210,24 @@ const AIKnowledgeManagement: React.FC = () => {
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">AI Knowledge Management</h1>
-        <Button onClick={() => {
-          form.reset();
-          setIsAddDialogOpen(true);
-        }}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add New Content
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsImportDialogOpen(true);
+            }}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Import from Google Drive
+          </Button>
+          <Button onClick={() => {
+            form.reset();
+            setIsAddDialogOpen(true);
+          }}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New Content
+          </Button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

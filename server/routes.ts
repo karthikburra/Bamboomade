@@ -1783,6 +1783,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete AI knowledge content" });
     }
   });
+  
+  // Extract content from Google Drive document
+  app.post("/api/ai-knowledge/extract-from-drive", isAdmin, async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+      
+      // Check if URL is a Google Drive URL
+      if (!url.includes("drive.google.com")) {
+        return res.status(400).json({ message: "Not a valid Google Drive URL" });
+      }
+
+      // This is a basic implementation that would need to be expanded
+      // with actual Google Drive API integration for production use
+      
+      // For demonstration, return a success message
+      // In a real implementation, this would extract the content from the Google Drive document
+      res.json({ 
+        message: "Content extraction initiated", 
+        contentPreview: "This is a placeholder for the extracted content. In a production environment, this would contain the actual content from the Google Drive document."
+      });
+    } catch (error) {
+      console.error("Error extracting content from Google Drive:", error);
+      res.status(500).json({ message: "Failed to extract content from Google Drive" });
+    }
+  });
 
   // AI Training data routes (admin only)
   app.get("/api/admin/training-data", async (req, res) => {
