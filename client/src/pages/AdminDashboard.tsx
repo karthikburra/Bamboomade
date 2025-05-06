@@ -473,10 +473,11 @@ export default function AdminDashboard() {
     
     return sessionsData.map((session: any) => {
       const sessionDate = new Date(session.date);
+      // Use consistent date format for all displays
       return {
         id: session.id,
         formattedDate: formatInIST(sessionDate, 'MMM d, yyyy'),
-        formattedTime: formatInIST(sessionDate, 'HH:mm'),
+        formattedTime: formatInIST(sessionDate, 'HH:mm'), // Consistent 24-hour format
         date: session.date,
         email: session.email,
         phone: session.phone,
@@ -779,7 +780,7 @@ export default function AdminDashboard() {
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
                                         <span className="truncate">
-                                          {formatInIST(new Date(session.date), 'MMM d')}
+                                          {session.formattedDate}
                                         </span>
                                       </div>
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
@@ -957,7 +958,7 @@ export default function AdminDashboard() {
                           >
                             <div className={`h-3 w-3 rounded-full ${statusColor} mr-3`}></div>
                             <div className="flex-grow">
-                              <p className="font-medium">{formatInIST(date, 'EEE, MMM d, yyyy')}</p>
+                              <p className="font-medium">{formatInIST(date, 'MMM d, yyyy')}</p>
                               <p className="text-sm text-gray-400">
                                 {allSlotsBooked 
                                   ? 'All slots booked' 
@@ -1762,7 +1763,7 @@ export default function AdminDashboard() {
               </DialogTitle>
               <DialogDescription className="text-gray-400">
                 {selectedSlotDate && (
-                  <span>Time slots for {formatInIST(selectedSlotDate, 'EEEE, MMMM d, yyyy')}</span>
+                  <span>Time slots for {formatInIST(selectedSlotDate, 'MMM d, yyyy')}</span>
                 )}
               </DialogDescription>
             </DialogHeader>
