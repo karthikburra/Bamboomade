@@ -601,74 +601,76 @@ export default function AdminDashboard() {
         <meta name="description" content="Admin dashboard for session management" />
       </Helmet>
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <Button variant="ghost" className="flex items-center gap-2" onClick={handleLogout}>
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
+          <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto" onClick={handleLogout}>
             <LogOut size={18} />
             <span>Logout</span>
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <Card className="bg-gray-900 border-gray-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Total Sessions</CardTitle>
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+              <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{sessions.length}</p>
+            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+              <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
             </CardContent>
           </Card>
           
           <Card className="bg-amber-900/20 border-amber-900">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-amber-400">Pending</CardTitle>
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+              <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
+            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+              <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
             </CardContent>
           </Card>
           
           <Card className="bg-green-900/20 border-green-900">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-green-400">Upcoming</CardTitle>
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+              <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
+            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+              <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
             </CardContent>
           </Card>
           
           <Card className="bg-red-900/20 border-red-900">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg text-red-400">Cancelled</CardTitle>
+            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+              <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
+            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+              <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
             </CardContent>
           </Card>
         </div>
         
         <Tabs defaultValue="pending" className="space-y-4">
-          <TabsList className="bg-gray-800 border border-gray-700">
-            <TabsTrigger value="pending" className="data-[state=active]:bg-green-700">
-              Pending ({pendingSessions.length})
-            </TabsTrigger>
-            <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700">
-              Upcoming ({upcomingSessions.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-green-700">
-              Completed ({completedSessions.length})
-            </TabsTrigger>
-            <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700">
-              Cancelled ({cancelledSessions.length})
-            </TabsTrigger>
-            <TabsTrigger value="all" className="data-[state=active]:bg-green-700">
-              All Sessions
-            </TabsTrigger>
-            <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600">
-              Availability
-            </TabsTrigger>
-          </TabsList>
+          <div className="relative overflow-x-auto pb-1">
+            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Pending ({pendingSessions.length})
+              </TabsTrigger>
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Upcoming ({upcomingSessions.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Completed ({completedSessions.length})
+              </TabsTrigger>
+              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Cancelled ({cancelledSessions.length})
+              </TabsTrigger>
+              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                All Sessions
+              </TabsTrigger>
+              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
+                Availability
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
           {/* Availability management tab */}
           <TabsContent value="availability" className="space-y-4">
@@ -705,11 +707,11 @@ export default function AdminDashboard() {
                     <p className="mt-2">Click "Add Date" to create your first available booking date.</p>
                   </div>
                 ) : (
-                  <div className="rounded-md border border-gray-800 overflow-hidden">
+                  <div className="rounded-md border border-gray-800 overflow-x-auto">
                     <Table>
                       <TableHeader className="bg-gray-800">
                         <TableRow className="hover:bg-gray-800/80">
-                          <TableHead className="text-gray-300">ID</TableHead>
+                          <TableHead className="text-gray-300 hidden md:table-cell">ID</TableHead>
                           <TableHead className="text-gray-300">Date</TableHead>
                           <TableHead className="text-gray-300">Available Times</TableHead>
                           <TableHead className="text-gray-300 text-right">Actions</TableHead>
@@ -718,12 +720,12 @@ export default function AdminDashboard() {
                       <TableBody className="divide-y divide-gray-800">
                         {availableSlotsData?.slots?.map((slot: AvailableTimeSlot) => (
                           <TableRow key={slot.id} className="hover:bg-gray-800/50 bg-gray-900">
-                            <TableCell className="font-mono">{slot.id}</TableCell>
+                            <TableCell className="font-mono hidden md:table-cell">{slot.id}</TableCell>
                             <TableCell>
                               <div className="flex items-center">
                                 <Calendar className="w-4 h-4 mr-2 text-blue-400" />
-                                <span className="font-medium">
-                                  {format(parseISO(slot.date), 'MMMM d, yyyy')}
+                                <span className="font-medium text-sm sm:text-base">
+                                  {format(parseISO(slot.date), 'MMM d, yyyy')}
                                 </span>
                               </div>
                               <div className="text-xs text-gray-400 mt-1">
@@ -731,40 +733,44 @@ export default function AdminDashboard() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex flex-wrap gap-1.5 max-w-md">
+                              <div className="flex flex-wrap gap-1 sm:gap-1.5 max-w-md">
                                 {slot.slots.sort().map((time) => (
                                   <Badge 
                                     key={time} 
                                     variant="secondary"
-                                    className="bg-blue-900/30 text-blue-300 border-blue-800"
+                                    className="bg-blue-900/30 text-blue-300 border-blue-800 text-xs sm:text-sm"
                                   >
-                                    <Clock className="w-3 h-3 mr-1" /> {time}
+                                    <Clock className="w-3 h-3 mr-1 hidden sm:inline" /> {time}
                                   </Badge>
                                 ))}
                               </div>
                             </TableCell>
-                            <TableCell className="text-right space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="border-blue-700 text-blue-400 hover:bg-blue-900/30"
-                                onClick={() => openEditSlotDialog(slot)}
-                              >
-                                <Edit className="w-3.5 h-3.5 mr-1" /> Edit
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="border-red-700 text-red-400 hover:bg-red-900/30"
-                                onClick={() => {
-                                  if (window.confirm(`Are you sure you want to delete this date and all its time slots? This action cannot be undone.`)) {
-                                    deleteTimeSlot(slot.id);
-                                  }
-                                }}
-                                disabled={isDeletingSlot}
-                              >
-                                <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-                              </Button>
+                            <TableCell className="text-right">
+                              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="border-blue-700 text-blue-400 hover:bg-blue-900/30 px-2 sm:px-3 h-8 text-xs sm:text-sm"
+                                  onClick={() => openEditSlotDialog(slot)}
+                                >
+                                  <Edit className="w-3.5 h-3.5 mr-1" /> 
+                                  <span className="hidden sm:inline">Edit</span>
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="border-red-700 text-red-400 hover:bg-red-900/30 px-2 sm:px-3 h-8 text-xs sm:text-sm"
+                                  onClick={() => {
+                                    if (window.confirm(`Are you sure you want to delete this date and all its time slots? This action cannot be undone.`)) {
+                                      deleteTimeSlot(slot.id);
+                                    }
+                                  }}
+                                  disabled={isDeletingSlot}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 mr-1" /> 
+                                  <span className="hidden sm:inline">Delete</span>
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -824,19 +830,19 @@ export default function AdminDashboard() {
                         <p>{emptyMessage}</p>
                       </div>
                     ) : (
-                      <div className="rounded-md border border-gray-800 overflow-hidden">
+                      <div className="rounded-md border border-gray-800 overflow-x-auto">
                         <Table>
                           <TableHeader className="bg-gray-800">
                             <TableRow className="hover:bg-gray-800/80">
-                              <TableHead className="text-gray-300">ID</TableHead>
+                              <TableHead className="text-gray-300 hidden md:table-cell">ID</TableHead>
                               <TableHead className="text-gray-300">Student</TableHead>
-                              <TableHead className="text-gray-300">Contact</TableHead>
+                              <TableHead className="text-gray-300 hidden sm:table-cell">Contact</TableHead>
                               <TableHead className="text-gray-300">Date & Time</TableHead>
-                              <TableHead className="text-gray-300">Topic</TableHead>
-                              <TableHead className="text-gray-300">Duration</TableHead>
+                              <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
+                              <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
                               <TableHead className="text-gray-300">Payment</TableHead>
                               <TableHead className="text-gray-300">Google Meet</TableHead>
-                              <TableHead className="text-gray-300">Status</TableHead>
+                              <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody className="divide-y divide-gray-800">
@@ -845,14 +851,25 @@ export default function AdminDashboard() {
                                 key={session.id} 
                                 className="hover:bg-gray-800/50 bg-gray-900"
                               >
-                                <TableCell className="font-mono">{session.id}</TableCell>
+                                <TableCell className="font-mono text-xs hidden md:table-cell">{session.id}</TableCell>
                                 <TableCell>
-                                  <div className="font-medium">{session.studentName}</div>
+                                  <div className="font-medium text-sm sm:text-base">{session.studentName}</div>
                                   <div className="text-xs text-gray-400">{session.isStudent ? "Student" : "Professional"}</div>
+                                  
+                                  {/* Show contact info on mobile */}
+                                  <div className="flex items-center text-xs text-gray-300 mt-1 sm:hidden">
+                                    <Mail className="w-3 h-3 mr-1" /> 
+                                    <span className="max-w-[80px] truncate" title={session.email}>
+                                      {session.email}
+                                    </span>
+                                  </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden sm:table-cell">
                                   <div className="flex items-center text-xs text-gray-300 mb-1">
-                                    <Mail className="w-3 h-3 mr-1" /> {session.email}
+                                    <Mail className="w-3 h-3 mr-1" /> 
+                                    <span className="max-w-[120px] truncate" title={session.email}>
+                                      {session.email}
+                                    </span>
                                   </div>
                                   <div className="flex items-center text-xs text-gray-300">
                                     <Phone className="w-3 h-3 mr-1" /> {session.phone}
@@ -861,11 +878,14 @@ export default function AdminDashboard() {
                                 <TableCell>
                                   {/* Current session date/time (highlighted) */}
                                   <div className="flex flex-col gap-1 mb-1">
-                                    <div className="flex items-center text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
-                                      <Calendar className="w-3.5 h-3.5 mr-1.5 text-green-400" /> {session.formattedDate}
+                                    <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
+                                      <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
+                                      <span className="truncate">
+                                        {format(new Date(session.date), 'MMM d')}
+                                      </span>
                                     </div>
-                                    <div className="flex items-center text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
-                                      <Clock className="w-3.5 h-3.5 mr-1.5 text-green-400" /> {session.formattedTime}
+                                    <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
+                                      <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {session.formattedTime}
                                     </div>
                                   </div>
                                   
@@ -877,16 +897,43 @@ export default function AdminDashboard() {
                                         <CalendarClock className="w-3 h-3 mr-1" /> Rescheduled
                                       </div>
                                       <div className="text-xs text-gray-400">
-                                        Originally booked for: {(() => {
-                                          if (!session.notes) return "Unknown date";
+                                        Originally: {(() => {
+                                          if (!session.notes) return "Unknown";
                                           const dateMatch = session.notes.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
                                           return dateMatch ? dateMatch[0] : "Unknown date";
                                         })()}
                                       </div>
                                     </div>
                                   )}
+                                  
+                                  {/* Show status badge only on mobile */}
+                                  <div className="mt-1 sm:hidden">
+                                    <Badge 
+                                      variant={
+                                        session.status === 'cancelled' 
+                                          ? "destructive" 
+                                          : session.status === 'completed' 
+                                            ? "secondary"
+                                            : session.status === 'rescheduled' || 
+                                              (session.notes && session.notes.toLowerCase().includes('rescheduled'))
+                                              ? "outline"
+                                            : "default"
+                                      }
+                                      className={`capitalize text-xs ${
+                                        session.status === 'rescheduled' || 
+                                        (session.notes && session.notes.toLowerCase().includes('rescheduled'))
+                                          ? "border-blue-500 text-blue-400"
+                                          : ""
+                                      }`}
+                                    >
+                                      {session.status === 'rescheduled' || 
+                                      (session.notes && session.notes.toLowerCase().includes('rescheduled'))
+                                        ? "Rescheduled" 
+                                        : session.status}
+                                    </Badge>
+                                  </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden lg:table-cell">
                                   <div className="max-w-[200px] truncate" title={session.topic}>
                                     {session.topic}
                                   </div>
@@ -896,11 +943,11 @@ export default function AdminDashboard() {
                                     </div>
                                   )}
                                 </TableCell>
-                                <TableCell>{session.duration} min</TableCell>
+                                <TableCell className="hidden md:table-cell">{session.duration} min</TableCell>
                                 <TableCell>
                                   <Badge 
                                     variant={session.paymentStatus === "Paid" ? "default" : "outline"}
-                                    className={session.paymentStatus === "Paid" ? "bg-green-700 hover:bg-green-600" : ""}
+                                    className={`text-xs ${session.paymentStatus === "Paid" ? "bg-green-700 hover:bg-green-600" : ""}`}
                                   >
                                     {session.paymentStatus}
                                   </Badge>
@@ -909,32 +956,35 @@ export default function AdminDashboard() {
                                   <div className="flex flex-col gap-2">
                                     {session.googleMeetLink ? (
                                       <>
-                                        <a 
-                                          href={session.googleMeetLink} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-400 hover:text-blue-300 flex items-center text-xs"
-                                        >
-                                          <LinkIcon className="w-3 h-3 mr-1" />
-                                          Open Link
-                                        </a>
                                         <Button 
-                                          variant="ghost" 
-                                          size="sm" 
-                                          className="h-6 text-xs"
+                                          size="sm"
+                                          className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                          onClick={() => window.open(session.googleMeetLink, '_blank')}
+                                        >
+                                          <Video className="w-3.5 h-3.5 mr-1.5" /> 
+                                          <span className="hidden sm:inline">Open Meet</span>
+                                          <span className="sm:hidden">Meet</span>
+                                        </Button>
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="whitespace-nowrap border-blue-700 text-blue-400 hover:bg-blue-900/30 h-8 text-xs px-2 sm:text-sm sm:px-3"
                                           onClick={() => openMeetLinkDialog(session)}
                                         >
-                                          Edit
+                                          <Edit className="w-3.5 h-3.5 mr-1.5" /> 
+                                          <span className="hidden sm:inline">Edit Link</span>
+                                          <span className="sm:hidden">Edit</span>
                                         </Button>
                                       </>
                                     ) : (
                                       <Button 
-                                        variant="outline" 
                                         size="sm"
-                                        className="border-green-700 text-green-400 hover:bg-green-900/30 text-xs"
+                                        className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
                                         onClick={() => openMeetLinkDialog(session)}
                                       >
-                                        Add Link
+                                        <Plus className="w-3.5 h-3.5 mr-1.5" /> 
+                                        <span className="hidden sm:inline">Add Meet Link</span>
+                                        <span className="sm:hidden">Add</span>
                                       </Button>
                                     )}
                                     
@@ -943,16 +993,17 @@ export default function AdminDashboard() {
                                       <Button 
                                         variant="outline" 
                                         size="sm"
-                                        className="border-blue-700 text-blue-400 hover:bg-blue-900/30 text-xs mt-1"
+                                        className="whitespace-nowrap border-blue-700 text-blue-400 hover:bg-blue-900/30 h-8 text-xs px-2 sm:text-sm sm:px-3 mt-1"
                                         onClick={() => openRescheduleDialog(session)}
                                       >
                                         <CalendarRange className="w-3 h-3 mr-1" />
-                                        Reschedule
+                                        <span className="hidden sm:inline">Reschedule</span>
+                                        <span className="sm:hidden">Move</span>
                                       </Button>
                                     )}
                                   </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden sm:table-cell">
                                   <Badge 
                                     variant={
                                       session.status === 'cancelled' 
@@ -993,14 +1044,14 @@ export default function AdminDashboard() {
       
       {/* Meet Link Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+        <DialogContent className="bg-gray-900 border-gray-800 text-white w-[95%] max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">
               {selectedSession?.googleMeetLink ? "Update" : "Add"} Google Meet Link
             </DialogTitle>
             <DialogDescription>
               {selectedSession ? (
-                <div className="mt-2 space-y-1 text-gray-300">
+                <div className="mt-2 space-y-1 text-gray-300 text-sm">
                   <p><span className="font-medium">Session:</span> #{selectedSession.id}</p>
                   <p><span className="font-medium">Student:</span> {selectedSession.studentName}</p>
                   <p><span className="font-medium">Date:</span> {selectedSession.formattedDate} at {selectedSession.formattedTime}</p>
