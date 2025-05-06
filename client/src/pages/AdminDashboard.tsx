@@ -89,6 +89,9 @@ export default function AdminDashboard() {
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
+  const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
   
   // Availability management state
   const [newDate, setNewDate] = useState("");
@@ -326,13 +329,17 @@ export default function AdminDashboard() {
     setIsDialogOpen(true);
   };
   
-  const openRescheduleDialog = (session: Session) => {
+  const openRescheduleDialog = async (session: Session) => {
     setSelectedSession(session);
     // Default to current date and time if available
     const sessionDate = new Date(session.date);
     setRescheduleDate(sessionDate.toISOString().split('T')[0]); // YYYY-MM-DD
     setRescheduleTime(sessionDate.toTimeString().substring(0, 5)); // HH:MM
     setRescheduleDuration(session.duration);
+    
+    // Fetch available dates and time slots for display
+    await fetchAllAvailableSlots();
+    
     setIsRescheduleDialogOpen(true);
   };
   
@@ -365,6 +372,61 @@ export default function AdminDashboard() {
       newDate: newDateTime.toISOString(),
       newDuration: rescheduleDuration
     });
+  };
+  
+  // Fetch all available slots and dates
+  const fetchAllAvailableSlots = async () => {
+    try {
+      const response = await apiRequest("GET", `/api/available-slots`);
+      const data = await response.json();
+      
+      if (data.success) {
+        // Process all available dates that have non-booked slots
+        const dates = data.slots
+          .filter((slot: any) => {
+            // Only include dates that have at least one non-booked time slot
+            return slot.slotsWithStatus.some((s: any) => !s.isBooked);
+          })
+          .map((slot: any) => {
+            // Convert date strings to Date objects
+            return new Date(slot.date);
+          });
+        
+        setAvailableDates(dates);
+        return data.slots;
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to fetch available slots:", error);
+      setAvailableDates([]);
+      return [];
+    }
+  };
+  
+  // Fetch available time slots for a specific date
+  const fetchAvailableSlots = async (date: Date) => {
+    try {
+      const formattedDate = format(date, "yyyy-MM-dd");
+      const allSlots = await fetchAllAvailableSlots();
+      
+      // Find the slot for the selected date
+      const dateSlot = allSlots.find((slot: any) => slot.date === formattedDate);
+      
+      if (dateSlot) {
+        // Get only non-booked time slots for this date
+        const availableTimes = dateSlot.slotsWithStatus
+          .filter((s: any) => !s.isBooked)
+          .map((s: any) => s.time);
+        
+        setAvailableTimeSlots(availableTimes);
+      } else {
+        // No slots exist for this date
+        setAvailableTimeSlots([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch slots for date:", error);
+      setAvailableTimeSlots([]);
+    }
   };
   
   // Availability management functions
