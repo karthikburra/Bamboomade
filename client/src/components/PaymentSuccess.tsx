@@ -5,6 +5,7 @@ import { CalendarIcon, Copy, ExternalLink, Loader2, CheckCircle } from 'lucide-r
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
+import { Helmet } from 'react-helmet';
 
 interface PaymentSuccessProps {
   paymentId: string;
