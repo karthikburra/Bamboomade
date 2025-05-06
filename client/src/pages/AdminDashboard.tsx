@@ -39,7 +39,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
-  X, AlertTriangle, CalendarRange
+  X, AlertTriangle, CalendarRange, Video
 } from "lucide-react";
 import {
   Select,
@@ -1104,12 +1104,12 @@ export default function AdminDashboard() {
 
       {/* Reschedule Session Dialog */}
       <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white">
+        <DialogContent className="bg-gray-900 border-gray-800 text-white w-[95%] max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle>Reschedule Session</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Reschedule Session</DialogTitle>
             <DialogDescription>
               {selectedSession ? (
-                <div className="mt-2 space-y-1 text-gray-300">
+                <div className="mt-2 space-y-1 text-gray-300 text-sm">
                   <p><span className="font-medium">Session:</span> #{selectedSession.id}</p>
                   <p><span className="font-medium">Student:</span> {selectedSession.studentName}</p>
                   <p><span className="font-medium">Current Date:</span> {selectedSession.formattedDate} at {selectedSession.formattedTime}</p>
@@ -1191,10 +1191,10 @@ export default function AdminDashboard() {
       
       {/* Add Available Slot Dialog */}
       <Dialog open={isAddSlotDialogOpen} onOpenChange={setIsAddSlotDialogOpen}>
-        <DialogContent className="bg-gray-900 text-white border-gray-700 sm:max-w-[550px]">
+        <DialogContent className="bg-gray-900 text-white border-gray-700 w-[95%] max-w-[550px] mx-auto">
           <DialogHeader>
-            <DialogTitle>Add Available Booking Dates</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Add Available Booking Dates</DialogTitle>
+            <DialogDescription className="text-sm">
               Add dates with available time slots for project guidance bookings.
             </DialogDescription>
           </DialogHeader>
@@ -1319,19 +1319,19 @@ export default function AdminDashboard() {
                 {/* Days of week checkboxes */}
                 <div className="space-y-2">
                   <Label>Days of the Week</Label>
-                  <div className="grid grid-cols-7 gap-2 mt-2">
+                  <div className="grid grid-cols-7 gap-1 sm:gap-2 mt-2">
                     {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
                       <div key={day} className="flex flex-col items-center">
                         <button
                           type="button"
                           onClick={() => setSelectedDays({...selectedDays, [day]: !selectedDays[day]})}
-                          className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm ${
                             selectedDays[day] ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
                           }`}
                         >
                           {day.charAt(0).toUpperCase()}
                         </button>
-                        <span className="text-xs mt-1 text-gray-400">{day.substring(0, 3)}</span>
+                        <span className="text-[10px] sm:text-xs mt-1 text-gray-400">{day.substring(0, 3)}</span>
                       </div>
                     ))}
                   </div>
