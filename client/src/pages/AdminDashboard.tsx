@@ -375,7 +375,10 @@ export default function AdminDashboard() {
     }
     
     // Check if time slot is available (double-check)
-    if (!availableTimeSlots.includes(rescheduleTime)) {
+    if (!availableTimeSlots.includes(rescheduleTime) && 
+        // Exception: If it's the same time as the current session, it should be allowed
+        !(new Date(selectedSession.date).toTimeString().substring(0, 5) === rescheduleTime && 
+          new Date(selectedSession.date).toISOString().split('T')[0] === rescheduleDate)) {
       toast({
         title: "Error",
         description: "The selected time slot is no longer available. Please choose another time.",
@@ -387,6 +390,26 @@ export default function AdminDashboard() {
     
     // Combine date and time into a single ISO string
     const newDateTime = new Date(`${rescheduleDate}T${rescheduleTime}:00`);
+    
+    // Check if session is being rescheduled to the same date and time
+    const currentSessionDate = new Date(selectedSession.date);
+    const currentSessionFormatted = formatInIST(currentSessionDate, "yyyy-MM-dd HH:mm");
+    const newSessionFormatted = formatInIST(newDateTime, "yyyy-MM-dd HH:mm");
+    
+    if (currentSessionFormatted === newSessionFormatted && 
+        rescheduleDuration === selectedSession.duration) {
+      toast({
+        title: "No Changes",
+        description: "This session is already scheduled for this date and time with the same duration."
+      });
+      setIsRescheduleDialogOpen(false);
+      setRescheduleDate("");
+      setRescheduleTime("");
+      setRescheduleDuration(0);
+      setSelectedRescheduleDate(undefined);
+      setAvailableTimeSlots([]);
+      return;
+    }
     
     rescheduleSession({
       sessionId: selectedSession.id,
