@@ -370,17 +370,6 @@ export default function AllSessions() {
                             <ExternalLink className="mr-1 h-3 w-3" />
                             Join Meeting
                           </a>
-                          {session.calendarLink && (
-                            <a 
-                              href={session.calendarLink} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center text-xs bg-blue-700/30 text-blue-400 p-1.5 px-2 rounded hover:bg-blue-700/50 transition-colors"
-                            >
-                              <Calendar className="mr-1 h-3 w-3" />
-                              Add to Calendar
-                            </a>
-                          )}
                         </div>
                       </div>
                     )}
