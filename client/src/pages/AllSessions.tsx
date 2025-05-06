@@ -253,24 +253,6 @@ export default function AllSessions() {
               <h2 className="text-xl font-medium mb-2">
                 Your Booked Sessions ({sessions.length})
               </h2>
-              <div className="bg-gray-800/50 rounded-md p-4 border border-gray-700">
-                <div className="flex items-start">
-                  <Info className="h-5 w-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
-                  <div className="text-sm text-gray-300 space-y-2">
-                    <p>
-                      Below you'll find all sessions booked with your email address. 
-                      For paid sessions, Google Meet links will be visible as soon as they're updated by the administrator.
-                    </p>
-                    <p>
-                      <span className="text-green-400 font-medium">Important:</span> Make sure to join the Google Meet link on time for your scheduled session. 
-                      Sessions typically last either 30 minutes or 1 hour as specified during booking.
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      If you need to reschedule or have questions about your session, please use the "Manage Session" button.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               {sessions.map((session: Session) => (
@@ -406,6 +388,25 @@ export default function AllSessions() {
                     Book a New Session
                   </Button>
                 </Link>
+              </div>
+            </div>
+            
+            <div className="mt-6 bg-gray-800/50 rounded-md p-4 border border-gray-700">
+              <div className="flex items-start">
+                <Info className="h-5 w-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                <div className="text-sm text-gray-300 space-y-2">
+                  <p>
+                    Above you'll find all sessions booked with your email address. 
+                    For paid sessions, Google Meet links will be visible as soon as they're updated by the administrator.
+                  </p>
+                  <p>
+                    <span className="text-green-400 font-medium">Important:</span> Make sure to join the Google Meet link on time for your scheduled session. 
+                    Sessions typically last either 30 minutes or 1 hour as specified during booking.
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    If you need to reschedule or have questions about your session, please use the "Manage Session" button.
+                  </p>
+                </div>
               </div>
             </div>
           </>
