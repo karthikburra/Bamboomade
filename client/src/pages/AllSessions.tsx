@@ -292,7 +292,7 @@ export default function AllSessions() {
                       </Badge>
                     </div>
                     <CardDescription>
-                      Session #{session.id}
+                      Your Bamboo Guidance Session
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pb-3 space-y-3">
@@ -308,15 +308,17 @@ export default function AllSessions() {
                       <User className="mr-2 h-4 w-4 text-green-500" />
                       <span>{session.studentName}</span>
                     </div>
-                    <div className="flex items-center text-sm">
-                      <Tag className="mr-2 h-4 w-4 text-green-500" />
-                      <Badge 
-                        variant={session.paymentStatus === 'Paid' ? "default" : "outline"}
-                        className={session.paymentStatus === 'Paid' ? "bg-green-700 hover:bg-green-600" : ""}
-                      >
-                        {session.paymentStatus}
-                      </Badge>
-                    </div>
+                    {session.paymentStatus === 'Paid' && (
+                      <div className="flex items-center text-sm">
+                        <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                        <Badge 
+                          variant="default"
+                          className="bg-green-700 hover:bg-green-600"
+                        >
+                          Payment Confirmed
+                        </Badge>
+                      </div>
+                    )}
                     
                     {session.isRescheduled && session.originalDate && (
                       <div className="flex items-center text-sm text-amber-400">
@@ -384,7 +386,7 @@ export default function AllSessions() {
                     )}
                   </CardContent>
                   <CardFooter className="bg-gray-800/50 pt-3 flex flex-wrap gap-2 justify-end">
-                    {session.paymentStatus === 'Paid' && !session.googleMeetLink && (
+                    {!session.googleMeetLink && (
                       <div className="text-xs text-gray-400 mr-auto">
                         The Google Meet link will be added by the administrator soon
                       </div>
