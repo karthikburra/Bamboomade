@@ -188,7 +188,7 @@ export default function AdminDashboard() {
       const matchesDate = !dateFilter || 
         formatInIST(new Date(session.date), 'yyyy-MM-dd').includes(dateFilter) ||
         session.formattedDate?.toLowerCase().includes(dateFilter.toLowerCase());
-      const matchesStatus = !statusFilter || session.status.toLowerCase().includes(statusFilter.toLowerCase());
+      const matchesStatus = statusFilter === "all" || !statusFilter || session.status.toLowerCase() === statusFilter.toLowerCase();
       return matchesEmail && matchesDate && matchesStatus;
     });
   };
@@ -445,14 +445,14 @@ export default function AdminDashboard() {
                               </SelectContent>
                             </Select>
                           </div>
-                          {(emailFilter || dateFilter || statusFilter) && (
+                          {(emailFilter || dateFilter || (statusFilter && statusFilter !== "all")) && (
                             <Button 
                               variant="outline" 
                               size="sm"
                               onClick={() => {
                                 setEmailFilter("");
                                 setDateFilter("");
-                                setStatusFilter("");
+                                setStatusFilter("all");
                               }}
                               className="text-gray-400 border-gray-700"
                             >
