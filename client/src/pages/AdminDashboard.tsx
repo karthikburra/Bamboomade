@@ -473,11 +473,10 @@ export default function AdminDashboard() {
     
     return sessionsData.map((session: any) => {
       const sessionDate = new Date(session.date);
-      // Use consistent date format for all displays
       return {
         id: session.id,
         formattedDate: formatInIST(sessionDate, 'MMM d, yyyy'),
-        formattedTime: formatInIST(sessionDate, 'HH:mm'), // Consistent 24-hour format
+        formattedTime: formatInIST(sessionDate, 'HH:mm'),
         date: session.date,
         email: session.email,
         phone: session.phone,
@@ -777,32 +776,15 @@ export default function AdminDashboard() {
                                   <TableCell>
                                     {/* Current session date/time (highlighted) */}
                                     <div className="flex flex-col gap-1 mb-1">
-                                      {/* Show current date/time */}
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
                                         <span className="truncate">
-                                          {session.formattedDate}
+                                          {formatInIST(new Date(session.date), 'MMM d')}
                                         </span>
                                       </div>
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {session.formattedTime}
                                       </div>
-                                      
-                                      {/* Show original date/time if this is a rescheduled session */}
-                                      {session.isRescheduled && session.formattedOriginalDate && (
-                                        <div className="mt-2 space-y-1">
-                                          <div className="text-xs text-amber-400 font-medium">Originally Booked:</div>
-                                          <div className="flex items-center text-xs font-medium text-gray-300 bg-gray-800/50 px-2 py-1 rounded-md">
-                                            <Calendar className="w-3 h-3 mr-1 text-amber-400" /> 
-                                            {session.formattedOriginalDate}
-                                          </div>
-                                          {session.formattedOriginalTime && (
-                                            <div className="flex items-center text-xs font-medium text-gray-300 bg-gray-800/50 px-2 py-1 rounded-md">
-                                              <Clock className="w-3 h-3 mr-1 text-amber-400" /> {session.formattedOriginalTime}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden lg:table-cell">
@@ -975,7 +957,7 @@ export default function AdminDashboard() {
                           >
                             <div className={`h-3 w-3 rounded-full ${statusColor} mr-3`}></div>
                             <div className="flex-grow">
-                              <p className="font-medium">{formatInIST(date, 'MMM d, yyyy')}</p>
+                              <p className="font-medium">{formatInIST(date, 'EEE, MMM d, yyyy')}</p>
                               <p className="text-sm text-gray-400">
                                 {allSlotsBooked 
                                   ? 'All slots booked' 
@@ -1780,7 +1762,7 @@ export default function AdminDashboard() {
               </DialogTitle>
               <DialogDescription className="text-gray-400">
                 {selectedSlotDate && (
-                  <span>Time slots for {formatInIST(selectedSlotDate, 'MMM d, yyyy')}</span>
+                  <span>Time slots for {formatInIST(selectedSlotDate, 'EEEE, MMMM d, yyyy')}</span>
                 )}
               </DialogDescription>
             </DialogHeader>

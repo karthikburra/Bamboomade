@@ -127,26 +127,20 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
         return true;
       }
       
-      // FIXED: Pending sessions are no longer considered when checking for conflicts
-      // Only sessions with confirmed payment should block booking
+      // UPDATED: Consider ALL pending sessions as booked (not just recent ones)
       if (session.status === 'pending') {
-        console.log(`Note: Pending session ${session.id} at ${targetDateStr} ${targetTimeStr} not considered for conflict`);
-        return false;
+        console.log(`Conflict detected: Pending session ${session.id} is reserving ${targetDateStr} ${targetTimeStr}`);
+        return true;
       }
     }
     
     // For half-hour bookings, also check if they conflict with hour slots
     if (isHalfHourBooking && sessionDateStr === targetDateStr) {
       if (hourToCheck.includes(sessionTimeStr)) {
-        // FIXED: Only consider confirmed sessions for half-hour conflicts
-        if (session.paymentConfirmed || session.status === 'confirmed') {
-          console.log(`Half-hour conflict: Confirmed session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
+        // This half-hour booking conflicts with a full-hour booking
+        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
+          console.log(`Half-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
-        }
-        
-        // Pending sessions are no longer blocking bookings
-        if (session.status === 'pending') {
-          console.log(`Note: Pending session ${session.id} at ${sessionTimeStr} not considered for half-hour conflict with ${targetTimeStr}`);
         }
       }
     }
@@ -161,15 +155,9 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       // If session is at XX:30 and conflicts with our target time at YY:00
       if (sessionMinute === 30 && 
           (sessionHour === targetHour || sessionHour + 1 === targetHour)) {
-        // FIXED: Only consider confirmed sessions for full-hour conflicts too
-        if (session.paymentConfirmed || session.status === 'confirmed') {
-          console.log(`Full-hour conflict: Confirmed session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
+        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
+          console.log(`Full-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
-        }
-        
-        // Pending sessions are no longer blocking bookings
-        if (session.status === 'pending') {
-          console.log(`Note: Pending session ${session.id} at ${sessionTimeStr} not considered for full-hour conflict with ${targetTimeStr}`);
         }
       }
     }
@@ -468,30 +456,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const sessionDate = new Date(session.date);
         const sessionEndTime = addMinutes(sessionDate, session.duration);
         
-        // Also handle original date if the session has been rescheduled
-        const originalDate = session.originalDate ? new Date(session.originalDate) : null;
-        
         return {
           id: session.id,
           studentName: session.studentName,
           email: session.email,
           phone: session.phone,
           date: session.date,
-          originalDate: session.originalDate,
           formattedDate: formatInIST(sessionDate, "MMMM d, yyyy"),
           formattedTime: formatInIST(sessionDate, "HH:mm"),
           formattedEndTime: formatInIST(sessionEndTime, "HH:mm"),
-          // Include original date information if available
-          formattedOriginalDate: originalDate ? formatInIST(originalDate, "MMMM d, yyyy") : null,
-          formattedOriginalTime: originalDate ? formatInIST(originalDate, "HH:mm") : null,
           duration: session.duration,
           topic: session.topic,
           notes: session.notes || '',
           paymentStatus: session.paymentConfirmed ? "Paid" : "Pending",
           status: session.status || 'pending',
           googleMeetLink: session.googleMeetLink || '',
-          isStudent: session.isStudent,
-          isRescheduled: session.status === 'rescheduled'
+          isStudent: session.isStudent
         };
       });
       
@@ -2105,23 +2085,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return; // Skip adding to booked slots
         }
         
-        // FIXED: Only mark sessions as booked if they are confirmed (paid)
-        // Pending sessions won't block bookings unless they are confirmed with payment
+        // IMPROVED: Handle all non-cancelled status sessions, not just confirmed ones
+        // This ensures we catch pending, confirmed, and other statuses
         if (session.status !== 'cancelled') {
           // Track in the appropriate map based on status
           const isConfirmed = session.paymentConfirmed || session.status === 'confirmed';
           const isPending = session.status === 'pending';
           
-          // Only mark confirmed/paid sessions as booked
-          if (isConfirmed) {
-            if (!bookedSlots[sessionDateStr]) {
-              bookedSlots[sessionDateStr] = [];
-            }
-            
-            // Add the booked time slot to the main bookedSlots map
-            if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
-              bookedSlots[sessionDateStr].push(sessionTimeStr);
-            }
+          // Mark all non-cancelled sessions as booked
+          if (!bookedSlots[sessionDateStr]) {
+            bookedSlots[sessionDateStr] = [];
+          }
+          
+          // Add the booked time slot to the main bookedSlots map
+          if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+            bookedSlots[sessionDateStr].push(sessionTimeStr);
           }
           
           // Also track pending sessions separately for debugging
@@ -2141,27 +2119,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             confirmedSessionCount++;
           }
           
-          // IMPROVED: Only block adjacent hours for confirmed bookings with half-hour times
-          // For example, a confirmed 13:30 booking conflicts with both 13:00 and 14:00 slots
-          if (isConfirmed) {
-            const isHalfHourBooking = sessionTimeStr.endsWith(":30");
-            if (isHalfHourBooking) {
-              const hour = parseInt(sessionTimeStr.split(":")[0]);
-              
-              // Block the current hour (13:00) and next hour (14:00) for a 13:30 booking
-              const currentHour = `${hour.toString().padStart(2, '0')}:00`;
-              const nextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
-              
-              // Add conflicts for both adjacent full hours
-              if (!bookedSlots[sessionDateStr].includes(currentHour)) {
-                bookedSlots[sessionDateStr].push(currentHour);
-                console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${currentHour}`);
-              }
-              
-              if (!bookedSlots[sessionDateStr].includes(nextHour)) {
-                bookedSlots[sessionDateStr].push(nextHour);
-                console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${nextHour}`);
-              }
+          // IMPROVED: Check if this is a half-hour booking and block the adjacent hours
+          // For example, a 13:30 booking conflicts with both 13:00 and 14:00 slots
+          const isHalfHourBooking = sessionTimeStr.endsWith(":30");
+          if (isHalfHourBooking) {
+            const hour = parseInt(sessionTimeStr.split(":")[0]);
+            
+            // Block the current hour (13:00) and next hour (14:00) for a 13:30 booking
+            const currentHour = `${hour.toString().padStart(2, '0')}:00`;
+            const nextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
+            
+            // Add conflicts for both adjacent full hours
+            if (!bookedSlots[sessionDateStr].includes(currentHour)) {
+              bookedSlots[sessionDateStr].push(currentHour);
+              console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${currentHour}`);
+            }
+            
+            if (!bookedSlots[sessionDateStr].includes(nextHour)) {
+              bookedSlots[sessionDateStr].push(nextHour);
+              console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${nextHour}`);
             }
           }
         }
@@ -2199,9 +2175,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             slot.date === excludedSessionDate && 
             timeSlot === excludedSessionTime;
           
-          // FIXED: Only consider confirmed/paid sessions when checking for time slots
-          // Pending sessions are no longer blocking bookings
-          const isExactTimeMatch = bookedTimesForDate.includes(timeSlot);
+          // Check if slot is booked or pending due to exact match
+          const isExactTimeMatch = (
+            bookedTimesForDate.includes(timeSlot) || 
+            pendingTimesForDate.includes(timeSlot)
+          );
           
           // IMPROVED: Check for half-hour bookings that would conflict with this full-hour slot
           // The logic is simpler now because we already marked half-hour bookings as conflicts
@@ -2218,11 +2196,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const previousHalfHour = `${(hour-1).toString().padStart(2, '0')}:30`;
           const nextHalfHour = `${hour.toString().padStart(2, '0')}:30`;
           
-          // FIXED: Only check for half-hour conflicts from booked slots (which are already filtered to only include paid sessions)
-          // Pending sessions are no longer considered for conflicts 
+          // Check for any conflicting half-hour bookings
           const isHalfHourConflict = (
             bookedTimesForDate.includes(previousHalfHour) || 
-            bookedTimesForDate.includes(nextHalfHour)
+            pendingTimesForDate.includes(previousHalfHour) ||
+            bookedTimesForDate.includes(nextHalfHour) || 
+            pendingTimesForDate.includes(nextHalfHour)
           );
           
           // If we have a conflict due to half-hour booking, log it for debugging
