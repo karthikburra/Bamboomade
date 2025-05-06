@@ -30,6 +30,31 @@ function formatInIST(date: Date, formatStr: string): string {
   return formatInTimeZone(date, TIMEZONE, formatStr);
 }
 
+// Function to check if a time slot is already booked
+async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promise<boolean> {
+  // Get all confirmed sessions to check for conflicts
+  const allSessions = await storage.getAllProjectGuidances();
+  
+  // Format the date for comparison
+  const targetDateStr = format(date, "yyyy-MM-dd");
+  const targetTimeStr = format(date, "HH:mm");
+  
+  // Check if any session conflicts with this date and time
+  return allSessions.some(session => {
+    // Skip cancelled sessions and the session we're currently updating (if provided)
+    if (session.status === 'cancelled' || (sessionIdToExclude && session.id === sessionIdToExclude)) {
+      return false;
+    }
+    
+    const sessionDate = new Date(session.date);
+    const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
+    const sessionTimeStr = format(sessionDate, "HH:mm");
+    
+    // Check if date and time match
+    return sessionDateStr === targetDateStr && sessionTimeStr === targetTimeStr;
+  });
+}
+
 // Import WhatsApp bot
 import whatsappBot from "./whatsapp-bot.js";
 
