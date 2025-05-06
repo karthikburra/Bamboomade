@@ -409,7 +409,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 size="sm" 
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                <CalendarIcon className="h-3 w-3 mr-1" /> View Calendar
+                View Calendar
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
