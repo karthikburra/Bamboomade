@@ -34,6 +34,23 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
   const targetDateStr = format(date, "yyyy-MM-dd");
   const targetTimeStr = format(date, "HH:mm");
   
+  // Create a list of sessions for this date for detailed logging
+  const sessionsOnThisDate = allSessions.filter(s => {
+    const sessionDate = new Date(s.date);
+    return format(sessionDate, "yyyy-MM-dd") === targetDateStr;
+  }).map(s => {
+    const sessionDate = new Date(s.date);
+    return {
+      id: s.id,
+      time: format(sessionDate, "HH:mm"),
+      status: s.status || 'unknown',
+      paymentConfirmed: s.paymentConfirmed
+    };
+  });
+  
+  // Log all sessions for this day for better debugging
+  console.log(`Sessions on ${targetDateStr}:`, sessionsOnThisDate);
+  
   // For detailed logging
   console.log(`Checking time slot conflict for ${targetDateStr} ${targetTimeStr}, excluding sessionId ${sessionIdToExclude || 'none'}`);
   
@@ -1982,6 +1999,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Define a properly typed map for booked slots
       const bookedSlots: Record<string, string[]> = {};
       const pendingSlots: Record<string, string[]> = {}; // Track pending (not yet paid) sessions
+      // IMPROVED: Track sessions by their exact time for better debugging
+      const allSessionDetails: Record<string, Array<{ sessionId: number, status: string, time: string }>> = {};
       
       // Get original time slot details for the session being rescheduled (if any)
       let excludedSessionDate: string | undefined;
@@ -1998,7 +2017,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
         const sessionTimeStr = format(sessionDate, "HH:mm");
         
-        // Don't include cancelled sessions
+        // Add session to allSessionDetails for debugging regardless of status
+        if (!allSessionDetails[sessionDateStr]) {
+          allSessionDetails[sessionDateStr] = [];
+        }
+        allSessionDetails[sessionDateStr].push({
+          sessionId: session.id,
+          status: session.status || 'unknown',
+          time: sessionTimeStr
+        });
+        
+        // Don't include cancelled sessions in booking conflicts
         if (session.status === 'cancelled') {
           cancelledSessionCount++;
           return;
