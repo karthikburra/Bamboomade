@@ -4,8 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DayPicker, SelectSingleEventHandler } from "react-day-picker";
-import { format, addMinutes } from "date-fns";
+import { DayPicker } from "react-day-picker";
+import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
 import { formatInIST } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import {
@@ -181,9 +181,109 @@ export default function AdminDashboard() {
     },
     retry: false
   });
-
-  // Rest of your functions and state management code would go here
-  // ...
+  
+  // Add Google Meet link mutation
+  const addMeetLinkMutation = useMutation({
+    mutationFn: async ({ sessionId, meetLink }: { sessionId: number, meetLink: string }) => {
+      const response = await apiRequest("PATCH", `/api/project-guidance/${sessionId}/meet-link`, {
+        googleMeetLink: meetLink
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
+      toast({
+        title: "Google Meet link added",
+        description: "The link has been saved and the student will be notified."
+      });
+      setIsDialogOpen(false);
+      setMeetLink("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to add Google Meet link",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Reschedule session mutation
+  const rescheduleSessionMutation = useMutation({
+    mutationFn: async ({ 
+      sessionId, 
+      date, 
+      time,
+      duration
+    }: { 
+      sessionId: number, 
+      date: string, 
+      time: string,
+      duration: number
+    }) => {
+      // Combine date and time for the new date
+      const newDateStr = `${date}T${time}:00`;
+      
+      const response = await apiRequest("POST", `/api/reschedule-session`, {
+        sessionId,
+        newDate: newDateStr,
+        duration,
+        rescheduledBy: "admin"
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
+      toast({
+        title: "Session rescheduled",
+        description: "The session has been rescheduled and the student will be notified."
+      });
+      setIsRescheduleDialogOpen(false);
+      setRescheduleDate("");
+      setRescheduleTime("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to reschedule session",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+  
+  // Cancel session mutation
+  const cancelSessionMutation = useMutation({
+    mutationFn: async ({ 
+      sessionId, 
+      reason
+    }: { 
+      sessionId: number, 
+      reason: string 
+    }) => {
+      const response = await apiRequest("POST", `/api/cancel-session`, {
+        sessionId,
+        cancellationReason: reason,
+        cancelledBy: "admin"
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
+      toast({
+        title: "Session cancelled",
+        description: "The session has been cancelled and the student will be notified."
+      });
+      setIsCancelDialogOpen(false);
+      setCancellationReason("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to cancel session",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Filter function for sessions
   const applyFilters = (sessionsToFilter: Session[]) => {
@@ -651,6 +751,302 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Meet Link Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle>Add Google Meet Link</DialogTitle>
+              <DialogDescription>
+                Add a Google Meet link for the session with {selectedSession?.studentName}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="meet-link">Google Meet Link</Label>
+                <Input
+                  id="meet-link"
+                  placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                  value={meetLink}
+                  onChange={(e) => setMeetLink(e.target.value)}
+                  className="bg-gray-800 border-gray-700"
+                />
+              </div>
+              <div className="bg-gray-800 p-3 rounded-md space-y-2">
+                <h4 className="text-sm font-medium">Session Details</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-gray-400">Student:</p>
+                    <p>{selectedSession?.studentName}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Date & Time:</p>
+                    <p>{selectedSession?.formattedDate} at {selectedSession?.formattedTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Topic:</p>
+                    <p className="truncate" title={selectedSession?.topic}>{selectedSession?.topic}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Duration:</p>
+                    <p>{selectedSession?.duration} min</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedSession) return;
+                  
+                  addMeetLinkMutation.mutate({
+                    sessionId: selectedSession.id,
+                    meetLink: meetLink
+                  });
+                }}
+                className="bg-green-700 hover:bg-green-800"
+                disabled={!meetLink || !meetLink.includes('meet.google.com') || addMeetLinkMutation.isPending}
+              >
+                {addMeetLinkMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" /> Save Link
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reschedule Dialog */}
+        <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reschedule Session</DialogTitle>
+              <DialogDescription>
+                Reschedule the session with {selectedSession?.studentName}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="bg-gray-800 p-3 rounded-md space-y-2 mb-4">
+                <h4 className="text-sm font-medium">Current Session Details</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-gray-400">Student:</p>
+                    <p>{selectedSession?.studentName}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Date & Time:</p>
+                    <p>{selectedSession?.formattedDate} at {selectedSession?.formattedTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Topic:</p>
+                    <p className="truncate" title={selectedSession?.topic}>{selectedSession?.topic}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Duration:</p>
+                    <p>{selectedSession?.duration} min</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reschedule-date">New Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700",
+                        !rescheduleDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {rescheduleDate ? format(new Date(rescheduleDate), "PPP") : "Select new date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
+                    <DayPicker
+                      mode="single"
+                      selected={rescheduleDate ? new Date(rescheduleDate) : undefined}
+                      onSelect={(date) => date && setRescheduleDate(format(date, "yyyy-MM-dd"))}
+                      initialFocus
+                      className="border-gray-700"
+                      classNames={{
+                        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                        month: "space-y-4",
+                        caption: "flex justify-center pt-1 relative items-center",
+                        caption_label: "text-sm font-medium text-gray-300",
+                        nav: "space-x-1 flex items-center",
+                        nav_button: cn(
+                          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-gray-300"
+                        ),
+                        nav_button_previous: "absolute left-1",
+                        nav_button_next: "absolute right-1",
+                        table: "w-full border-collapse space-y-1",
+                        head_row: "flex",
+                        head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                        row: "flex w-full mt-2",
+                        cell: "h-9 w-9 text-center text-sm relative p-0 rounded-md focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-gray-800",
+                        day: cn(
+                          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md text-gray-300"
+                        ),
+                        day_selected:
+                          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                        day_today: "bg-gray-800 text-accent-foreground",
+                        day_outside: "text-gray-500 opacity-50",
+                        day_disabled: "text-gray-500 opacity-50 line-through",
+                        day_range_middle:
+                          "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                        day_hidden: "invisible",
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reschedule-time">New Time</Label>
+                <Select
+                  value={rescheduleTime}
+                  onValueChange={setRescheduleTime}
+                >
+                  <SelectTrigger className="w-full bg-gray-800 border-gray-700">
+                    <SelectValue placeholder="Select time slot" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-900 border-gray-700">
+                    {timeSlotOptions.map((time) => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsRescheduleDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedSession || !rescheduleDate || !rescheduleTime) return;
+                  
+                  rescheduleSessionMutation.mutate({
+                    sessionId: selectedSession.id,
+                    date: rescheduleDate,
+                    time: rescheduleTime,
+                    duration: selectedSession.duration
+                  });
+                }}
+                className="bg-amber-700 hover:bg-amber-800"
+                disabled={!rescheduleDate || !rescheduleTime || rescheduleSessionMutation.isPending}
+              >
+                {rescheduleSessionMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Rescheduling...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="w-4 h-4 mr-2" /> Reschedule
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Cancel Session Dialog */}
+        <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle>Cancel Session</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to cancel this session? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="bg-gray-800 p-3 rounded-md space-y-2">
+                <h4 className="text-sm font-medium">Session Details</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-gray-400">Student:</p>
+                    <p>{selectedSession?.studentName}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Date & Time:</p>
+                    <p>{selectedSession?.formattedDate} at {selectedSession?.formattedTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Topic:</p>
+                    <p className="truncate" title={selectedSession?.topic}>{selectedSession?.topic}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400">Duration:</p>
+                    <p>{selectedSession?.duration} min</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="cancellation-reason">Cancellation Reason</Label>
+                <Textarea
+                  id="cancellation-reason"
+                  placeholder="Enter reason for cancellation"
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  className="bg-gray-800 border-gray-700 min-h-[100px]"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsCancelDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Keep Session
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedSession) return;
+                  
+                  cancelSessionMutation.mutate({
+                    sessionId: selectedSession.id,
+                    reason: cancellationReason
+                  });
+                }}
+                variant="destructive"
+                className="bg-red-700 hover:bg-red-800"
+                disabled={!cancellationReason || cancelSessionMutation.isPending}
+              >
+                {cancelSessionMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cancelling...
+                  </>
+                ) : (
+                  <>
+                    <X className="w-4 h-4 mr-2" /> Cancel Session
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

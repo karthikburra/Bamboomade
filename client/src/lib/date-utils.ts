@@ -1,25 +1,79 @@
-import { format, formatInTimeZone } from "date-fns-tz";
+import { format, formatISO, addHours, addMinutes } from 'date-fns';
+
+// IST timezone is UTC+5:30
+const IST_HOURS_OFFSET = 5;
+const IST_MINUTES_OFFSET = 30;
 
 /**
- * Format a date in Indian Standard Time (IST/Asia-Kolkata)
+ * Format a date in IST timezone by applying the UTC+5:30 offset
  * @param date The date to format
- * @param formatStr The format string (see date-fns format options)
- * @returns The formatted date string in IST
+ * @param formatStr The format string to use
+ * @returns Formatted date string in IST timezone
  */
-export const formatInIST = (date: Date | string, formatStr: string) => {
-  // Ensure all time formats use 24-hour format
-  const updatedFormat = formatStr.replace('HH:mm', 'HH:mm').replace('h:mm', 'HH:mm');
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return formatInTimeZone(dateObj, 'Asia/Kolkata', updatedFormat);
-};
+export function formatInIST(date: Date | string, formatStr: string): string {
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    // Add 5 hours and 30 minutes to convert from UTC to IST
+    const istDate = addMinutes(addHours(dateObj, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
+    return format(istDate, formatStr);
+  } catch (error) {
+    console.error('Error formatting date in IST:', error);
+    return 'Invalid date';
+  }
+}
 
 /**
- * Get the current date in IST timezone
- * @returns A Date object representing the current time in IST
+ * Get the current date and time in IST timezone
+ * @returns Current date in IST timezone
  */
-export const getCurrentISTDate = (): Date => {
-  // Create a date object for the current time in IST
+export function getCurrentISTDate(): Date {
   const now = new Date();
-  const nowIST = formatInTimeZone(now, 'Asia/Kolkata', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-  return new Date(nowIST);
-};
+  return addMinutes(addHours(now, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
+}
+
+/**
+ * Convert IST time string to UTC Date object
+ * @param dateStr Date string in format 'YYYY-MM-DD'
+ * @param timeStr Time string in format 'HH:MM'
+ * @returns Date object in UTC
+ */
+export function istToUTC(dateStr: string, timeStr: string): Date {
+  try {
+    // Parse the date and time into a Date object (browser will treat as local time)
+    const dateTimeStr = `${dateStr}T${timeStr}:00`;
+    const localDate = new Date(dateTimeStr);
+    
+    // Subtract 5 hours and 30 minutes to convert from IST to UTC
+    const utcDate = addMinutes(addHours(localDate, -IST_HOURS_OFFSET), -IST_MINUTES_OFFSET);
+    return utcDate;
+  } catch (error) {
+    console.error('Error converting IST to UTC:', error);
+    return new Date();
+  }
+}
+
+/**
+ * Check if a date is today in IST timezone
+ * @param date The date to check
+ * @returns Whether the date is today
+ */
+export function isISTToday(date: Date): boolean {
+  const today = getCurrentISTDate();
+  const istDate = addMinutes(addHours(date, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
+  
+  return (
+    istDate.getFullYear() === today.getFullYear() &&
+    istDate.getMonth() === today.getMonth() &&
+    istDate.getDate() === today.getDate()
+  );
+}
+
+/**
+ * Format a date for ISO string in IST timezone
+ * @param date The date to format
+ * @returns ISO formatted date string in IST timezone
+ */
+export function formatISOInIST(date: Date): string {
+  const istDate = addMinutes(addHours(date, IST_HOURS_OFFSET), IST_MINUTES_OFFSET);
+  return formatISO(istDate);
+}
