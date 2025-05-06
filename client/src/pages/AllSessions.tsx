@@ -842,7 +842,7 @@ export default function AllSessions() {
                                                   </SelectItem>
                                                 ))
                                               ) : (
-                                                <SelectItem value="" disabled>
+                                                <SelectItem value="no-slots" disabled>
                                                   No available time slots
                                                 </SelectItem>
                                               )}
