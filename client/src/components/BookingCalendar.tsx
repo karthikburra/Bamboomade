@@ -419,12 +419,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
             }
           }}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-gray-100">
             <div className="flex items-center">
               <SelectValue placeholder="Select a date" />
             </div>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-gray-800 border-gray-700 text-white">
             {(() => {
               // Generate next 30 days as options
               const dateOptions = [];
