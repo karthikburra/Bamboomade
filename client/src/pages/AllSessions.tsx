@@ -717,7 +717,7 @@ export default function AllSessions() {
                                             }
                                           }}
                                         >
-                                          <SelectTrigger className="w-full">
+                                          <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
                                             <div className="flex items-center">
                                               <SelectValue placeholder="Select a date" />
                                             </div>
@@ -823,7 +823,7 @@ export default function AllSessions() {
                                             }}
                                             disabled={!selectedDate}
                                           >
-                                            <SelectTrigger>
+                                            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                                               <SelectValue placeholder="Select a time" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-gray-800 border-gray-700 text-white">

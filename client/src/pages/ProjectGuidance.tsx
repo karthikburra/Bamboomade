@@ -1633,12 +1633,12 @@ function ProjectGuidance() {
                                         value={selectedTime}
                                         onValueChange={(time) => setSelectedTime(time)}
                                       >
-                                        <SelectTrigger className="w-full">
+                                        <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
                                           <div className="flex items-center">
                                             <SelectValue placeholder="Select a time" />
                                           </div>
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="bg-gray-800 border-gray-700 text-white">
                                           {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time) => {
                                             const booked = isTimeSlotBooked(time, selectedDate);
                                             return (
@@ -1647,11 +1647,14 @@ function ProjectGuidance() {
                                                   key={time} 
                                                   value={time}
                                                   disabled={booked}
-                                                  className={booked ? "text-gray-400 line-through" : ""}
+                                                  className={booked 
+                                                    ? "text-gray-400 line-through" 
+                                                    : "text-white data-[highlighted]:bg-gray-700"
+                                                  }
                                                 >
                                                   {time}
                                                   {booked ? (
-                                                    <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
+                                                    <span className="ml-2 inline-flex items-center rounded-full bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-300">
                                                       Booked
                                                     </span>
                                                   ) : selectedTime === time && (
