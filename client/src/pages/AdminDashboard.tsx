@@ -113,10 +113,15 @@ export default function AdminDashboard() {
   
   // Reschedule session state
   const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
+  const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
+  const [availableRescheduleTimeSlots, setAvailableRescheduleTimeSlots] = useState<string[]>([]);
+  const [selectedRescheduleTimeSlot, setSelectedRescheduleTimeSlot] = useState<string>("");
+  const [rescheduleDateAvailability, setRescheduleDateAvailability] = useState<{[key: string]: number}>({});
+  const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
+  
+  // For backward compatibility and transition
   const [rescheduleDate, setRescheduleDate] = useState("");
   const [rescheduleTime, setRescheduleTime] = useState("");
-  const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
-  const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
   
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlotWithStatus[]>([]);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
@@ -214,24 +219,19 @@ export default function AdminDashboard() {
   
   // Reschedule session mutation
   const rescheduleSessionMutation = useMutation({
-    mutationFn: async ({ 
-      sessionId, 
-      date, 
-      time,
-      duration
-    }: { 
-      sessionId: number, 
-      date: string, 
-      time: string,
-      duration: number
-    }) => {
-      // Combine date and time for the new date
-      const newDateStr = `${date}T${time}:00`;
+    mutationFn: async () => {
+      if (!selectedSession || !selectedRescheduleDate || !selectedRescheduleTimeSlot) {
+        return Promise.reject("Please select a date and time for rescheduling");
+      }
+      
+      const reschedulingDate = new Date(selectedRescheduleDate);
+      const [hours, minutes] = selectedRescheduleTimeSlot.split(":").map(Number);
+      reschedulingDate.setHours(hours, minutes);
       
       const response = await apiRequest("POST", `/api/reschedule-session`, {
-        sessionId,
-        newDate: newDateStr,
-        duration,
+        sessionId: selectedSession.id,
+        newDate: reschedulingDate.toISOString(),
+        duration: rescheduleDuration,
         rescheduledBy: "admin"
       });
       return response.json();
@@ -242,14 +242,18 @@ export default function AdminDashboard() {
         title: "Session rescheduled",
         description: "The session has been rescheduled and the student will be notified."
       });
+      
+      // Reset states
       setIsRescheduleDialogOpen(false);
+      setSelectedRescheduleDate(undefined);
+      setSelectedRescheduleTimeSlot("");
       setRescheduleDate("");
       setRescheduleTime("");
     },
     onError: (error: any) => {
       toast({
         title: "Failed to reschedule session",
-        description: error.message || "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive"
       });
     }
@@ -319,6 +323,101 @@ export default function AdminDashboard() {
     }
   });
 
+  // Fetch all available slots for rescheduling
+  const fetchAllAvailableSlotsForReschedule = async () => {
+    try {
+      const response = await apiRequest("GET", "/api/available-slots");
+      const data = await response.json();
+      
+      if (!data || !data.slots || !Array.isArray(data.slots)) {
+        return [];
+      }
+      
+      // Track date availability for UI display
+      const dateAvailabilityMap: {[key: string]: number} = {};
+      const availableDatesList: Date[] = [];
+      
+      // Process each slot
+      data.slots.forEach((slot: any) => {
+        if (!slot.slotsWithStatus) return;
+        
+        // Count available slots for this date
+        const availableCount = slot.slotsWithStatus.filter((s: any) => !s.isBooked).length;
+        
+        if (availableCount > 0) {
+          // Add to availability tracking
+          dateAvailabilityMap[slot.date] = availableCount;
+          
+          // Add to available dates list
+          const slotDate = new Date(slot.date);
+          availableDatesList.push(slotDate);
+        }
+      });
+      
+      // Update state
+      setRescheduleDateAvailability(dateAvailabilityMap);
+      
+      // Sort dates chronologically
+      availableDatesList.sort((a, b) => a.getTime() - b.getTime());
+      
+      return data.slots;
+    } catch (error) {
+      console.error("Failed to fetch available slots for reschedule:", error);
+      setRescheduleDateAvailability({});
+      return [];
+    }
+  };
+  
+  // Fetch available time slots for a specific date when rescheduling
+  const fetchAvailableSlotsForReschedule = async (date: Date) => {
+    try {
+      const formattedDate = formatInIST(date, "yyyy-MM-dd");
+      const allSlots = await fetchAllAvailableSlotsForReschedule();
+      
+      // Find the slot for the selected date
+      const dateSlot = allSlots.find((slot: any) => slot.date === formattedDate);
+      
+      if (dateSlot) {
+        // Get only non-booked time slots for this date
+        let availableTimes = dateSlot.slotsWithStatus
+          .filter((s: any) => !s.isBooked)
+          .map((s: any) => s.time);
+        
+        setAvailableRescheduleTimeSlots(availableTimes);
+      } else {
+        // No slots exist for this date
+        setAvailableRescheduleTimeSlots([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch slots for reschedule date:", error);
+      setAvailableRescheduleTimeSlots([]);
+    }
+  };
+  
+  // Update available slots when reschedule date changes
+  useEffect(() => {
+    if (selectedRescheduleDate) {
+      fetchAvailableSlotsForReschedule(selectedRescheduleDate);
+    }
+  }, [selectedRescheduleDate]);
+
+  // Initialize available slots for reschedule when dialog opens
+  useEffect(() => {
+    if (isRescheduleDialogOpen) {
+      fetchAllAvailableSlotsForReschedule();
+      
+      // Reset previous selections
+      setSelectedRescheduleDate(undefined);
+      setSelectedRescheduleTimeSlot("");
+      setAvailableRescheduleTimeSlots([]);
+      
+      // Set duration from selected session
+      if (selectedSession) {
+        setRescheduleDuration(selectedSession.duration);
+      }
+    }
+  }, [isRescheduleDialogOpen]);
+  
   // Filter function for sessions
   const applyFilters = (sessionsToFilter: Session[]) => {
     return sessionsToFilter.filter(session => {
@@ -951,7 +1050,7 @@ export default function AdminDashboard() {
 
         {/* Reschedule Dialog */}
         <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-md">
+          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl">
             <DialogHeader>
               <DialogTitle>Reschedule Session</DialogTitle>
               <DialogDescription>
@@ -959,6 +1058,7 @@ export default function AdminDashboard() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              {/* Current session details */}
               <div className="bg-gray-800 p-3 rounded-md space-y-2 mb-4">
                 <h4 className="text-sm font-medium">Current Session Details</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -980,79 +1080,184 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="reschedule-date">New Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal bg-gray-800 border-gray-700",
-                        !rescheduleDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {rescheduleDate ? format(new Date(rescheduleDate), "PPP") : "Select new date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
-                    <DayPicker
-                      mode="single"
-                      selected={rescheduleDate ? new Date(rescheduleDate) : undefined}
-                      onSelect={(date) => date && setRescheduleDate(format(date, "yyyy-MM-dd"))}
-                      initialFocus
-                      className="border-gray-700"
-                      classNames={{
-                        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                        month: "space-y-4",
-                        caption: "flex justify-center pt-1 relative items-center",
-                        caption_label: "text-sm font-medium text-gray-300",
-                        nav: "space-x-1 flex items-center",
-                        nav_button: cn(
-                          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-gray-300"
-                        ),
-                        nav_button_previous: "absolute left-1",
-                        nav_button_next: "absolute right-1",
-                        table: "w-full border-collapse space-y-1",
-                        head_row: "flex",
-                        head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
-                        row: "flex w-full mt-2",
-                        cell: "h-9 w-9 text-center text-sm relative p-0 rounded-md focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-gray-800",
-                        day: cn(
-                          "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md text-gray-300"
-                        ),
-                        day_selected:
-                          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                        day_today: "bg-gray-800 text-accent-foreground",
-                        day_outside: "text-gray-500 opacity-50",
-                        day_disabled: "text-gray-500 opacity-50 line-through",
-                        day_range_middle:
-                          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                        day_hidden: "invisible",
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="reschedule-time">New Time</Label>
+
+              <div className="flex flex-col space-y-1.5">
+                <Label htmlFor="rescheduleDate">Select New Date</Label>
+                <p className="text-gray-400 text-xs mb-2">
+                  Only dates with available time slots are selectable.
+                </p>
+                
+                {/* Date dropdown selector */}
                 <Select
-                  value={rescheduleTime}
-                  onValueChange={setRescheduleTime}
+                  value={selectedRescheduleDate ? format(selectedRescheduleDate, "yyyy-MM-dd") : ""}
+                  onValueChange={(value) => {
+                    if (value) {
+                      setSelectedRescheduleDate(new Date(value));
+                      // Reset time selection when date changes
+                      setSelectedRescheduleTimeSlot("");
+                    } else {
+                      setSelectedRescheduleDate(undefined);
+                    }
+                  }}
                 >
-                  <SelectTrigger className="w-full bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Select time slot" />
+                  <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
+                    <div className="flex items-center">
+                      <SelectValue placeholder="Select a date" />
+                    </div>
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-700">
-                    {timeSlotOptions.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    {(() => {
+                      // Generate available dates as options
+                      const dateOptions = [];
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      
+                      // Get sorted keys (dates) from the availability map
+                      const availableDates = Object.keys(rescheduleDateAvailability)
+                        .filter(date => rescheduleDateAvailability[date] > 0)
+                        .sort();
+                      
+                      for (const dateStr of availableDates) {
+                        const date = new Date(dateStr);
+                        
+                        // Format for display and value
+                        const formattedDate = format(date, "yyyy-MM-dd");
+                        const displayDate = format(date, "PPP");
+                        
+                        // Check if it's today
+                        const isToday = date.getTime() === today.getTime();
+                        
+                        dateOptions.push(
+                          <SelectItem 
+                            key={formattedDate} 
+                            value={formattedDate}
+                            className={cn(
+                              "flex items-center justify-between text-white data-[highlighted]:bg-gray-700",
+                              isToday && "font-bold"
+                            )}
+                          >
+                            <span className={isToday ? "text-green-500" : ""}>
+                              {displayDate}{isToday ? " (Today)" : ""}
+                            </span>
+                            <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-green-900/40 text-green-400">
+                              {rescheduleDateAvailability[formattedDate] || 0} slots available
+                            </span>
+                          </SelectItem>
+                        );
+                      }
+                      
+                      return dateOptions.length > 0 ? dateOptions : (
+                        <SelectItem disabled value="none" className="text-gray-500">
+                          No available dates
+                        </SelectItem>
+                      );
+                    })()}
+                    
+                    {/* Calendar view option */}
+                    <div className="p-2 border-t border-gray-700 mt-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            <Calendar className="h-3 w-3 mr-1" /> View Calendar
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
+                          <DayPicker
+                            mode="single"
+                            selected={selectedRescheduleDate}
+                            onSelect={setSelectedRescheduleDate}
+                            disabled={[
+                              { before: new Date() },
+                              { dayOfWeek: [0, 6] }, // Disable weekends
+                              (date) => {
+                                // Convert date to string format
+                                const dateStr = format(date, "yyyy-MM-dd");
+                                // Disable dates that have no available slots
+                                return !rescheduleDateAvailability[dateStr];
+                              }
+                            ]}
+                            modifiers={{
+                              available: (date) => {
+                                // Convert date to string format
+                                const dateStr = format(date, "yyyy-MM-dd");
+                                // Highlight dates that have available slots
+                                return !!rescheduleDateAvailability[dateStr];
+                              }
+                            }}
+                            modifiersClassNames={{
+                              available: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700",
+                              selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
+                            }}
+                            className="bg-gray-900 rounded-md text-white border-gray-700"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              {selectedRescheduleDate && (
+                <div className="flex flex-col space-y-1.5">
+                  <Label htmlFor="rescheduleTime">Select New Time</Label>
+                  
+                  {/* Time dropdown selector */}
+                  <Select
+                    value={selectedRescheduleTimeSlot}
+                    onValueChange={(time) => {
+                      setSelectedRescheduleTimeSlot(time);
+                    }}
+                    disabled={!selectedRescheduleDate}
+                  >
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                      <SelectValue placeholder="Select a time" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                      {availableRescheduleTimeSlots.length > 0 ? (
+                        availableRescheduleTimeSlots.map((time) => (
+                          <SelectItem 
+                            key={time} 
+                            value={time}
+                            className="text-white data-[highlighted]:bg-gray-700 hover:bg-gray-700"
+                          >
+                            {time}
+                            {selectedRescheduleTimeSlot === time && (
+                              <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                                Selected
+                              </span>
+                            )}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-slots" disabled className="text-gray-400">
+                          No available time slots
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  
+                  {availableRescheduleTimeSlots.length === 0 && selectedRescheduleDate && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      No available time slots for this date. Please select another date.
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              <div className="bg-green-900/30 border border-green-800/50 rounded-md p-3 text-green-300 text-sm">
+                <div className="flex gap-2 items-start">
+                  <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium mb-1">Free Rescheduling for Students</p>
+                    <p className="text-xs text-green-300/80">
+                      Rescheduling is free for students if done more than 4 hours before the session starts.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             <DialogFooter>
@@ -1064,28 +1269,16 @@ export default function AdminDashboard() {
                 Cancel
               </Button>
               <Button
-                onClick={() => {
-                  if (!selectedSession || !rescheduleDate || !rescheduleTime) return;
-                  
-                  rescheduleSessionMutation.mutate({
-                    sessionId: selectedSession.id,
-                    date: rescheduleDate,
-                    time: rescheduleTime,
-                    duration: selectedSession.duration
-                  });
-                }}
-                className="bg-amber-700 hover:bg-amber-800"
-                disabled={!rescheduleDate || !rescheduleTime || rescheduleSessionMutation.isPending}
+                onClick={() => rescheduleSessionMutation.mutate()}
+                className="bg-green-600 hover:bg-green-700"
+                disabled={!selectedRescheduleDate || !selectedRescheduleTimeSlot || rescheduleSessionMutation.isPending}
               >
                 {rescheduleSessionMutation.isPending ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Rescheduling...
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Rescheduling...
                   </>
-                ) : (
-                  <>
-                    <Calendar className="w-4 h-4 mr-2" /> Reschedule
-                  </>
-                )}
+                ) : "Confirm Reschedule"}
               </Button>
             </DialogFooter>
           </DialogContent>
