@@ -112,21 +112,7 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize email service at startup
-  if (process.env.EMAIL_PASSWORD) {
-    console.log('[express] Initializing email service with credentials');
-    initializeEmailService();
-  } else {
-    console.log('[express] Email password not found, email functionality will be limited to development mode');
-  }
-  
-  // Initialize Google Sheets integration
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY && process.env.GOOGLE_SPREADSHEET_ID) {
-    console.log('[express] Initializing Google Sheets integration');
-    initializeSheetsService();
-  } else {
-    console.log('[express] Google Sheets integration credentials not found, Google Sheets functionality will be disabled');
-  }
+  // Email confirmations and Google Sheets integration have been removed as requested
   // Helper middleware for handling zod validation errors
   const validateRequest = (schema: any) => {
     return (req: Request, res: Response, next: any) => {
@@ -164,10 +150,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const user = await storage.createUser(userData);
-      
-      // Add user to Google Sheet for tracking
-      addUserToSheet(user.id, user.username, user.email, user.role)
-        .catch(error => console.error("Failed to add user to Google Sheet:", error));
       
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
@@ -486,15 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newDuration: newDuration || session.duration
       });
       
-      // Send email notification about the reschedule
-      await sendRescheduledSessionEmail(
-        session.id,
-        session.studentName,
-        session.email,
-        session.topic,
-        parsedDate,
-        newDuration || session.duration
-      ).catch(err => console.error("Failed to send admin reschedule email:", err));
+      // Email confirmation has been removed as requested
       
       // Return success
       res.json({ 
@@ -568,23 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         refundAmount
       });
       
-      // Send cancellation email notification
-      try {
-        await sendCancellationEmail(
-          session.id,
-          session.studentName, 
-          session.email,
-          session.topic,
-          new Date(session.date),
-          `Full refund provided as session was cancelled by admin. Reason: ${reason}`,
-          100, // Always 100% refund
-          refundAmount
-        );
-        console.log(`Sent cancellation confirmation email to ${session.email}`);
-      } catch (emailError) {
-        console.error("Failed to send cancellation email:", emailError);
-        // Don't fail the request if email sending fails
-      }
+      // Email notifications have been removed as requested
       
       // Return success
       return res.json({
@@ -648,10 +606,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Send email notification to the student with the Google Meet link
+      // Email notifications have been removed as requested
       const sessionDate = new Date(updatedSession.date);
       
-      // Create a calendar link with the Google Meet link
+      // Create a calendar link with the Google Meet link (no email)
       const calendarLink = generateGoogleCalendarLink(
         updatedSession.id,
         googleMeetLink,
@@ -660,16 +618,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedSession.topic,
         updatedSession.studentName
       );
-      
-      // Send email with the updated information
-      await sendBookingConfirmationEmail({
-        sessionId: updatedSession.id,
-        studentName: updatedSession.studentName,
-        studentEmail: updatedSession.email,
-        sessionDate,
-        sessionDuration: updatedSession.duration,
-        sessionTopic: updatedSession.topic
-      });
       
       res.json({ 
         success: true, 
@@ -724,9 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           user = await storage.updateUserAdminStatus(user.id, true);
         }
 
-        // Add new user to Google Sheet for tracking
-        addUserToSheet(user.id, user.username, user.email, user.role)
-          .catch(error => console.error("Failed to add Google-authenticated user to Google Sheet:", error));
+        // Google Sheets integration has been removed as requested
       }
       
       // Set user in session
@@ -1009,16 +955,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In a real implementation, you would store this code with an expiry time
       // For simplicity in the demo, we'll just send it and validate in memory
       
-      // Send verification email
-      const emailSent = await sendVerificationCodeEmail(
-        email,
-        code,
-        purpose as 'reschedule' | 'access'
-      );
-      
-      if (!emailSent) {
-        throw new Error("Failed to send verification email");
-      }
+      // Email verification has been removed as requested
+      // For development purposes, we'll consider this step successful without sending an email
       
       // Return success with the verification code (for demo purposes only)
       // In a production environment, never return the actual code to the client
@@ -1131,15 +1069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         newDuration: newDuration || selectedSession.duration
       });
       
-      // Send email notification about the reschedule
-      await sendRescheduledSessionEmail(
-        selectedSession.id,
-        selectedSession.studentName,
-        email,
-        selectedSession.topic,
-        parsedDate, // Use the parsed date that we already validated
-        newDuration || selectedSession.duration
-      );
+      // Email notifications have been removed as requested
       
       // Return success
       res.json({ 
@@ -1255,17 +1185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         refundAmount
       });
       
-      // Send cancellation confirmation email
-      await sendCancellationEmail(
-        selectedSession.id,
-        selectedSession.studentName,
-        email,
-        selectedSession.topic,
-        sessionDate, // Use the parsed date that we already validated
-        reason,
-        refundPercentage,
-        refundAmount
-      ).catch(err => console.error("Failed to send cancellation email:", err));
+      // Email notifications have been removed as requested
       
       // Return success
       res.json({ 
