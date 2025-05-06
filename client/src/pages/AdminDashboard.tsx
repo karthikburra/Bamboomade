@@ -1074,27 +1074,116 @@ export default function AdminDashboard() {
       
       {/* Add Available Slot Dialog */}
       <Dialog open={isAddSlotDialogOpen} onOpenChange={setIsAddSlotDialogOpen}>
-        <DialogContent className="bg-gray-900 text-white border-gray-700 sm:max-w-md">
+        <DialogContent className="bg-gray-900 text-white border-gray-700 sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle>Add Available Booking Date</DialogTitle>
+            <DialogTitle>Add Available Booking Dates</DialogTitle>
             <DialogDescription>
-              Add a new date with available time slots for project guidance bookings.
+              Add dates with available time slots for project guidance bookings.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white"
-                min={new Date().toISOString().split('T')[0]}
-              />
-              <p className="text-xs text-gray-400">Select a date in the future</p>
+            {/* Date selection mode toggle */}
+            <div className="flex justify-center mb-4">
+              <div className="border border-gray-700 rounded-lg p-1 flex">
+                <Button
+                  type="button"
+                  variant={bulkMode ? "ghost" : "secondary"}
+                  size="sm"
+                  onClick={() => setBulkMode(false)}
+                  className={!bulkMode ? "bg-blue-600" : "hover:bg-gray-800"}
+                >
+                  <Calendar className="w-4 h-4 mr-2" /> Single Date
+                </Button>
+                <Button
+                  type="button"
+                  variant={bulkMode ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setBulkMode(true)}
+                  className={bulkMode ? "bg-blue-600" : "hover:bg-gray-800"}
+                >
+                  <CalendarRange className="w-4 h-4 mr-2" /> Multiple Dates
+                </Button>
+              </div>
             </div>
+            
+            {/* Date selection section */}
+            {bulkMode ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={dateRange.start}
+                      onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+                      className="bg-gray-800 border-gray-700 text-white"
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endDate">End Date</Label>
+                    <Input
+                      id="endDate"
+                      type="date"
+                      value={dateRange.end}
+                      onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+                      className="bg-gray-800 border-gray-700 text-white"
+                      min={dateRange.start || new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </div>
+                {/* Days of week checkboxes */}
+                <div className="space-y-2">
+                  <Label>Days of the Week</Label>
+                  <div className="grid grid-cols-7 gap-2 mt-2">
+                    {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                      <div key={day} className="flex flex-col items-center">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDays({...selectedDays, [day]: !selectedDays[day]})}
+                          className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                            selectedDays[day] ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+                          }`}
+                        >
+                          {day.charAt(0).toUpperCase()}
+                        </button>
+                        <span className="text-xs mt-1 text-gray-400">{day.substring(0, 3)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Preview of selected dates */}
+                {dateRange.start && dateRange.end && (
+                  <div className="mt-2">
+                    <Label>Selected Dates ({generateDatesInRange().length})</Label>
+                    <div className="mt-1 p-2 bg-gray-800 rounded-md max-h-24 overflow-y-auto">
+                      <div className="grid grid-cols-3 gap-1">
+                        {generateDatesInRange().map((date) => (
+                          <Badge key={date} variant="secondary" className="justify-center text-xs">
+                            {new Date(date).toLocaleDateString()}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="bg-gray-800 border-gray-700 text-white"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-gray-400">Select a date in the future</p>
+              </div>
+            )}
             
             <div className="space-y-2 border-t border-gray-800 pt-4">
               <div className="flex items-center justify-between">
@@ -1116,6 +1205,49 @@ export default function AdminDashboard() {
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+              </div>
+              
+              {/* Quick time slot buttons */}
+              <div className="flex flex-wrap gap-2 my-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+                  onClick={() => {
+                    const times = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:00"];
+                    const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
+                    setSelectedSlots(uniqueSlots.sort());
+                  }}
+                >
+                  + Standard Hours
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+                  onClick={() => {
+                    const times = ["09:30", "10:30", "11:30", "13:30", "14:30", "15:30"];
+                    const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
+                    setSelectedSlots(uniqueSlots.sort());
+                  }}
+                >
+                  + Half Hours
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+                  onClick={() => {
+                    const times = ["17:00", "18:00", "19:00"];
+                    const uniqueSlots = Array.from(new Set([...selectedSlots, ...times]));
+                    setSelectedSlots(uniqueSlots.sort());
+                  }}
+                >
+                  + Evening Hours
+                </Button>
               </div>
               
               {selectedSlots.length > 0 ? (
@@ -1152,24 +1284,37 @@ export default function AdminDashboard() {
           <DialogFooter className="border-t border-gray-800 pt-4">
             <Button 
               variant="outline" 
-              onClick={() => setIsAddSlotDialogOpen(false)}
+              onClick={() => {
+                setIsAddSlotDialogOpen(false);
+                setBulkMode(false);
+                setDateRange({start: "", end: ""});
+                setSelectedSlots([]);
+              }}
               className="border-gray-700 text-gray-300 hover:bg-gray-800"
             >
               Cancel
             </Button>
             <Button 
-              onClick={handleAddTimeSlot} 
-              disabled={isAddingSlot || !newDate || selectedSlots.length === 0}
+              onClick={bulkMode ? handleBulkTimeSlotCreation : handleAddTimeSlot}
               className="bg-blue-600 hover:bg-blue-700"
+              disabled={isAddingSlot || 
+                         (!newDate && !bulkMode) || 
+                         (bulkMode && (!dateRange.start || !dateRange.end)) || 
+                         selectedSlots.length === 0}
             >
               {isAddingSlot ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" /> 
                   Adding...
                 </>
+              ) : bulkMode ? (
+                <>
+                  <CalendarRange className="w-4 h-4 mr-2" /> 
+                  Add Multiple Dates
+                </>
               ) : (
                 <>
-                  <Plus className="w-4 h-4 mr-2" /> 
+                  <Calendar className="w-4 h-4 mr-2" /> 
                   Add Date
                 </>
               )}
