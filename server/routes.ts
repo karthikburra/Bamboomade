@@ -1902,6 +1902,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint to get available time slots for bookings
   app.get("/api/available-slots", async (req, res) => {
     try {
+      // Check if we're requesting slots for rescheduling a specific session
+      const sessionIdToExclude = req.query.excludeSessionId ? parseInt(req.query.excludeSessionId as string) : undefined;
+      
       const availableSlots = await storage.getAllAvailableTimeSlots();
       
       // Sort slots by date
@@ -1915,9 +1918,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Define a properly typed map for booked slots
       const bookedSlots: Record<string, string[]> = {};
       
+      // Get original time slot details for the session being rescheduled (if any)
+      let excludedSessionDate: string | undefined;
+      let excludedSessionTime: string | undefined;
+      
       // Create a map of all booked slots by date and time
       allSessions.forEach(session => {
         if (session.paymentConfirmed && session.status !== 'cancelled') {
+          // If this is the session we're rescheduling, save its details but don't mark as booked
+          if (sessionIdToExclude && session.id === sessionIdToExclude) {
+            const sessionDate = new Date(session.date);
+            excludedSessionDate = format(sessionDate, "yyyy-MM-dd");
+            excludedSessionTime = format(sessionDate, "HH:mm");
+            // Skip adding to booked slots
+            return;
+          }
+          
           const sessionDate = new Date(session.date);
           const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
           const sessionTimeStr = format(sessionDate, "HH:mm");
@@ -1937,7 +1953,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Mark which specific time slots are already booked
         const slotsWithStatus = slot.slots.map(timeSlot => {
-          const isBooked = bookedTimesForDate.includes(timeSlot);
+          // If this is the original time slot for the session being rescheduled,
+          // mark it as not booked so it shows up as available
+          const isOriginalSlot = 
+            sessionIdToExclude && 
+            slot.date === excludedSessionDate && 
+            timeSlot === excludedSessionTime;
+            
+          const isBooked = !isOriginalSlot && bookedTimesForDate.includes(timeSlot);
+          
           return {
             time: timeSlot,
             isBooked

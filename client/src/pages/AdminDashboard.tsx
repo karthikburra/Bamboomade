@@ -427,7 +427,8 @@ export default function AdminDashboard() {
   // Fetch all available slots and dates
   const fetchAllAvailableSlots = async () => {
     try {
-      const response = await apiRequest("GET", `/api/available-slots`);
+      const sessionIdParam = selectedSession ? `?excludeSessionId=${selectedSession.id}` : '';
+      const response = await apiRequest("GET", `/api/available-slots${sessionIdParam}`);
       const data = await response.json();
       
       if (data.success) {
