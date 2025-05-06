@@ -39,10 +39,29 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
   const targetDateStr = format(date, "yyyy-MM-dd");
   const targetTimeStr = format(date, "HH:mm");
   
+  // For detailed logging
+  console.log(`Checking time slot conflict for ${targetDateStr} ${targetTimeStr}, excluding sessionId ${sessionIdToExclude || 'none'}`);
+  
   // Check if any session conflicts with this date and time
   return allSessions.some(session => {
-    // Skip cancelled sessions and the session we're currently updating (if provided)
-    if (session.status === 'cancelled' || (sessionIdToExclude && session.id === sessionIdToExclude)) {
+    // Skip cancelled sessions
+    if (session.status === 'cancelled') {
+      return false;
+    }
+    
+    // For admin session rescheduling to same slot (detect no change case)
+    if (sessionIdToExclude && session.id === sessionIdToExclude) {
+      const sessionDate = new Date(session.date);
+      const sessionTimeFormatted = format(sessionDate, "yyyy-MM-dd HH:mm");
+      const targetTimeFormatted = format(date, "yyyy-MM-dd HH:mm");
+      
+      // If rescheduling to exact same time as current session, this is not a conflict
+      if (sessionTimeFormatted === targetTimeFormatted) {
+        console.log(`Session ${session.id} is being rescheduled to the same time (${sessionTimeFormatted}). This is not a conflict.`);
+        return false;
+      }
+      
+      // Otherwise, it's a different session we're rescheduling, so exclude it from conflict check
       return false;
     }
     
@@ -51,7 +70,11 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
     const sessionTimeStr = format(sessionDate, "HH:mm");
     
     // Check if date and time match
-    return sessionDateStr === targetDateStr && sessionTimeStr === targetTimeStr;
+    const isConflict = sessionDateStr === targetDateStr && sessionTimeStr === targetTimeStr;
+    if (isConflict) {
+      console.log(`Conflict detected: Session ${session.id} already booked at ${sessionDateStr} ${sessionTimeStr}`);
+    }
+    return isConflict;
   });
 }
 
@@ -420,6 +443,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Parse date for validation
       const parsedDate = new Date(newDate);
+      
+      // Check if the new date is actually a change, to prevent unnecessary updates
+      const currentSessionDate = new Date(session.date);
+      const currentSessionFormatted = format(currentSessionDate, "yyyy-MM-dd HH:mm");
+      const newSessionFormatted = format(parsedDate, "yyyy-MM-dd HH:mm");
+      
+      if (currentSessionFormatted === newSessionFormatted && 
+          (!newDuration || newDuration === session.duration)) {
+        console.log(`Admin tried to reschedule session ${session.id} to the same time and duration (${newSessionFormatted}). No changes needed.`);
+        return res.json({
+          success: true,
+          message: "No changes needed - session already scheduled for this time",
+          session: session
+        });
+      }
       
       // Check if this time slot is already booked (excluding the current session)
       const isBooked = await isTimeSlotBooked(parsedDate, session.id);
@@ -938,6 +976,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedSession = userSessions.sort((a, b) => 
           new Date(b.date).getTime() - new Date(a.date).getTime()
         )[0];
+      }
+      
+      // Check if the new date is actually a change, to prevent unnecessary updates
+      const currentSessionDate = new Date(selectedSession.date);
+      const currentSessionFormatted = format(currentSessionDate, "yyyy-MM-dd HH:mm");
+      const newSessionFormatted = format(parsedDate, "yyyy-MM-dd HH:mm");
+      
+      if (currentSessionFormatted === newSessionFormatted && 
+          (!newDuration || newDuration === selectedSession.duration)) {
+        console.log(`User ${email} tried to reschedule session ${selectedSession.id} to the same time and duration (${newSessionFormatted}). No changes needed.`);
+        return res.json({
+          success: true,
+          message: "No changes needed - your session is already scheduled for this time",
+          session: selectedSession,
+          allSessions: userSessions
+        });
       }
       
       // Check if this time slot is already booked (excluding the current session)
