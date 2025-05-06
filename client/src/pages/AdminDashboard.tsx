@@ -779,7 +779,7 @@ export default function AdminDashboard() {
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
                                         <span className="truncate">
-                                          {formatInIST(new Date(session.date), 'MMM d')}
+                                          {session.formattedDate}
                                         </span>
                                       </div>
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
