@@ -754,7 +754,6 @@ export default function AdminDashboard() {
                                 <TableHead className="text-gray-300">Date & Time</TableHead>
                                 <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
                                 <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
-                                <TableHead className="text-gray-300">Payment</TableHead>
                                 <TableHead className="text-gray-300">Google Meet</TableHead>
                                 <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
@@ -813,14 +812,6 @@ export default function AdminDashboard() {
                                     )}
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell">{session.duration} min</TableCell>
-                                  <TableCell>
-                                    <Badge 
-                                      variant={session.paymentStatus === "Paid" ? "default" : "outline"}
-                                      className={`text-xs ${session.paymentStatus === "Paid" ? "bg-green-700 hover:bg-green-600" : ""}`}
-                                    >
-                                      {session.paymentStatus}
-                                    </Badge>
-                                  </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
                                       {session.googleMeetLink ? (
