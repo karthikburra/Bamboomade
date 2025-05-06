@@ -310,6 +310,20 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // General update method for project guidance sessions
+  async updateProjectGuidance(id: number, updates: Partial<ProjectGuidance>): Promise<ProjectGuidance | undefined> {
+    try {
+      const [updatedSession] = await db.update(projectGuidances)
+        .set(updates)
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateProjectGuidance:", error);
+      return undefined;
+    }
+  }
+  
   // Chat message operations
   async getChatMessagesByUserId(userId: number): Promise<ChatMessage[]> {
     try {
