@@ -717,7 +717,6 @@ export default function AllSessions() {
                                         >
                                           <SelectTrigger className="w-full">
                                             <div className="flex items-center">
-                                              <Calendar className="mr-2 h-4 w-4" />
                                               <SelectValue placeholder="Select a date" />
                                             </div>
                                           </SelectTrigger>
