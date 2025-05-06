@@ -52,7 +52,7 @@ const AIChatPrompt: React.FC = () => {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Ask about bamboo architecture or sustainability..."
-                className="flex-grow pr-10 rounded-full bg-background border-2 h-9 text-sm focus-visible:ring-primary/30 focus-visible:border-primary/50"
+                className="flex-grow pr-10 rounded-full bg-zinc-800 border-2 border-zinc-600 h-9 text-sm text-white placeholder:text-zinc-400 focus-visible:ring-primary/30 focus-visible:border-primary/50"
               />
               <Button 
                 type="submit" 
