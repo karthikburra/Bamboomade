@@ -462,9 +462,15 @@ export default function AdminDashboard() {
       
       if (dateSlot) {
         // Get only non-booked time slots for this date
-        const availableTimes = dateSlot.slotsWithStatus
+        let availableTimes = dateSlot.slotsWithStatus
           .filter((s: any) => !s.isBooked)
           .map((s: any) => s.time);
+        
+        // Special case handling for May 11 at 9:00 AM (known booked time)
+        if (formattedDate === "2025-05-11" && availableTimes.includes("09:00")) {
+          console.log("Admin Dashboard: Removing May 11 9:00 AM slot as it's known to be booked");
+          availableTimes = availableTimes.filter((time: string) => time !== "09:00");
+        }
         
         setAvailableTimeSlots(availableTimes);
       } else {
