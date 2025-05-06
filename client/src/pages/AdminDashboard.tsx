@@ -40,7 +40,8 @@ import { Label } from "@/components/ui/label";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
-  X, AlertTriangle, CalendarRange, Video, Search
+  X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
+  SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog
 } from "lucide-react";
 import {
   Select,
@@ -60,10 +61,17 @@ const formatInIST = (date: Date | string, formatStr: string) => {
   return formatInTimeZone(dateObj, 'Asia/Kolkata', updatedFormat);
 };
 
+interface TimeSlotWithStatus {
+  time: string;
+  isBooked: boolean;
+}
+
 interface AvailableTimeSlot {
   id: number;
   date: string; // ISO format date string like "2023-05-15"
   slots: string[]; // Array of time slots like ["09:00", "10:00", "11:00"]
+  slotsWithStatus?: TimeSlotWithStatus[]; // Array of time slots with booking status
+  allSlotsBooked?: boolean; // Whether all slots for this date are booked
   createdAt: Date;
   createdBy: number;
   updatedAt: Date;
@@ -100,11 +108,6 @@ export default function AdminDashboard() {
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
   const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
-  // Define a type for time slots with booking status
-  interface TimeSlotWithStatus {
-    time: string;
-    isBooked: boolean;
-  }
   
   const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlotWithStatus[]>([]);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
@@ -970,16 +973,59 @@ export default function AdminDashboard() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex flex-wrap gap-1 sm:gap-1.5 max-w-md">
-                                {slot.slots.sort().map((time) => (
-                                  <Badge 
-                                    key={time} 
-                                    variant="secondary"
-                                    className="bg-blue-900/30 text-blue-300 border-blue-800 text-xs sm:text-sm"
-                                  >
-                                    <Clock className="w-3 h-3 mr-1 hidden sm:inline" /> {time}
-                                  </Badge>
-                                ))}
+                              <div className="flex flex-col gap-2">
+                                {/* Available/Total slot counter */}
+                                {slot.slotsWithStatus ? (
+                                  <div className="flex items-center mb-1">
+                                    <div className="text-xs bg-gray-800 rounded-md px-2 py-1 inline-flex items-center">
+                                      <span className="font-semibold">
+                                        {(() => {
+                                          const totalSlots = slot.slotsWithStatus.length;
+                                          const bookedSlots = slot.slotsWithStatus.filter(s => s.isBooked).length;
+                                          const availableSlots = totalSlots - bookedSlots;
+                                          
+                                          return (
+                                            <span className={`px-1.5 py-0.5 rounded-md ${
+                                              availableSlots === 0 ? "text-red-400" :
+                                              availableSlots < totalSlots/2 ? "text-amber-400" :
+                                              "text-green-400"
+                                            }`}>
+                                              {availableSlots}/{totalSlots} slots available
+                                            </span>
+                                          );
+                                        })()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : null}
+                                
+                                {/* Time slot badges */}
+                                <div className="flex flex-wrap gap-1 sm:gap-1.5 max-w-md">
+                                  {slot.slots.sort().map((time) => {
+                                    // Check if this slot is booked
+                                    const isBooked = slot.slotsWithStatus?.find(s => s.time === time)?.isBooked;
+                                    
+                                    return (
+                                      <Badge 
+                                        key={time} 
+                                        variant="secondary"
+                                        className={`${
+                                          isBooked 
+                                            ? "bg-red-900/30 text-red-300 border-red-800" 
+                                            : "bg-blue-900/30 text-blue-300 border-blue-800"
+                                        } text-xs sm:text-sm`}
+                                      >
+                                        {isBooked ? (
+                                          <Ban className="w-3 h-3 mr-1 hidden sm:inline" />
+                                        ) : (
+                                          <Clock className="w-3 h-3 mr-1 hidden sm:inline" />
+                                        )}
+                                        {time}
+                                        {isBooked ? " (Booked)" : ""}
+                                      </Badge>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
