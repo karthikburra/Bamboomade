@@ -25,9 +25,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  CheckCircle, Loader2, Calendar, User, Tag, ChevronLeft, Video, 
+  CheckCircle, Loader2, Calendar, Clock, User, Tag, ChevronLeft, Video, 
   ExternalLink, RotateCcw, Copy, Check, Info, XCircle, AlertTriangle,
-  RefreshCcw, MessageSquare
+  RefreshCcw, MessageSquare, Clock8
 } from "lucide-react";
 // Using Link from wouter
 import { 
@@ -582,6 +582,7 @@ export default function AllSessions() {
                       <span>{session.formattedDate}</span>
                     </div>
                     <div className="flex items-center text-sm">
+                      <Clock className="mr-2 h-4 w-4 text-green-500" />
                       <span>{session.formattedTime} - {session.formattedEndTime} ({session.duration} minutes)</span>
                     </div>
                     <div className="flex items-center text-sm">
@@ -767,7 +768,7 @@ export default function AllSessions() {
                                                 size="sm" 
                                                 className="text-xs text-muted-foreground hover:text-foreground"
                                               >
-                                                View Calendar
+                                                <Calendar className="h-3 w-3 mr-1" /> View Calendar
                                               </Button>
                                             </PopoverTrigger>
                                             <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
@@ -900,6 +901,7 @@ export default function AllSessions() {
                                   className="h-9 border-gray-700 text-gray-500 cursor-not-allowed opacity-70"
                                   disabled
                                 >
+                                  <Clock8 className="h-3.5 w-3.5 mr-1.5" />
                                   Can't Reschedule
                                 </Button>
                               );

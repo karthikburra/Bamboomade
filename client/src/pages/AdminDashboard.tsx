@@ -38,7 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
-  User, Phone, Mail, Plus, Trash2, Edit, Save,
+  CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search
 } from "lucide-react";
 import {
@@ -856,7 +856,7 @@ export default function AdminDashboard() {
                                     variant="secondary"
                                     className="bg-blue-900/30 text-blue-300 border-blue-800 text-xs sm:text-sm"
                                   >
-                                    {time}
+                                    <Clock className="w-3 h-3 mr-1 hidden sm:inline" /> {time}
                                   </Badge>
                                 ))}
                               </div>
@@ -1001,7 +1001,7 @@ export default function AdminDashboard() {
                                       </span>
                                     </div>
                                     <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
-                                      {session.formattedTime}
+                                      <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {session.formattedTime}
                                     </div>
                                   </div>
                                   
@@ -1010,7 +1010,7 @@ export default function AdminDashboard() {
                                     (session.notes && session.notes.toLowerCase().includes('rescheduled'))) && (
                                     <div className="mt-1 border-t border-gray-700 pt-1">
                                       <div className="text-xs text-blue-400 flex items-center mb-0.5">
-                                        Rescheduled
+                                        <CalendarClock className="w-3 h-3 mr-1" /> Rescheduled
                                       </div>
                                       <div className="text-xs text-gray-400">
                                         Originally: {(() => {
@@ -1614,7 +1614,9 @@ export default function AdminDashboard() {
                   >
                     {selectedSlots.includes(time) ? (
                       <Check className="w-3 h-3 flex-shrink-0" />
-                    ) : null}
+                    ) : (
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                    )}
                     {time}
                   </Badge>
                 ))}
@@ -1690,7 +1692,7 @@ export default function AdminDashboard() {
                         variant="secondary"
                         className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
                       >
-
+                        <Clock className="w-3 h-3 flex-shrink-0" /> 
                         {time}
                         <button 
                           onClick={() => removeTimeFromSelectedSlots(time)}
@@ -1782,7 +1784,9 @@ export default function AdminDashboard() {
                   >
                     {selectedSlots.includes(time) ? (
                       <Check className="w-3 h-3 flex-shrink-0" />
-                    ) : null}
+                    ) : (
+                      <Clock className="w-3 h-3 flex-shrink-0" />
+                    )}
                     {time}
                   </Badge>
                 ))}
@@ -1857,7 +1861,7 @@ export default function AdminDashboard() {
                         variant="secondary"
                         className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
                       >
-
+                        <Clock className="w-3 h-3" /> 
                         {time}
                         <button 
                           onClick={() => removeTimeFromSelectedSlots(time)}

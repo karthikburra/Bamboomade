@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Ban, Check } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Ban, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -364,7 +364,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="flex items-center ml-2">
-                                  <span className="text-xs text-amber-500">{totalSlots - bookedSlots}/{totalSlots} available</span>
+                                  <Clock className="h-4 w-4 text-amber-500" />
+                                  <span className="text-xs ml-1 text-amber-500">{totalSlots - bookedSlots}/{totalSlots}</span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -408,7 +409,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 size="sm" 
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                View Calendar
+                <CalendarIcon className="h-3 w-3 mr-1" /> View Calendar
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
