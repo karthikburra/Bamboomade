@@ -122,9 +122,20 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       return { availableSlots: timeSlots };
     }
     
+    // Get only non-booked time slots
+    let availableSlotsFiltered: string[] = [];
+    
+    if (matchingSlot.slotsWithStatus) {
+      availableSlotsFiltered = matchingSlot.slotsWithStatus
+        .filter((slot: TimeSlotWithStatus) => !slot.isBooked)
+        .map((slot: TimeSlotWithStatus) => slot.time);
+    } else {
+      availableSlotsFiltered = matchingSlot.slots;
+    }
+    
     // Return both the available slots and booking status information
     return {
-      availableSlots: matchingSlot.slots,
+      availableSlots: availableSlotsFiltered,
       slotsWithStatus: matchingSlot.slotsWithStatus,
       allSlotsBooked: matchingSlot.allSlotsBooked
     };
@@ -179,6 +190,18 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       // If all slots for this date are booked, disable it
       if (matchingSlot.allSlotsBooked) {
         return true;
+      }
+      
+      // Check if there are any available (non-booked) time slots
+      if (matchingSlot.slotsWithStatus) {
+        const availableSlotCount = matchingSlot.slotsWithStatus.filter(
+          (slot: TimeSlotWithStatus) => !slot.isBooked
+        ).length;
+        
+        // If no available slots for this date, disable it
+        if (availableSlotCount === 0) {
+          return true;
+        }
       }
     }
     
@@ -278,7 +301,20 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                       (slot: AvailableSlot) => slot.date === formattedDate
                     );
                     
-                    return matchingSlot ? !!matchingSlot.allSlotsBooked : false;
+                    if (!matchingSlot) return false;
+                    
+                    // First check the explicit allSlotsBooked flag
+                    if (matchingSlot.allSlotsBooked) return true;
+                    
+                    // Then check if all slots have isBooked=true
+                    if (matchingSlot.slotsWithStatus) {
+                      const availableSlotCount = matchingSlot.slotsWithStatus.filter(
+                        (slot: TimeSlotWithStatus) => !slot.isBooked
+                      ).length;
+                      return availableSlotCount === 0;
+                    }
+                    
+                    return false;
                   }
                 }}
                 modifiersClassNames={{
@@ -310,30 +346,21 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
-                {availableTimeSlots.map((time) => {
-                  const booked = isTimeSlotBooked(time);
-                  return (
-                    <div key={time} className="relative">
-                      <SelectItem 
-                        key={time} 
-                        value={time}
-                        disabled={booked}
-                        className={booked ? "text-gray-400 line-through" : ""}
-                      >
-                        {time}
-                        {booked ? (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
-                            Booked
-                          </span>
-                        ) : props.selectedTime === time && (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
-                            Selected
-                          </span>
-                        )}
-                      </SelectItem>
-                    </div>
-                  );
-                })}
+                {availableTimeSlots.map((time) => (
+                  <div key={time} className="relative">
+                    <SelectItem 
+                      value={time}
+                      className={props.selectedTime === time ? "font-medium" : ""}
+                    >
+                      {time}
+                      {props.selectedTime === time && (
+                        <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                          Selected
+                        </span>
+                      )}
+                    </SelectItem>
+                  </div>
+                ))}
               </SelectContent>
             </Select>
             {isLoadingSlots && (
