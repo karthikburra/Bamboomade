@@ -30,19 +30,22 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
   // Get all sessions to check for conflicts
   const allSessions = await storage.getAllProjectGuidances();
   
-  // Format the date for comparison
-  const targetDateStr = format(date, "yyyy-MM-dd");
-  const targetTimeStr = format(date, "HH:mm");
+  // Format the date for comparison - CRITICAL: use formatInIST for consistent timezone handling
+  const targetDateStr = formatInIST(date, "yyyy-MM-dd");
+  const targetTimeStr = formatInIST(date, "HH:mm");
+  console.log(`Using IST timezone conversion: ${date.toISOString()} => ${targetDateStr} ${targetTimeStr}`);
   
   // Create a list of sessions for this date for detailed logging
   const sessionsOnThisDate = allSessions.filter(s => {
     const sessionDate = new Date(s.date);
-    return format(sessionDate, "yyyy-MM-dd") === targetDateStr;
+    // CRITICAL: Use formatInIST for consistent time zone handling
+    return formatInIST(sessionDate, "yyyy-MM-dd") === targetDateStr;
   }).map(s => {
     const sessionDate = new Date(s.date);
     return {
       id: s.id,
-      time: format(sessionDate, "HH:mm"),
+      // CRITICAL: Use formatInIST for consistent time zone handling
+      time: formatInIST(sessionDate, "HH:mm"),
       status: s.status || 'unknown',
       paymentConfirmed: s.paymentConfirmed
     };
@@ -69,14 +72,9 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
     console.log(`Half-hour booking detected. Will check for conflicts in both ${hourToCheck[0]} and ${hourToCheck[1]}`);
   }
   
-  // IMPROVED: Special case handling for known dates with booking issues
-  const specialCaseDates = ["2025-05-07", "2025-05-11", "2025-05-09"];
-  const specialCaseTimes = ["09:00"];
-  
-  if (specialCaseDates.includes(targetDateStr) && specialCaseTimes.includes(targetTimeStr)) {
-    console.log(`Detected special case date (${targetDateStr}) with ${targetTimeStr} booking - marking as conflicted`);
-    return true;
-  }
+  // No more special case handling - we'll rely on the standard booking logic instead
+  console.log(`Standard conflict checking for ${targetDateStr} ${targetTimeStr}`);
+  // We use formatInIST everywhere to ensure consistent time zone handling
   
   // Check if any session conflicts with this date and time
   return allSessions.some(session => {
@@ -88,8 +86,9 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
     // For session rescheduling to same slot (detect no change case)
     if (sessionIdToExclude && session.id === sessionIdToExclude) {
       const sessionDate = new Date(session.date);
-      const sessionTimeFormatted = format(sessionDate, "yyyy-MM-dd HH:mm");
-      const targetTimeFormatted = format(date, "yyyy-MM-dd HH:mm");
+      // CRITICAL: Use formatInIST for consistent time zone handling
+      const sessionTimeFormatted = formatInIST(sessionDate, "yyyy-MM-dd HH:mm");
+      const targetTimeFormatted = formatInIST(date, "yyyy-MM-dd HH:mm");
       
       // If rescheduling to exact same time as current session, this is not a conflict
       if (sessionTimeFormatted === targetTimeFormatted) {
@@ -2195,18 +2194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Combine all checks to determine if the slot is booked
           const isBooked = !isOriginalSlot && (isExactTimeMatch || isHalfHourConflict);
           
-          // IMPROVED: Special case handling for known dates with booking issues
-          // Using the same logic as in isTimeSlotBooked function
-          const specialCaseDates = ["2025-05-07", "2025-05-11", "2025-05-09", "2025-05-15"];
-          const specialCaseTimes = ["09:00", "07:00", "08:00", "20:00", "21:00"];
-          
-          // May 15 is especially problematic, so explicitly handle all its slots
-          // Force check for May 15 slots to be all marked as booked
-          const isMay15Problem = slot.date === "2025-05-15";
-          
-          const isSpecialCaseBooked = 
-            (specialCaseDates.includes(slot.date) && specialCaseTimes.includes(timeSlot)) ||
-            isMay15Problem;
+          // Instead of special case handling, ensure our general solution works properly
+          // No more special cases or hardcoding of specific dates
+          const isSpecialCaseBooked = false;
           
           return {
             time: timeSlot,
