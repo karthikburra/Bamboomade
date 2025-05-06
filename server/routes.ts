@@ -571,13 +571,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send cancellation email notification
       try {
         await sendCancellationEmail(
+          session.id,
           session.studentName, 
           session.email,
-          session.id,
+          session.topic,
           new Date(session.date),
+          `Full refund provided as session was cancelled by admin. Reason: ${reason}`,
           100, // Always 100% refund
-          refundAmount,
-          `Full refund provided as session was cancelled by admin. Reason: ${reason}`
+          refundAmount
         );
         console.log(`Sent cancellation confirmation email to ${session.email}`);
       } catch (emailError) {
