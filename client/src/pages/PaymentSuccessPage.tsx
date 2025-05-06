@@ -94,8 +94,6 @@ export default function PaymentSuccessPage() {
   return (
     <div className="container mx-auto py-12 px-4 bg-background dark:bg-gray-950">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4 text-center text-green-600 dark:text-green-400">Payment Successful!</h1>
-        <h2 className="text-xl mb-8 text-center text-gray-700 dark:text-gray-300">We will send your Google Meet link within 4 hours</h2>
         <PaymentSuccess paymentId={paymentId} sessionId={sessionId} />
       </div>
     </div>
