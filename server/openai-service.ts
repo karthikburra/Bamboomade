@@ -71,7 +71,8 @@ interface WhatsAppTrainingData {
  */
 export async function processMessage(
   message: string, 
-  trainingData: TrainingData[] = []
+  trainingData: TrainingData[] = [],
+  knowledgeContent: any[] = []
 ): Promise<{ response: string; tokensUsed: number }> {
   try {
     // If OpenAI is not initialized (no API key), use fallback response
@@ -118,12 +119,49 @@ export async function processMessage(
           relevantTraining.map(data => `Q: ${data.question}\nA: ${data.answer}\nCategory: ${data.category}`).join('\n\n')
         }\n\nUse this information if relevant to answer the user's question.`
       : '';
+      
+    // Find relevant knowledge content based on simple keyword matching
+    // This is a basic implementation; could use embedding-based search in the future
+    const lowerCaseMessage = message.toLowerCase();
+    const relevantKnowledge = knowledgeContent
+      .filter(item => {
+        // Only use active knowledge content
+        if (item.status !== 'active') return false;
+        
+        // Check for keyword matches in title and content
+        return item.title.toLowerCase().split(' ').some((word: string) => 
+                lowerCaseMessage.includes(word) && word.length > 3) ||
+               item.content.toLowerCase().split(' ').some((word: string) => 
+                lowerCaseMessage.includes(word) && word.length > 3);
+      })
+      .slice(0, 3); // Limit to 3 most relevant items to avoid context length issues
+    
+    // Build knowledge context
+    const knowledgeContext = relevantKnowledge.length > 0
+      ? `Here is some specific information from the BambooMade knowledge base that may be relevant to the user's question:\n\n${
+          relevantKnowledge.map(item => 
+            `TITLE: ${item.title}\nTYPE: ${item.contentType}\nCONTENT: ${item.content.substring(0, 1000)}${item.content.length > 1000 ? '...' : ''}`
+          ).join('\n\n')
+        }\n\nUse this information to provide accurate and specific answers to the user. If a source is cited, mention it.`
+      : '';
+
+    // Combine all context sources
+    const combinedContext = [
+      DEFAULT_SYSTEM_PROMPT,
+      trainingContext,
+      knowledgeContext
+    ].filter(Boolean).join('\n\n');
+
+    // Log info about the knowledge being used (for debugging)
+    if (relevantKnowledge.length > 0) {
+      console.log(`Using ${relevantKnowledge.length} knowledge content items for response`);
+    }
 
     // Send request to OpenAI (we already checked openai is not null at this point)
     const chatCompletion = await (openai as OpenAI).chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
-        { role: "system", content: DEFAULT_SYSTEM_PROMPT + (trainingContext ? `\n\n${trainingContext}` : '') },
+        { role: "system", content: combinedContext },
         { role: "user", content: message }
       ],
       temperature: 0.7,
