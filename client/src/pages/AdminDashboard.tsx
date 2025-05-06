@@ -50,7 +50,7 @@ import {
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
   SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
-  Info
+  Info, Database
 } from "lucide-react";
 import {
   Select,
@@ -532,10 +532,20 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
           <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-          <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto">
-            <LogOut size={18} />
-            <span>Logout</span>
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 self-end sm:self-auto"
+              onClick={() => setLocation("/ai-knowledge-management")}
+            >
+              <Database size={18} />
+              <span>Knowledge Base</span>
+            </Button>
+            <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto">
+              <LogOut size={18} />
+              <span>Logout</span>
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">

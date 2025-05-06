@@ -163,6 +163,9 @@ const AdminDashboard: React.FC = () => {
               <TabsTrigger value="training">AI Training</TabsTrigger>
               <TabsTrigger value="sessions">Project Guidance</TabsTrigger>
               <TabsTrigger value="users">User Management</TabsTrigger>
+              <TabsTrigger value="knowledge" onClick={() => window.location.href = "/ai-knowledge-management"}>
+                Knowledge Base
+              </TabsTrigger>
             </TabsList>
             
             {/* AI Training Tab */}
