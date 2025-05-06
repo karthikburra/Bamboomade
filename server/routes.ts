@@ -617,6 +617,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // First get the session to check its status
+      const session = await storage.getProjectGuidance(parseInt(sessionId, 10));
+      
+      if (!session) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Session not found" 
+        });
+      }
+      
+      // Check if the session is cancelled
+      if (session.status === 'cancelled') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Cannot add meeting link to a cancelled session" 
+        });
+      }
+      
       // Update the session with the Google Meet link
       const updatedSession = await storage.updateProjectGuidanceMeetLink(
         parseInt(sessionId, 10),

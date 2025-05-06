@@ -1193,6 +1193,8 @@ export default function AdminDashboard() {
                                         size="sm"
                                         className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
                                         onClick={() => openMeetLinkDialog(session)}
+                                        disabled={session.status === 'cancelled'}
+                                        title={session.status === 'cancelled' ? "Cannot add meeting link to cancelled sessions" : "Add Google Meet link"}
                                       >
                                         <Plus className="w-3.5 h-3.5 mr-1.5" /> 
                                         <span className="hidden sm:inline">Add Meet Link</span>
