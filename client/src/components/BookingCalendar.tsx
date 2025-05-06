@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Ban, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Full interface for complete booking flow
 interface BookingCalendarFullProps {
@@ -119,7 +120,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     );
     
     if (!matchingSlot) {
-      return { availableSlots: timeSlots };
+      // If no matching slot data available, use the default time slots
+      return { 
+        availableSlots: timeSlots,
+        // Create slotsWithStatus array with all slots marked as available
+        slotsWithStatus: timeSlots.map((time: string) => ({ time, isBooked: false }))
+      };
     }
     
     // Get only non-booked time slots
@@ -136,7 +142,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     // Return both the available slots and booking status information
     return {
       availableSlots: availableSlotsFiltered,
-      slotsWithStatus: matchingSlot.slotsWithStatus,
+      slotsWithStatus: matchingSlot.slotsWithStatus || matchingSlot.slots.map((time: string) => ({ time, isBooked: false })),
       allSlotsBooked: matchingSlot.allSlotsBooked
     };
   };
@@ -256,13 +262,77 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                     key={formattedDate} 
                     value={formattedDate}
                     className={cn(
-                      "flex items-center",
+                      "flex items-center justify-between",
                       isToday && "font-bold"
                     )}
                   >
                     <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
                       {displayDate}{isToday ? " (Today)" : ""}
                     </span>
+                    
+                    {(() => {
+                      // Add booking status indicator
+                      if (!availableSlots || !availableSlots.slots) return null;
+                      
+                      const matchingSlot: AvailableSlot | undefined = availableSlots.slots.find(
+                        (slot: AvailableSlot) => slot.date === formattedDate
+                      );
+                      
+                      if (!matchingSlot || !matchingSlot.slotsWithStatus) return null;
+                      
+                      const totalSlots = matchingSlot.slotsWithStatus.length;
+                      const bookedSlots = matchingSlot.slotsWithStatus.filter(
+                        (slot: TimeSlotWithStatus) => slot.isBooked
+                      ).length;
+                      
+                      if (bookedSlots === 0) {
+                        return (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center ml-2">
+                                  <Check className="h-4 w-4 text-green-500" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>All slots available</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      } else if (bookedSlots < totalSlots) {
+                        return (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center ml-2">
+                                  <Clock className="h-4 w-4 text-amber-500" />
+                                  <span className="text-xs ml-1 text-amber-500">{totalSlots - bookedSlots}/{totalSlots}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{totalSlots - bookedSlots} out of {totalSlots} slots available</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      } else {
+                        return (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center ml-2">
+                                  <Ban className="h-4 w-4 text-red-500" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>All slots booked</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      }
+                    })()}
                   </SelectItem>
                 );
               }
@@ -346,13 +416,20 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
               <SelectContent>
+                {/* First show available times */}
                 {availableTimeSlots.map((time) => (
                   <div key={time} className="relative">
                     <SelectItem 
                       value={time}
-                      className={props.selectedTime === time ? "font-medium" : ""}
+                      className={cn(
+                        "justify-between",
+                        props.selectedTime === time ? "font-medium" : ""
+                      )}
                     >
-                      {time}
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-2 text-green-500" />
+                        {time}
+                      </div>
                       {props.selectedTime === time && (
                         <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
                           Selected
@@ -361,6 +438,31 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                     </SelectItem>
                   </div>
                 ))}
+                
+                {/* Then show booked times */}
+                {selectedDate && slotsWithStatus
+                  .filter((slot: TimeSlotWithStatus) => slot.isBooked)
+                  .map((slot: TimeSlotWithStatus) => (
+                    <div key={slot.time} className="relative">
+                      <div className="px-2 py-1.5 flex items-center justify-between text-muted-foreground">
+                        <div className="flex items-center">
+                          <Ban className="h-4 w-4 mr-2 text-red-500" />
+                          <span className="text-gray-400 line-through">{slot.time}</span>
+                        </div>
+                        <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
+                          Booked
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                }
+                
+                {/* Show message if no time slots are available */}
+                {availableTimeSlots.length === 0 && !isLoadingSlots && (
+                  <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                    No available time slots for this date
+                  </div>
+                )}
               </SelectContent>
             </Select>
             {isLoadingSlots && (
