@@ -127,7 +127,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     staleTime: 0, // Always fetch fresh data (was 5 minutes)
-    cacheTime: 0, // Don't cache data between refetches
+    gcTime: 0 // Don't cache data between refetches (cacheTime renamed to gcTime in TanStack Query v5)
   });
   
   // Get available time slot information for the selected date
@@ -349,9 +349,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
             className="flex items-center text-xs"
           >
             {isFetchingSlots ? (
-              <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
+              <span className="h-3.5 w-3.5 mr-2 inline-block animate-spin">⟳</span>
             ) : (
-              <RefreshCw className="h-3.5 w-3.5 mr-2" />
+              <span className="h-3.5 w-3.5 mr-2 inline-block">⟳</span>
             )}
             Refresh
           </Button>
