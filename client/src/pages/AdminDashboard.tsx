@@ -778,39 +778,68 @@ export default function AdminDashboard() {
     if (dates.length === 0) {
       toast({
         title: "Error",
-        description: "No dates selected. Please select at least one date.",
+        description: "No dates selected. Please select at least one date or check your selected days of week.",
         variant: "destructive",
       });
       return;
     }
     
+    console.log("Bulk creating time slots for dates:", dates);
+    
     try {
-      // Create a promise for each date to add
-      const promises = dates.map(date => 
-        addTimeSlot({
-          date,
-          slots: selectedSlots,
-        })
-      );
+      // We'll handle each date one by one to better identify issues
+      let successCount = 0;
+      let errorCount = 0;
       
-      // Wait for all slots to be added
-      await Promise.all(promises);
+      // Process dates in sequence to avoid overwhelming the server
+      for (const date of dates) {
+        try {
+          await addTimeSlot({
+            date,
+            slots: selectedSlots,
+          });
+          successCount++;
+          console.log(`Successfully added slots for ${date}`);
+        } catch (error) {
+          console.error(`Error adding slots for ${date}:`, error);
+          errorCount++;
+          
+          // Skip this date but continue with others
+          continue;
+        }
+      }
       
-      toast({
-        title: "Success",
-        description: `Added time slots for ${dates.length} dates successfully.`,
-      });
-      
-      // Reset state
-      setIsAddSlotDialogOpen(false);
-      setNewDate("");
-      setSelectedSlots([]);
-      setDateRange({start: "", end: ""});
-      setBulkMode(false);
+      // Show appropriate toast based on results
+      if (successCount > 0 && errorCount === 0) {
+        toast({
+          title: "Success",
+          description: `Added time slots for all ${successCount} dates successfully.`,
+        });
+        
+        // Reset state on complete success
+        setIsAddSlotDialogOpen(false);
+        setNewDate("");
+        setSelectedSlots([]);
+        setDateRange({start: "", end: ""});
+        setBulkMode(false);
+      } else if (successCount > 0 && errorCount > 0) {
+        toast({
+          title: "Partial Success",
+          description: `Added time slots for ${successCount} dates, but failed for ${errorCount} dates.`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add any time slots. Check the console for details.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error("Bulk time slot creation error:", error);
       toast({
         title: "Error",
-        description: "Failed to add some time slots. Please try again.",
+        description: "Failed to process time slots. Please try again.",
         variant: "destructive",
       });
     }

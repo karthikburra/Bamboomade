@@ -2076,11 +2076,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Processing slots: ${confirmedSessionCount} confirmed, ${pendingSessionCount} pending, ${cancelledSessionCount} cancelled`);
       
-      // Log all sessions for debugging
-      if (Object.keys(allSessionDetails).length > 0) {
-        console.log(`DEBUG: All sessions:`, allSessionDetails);
-      } else {
-        console.log(`DEBUG: No sessions found`);
+      // Log all sessions for debugging - only if there are sessions to log
+      try {
+        if (allSessionDetails && Object.keys(allSessionDetails).length > 0) {
+          console.log(`DEBUG: All sessions:`, JSON.stringify(allSessionDetails));
+        } else {
+          console.log(`DEBUG: No sessions found`);
+        }
+      } catch (error) {
+        console.log(`DEBUG: Error logging session details:`, error);
       }
       
       // Add booking status information to the available slots
