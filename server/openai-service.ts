@@ -24,8 +24,16 @@ function getOpenAI(): OpenAI | null {
     return null;
   }
   
+  // Log the beginning of the key for debugging (don't log the full key for security)
+  console.log(`Using OpenAI API key starting with: ${apiKey.substring(0, 7)}...`);
+  
   // Create a new instance with the current API key
-  return new OpenAI({ apiKey });
+  try {
+    return new OpenAI({ apiKey });
+  } catch (error) {
+    console.error("Error initializing OpenAI:", error);
+    return null;
+  }
 }
 
 // Ensure directories exist
@@ -211,14 +219,16 @@ export async function processMessage(
     }
 
     // Send request to OpenAI (we already checked openai is not null at this point)
+    // Use a simpler model and configuration for testing
+    console.log("Sending request to OpenAI API...");
     const chatCompletion = await (openai as OpenAI).chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      model: "gpt-3.5-turbo", // Use a more accessible model for initial testing
       messages: [
-        { role: "system", content: combinedContext },
+        { role: "system", content: "You are the BambooMade AI, an expert on bamboo architecture." },
         { role: "user", content: message }
       ],
       temperature: 0.7,
-      max_tokens: 500
+      max_tokens: 300
     });
 
     // Extract response and token usage
@@ -261,18 +271,18 @@ export async function processMessageForTraining(message: string): Promise<string
     }
 
     // First determine if the message is relevant to bamboo or requires a response
+    console.log("Analyzing WhatsApp message with OpenAI API...");
     const analysisCompletion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      model: "gpt-3.5-turbo", // Use a more accessible model for initial testing
       messages: [
         { 
           role: "system", 
-          content: `You are an AI that analyzes WhatsApp messages to determine their relevance to bamboo architecture, design, and sustainability.
-            Analyze the following message and extract relevant information in JSON format.` 
+          content: `You are an AI that analyzes WhatsApp messages to determine their relevance to bamboo architecture.` 
         },
         { role: "user", content: message }
       ],
-      response_format: { type: "json_object" },
       temperature: 0.3,
+      max_tokens: 100
     });
 
     const analysisResponse = JSON.parse(analysisCompletion.choices[0].message.content || "{}");
