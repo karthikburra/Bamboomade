@@ -100,7 +100,13 @@ export default function AdminDashboard() {
   const [rescheduleTime, setRescheduleTime] = useState("");
   const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
   const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+  // Define a type for time slots with booking status
+  interface TimeSlotWithStatus {
+    time: string;
+    isBooked: boolean;
+  }
+  
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlotWithStatus[]>([]);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   
   // Cancel session state
@@ -522,48 +528,66 @@ export default function AdminDashboard() {
       const dateSlot = allSlots.find((slot: any) => slot.date === formattedDate);
       
       if (dateSlot) {
-        // Get all time slots for this date
-        const allTimeSlots = dateSlot.slotsWithStatus.map((s: any) => ({
-          time: s.time,
-          isBooked: s.isBooked
-        }));
-
-        // Create an array of non-booked time slots
-        let availableTimes = allTimeSlots
-          .filter((s: any) => !s.isBooked)
-          .map((s: any) => s.time);
+        // Get all time slots for this date with their booking status
+        let allTimeSlots: TimeSlotWithStatus[] = [];
         
-        // If we're rescheduling a session, also include its original time slot 
-        // in the available times list if it's on the same date
+        if (dateSlot.slotsWithStatus) {
+          // If server provides slot status, use it
+          allTimeSlots = dateSlot.slotsWithStatus.map((s: any) => ({
+            time: s.time,
+            isBooked: s.isBooked
+          }));
+        } else if (dateSlot.slots) {
+          // If no status info available, assume all slots are available
+          allTimeSlots = dateSlot.slots.map((time: string) => ({
+            time,
+            isBooked: false
+          }));
+        }
+        
+        // If we're rescheduling a session, handle its original time slot specially
         if (selectedSession && formattedDate === format(new Date(selectedSession.date), "yyyy-MM-dd")) {
           const sessionTimeStr = format(new Date(selectedSession.date), "HH:mm");
-          const isTimeSlotInList = availableTimes.includes(sessionTimeStr);
           
-          // If the original time is not already in the list (because it's booked by this session),
-          // add it back to the available time slots
-          if (!isTimeSlotInList) {
+          // Check if original time slot is already in the list
+          const existingSlot = allTimeSlots.find(slot => slot.time === sessionTimeStr);
+          
+          if (existingSlot) {
+            // Mark the original time slot as not booked, since we're rescheduling this session
+            existingSlot.isBooked = false;
+          } else {
+            // Add the original time slot if it's not in the list
             console.log(`Adding original session time ${sessionTimeStr} back to available slots for rescheduling`);
-            availableTimes.push(sessionTimeStr);
-            // Sort the times for consistency
-            availableTimes.sort();
+            allTimeSlots.push({
+              time: sessionTimeStr,
+              isBooked: false
+            });
+            
+            // Sort the slots by time for consistency
+            allTimeSlots.sort((a, b) => a.time.localeCompare(b.time));
           }
         }
         
         // Special case handling for May 11 at 9:00 AM (known booked time)
-        if (formattedDate === "2025-05-11" && availableTimes.includes("09:00")) {
-          console.log("Admin Dashboard: Removing May 11 9:00 AM slot as it's known to be booked");
+        if (formattedDate === "2025-05-11") {
+          const may11Slot = allTimeSlots.find(slot => slot.time === "09:00");
           
-          // But keep it if it's the original session time
-          const isOriginalSession = selectedSession && 
-            format(new Date(selectedSession.date), "yyyy-MM-dd") === "2025-05-11" && 
-            format(new Date(selectedSession.date), "HH:mm") === "09:00";
+          if (may11Slot) {
+            console.log("Admin Dashboard: Marking May 11 9:00 AM slot as booked");
             
-          if (!isOriginalSession) {
-            availableTimes = availableTimes.filter((time: string) => time !== "09:00");
+            // But don't mark it as booked if it's the original session time we're rescheduling
+            const isOriginalSession = selectedSession && 
+              format(new Date(selectedSession.date), "yyyy-MM-dd") === "2025-05-11" && 
+              format(new Date(selectedSession.date), "HH:mm") === "09:00";
+              
+            if (!isOriginalSession) {
+              may11Slot.isBooked = true;
+            }
           }
         }
         
-        setAvailableTimeSlots(availableTimes);
+        // Set all time slots with their booking status
+        setAvailableTimeSlots(allTimeSlots);
       } else {
         // No slots exist for this date
         setAvailableTimeSlots([]);
