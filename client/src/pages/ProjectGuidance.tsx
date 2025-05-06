@@ -35,6 +35,14 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   Card,
   CardContent,
   CardDescription,
@@ -1530,46 +1538,50 @@ function ProjectGuidance() {
                                         <div className="w-3 h-3 bg-white rounded-full mr-1"></div>
                                         <span className="font-medium text-white">Selected</span>
                                       </div>
-                                      <div className="flex items-center bg-gray-300 dark:bg-gray-700 px-2 py-1 rounded-full">
-                                        <div className="w-3 h-3 bg-white rounded-full mr-1"></div>
-                                        <span className="font-medium text-gray-800 dark:text-white">Available</span>
+                                      <div className="flex items-center bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">
+                                        <div className="w-3 h-3 bg-gray-800 dark:bg-gray-300 rounded-full mr-1"></div>
+                                        <span className="font-medium text-gray-800 dark:text-gray-300">Available</span>
                                       </div>
-                                      <div className="flex items-center bg-gray-400 dark:bg-gray-600 px-2 py-1 rounded-full">
-                                        <div className="w-3 h-3 bg-red-400 dark:bg-red-600 rounded-full mr-1"></div>
-                                        <span className="font-medium text-white">Booked</span>
+                                      <div className="flex items-center bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full">
+                                        <span className="font-medium text-gray-800 dark:text-gray-300">Booked</span>
                                       </div>
                                     </div>
                                   
-                                    {/* Time slots grid with booking status */}
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time) => {
-                                        const booked = isTimeSlotBooked(time, selectedDate);
-                                        return (
-                                          <button
-                                            key={time}
-                                            type="button"
-                                            onClick={() => !booked && setSelectedTime(time)}
-                                            disabled={booked}
-                                            className={`py-2 px-4 text-center text-sm rounded-md relative ${
-                                              selectedTime === time
-                                                ? "bg-green-600 text-white font-medium"
-                                                : booked
-                                                ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-75 text-gray-500 dark:text-gray-400"
-                                                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
-                                            }`}
-                                          >
-                                            {time}
-                                            {booked && (
-                                              <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="absolute inset-0 bg-gray-700 opacity-20 rounded-md"></div>
-                                                <span className="text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 px-2 py-0.5 rounded-md z-10">
-                                                  Booked
-                                                </span>
+                                    {/* Time slots as dropdown */}
+                                    <div>
+                                      <Select
+                                        value={selectedTime}
+                                        onValueChange={(time) => setSelectedTime(time)}
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <div className="flex items-center">
+                                            <Clock className="mr-2 h-4 w-4" />
+                                            <SelectValue placeholder="Select a time" />
+                                          </div>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((time) => {
+                                            const booked = isTimeSlotBooked(time, selectedDate);
+                                            return (
+                                              <div key={time} className="relative">
+                                                <SelectItem 
+                                                  key={time} 
+                                                  value={time}
+                                                  disabled={booked}
+                                                  className={booked ? "text-gray-400 line-through" : ""}
+                                                >
+                                                  {time}
+                                                  {booked && (
+                                                    <span className="ml-2 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900 px-2 py-0.5 text-xs font-medium text-red-800 dark:text-red-300">
+                                                      Booked
+                                                    </span>
+                                                  )}
+                                                </SelectItem>
                                               </div>
-                                            )}
-                                          </button>
-                                        );
-                                      })}
+                                            );
+                                          })}
+                                        </SelectContent>
+                                      </Select>
                                     </div>
                                   </>
                                 ) : (

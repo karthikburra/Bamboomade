@@ -190,47 +190,106 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-lg font-medium">Select Date</h3>
-        <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !selectedDate && "text-muted-foreground"
-              )}
-            >
+        <Select
+          value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
+          onValueChange={(value) => {
+            if (value) {
+              handleDateSelect(new Date(value));
+            } else {
+              handleDateSelect(undefined);
+            }
+          }}
+        >
+          <SelectTrigger className="w-full">
+            <div className="flex items-center">
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {selectedDate ? format(selectedDate, "PPP") : "Select a date"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              initialFocus
-              disabled={isDateDisabled}
-              modifiers={{
-                booked: (date) => {
-                  // Check if all slots for this date are booked
-                  if (!availableSlots || !availableSlots.slots) return false;
-                  
-                  const formattedDate = format(date, "yyyy-MM-dd");
-                  const matchingSlot = availableSlots.slots.find(
-                    (slot: AvailableSlot) => slot.date === formattedDate
-                  );
-                  
-                  return matchingSlot ? !!matchingSlot.allSlotsBooked : false;
-                }
-              }}
-              modifiersClassNames={{
-                booked: "bg-red-100 text-red-800 hover:bg-red-100 focus:bg-red-100",
-                selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
-              }}
-              className="rounded-md border-gray-200 dark:border-gray-800 p-3"
-            />
-          </PopoverContent>
-        </Popover>
+              <SelectValue placeholder="Select a date" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {(() => {
+              // Generate next 30 days as options
+              const dateOptions = [];
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              for (let i = 0; i < 30; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                date.setHours(0, 0, 0, 0);
+                
+                // Skip if date should be disabled
+                if (isDateDisabled(date)) continue;
+                
+                // Format for display and value
+                const formattedDate = format(date, "yyyy-MM-dd");
+                const displayDate = format(date, "PPP");
+                
+                // Check if it's today
+                const isToday = date.getTime() === today.getTime();
+                
+                dateOptions.push(
+                  <SelectItem 
+                    key={formattedDate} 
+                    value={formattedDate}
+                    className={cn(
+                      "flex items-center",
+                      isToday && "font-bold"
+                    )}
+                  >
+                    <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                      {displayDate}{isToday ? " (Today)" : ""}
+                    </span>
+                  </SelectItem>
+                );
+              }
+              
+              return dateOptions;
+            })()}
+          </SelectContent>
+        </Select>
+        
+        {/* Optionally add a small calendar icon button to show the traditional calendar view */}
+        <div className="text-center mt-1">
+          <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                <CalendarIcon className="h-3 w-3 mr-1" /> View Calendar
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                initialFocus
+                disabled={isDateDisabled}
+                modifiers={{
+                  booked: (date) => {
+                    // Check if all slots for this date are booked
+                    if (!availableSlots || !availableSlots.slots) return false;
+                    
+                    const formattedDate = format(date, "yyyy-MM-dd");
+                    const matchingSlot = availableSlots.slots.find(
+                      (slot: AvailableSlot) => slot.date === formattedDate
+                    );
+                    
+                    return matchingSlot ? !!matchingSlot.allSlotsBooked : false;
+                  }
+                }}
+                modifiersClassNames={{
+                  booked: "bg-red-100 text-red-800 hover:bg-red-100 focus:bg-red-100",
+                  selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
+                }}
+                className="rounded-md border-gray-200 dark:border-gray-800 p-3"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       {/* Only render time and duration selectors for full booking flow */}
@@ -262,9 +321,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                         className={booked ? "text-gray-400 line-through" : ""}
                       >
                         {time}
-                        {booked && (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900 px-2 py-0.5 text-xs font-medium text-red-800 dark:text-red-300">
+                        {booked ? (
+                          <span className="ml-2 inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
                             Booked
+                          </span>
+                        ) : props.selectedTime === time && (
+                          <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                            Selected
                           </span>
                         )}
                       </SelectItem>
