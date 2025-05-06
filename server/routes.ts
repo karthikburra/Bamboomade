@@ -1667,6 +1667,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch chat history", error: (error as Error).message });
     }
   });
+  
+  // AI Knowledge Base endpoints (admin only)
+  app.get("/api/ai-knowledge", isAdmin, async (req, res) => {
+    try {
+      const knowledgeContent = await storage.getAllAiKnowledgeContent();
+      res.json(knowledgeContent);
+    } catch (error) {
+      console.error("Error fetching AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to fetch AI knowledge content" });
+    }
+  });
+
+  app.get("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const content = await storage.getAiKnowledgeContentById(id);
+      
+      if (!content) {
+        return res.status(404).json({ message: "AI knowledge content not found" });
+      }
+      
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to fetch AI knowledge content" });
+    }
+  });
+
+  app.get("/api/ai-knowledge/type/:contentType", isAdmin, async (req, res) => {
+    try {
+      const contentType = req.params.contentType;
+      const content = await storage.getAiKnowledgeContentByType(contentType);
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching AI knowledge content by type:", error);
+      res.status(500).json({ message: "Failed to fetch AI knowledge content" });
+    }
+  });
+
+  app.post("/api/ai-knowledge", isAdmin, async (req, res) => {
+    try {
+      const { title, content, source, contentType, status } = req.body;
+      
+      // Validate required fields
+      if (!title || !content || !contentType) {
+        return res.status(400).json({ message: "Title, content, and contentType are required" });
+      }
+      
+      // Add the content
+      const createdBy = req.session.userId;
+      const newContent = await storage.createAiKnowledgeContent({
+        title,
+        content,
+        source: source || null,
+        contentType,
+        status: status || "active",
+        createdBy
+      });
+      
+      res.status(201).json(newContent);
+    } catch (error) {
+      console.error("Error creating AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to create AI knowledge content" });
+    }
+  });
+
+  app.put("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { title, content, source, contentType, status } = req.body;
+      
+      // Check if content exists
+      const existingContent = await storage.getAiKnowledgeContentById(id);
+      if (!existingContent) {
+        return res.status(404).json({ message: "AI knowledge content not found" });
+      }
+      
+      // Update the content
+      const updatedContent = await storage.updateAiKnowledgeContent(id, {
+        title,
+        content,
+        source,
+        contentType,
+        status
+      });
+      
+      res.json(updatedContent);
+    } catch (error) {
+      console.error("Error updating AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to update AI knowledge content" });
+    }
+  });
+
+  app.delete("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Check if content exists
+      const existingContent = await storage.getAiKnowledgeContentById(id);
+      if (!existingContent) {
+        return res.status(404).json({ message: "AI knowledge content not found" });
+      }
+      
+      // Delete the content
+      const success = await storage.deleteAiKnowledgeContent(id);
+      
+      if (success) {
+        res.status(204).send();
+      } else {
+        res.status(500).json({ message: "Failed to delete AI knowledge content" });
+      }
+    } catch (error) {
+      console.error("Error deleting AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to delete AI knowledge content" });
+    }
+  });
 
   // AI Training data routes (admin only)
   app.get("/api/admin/training-data", async (req, res) => {

@@ -5,7 +5,8 @@ import {
   chatMessages, type ChatMessage, type InsertChatMessage,
   aiTrainingData, type AiTrainingData, type InsertAiTrainingData,
   tokenPurchases, type TokenPurchase, type InsertTokenPurchase,
-  availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot
+  availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot,
+  aiKnowledgeContent, type AiKnowledgeContent, type InsertAiKnowledgeContent
 } from "@shared/schema";
 import { eq, and, asc, desc } from 'drizzle-orm';
 import { db } from './db';
@@ -53,6 +54,14 @@ export interface IStorage {
   createAvailableTimeSlot(slot: InsertAvailableTimeSlot): Promise<AvailableTimeSlot>;
   updateAvailableTimeSlot(id: number, slots: string[]): Promise<AvailableTimeSlot | undefined>;
   deleteAvailableTimeSlot(id: number): Promise<boolean>;
+  
+  // AI Knowledge Content operations
+  getAllAiKnowledgeContent(): Promise<AiKnowledgeContent[]>;
+  getAiKnowledgeContentById(id: number): Promise<AiKnowledgeContent | undefined>;
+  getAiKnowledgeContentByType(contentType: string): Promise<AiKnowledgeContent[]>;
+  createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent>;
+  updateAiKnowledgeContent(id: number, updates: Partial<AiKnowledgeContent>): Promise<AiKnowledgeContent | undefined>;
+  deleteAiKnowledgeContent(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -463,6 +472,81 @@ export class DatabaseStorage implements IStorage {
       return true;
     } catch (error) {
       console.error("Database error in deleteAvailableTimeSlot:", error);
+      return false;
+    }
+  }
+  
+  // AI Knowledge Content operations
+  async getAllAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
+    try {
+      return await db.select().from(aiKnowledgeContent)
+        .orderBy(desc(aiKnowledgeContent.createdAt));
+    } catch (error) {
+      console.error("Database error in getAllAiKnowledgeContent:", error);
+      return [];
+    }
+  }
+
+  async getAiKnowledgeContentById(id: number): Promise<AiKnowledgeContent | undefined> {
+    try {
+      const [content] = await db.select().from(aiKnowledgeContent)
+        .where(eq(aiKnowledgeContent.id, id));
+      return content;
+    } catch (error) {
+      console.error("Database error in getAiKnowledgeContentById:", error);
+      return undefined;
+    }
+  }
+
+  async getAiKnowledgeContentByType(contentType: string): Promise<AiKnowledgeContent[]> {
+    try {
+      return await db.select().from(aiKnowledgeContent)
+        .where(eq(aiKnowledgeContent.contentType, contentType))
+        .orderBy(desc(aiKnowledgeContent.createdAt));
+    } catch (error) {
+      console.error("Database error in getAiKnowledgeContentByType:", error);
+      return [];
+    }
+  }
+
+  async createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent> {
+    try {
+      const [createdContent] = await db.insert(aiKnowledgeContent)
+        .values(content)
+        .returning();
+      return createdContent;
+    } catch (error) {
+      console.error("Database error in createAiKnowledgeContent:", error);
+      throw error;
+    }
+  }
+
+  async updateAiKnowledgeContent(id: number, updates: Partial<AiKnowledgeContent>): Promise<AiKnowledgeContent | undefined> {
+    try {
+      // Make sure to update the updatedAt timestamp
+      const updatesWithTimestamp = {
+        ...updates,
+        updatedAt: new Date()
+      };
+      
+      const [updatedContent] = await db.update(aiKnowledgeContent)
+        .set(updatesWithTimestamp)
+        .where(eq(aiKnowledgeContent.id, id))
+        .returning();
+      return updatedContent;
+    } catch (error) {
+      console.error("Database error in updateAiKnowledgeContent:", error);
+      return undefined;
+    }
+  }
+
+  async deleteAiKnowledgeContent(id: number): Promise<boolean> {
+    try {
+      await db.delete(aiKnowledgeContent)
+        .where(eq(aiKnowledgeContent.id, id));
+      return true;
+    } catch (error) {
+      console.error("Database error in deleteAiKnowledgeContent:", error);
       return false;
     }
   }

@@ -157,3 +157,28 @@ export const insertAvailableTimeSlotsSchema = createInsertSchema(availableTimeSl
 
 export type AvailableTimeSlot = typeof availableTimeSlots.$inferSelect;
 export type InsertAvailableTimeSlot = z.infer<typeof insertAvailableTimeSlotsSchema>;
+
+// AI Knowledge Base content
+export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  source: text("source"), // URL, Google Drive link, etc.
+  contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', etc.
+  status: text("status").notNull().default("active"), // 'active', 'archived'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdBy: integer("created_by").notNull(), // Admin ID who created this content
+});
+
+export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeContent).pick({
+  title: true,
+  content: true,
+  source: true,
+  contentType: true,
+  status: true,
+  createdBy: true,
+});
+
+export type AiKnowledgeContent = typeof aiKnowledgeContent.$inferSelect;
+export type InsertAiKnowledgeContent = z.infer<typeof insertAiKnowledgeContentSchema>;
