@@ -102,6 +102,10 @@ export default function AdminDashboard() {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   
+  // Cancel session state
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
+  
   // Availability management state
   const [newDate, setNewDate] = useState("");
   const [newTimeSlot, setNewTimeSlot] = useState("");
@@ -316,6 +320,35 @@ export default function AdminDashboard() {
       });
     },
   });
+  
+  // Cancel a session with full refund (admin only)
+  const { mutate: cancelSession, isPending: isCancelling } = useMutation({
+    mutationFn: async ({ sessionId, reason }: { sessionId: number; reason: string }) => {
+      const response = await apiRequest("POST", "/api/admin/cancel-session", {
+        sessionId,
+        reason,
+        fullRefund: true  // Always provide full refund when admin cancels
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Session cancelled successfully with full refund.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sessions"] });
+      setIsCancelDialogOpen(false);
+      setCancellationReason("");
+      setSelectedSession(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to cancel session.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleUpdateMeetLink = () => {
     if (!selectedSession) return;
@@ -353,6 +386,30 @@ export default function AdminDashboard() {
     await fetchAllAvailableSlots();
     
     setIsRescheduleDialogOpen(true);
+  };
+  
+  const openCancelDialog = (session: Session) => {
+    setSelectedSession(session);
+    setCancellationReason("");
+    setIsCancelDialogOpen(true);
+  };
+  
+  const handleCancelSession = () => {
+    if (!selectedSession) return;
+    
+    if (!cancellationReason) {
+      toast({
+        title: "Error",
+        description: "Please provide a reason for cancellation.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    cancelSession({
+      sessionId: selectedSession.id,
+      reason: cancellationReason
+    });
   };
   
   const handleRescheduleSession = () => {
