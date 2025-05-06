@@ -1750,31 +1750,48 @@ export default function AdminDashboard() {
         
         {/* View Slots Dialog */}
         <Dialog open={viewSlotsDialogOpen} onOpenChange={setViewSlotsDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
-            <DialogHeader>
-              <DialogTitle>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white sm:max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="sticky top-0 bg-gray-900 z-10 pb-2 border-b border-gray-800">
+              <DialogTitle className="text-xl sm:text-2xl flex items-center gap-2">
+                <Clock className="h-5 w-5 text-green-500" />
                 Available Time Slots
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-gray-400">
                 {selectedSlotDate && (
                   <span>Time slots for {formatInIST(selectedSlotDate, 'EEEE, MMMM d, yyyy')}</span>
                 )}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              {selectedSlotDate && availableSlotsData && (
-                <div>
-                  {availableSlotsData.map((slot: AvailableTimeSlot) => {
-                    // Check if this is the selected date
-                    if (formatInIST(selectedSlotDate, 'yyyy-MM-dd') === slot.date) {
-                      return (
-                        <div key={slot.id} className="space-y-3">
-                          <h3 className="text-lg font-medium">Time Slots</h3>
-                          
-                          {/* Available and booked slots */}
-                          {slot.slotsWithStatus && slot.slotsWithStatus.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                              {slot.slotsWithStatus.map((timeSlot, idx) => {
+            
+            <div className="space-y-6 py-4 overflow-y-auto custom-scrollbar">
+              {selectedSlotDate && availableSlotsData ? (
+                <>
+                  {availableSlotsData
+                    .filter((slot: AvailableTimeSlot) => formatInIST(selectedSlotDate, 'yyyy-MM-dd') === slot.date)
+                    .map((slot: AvailableTimeSlot) => (
+                      <div key={slot.id} className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-medium flex items-center gap-2">
+                            <span>Time Slots</span>
+                            {/* Availability summary */}
+                            {slot.slotsWithStatus && (
+                              <Badge variant="outline" className="bg-gray-800 ml-2 whitespace-nowrap">
+                                <span className="text-green-400">{slot.slotsWithStatus.filter(s => !s.isBooked).length}</span>
+                                <span className="mx-1">/</span>
+                                <span>{slot.slotsWithStatus.length}</span>
+                                <span className="ml-1">Available</span>
+                              </Badge>
+                            )}
+                          </h3>
+                        </div>
+                        
+                        {/* Available and booked slots */}
+                        {slot.slotsWithStatus && slot.slotsWithStatus.length > 0 ? (
+                          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {slot.slotsWithStatus
+                              // Sort time slots chronologically
+                              .sort((a, b) => a.time.localeCompare(b.time))
+                              .map((timeSlot, idx) => {
                                 const isBooked = timeSlot.isBooked;
                                 const session = sessions.find(s => 
                                   formatInIST(new Date(s.date), 'yyyy-MM-dd') === slot.date && 
@@ -1786,48 +1803,70 @@ export default function AdminDashboard() {
                                     key={idx} 
                                     className={`p-3 rounded-md flex flex-col ${
                                       isBooked 
-                                        ? 'bg-red-900/30 border border-red-800' 
-                                        : 'bg-green-900/30 border border-green-800'
-                                    }`}
+                                        ? 'bg-red-900/30 border border-red-800 shadow-sm shadow-red-900/30' 
+                                        : 'bg-green-900/30 border border-green-800 shadow-sm shadow-green-900/30'
+                                    } transition-all hover:shadow-md hover:scale-[1.02] duration-200`}
                                   >
-                                    <div className="flex items-center">
+                                    <div className="flex items-center justify-between">
                                       <span className="text-lg font-medium">{timeSlot.time}</span>
-                                      <span className={`ml-auto ${
-                                        isBooked ? 'text-red-400' : 'text-green-400'
+                                      <Badge variant={isBooked ? "destructive" : "success"} className={`${
+                                        isBooked 
+                                          ? 'bg-red-900/80 hover:bg-red-800 text-white' 
+                                          : ''
                                       }`}>
                                         {isBooked ? 'Booked' : 'Available'}
-                                      </span>
+                                      </Badge>
                                     </div>
                                     
                                     {/* If booked, show session details */}
                                     {isBooked && session && (
-                                      <div className="mt-2 text-sm border-t border-red-800 pt-2">
-                                        <p><span className="text-gray-400">Student:</span> {session.studentName}</p>
-                                        <p><span className="text-gray-400">Topic:</span> {session.topic}</p>
-                                        <p><span className="text-gray-400">Duration:</span> {session.duration} min</p>
-                                        <p><span className="text-gray-400">Status:</span> {session.status}</p>
+                                      <div className="mt-3 text-sm border-t border-red-800/50 pt-2 space-y-1">
+                                        <div className="flex items-start">
+                                          <span className="text-gray-400 w-16 flex-shrink-0">Student:</span> 
+                                          <span className="font-medium">{session.studentName}</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                          <span className="text-gray-400 w-16 flex-shrink-0">Topic:</span> 
+                                          <span className="truncate" title={session.topic}>{session.topic}</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                          <span className="text-gray-400 w-16 flex-shrink-0">Duration:</span> 
+                                          <span>{session.duration} min</span>
+                                        </div>
+                                        <div className="flex items-start">
+                                          <span className="text-gray-400 w-16 flex-shrink-0">Status:</span> 
+                                          <Badge variant="outline" className="capitalize bg-transparent border-gray-700">
+                                            {session.status}
+                                          </Badge>
+                                        </div>
                                       </div>
                                     )}
                                   </div>
                                 );
                               })}
-                            </div>
-                          ) : (
-                            <p>No time slots available for this date.</p>
-                          )}
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 border border-dashed border-gray-700 rounded-md">
+                            <Clock className="w-12 h-12 mx-auto text-gray-600 mb-2" />
+                            <p className="text-gray-400">No time slots available for this date.</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full mb-4"></div>
+                  <p className="text-gray-400">Loading available time slots...</p>
                 </div>
               )}
             </div>
-            <DialogFooter>
+            
+            <DialogFooter className="sticky bottom-0 bg-gray-900 pt-2 border-t border-gray-800">
               <Button
                 variant="outline"
                 onClick={() => setViewSlotsDialogOpen(false)}
-                className="border-gray-700 text-gray-300"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
               >
                 Close
               </Button>

@@ -8,6 +8,27 @@
     .xs\:grid-cols-3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+    .xs\:grid-cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  /* Custom scrollbar styles */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.7);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(55, 65, 81, 0.8);
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(75, 85, 99, 0.9);
   }
 }
 
