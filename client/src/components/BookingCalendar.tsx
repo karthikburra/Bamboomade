@@ -348,7 +348,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex items-center ml-2">
+                                <div className="flex items-center justify-end w-full">
                                   <span className="text-xs text-green-500">Available</span>
                                 </div>
                               </TooltipTrigger>
@@ -363,7 +363,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex items-center ml-2">
+                                <div className="flex items-center justify-end w-full">
                                   <span className="text-xs text-amber-500">{totalSlots - bookedSlots}/{totalSlots}</span>
                                 </div>
                               </TooltipTrigger>
@@ -378,7 +378,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="flex items-center ml-2">
+                                <div className="flex items-center justify-end w-full">
                                   <span className="text-xs text-red-500">Booked</span>
                                 </div>
                               </TooltipTrigger>
@@ -404,9 +404,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
           <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
             <PopoverTrigger asChild>
               <Button 
-                variant="ghost" 
+                variant="secondary" 
                 size="sm" 
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-xs"
               >
                 <CalendarIcon className="h-3 w-3 mr-1" /> View Calendar
               </Button>
@@ -483,14 +483,14 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                         props.selectedTime === time ? "font-medium" : ""
                       )}
                     >
-                      <div className="flex items-center">
-                        {time}
+                      <div className="flex justify-between items-center w-full">
+                        <span>{time}</span>
+                        {props.selectedTime === time && (
+                          <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                            Selected
+                          </span>
+                        )}
                       </div>
-                      {props.selectedTime === time && (
-                        <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
-                          Selected
-                        </span>
-                      )}
                     </SelectItem>
                   </div>
                 ))}
