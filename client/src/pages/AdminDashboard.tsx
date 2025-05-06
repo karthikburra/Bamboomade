@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -1213,6 +1214,20 @@ export default function AdminDashboard() {
                                       </Button>
                                     )}
                                     
+                                    {/* Cancel button for upcoming sessions */}
+                                    {session.status !== 'cancelled' && session.status !== 'completed' && (
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="whitespace-nowrap border-red-700 text-red-400 hover:bg-red-900/30 h-8 text-xs px-2 sm:text-sm sm:px-3 mt-1"
+                                        onClick={() => openCancelDialog(session)}
+                                      >
+                                        <X className="w-3 h-3 mr-1" />
+                                        <span className="hidden sm:inline">Cancel</span>
+                                        <span className="sm:hidden">Cancel</span>
+                                      </Button>
+                                    )}
+                                    
 
                                   </div>
                                 </TableCell>
@@ -1999,6 +2014,83 @@ export default function AdminDashboard() {
                 <>
                   <Save className="w-4 h-4 mr-2" /> 
                   Save Changes
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Session Dialog */}
+      <Dialog 
+        open={isCancelDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            // Reset state when closing the dialog
+            setCancellationReason("");
+          }
+          setIsCancelDialogOpen(open);
+        }}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white w-[95%] max-w-md mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg sm:text-xl text-red-500">Cancel Session</DialogTitle>
+            <DialogDescription>
+              {selectedSession ? (
+                <div className="mt-2 space-y-1 text-gray-300 text-sm">
+                  <p><span className="font-medium">Session:</span> #{selectedSession.id}</p>
+                  <p><span className="font-medium">Student:</span> {selectedSession.studentName}</p>
+                  <p><span className="font-medium">Date:</span> {selectedSession.formattedDate} at {selectedSession.formattedTime}</p>
+                  <p><span className="font-medium">Duration:</span> {selectedSession.duration} minutes</p>
+                </div>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-red-900/20 border border-red-800 rounded-md p-4">
+              <h4 className="text-sm font-medium text-red-400 mb-2">Important Information</h4>
+              <p className="text-sm text-gray-300">
+                Cancelling this session will automatically issue a <span className="font-medium text-white">full refund</span> to the student. 
+                The student will be notified about the cancellation via email.
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="cancellationReason" className="text-gray-300">
+                Provide reason for cancellation:
+              </Label>
+              <Textarea
+                id="cancellationReason"
+                className="bg-gray-800 border-gray-700 resize-none text-white"
+                placeholder="Reason for cancellation"
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCancelDialogOpen(false)}
+              className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            >
+              Keep Session
+            </Button>
+            <Button
+              onClick={handleCancelSession}
+              disabled={!cancellationReason || isCancelling}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isCancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel Session
                 </>
               )}
             </Button>
