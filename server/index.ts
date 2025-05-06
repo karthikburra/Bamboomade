@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeEmailService } from "./email-service";
+// Email service removed as requested
 import session from 'express-session';
 import path from 'path';
 
@@ -55,17 +55,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize email service if password is available
-  if (process.env.EMAIL_PASSWORD) {
-    const success = initializeEmailService();
-    if (success) {
-      log("Email service initialized successfully");
-    } else {
-      log("Failed to initialize email service");
-    }
-  } else {
-    log("Email password not found, email functionality will be limited to development mode");
-  }
+  // Email service initialization removed as requested
 
   const server = await registerRoutes(app);
 

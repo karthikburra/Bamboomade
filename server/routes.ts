@@ -6,15 +6,10 @@ import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.
 // PhonePe service removed
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 
-  sendBookingConfirmationEmail, 
-  initializeEmailService, 
   generateGoogleMeetLink, 
-  generateGoogleCalendarLink,
-  sendVerificationCodeEmail,
-  sendRescheduledSessionEmail,
-  sendCancellationEmail
+  generateGoogleCalendarLink
 } from "./email-service";
-import { initializeSheetsService, updateProjectGuidanceSession, addUserToSheet } from "./sheets-service";
+// Google Sheets integration removed as requested
 import { format, formatInTimeZone } from "date-fns-tz";
 import { addMinutes } from "date-fns";
 import { ZodError } from "zod";
@@ -1217,9 +1212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Project guidance session not found" });
       }
       
-      // Update Google Sheets with payment information (in the background)
-      updateProjectGuidanceSession(session, 'Test')
-        .catch(error => console.error("Failed to update Google Sheet for direct payment update:", error));
+      // Google Sheets integration removed as requested
       
       res.json(session);
     } catch (error) {
@@ -1477,50 +1470,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   // Update payment status in the database
                   await storage.updateProjectGuidancePayment(parseInt(sessionId), razorpay_payment_id);
                   
-                  // Send confirmation email with Google Meet link
-                  // Parse the session date
-                  let sessionDate: Date;
-                  try {
-                    sessionDate = new Date(session.date);
-                    
-                    // Check if the date is valid
-                    if (isNaN(sessionDate.getTime())) {
-                      throw new Error("Invalid session date format");
-                    }
-                  } catch (e) {
-                    console.error("Date parsing error in payment verification:", e);
-                    // Continue with a fallback date rather than failing completely
-                    sessionDate = new Date(); // Fallback to current date
-                  }
-                  
-                  console.log(`Attempting to send booking confirmation email for session ${sessionId} to ${session.email}`);
-                  try {
-                    const emailResult = await sendBookingConfirmationEmail({
-                      sessionId: session.id,
-                      studentName: session.studentName,
-                      studentEmail: session.email,
-                      sessionDate: sessionDate,
-                      sessionDuration: session.duration,
-                      sessionTopic: session.topic
-                    });
-                    
-                    console.log(`Payment confirmation email sent for session ${sessionId}, result:`, emailResult);
-                  } catch (innerEmailError) {
-                    console.error(`Failed to send confirmation email for session ${sessionId}:`, innerEmailError);
-                  }
-                  
-                  // Update Google Sheets with payment information
-                  try {
-                    await updateProjectGuidanceSession(session, 'Razorpay');
-                    console.log(`Google Sheets updated successfully with Razorpay payment for session ${sessionId}`);
-                  } catch (sheetsError) {
-                    console.error(`Failed to update Google Sheets with Razorpay payment for session ${sessionId}:`, sheetsError);
-                    // Continue with payment process even if sheets update fails
-                  }
+                  // Email confirmations and Google Sheets integration have been removed as requested
                 }
-              } catch (emailError) {
-                console.error("Failed to send confirmation email:", emailError);
-                // Continue processing even if email fails
+              } catch (error) {
+                console.error("Error updating payment status:", error);
+                // Continue processing even if there's an error
               }
             }
           }
