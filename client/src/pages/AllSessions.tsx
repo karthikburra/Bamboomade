@@ -632,6 +632,9 @@ export default function AllSessions() {
                                     <div className="space-y-4 py-4">
                                       <div className="flex flex-col space-y-1.5">
                                         <Label htmlFor="rescheduleDate">Select New Date</Label>
+                                        <p className="text-gray-400 text-xs mb-2">
+                                          Only dates with available time slots are selectable. Green dates indicate available slots.
+                                        </p>
                                         <div className="p-3 bg-gray-800 rounded-md border border-gray-700 flex justify-center max-w-full overflow-auto">
                                           <DayPicker
                                             mode="single"
@@ -639,14 +642,24 @@ export default function AllSessions() {
                                             onSelect={setSelectedDate}
                                             disabled={[
                                               { before: new Date() },
-                                              { dayOfWeek: [0, 6] } // Disable weekends
+                                              { dayOfWeek: [0, 6] }, // Disable weekends
+                                              (date) => {
+                                                // Disable dates that are not in availableDates
+                                                return !availableDates.some(availableDate => 
+                                                  availableDate.getFullYear() === date.getFullYear() &&
+                                                  availableDate.getMonth() === date.getMonth() &&
+                                                  availableDate.getDate() === date.getDate()
+                                                );
+                                              }
                                             ]}
                                             modifiers={{
                                               available: (date) => {
-                                                // Only show future dates that are weekdays and are at least a day away
-                                                const isWeekday = date.getDay() !== 0 && date.getDay() !== 6;
-                                                const isFuture = date > new Date();
-                                                return isWeekday && isFuture;
+                                                // Highlight dates that have available slots
+                                                return availableDates.some(availableDate => 
+                                                  availableDate.getFullYear() === date.getFullYear() &&
+                                                  availableDate.getMonth() === date.getMonth() &&
+                                                  availableDate.getDate() === date.getDate()
+                                                );
                                               }
                                             }}
                                             modifiersStyles={{
