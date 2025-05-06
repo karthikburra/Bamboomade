@@ -137,9 +137,9 @@ export async function processMessage(
     return { response, tokensUsed };
   } catch (error) {
     console.error("OpenAI API error:", error);
-    // Fallback to a simple response if the API fails
+    // Fallback to a more informative response if the API fails
     return { 
-      response: "I apologize, but I'm currently having trouble accessing my knowledge base. Please try again later.", 
+      response: "I apologize, but I'm currently having trouble accessing my knowledge base. The AI service will be available soon. For immediate assistance with your bamboo architecture questions, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.", 
       tokensUsed: 1 
     };
   }
@@ -225,9 +225,9 @@ export async function processMessageForTraining(message: string): Promise<string
   } catch (error) {
     console.error("Error processing WhatsApp message for training:", error);
     
-    // If it mentions bamboo, provide a basic response even if processing failed
+    // If it mentions bamboo, provide a more informative response even if processing failed
     if (message.toLowerCase().includes("bamboo")) {
-      return "I'm the BambooMade AI bot. I'm here to help with information about bamboo architecture, but I'm having trouble processing your request right now. Please try again later.";
+      return "I'm the BambooMade AI bot. I'm here to help with information about bamboo architecture, but I'm having trouble accessing my knowledge base right now. For immediate assistance, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.";
     }
     
     return null;
