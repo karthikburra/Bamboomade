@@ -45,7 +45,7 @@ const timeSlots = [
   "13:00", "14:00", "15:00", "16:00"
 ];
 
-// Define separate duration options for students and professionals (removed 90 minutes option)
+// Define separate duration options for students and professionals
 const studentDurations = [
   { value: 30, label: "30 minutes - ₹500" },
   { value: 60, label: "60 minutes - ₹800" }
@@ -85,7 +85,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   // Add state for popover open/close
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   
-  // Fetch available time slots from API with automatic refreshing
+  // Fetch available time slots from API with real-time updates
   const { data: availableSlots, isLoading: isLoadingSlots } = useQuery({
     queryKey: ["/api/available-slots"],
     queryFn: async () => {
@@ -115,12 +115,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         return { slots: [] }; // Return empty slots on error
       }
     },
-    // Auto-refresh options to keep available slots up-to-date
+    // Real-time refresh options
     refetchInterval: 30000, // Refresh every 30 seconds
-    refetchOnMount: true,   // Refresh when component mounts
-    refetchOnWindowFocus: true, // Refresh when user focuses window
-    refetchOnReconnect: true, // Refresh when reconnecting after connection loss
-    staleTime: 5 * 60 * 1000 // 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 5 * 60 * 1000 // Consider data stale after 5 minutes
   });
   
   // Get available time slot information for the selected date
@@ -161,7 +161,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     // Special cases for dates with known booking issues
     // May 11th has 9:00 AM booked
     if (formattedDate === "2025-05-11") {
-      slotsWithStatus = slotsWithStatus.map(slot => {
+      slotsWithStatus = slotsWithStatus.map((slot: TimeSlotWithStatus) => {
         if (slot.time === "09:00") {
           return { ...slot, isBooked: true };
         }
@@ -171,7 +171,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     
     // May 7th has 9:00 AM booked
     if (formattedDate === "2025-05-07") {
-      slotsWithStatus = slotsWithStatus.map(slot => {
+      slotsWithStatus = slotsWithStatus.map((slot: TimeSlotWithStatus) => {
         if (slot.time === "09:00") {
           console.log("Manually marking May 7th 9:00 AM as booked");
           return { ...slot, isBooked: true };
@@ -180,17 +180,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
       });
     }
     
-    // Make sure to check for booking status from the server data
-    // If we found matching slots for this date, we can trust slotsWithStatus 
-    // as it is properly sent from the server with accurate booking information
-    
     // Calculate which slots are available (not booked)
     const availableSlotsFiltered = slotsWithStatus
-      .filter(slot => !slot.isBooked)
-      .map(slot => slot.time);
+      .filter((slot: TimeSlotWithStatus) => !slot.isBooked)
+      .map((slot: TimeSlotWithStatus) => slot.time);
     
     // Calculate if all slots are booked
-    const allSlotsBooked = slotsWithStatus.every(slot => slot.isBooked);
+    const allSlotsBooked = slotsWithStatus.every((slot: TimeSlotWithStatus) => slot.isBooked);
     
     // Return complete slot information
     return {
@@ -219,20 +215,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   const availableTimeSlots = slotInfo.availableSlots;
   const slotsWithStatus = slotInfo.slotsWithStatus || [];
   
-  // Check if a specific time slot is booked
-  const isTimeSlotBooked = (time: string): boolean => {
-    if (!slotsWithStatus || slotsWithStatus.length === 0) return false;
-    const slot = slotsWithStatus.find(s => s.time === time);
-    const isBooked = slot ? slot.isBooked : false;
-    
-    // Log for debugging
-    if (isBooked) {
-      console.log(`Time slot ${time} is marked as booked`);
-    }
-    
-    return isBooked;
-  };
-  
   // Function to check if a date should be disabled or has special styling
   const isDateDisabled = (date: Date) => {
     // Disable dates in the past
@@ -254,7 +236,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         
         if (matchingSlot && matchingSlot.slots) {
           // Check if there are time slots other than 9:00 AM
-          const otherSlots = matchingSlot.slots.filter(slot => slot !== "09:00");
+          const otherSlots = matchingSlot.slots.filter((slot: string) => slot !== "09:00");
           if (otherSlots.length === 0) {
             console.log("Disabling May 11 as it only has the 9:00 AM slot which is booked");
             return true;
@@ -263,7 +245,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
           // If there are slotsWithStatus, check if all remaining slots are also booked
           if (matchingSlot.slotsWithStatus) {
             const availableNon9amSlots = matchingSlot.slotsWithStatus
-              .filter(slot => slot.time !== "09:00" && !slot.isBooked);
+              .filter((slot: TimeSlotWithStatus) => slot.time !== "09:00" && !slot.isBooked);
             
             if (availableNon9amSlots.length === 0) {
               console.log("Disabling May 11 as all non-9AM slots are also booked");
@@ -283,7 +265,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         
         if (matchingSlot && matchingSlot.slots) {
           // Check if there are time slots other than 9:00 AM
-          const otherSlots = matchingSlot.slots.filter(slot => slot !== "09:00");
+          const otherSlots = matchingSlot.slots.filter((slot: string) => slot !== "09:00");
           if (otherSlots.length === 0) {
             console.log("Disabling May 7 as it only has the 9:00 AM slot which is booked");
             return true;
@@ -291,7 +273,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
           
           // If we have slotsWithStatus, update them to mark 9:00 AM as booked
           if (matchingSlot.slotsWithStatus) {
-            const updatedSlotsWithStatus = matchingSlot.slotsWithStatus.map(slot => {
+            const updatedSlotsWithStatus = matchingSlot.slotsWithStatus.map((slot: TimeSlotWithStatus) => {
               if (slot.time === "09:00") {
                 return { ...slot, isBooked: true };
               }
@@ -300,7 +282,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
             
             // Check if all available non-9AM slots are also booked
             const availableNon9amSlots = updatedSlotsWithStatus
-              .filter(slot => slot.time !== "09:00" && !slot.isBooked);
+              .filter((slot: TimeSlotWithStatus) => slot.time !== "09:00" && !slot.isBooked);
             
             if (availableNon9amSlots.length === 0) {
               console.log("Disabling May 7 as all non-9AM slots are also booked");
@@ -553,14 +535,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               </SelectTrigger>
               <SelectContent>
                 {/* Show all times, with clear visual indicators for booked slots */}
-                {slotsWithStatus.map((slot) => {
+                {slotsWithStatus.map((slot: TimeSlotWithStatus) => {
                   const time = slot.time;
                   const isBooked = slot.isBooked;
-                  
-                  // Debug log for booked slots
-                  if (isBooked) {
-                    console.log(`Rendering time slot ${time} as BOOKED`);
-                  }
                   
                   return (
                     <div key={time} className="relative">
@@ -597,7 +574,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 })}
                 
                 {/* If there are available slots but no slotsWithStatus, show the original list */}
-                {slotsWithStatus.length === 0 && availableTimeSlots.map((time) => (
+                {slotsWithStatus.length === 0 && availableTimeSlots.map((time: string) => (
                   <div key={time} className="relative">
                     <SelectItem 
                       value={time}
@@ -621,7 +598,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 ))}
                 
                 {/* Show message if no time slots are available or all are booked */}
-                {(availableTimeSlots.length === 0 || (slotsWithStatus.length > 0 && slotsWithStatus.every(slot => slot.isBooked))) && !isLoadingSlots && (
+                {(availableTimeSlots.length === 0 || (slotsWithStatus.length > 0 && slotsWithStatus.every((slot: TimeSlotWithStatus) => slot.isBooked))) && !isLoadingSlots && (
                   <div className="px-2 py-4 text-center text-sm text-muted-foreground">
                     No available time slots for this date
                   </div>
@@ -652,7 +629,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               </SelectTrigger>
               <SelectContent>
                 {/* Use the appropriate durations list based on user type */}
-                {(isFullProps(props) && props.isStudent !== undefined ? 
+                {(props.isStudent !== undefined ? 
                   (props.isStudent ? studentDurations : professionalDurations) : 
                   studentDurations).map((duration) => (
                   <SelectItem key={duration.value} value={duration.value.toString()}>
