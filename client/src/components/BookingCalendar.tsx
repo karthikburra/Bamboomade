@@ -548,7 +548,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 <CalendarIcon className="h-3 w-3 mr-1" /> View Calendar
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -585,7 +585,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                   booked: "bg-red-100 text-red-800 hover:bg-red-100 focus:bg-red-100",
                   selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
                 }}
-                className="rounded-md border-gray-200 dark:border-gray-800 p-3"
+                className="rounded-md bg-gray-900 border-gray-700 text-white p-3"
               />
             </PopoverContent>
           </Popover>
@@ -606,10 +606,10 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               }}
               disabled={!selectedDate}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
                 <SelectValue placeholder="Select a time" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-gray-800 border-gray-700 text-white">
                 {/* Show all times, with clear visual indicators for booked slots */}
                 {slotsWithStatus.map((slot: TimeSlotWithStatus) => {
                   const time = slot.time;
@@ -700,10 +700,10 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               }}
               disabled={!selectedDate || !props.selectedTime}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-800 border-gray-700 text-gray-100">
                 <SelectValue placeholder="Select duration" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-gray-800 border-gray-700 text-white">
                 {/* Use the appropriate durations list based on user type */}
                 {(props.isStudent !== undefined ? 
                   (props.isStudent ? studentDurations : professionalDurations) : 

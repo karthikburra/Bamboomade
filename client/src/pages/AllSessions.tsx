@@ -827,7 +827,7 @@ export default function AllSessions() {
                                                   available: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700",
                                                   selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
                                                 }}
-                                                className="bg-gray-800 rounded-md text-white"
+                                                className="bg-gray-900 rounded-md text-white border-gray-700"
                                               />
                                             </PopoverContent>
                                           </Popover>
@@ -855,7 +855,7 @@ export default function AllSessions() {
                                                   <SelectItem 
                                                     key={time} 
                                                     value={time}
-                                                    className="text-white data-[highlighted]:bg-gray-700"
+                                                    className="text-white data-[highlighted]:bg-gray-700 hover:bg-gray-700"
                                                   >
                                                     {time}
                                                     {selectedTimeSlot === time && (
