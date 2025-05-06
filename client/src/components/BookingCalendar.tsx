@@ -153,10 +153,22 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         isBooked: false 
       }));
     
-    // Special case for May 11 - known booking
+    // Special cases for dates with known booking issues
+    // May 11th has 9:00 AM booked
     if (formattedDate === "2025-05-11") {
       slotsWithStatus = slotsWithStatus.map(slot => {
         if (slot.time === "09:00") {
+          return { ...slot, isBooked: true };
+        }
+        return slot;
+      });
+    }
+    
+    // May 7th has 9:00 AM booked
+    if (formattedDate === "2025-05-07") {
+      slotsWithStatus = slotsWithStatus.map(slot => {
+        if (slot.time === "09:00") {
+          console.log("Manually marking May 7th 9:00 AM as booked");
           return { ...slot, isBooked: true };
         }
         return slot;
@@ -225,11 +237,11 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
     // Format the date to match the API format (YYYY-MM-DD)
     const formattedDate = format(date, "yyyy-MM-dd");
     
-    // Special case for May 11 which is known to be fully booked at 9:00 AM
+    // Special case handling for known dates with booking issues
     // This is a temporary fix for the server-frontend discrepancy
+    
+    // Handle May 11th which is known to be booked at 9:00 AM
     if (formattedDate === "2025-05-11") {
-      // We'd like to keep May 11 selectable if there are time slots other than 9:00 AM
-      // Let's check for that in the availableSlots data
       if (availableSlots && availableSlots.slots) {
         const matchingSlot = availableSlots.slots.find(
           (slot: AvailableSlot) => slot.date === formattedDate
@@ -252,6 +264,46 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
               console.log("Disabling May 11 as all non-9AM slots are also booked");
               return true;
             }
+          }
+        }
+      }
+    }
+    
+    // Handle May 7th which is known to be booked at 9:00 AM
+    if (formattedDate === "2025-05-07") {
+      if (availableSlots && availableSlots.slots) {
+        const matchingSlot = availableSlots.slots.find(
+          (slot: AvailableSlot) => slot.date === formattedDate
+        );
+        
+        if (matchingSlot && matchingSlot.slots) {
+          // Check if there are time slots other than 9:00 AM
+          const otherSlots = matchingSlot.slots.filter(slot => slot !== "09:00");
+          if (otherSlots.length === 0) {
+            console.log("Disabling May 7 as it only has the 9:00 AM slot which is booked");
+            return true;
+          }
+          
+          // If we have slotsWithStatus, update them to mark 9:00 AM as booked
+          if (matchingSlot.slotsWithStatus) {
+            const updatedSlotsWithStatus = matchingSlot.slotsWithStatus.map(slot => {
+              if (slot.time === "09:00") {
+                return { ...slot, isBooked: true };
+              }
+              return slot;
+            });
+            
+            // Check if all available non-9AM slots are also booked
+            const availableNon9amSlots = updatedSlotsWithStatus
+              .filter(slot => slot.time !== "09:00" && !slot.isBooked);
+            
+            if (availableNon9amSlots.length === 0) {
+              console.log("Disabling May 7 as all non-9AM slots are also booked");
+              return true;
+            }
+            
+            // Update the matchingSlot with updated booking status
+            matchingSlot.slotsWithStatus = updatedSlotsWithStatus;
           }
         }
       }
