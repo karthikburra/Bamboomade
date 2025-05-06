@@ -113,8 +113,10 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       return false; // Skip invalid dates
     }
     
-    const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
-    const sessionTimeStr = format(sessionDate, "HH:mm");
+    // CRITICAL: Use formatInIST for consistent time zone handling
+    const sessionDateStr = formatInIST(sessionDate, "yyyy-MM-dd");
+    const sessionTimeStr = formatInIST(sessionDate, "HH:mm");
+    console.log(`Session ${session.id} UTC date: ${sessionDate.toISOString()} -> IST: ${sessionDateStr} ${sessionTimeStr}`);
     
     // First, check for exact time match
     if (sessionDateStr === targetDateStr && sessionTimeStr === targetTimeStr) {
@@ -513,8 +515,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if the new date is actually a change, to prevent unnecessary updates
       const currentSessionDate = new Date(session.date);
-      const currentSessionFormatted = format(currentSessionDate, "yyyy-MM-dd HH:mm");
-      const newSessionFormatted = format(parsedDate, "yyyy-MM-dd HH:mm");
+      // CRITICAL: Use formatInIST for consistent time zone handling
+      const currentSessionFormatted = formatInIST(currentSessionDate, "yyyy-MM-dd HH:mm");
+      const newSessionFormatted = formatInIST(parsedDate, "yyyy-MM-dd HH:mm");
+      console.log(`Comparing rescheduling dates - current: ${currentSessionDate.toISOString()} -> ${currentSessionFormatted}, new: ${parsedDate.toISOString()} -> ${newSessionFormatted}`);
       
       if (currentSessionFormatted === newSessionFormatted && 
           (!newDuration || newDuration === session.duration)) {
