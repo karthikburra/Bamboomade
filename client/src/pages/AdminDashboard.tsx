@@ -284,6 +284,36 @@ export default function AdminDashboard() {
       });
     }
   });
+  
+  // Add available dates mutation
+  const addAvailableDatesMutation = useMutation({
+    mutationFn: async (data: {
+      dates: string[],
+      timeSlots: string[]
+    }) => {
+      const response = await apiRequest("POST", "/api/available-slots", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/available-slots"] });
+      toast({
+        title: "Dates added successfully",
+        description: "The available dates have been added to the booking system."
+      });
+      setIsAddSlotDialogOpen(false);
+      setBulkMode(false);
+      setNewDate("");
+      setDateRange({ start: "", end: "" });
+      setSelectedSlots([]);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to add dates",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Filter function for sessions
   const applyFilters = (sessionsToFilter: Session[]) => {
@@ -1121,6 +1151,319 @@ export default function AdminDashboard() {
                     <X className="w-4 h-4 mr-2" /> Cancel Session
                   </>
                 )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Date Dialog with Multi-Date Selection */}
+        <Dialog open={isAddSlotDialogOpen} onOpenChange={setIsAddSlotDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Add Available Dates</DialogTitle>
+              <DialogDescription>
+                Select dates and time slots when you are available for project guidance sessions
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              {/* Selection Mode Toggle */}
+              <div className="flex items-center justify-between bg-gray-800 p-3 rounded-md">
+                <div>
+                  <h3 className="font-medium">Bulk Date Selection</h3>
+                  <p className="text-sm text-gray-400">Select multiple dates at once</p>
+                </div>
+                <Switch
+                  checked={bulkMode}
+                  onCheckedChange={setBulkMode}
+                />
+              </div>
+
+              {bulkMode ? (
+                /* Bulk Date Selection */
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Start Date */}
+                    <div>
+                      <Label htmlFor="start-date">Start Date</Label>
+                      <div ref={startDateRef} className="relative mt-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal bg-gray-800 border-gray-700"
+                          onClick={() => setStartPickerOpen(true)}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dateRange.start ? format(new Date(dateRange.start), "PPP") : "Select start date"}
+                        </Button>
+                        {startPickerOpen && (
+                          <div className="absolute z-10 top-full left-0 mt-1">
+                            <div className="bg-gray-900 border border-gray-700 rounded-md p-3 shadow-lg">
+                              <DayPicker
+                                mode="single"
+                                selected={dateRange.start ? new Date(dateRange.start) : undefined}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setDateRange({...dateRange, start: format(date, "yyyy-MM-dd")});
+                                    setStartPickerOpen(false);
+                                  }
+                                }}
+                                initialFocus
+                                className="border-gray-700"
+                                classNames={{
+                                  months: "flex flex-col space-y-4",
+                                  month: "space-y-4",
+                                  caption: "flex justify-center pt-1 relative items-center",
+                                  caption_label: "text-sm font-medium text-gray-300",
+                                  nav: "space-x-1 flex items-center",
+                                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-gray-300",
+                                  table: "w-full border-collapse space-y-1",
+                                  head_row: "flex",
+                                  head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                                  row: "flex w-full mt-2",
+                                  cell: "h-9 w-9 text-center text-sm relative p-0 rounded-md focus-within:relative focus-within:z-20",
+                                  day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md text-gray-300",
+                                  day_selected: "bg-blue-600 text-white hover:bg-blue-700",
+                                  day_today: "bg-gray-800 text-white",
+                                  day_outside: "text-gray-500 opacity-50",
+                                  day_disabled: "text-gray-500 opacity-50 line-through",
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* End Date */}
+                    <div>
+                      <Label htmlFor="end-date">End Date</Label>
+                      <div ref={endDateRef} className="relative mt-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal bg-gray-800 border-gray-700"
+                          onClick={() => setEndPickerOpen(true)}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dateRange.end ? format(new Date(dateRange.end), "PPP") : "Select end date"}
+                        </Button>
+                        {endPickerOpen && (
+                          <div className="absolute z-10 top-full left-0 mt-1">
+                            <div className="bg-gray-900 border border-gray-700 rounded-md p-3 shadow-lg">
+                              <DayPicker
+                                mode="single"
+                                selected={dateRange.end ? new Date(dateRange.end) : undefined}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setDateRange({...dateRange, end: format(date, "yyyy-MM-dd")});
+                                    setEndPickerOpen(false);
+                                  }
+                                }}
+                                initialFocus
+                                className="border-gray-700"
+                                classNames={{
+                                  months: "flex flex-col space-y-4",
+                                  month: "space-y-4",
+                                  caption: "flex justify-center pt-1 relative items-center",
+                                  caption_label: "text-sm font-medium text-gray-300",
+                                  nav: "space-x-1 flex items-center",
+                                  nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-gray-300",
+                                  table: "w-full border-collapse space-y-1",
+                                  head_row: "flex",
+                                  head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                                  row: "flex w-full mt-2",
+                                  cell: "h-9 w-9 text-center text-sm relative p-0 rounded-md focus-within:relative focus-within:z-20",
+                                  day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md text-gray-300",
+                                  day_selected: "bg-blue-600 text-white hover:bg-blue-700",
+                                  day_today: "bg-gray-800 text-white",
+                                  day_outside: "text-gray-500 opacity-50",
+                                  day_disabled: "text-gray-500 opacity-50 line-through",
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Day of week selectors */}
+                  <div>
+                    <Label>Select Days of Week</Label>
+                    <div className="grid grid-cols-7 gap-1 mt-2">
+                      {Object.entries({
+                        monday: "M",
+                        tuesday: "T",
+                        wednesday: "W",
+                        thursday: "T",
+                        friday: "F",
+                        saturday: "S",
+                        sunday: "S"
+                      }).map(([day, label]) => (
+                        <Button
+                          key={day}
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "h-10 px-0",
+                            selectedDays[day] 
+                              ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-600" 
+                              : "bg-gray-800 text-gray-400 hover:bg-gray-700 border-gray-700"
+                          )}
+                          onClick={() => setSelectedDays({
+                            ...selectedDays,
+                            [day]: !selectedDays[day]
+                          })}
+                        >
+                          {label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Single Date Selection */
+                <div>
+                  <Label htmlFor="single-date">Select Date</Label>
+                  <div className="mt-1">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal bg-gray-800 border-gray-700"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newDate ? format(new Date(newDate), "PPP") : "Select a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
+                        <DayPicker
+                          mode="single"
+                          selected={newDate ? new Date(newDate) : undefined}
+                          onSelect={(date) => date && setNewDate(format(date, "yyyy-MM-dd"))}
+                          initialFocus
+                          className="border-gray-700"
+                          classNames={{
+                            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                            month: "space-y-4",
+                            caption: "flex justify-center pt-1 relative items-center",
+                            caption_label: "text-sm font-medium text-gray-300",
+                            nav: "space-x-1 flex items-center",
+                            nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-gray-300",
+                            table: "w-full border-collapse space-y-1",
+                            head_row: "flex",
+                            head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                            row: "flex w-full mt-2",
+                            cell: "h-9 w-9 text-center text-sm relative p-0 rounded-md focus-within:relative focus-within:z-20",
+                            day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md text-gray-300",
+                            day_selected: "bg-blue-600 text-white hover:bg-blue-700",
+                            day_today: "bg-gray-800 text-white",
+                            day_outside: "text-gray-500 opacity-50",
+                            day_disabled: "text-gray-500 opacity-50 line-through",
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+              )}
+
+              {/* Time slot selection */}
+              <div>
+                <Label className="mb-2 block">Select Time Slots</Label>
+                <div className="flex flex-wrap gap-2">
+                  {timeSlotOptions.map((slot) => (
+                    <Button
+                      key={slot}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-10",
+                        selectedSlots.includes(slot)
+                          ? "bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700 border-gray-700"
+                      )}
+                      onClick={() => {
+                        if (selectedSlots.includes(slot)) {
+                          setSelectedSlots(selectedSlots.filter(s => s !== slot));
+                        } else {
+                          setSelectedSlots([...selectedSlots, slot]);
+                        }
+                      }}
+                    >
+                      {slot}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Selection summary */}
+              <div className="bg-gray-800 p-3 rounded-md space-y-2">
+                <h4 className="font-medium flex items-center">
+                  <Check className="w-4 h-4 mr-2 text-green-500" />
+                  Selection Summary
+                </h4>
+                <div className="space-y-2 text-sm">
+                  {bulkMode ? (
+                    <>
+                      <p>Date Range: {dateRange.start && dateRange.end ? (
+                        <span className="text-blue-400">
+                          {format(new Date(dateRange.start), "MMM d, yyyy")} to {format(new Date(dateRange.end), "MMM d, yyyy")}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">No date range selected</span>
+                      )}</p>
+                      <p>Selected Days: {Object.entries(selectedDays)
+                        .filter(([_, isSelected]) => isSelected)
+                        .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
+                        .join(", ") || <span className="text-gray-400">None</span>}
+                      </p>
+                    </>
+                  ) : (
+                    <p>Selected Date: {newDate ? (
+                      <span className="text-blue-400">{format(new Date(newDate), "MMM d, yyyy")}</span>
+                    ) : (
+                      <span className="text-gray-400">No date selected</span>
+                    )}</p>
+                  )}
+                  <p>Selected Time Slots: {selectedSlots.length > 0 ? (
+                    <span className="text-blue-400">{selectedSlots.sort().join(", ")}</span>
+                  ) : (
+                    <span className="text-gray-400">No time slots selected</span>
+                  )}</p>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAddSlotDialogOpen(false);
+                  setBulkMode(false);
+                  setNewDate("");
+                  setDateRange({ start: "", end: "" });
+                  setSelectedSlots([]);
+                }}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
+                disabled={
+                  selectedSlots.length === 0 || 
+                  (bulkMode ? (!dateRange.start || !dateRange.end || Object.values(selectedDays).every(v => !v)) : !newDate)
+                }
+                onClick={() => {
+                  // We'll implement this mutation in the next step
+                  toast({
+                    title: "Feature coming soon",
+                    description: "The ability to add dates will be implemented shortly",
+                  });
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Dates
               </Button>
             </DialogFooter>
           </DialogContent>
