@@ -30,7 +30,7 @@ const AIChat: React.FC = () => {
               Chat with our specialized bamboo architecture AI assistant to get expert guidance on sustainable bamboo construction and design.
             </p>
             <p className="mt-2 text-base text-primary-600 font-medium">
-              Try it now - first 3 questions free, no login required!
+              Try it now - first 5 questions free, then login to continue!
             </p>
           </div>
           

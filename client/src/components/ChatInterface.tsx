@@ -34,7 +34,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   
   // Number of free questions before showing login prompt
-  const FREE_QUESTION_LIMIT = 3;
+  const FREE_QUESTION_LIMIT = 5;
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: chatHistory } = useQuery({
@@ -109,7 +109,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
         const loginMessage: Message = {
           id: `login-prompt-${Date.now()}`,
           role: "assistant",
-          content: "You've reached your free question limit. Please consider creating an account to continue using BambooMade AI and save your conversation history.",
+          content: "You've reached your 5 free questions limit. To continue our conversation and access unlimited bamboo architecture assistance, please create a free account. This also allows you to save your chat history and access premium features. Click the Login or Register button below to continue.",
         };
         setMessages((prev) => [...prev, loginMessage]);
       }
@@ -207,18 +207,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                 <AlertTriangle className="h-4 w-4 text-primary-600" />
                 <AlertDescription className="text-sm text-primary-900">
                   <div className="flex flex-col space-y-2">
-                    <span>You've used your {FREE_QUESTION_LIMIT} free questions. Create an account to:</span>
+                    <span className="font-semibold">You've used all {FREE_QUESTION_LIMIT} free questions!</span>
+                    <p className="text-sm">Create a free account to continue learning about bamboo architecture and access:</p>
                     <ul className="list-disc pl-5 text-xs space-y-1">
-                      <li>Continue using BambooMade AI</li>
-                      <li>Save your chat history</li>
-                      <li>Get access to premium features</li>
+                      <li>Unlimited AI-guided bamboo architecture advice</li>
+                      <li>Personal chat history saved for future reference</li>
+                      <li>Advanced project guidance and design recommendations</li>
+                      <li>Early access to workshop information</li>
                     </ul>
                     <div className="flex gap-2 mt-2">
                       <Link href="/login">
                         <Button size="sm" variant="default" className="w-full">Login</Button>
                       </Link>
                       <Link href="/register">
-                        <Button size="sm" variant="outline" className="w-full">Register</Button>
+                        <Button size="sm" variant="outline" className="w-full">Register Free Account</Button>
                       </Link>
                     </div>
                   </div>
