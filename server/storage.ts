@@ -53,41 +53,383 @@ export interface IStorage {
   deleteAvailableTimeSlot(id: number): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private projects: Map<number, Project>;
-  private projectGuidances: Map<number, ProjectGuidance>;
-  private chatMessages: Map<number, ChatMessage>;
-  private aiTrainingData: Map<number, AiTrainingData>;
-  private tokenPurchases: Map<number, TokenPurchase>;
-  private availableTimeSlots: Map<number, AvailableTimeSlot>;
-  
-  private currentUserId: number;
-  private currentProjectId: number;
-  private currentProjectGuidanceId: number;
-  private currentChatMessageId: number;
-  private currentAiTrainingDataId: number;
-  private currentTokenPurchaseId: number;
-  private currentAvailableTimeSlotId: number;
+import { eq, and, asc, desc } from 'drizzle-orm';
+import { db } from './db';
 
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.users = new Map();
-    this.projects = new Map();
-    this.projectGuidances = new Map();
-    this.chatMessages = new Map();
-    this.aiTrainingData = new Map();
-    this.tokenPurchases = new Map();
-    this.availableTimeSlots = new Map();
-    
-    this.currentUserId = 1;
-    this.currentProjectId = 1;
-    this.currentProjectGuidanceId = 1;
-    this.currentChatMessageId = 1;
-    this.currentAiTrainingDataId = 1;
-    this.currentTokenPurchaseId = 1;
-    this.currentAvailableTimeSlotId = 1;
-    
-    this.seedData();
+    // Initialize database connection
+    console.log("Initialized database storage");
+  }
+  
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      return user;
+    } catch (error) {
+      console.error("Database error in getUser:", error);
+      return undefined;
+    }
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.username, username));
+      return user;
+    } catch (error) {
+      console.error("Database error in getUserByUsername:", error);
+      return undefined;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      return user;
+    } catch (error) {
+      console.error("Database error in getUserByEmail:", error);
+      return undefined;
+    }
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    try {
+      const [user] = await db.insert(users).values({
+        username: insertUser.username,
+        password: insertUser.password,
+        email: insertUser.email,
+        role: insertUser.role || 'user',
+        isAdmin: insertUser.role === 'admin'
+      }).returning();
+      return user;
+    } catch (error) {
+      console.error("Database error in createUser:", error);
+      throw error;
+    }
+  }
+
+  async updateUserTokens(userId: number, tokens: number): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({ tokens })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Database error in updateUserTokens:", error);
+      return undefined;
+    }
+  }
+  
+  async updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({ isAdmin })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Database error in updateUserAdminStatus:", error);
+      return undefined;
+    }
+  }
+  
+  // Project operations
+  async getAllProjects(): Promise<Project[]> {
+    try {
+      return await db.select().from(projects);
+    } catch (error) {
+      console.error("Database error in getAllProjects:", error);
+      return [];
+    }
+  }
+
+  async getProjectsByCategory(category: string): Promise<Project[]> {
+    try {
+      return await db.select().from(projects).where(eq(projects.category, category));
+    } catch (error) {
+      console.error("Database error in getProjectsByCategory:", error);
+      return [];
+    }
+  }
+
+  async getFeaturedProjects(): Promise<Project[]> {
+    try {
+      return await db.select().from(projects).where(eq(projects.featured, true));
+    } catch (error) {
+      console.error("Database error in getFeaturedProjects:", error);
+      return [];
+    }
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    try {
+      const [project] = await db.insert(projects).values(insertProject).returning();
+      return project;
+    } catch (error) {
+      console.error("Database error in createProject:", error);
+      throw error;
+    }
+  }
+  
+  // Project guidance operations
+  async getAllProjectGuidances(): Promise<ProjectGuidance[]> {
+    try {
+      return await db.select().from(projectGuidances);
+    } catch (error) {
+      console.error("Database error in getAllProjectGuidances:", error);
+      return [];
+    }
+  }
+
+  async getProjectGuidance(id: number): Promise<ProjectGuidance | undefined> {
+    try {
+      const [session] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
+      return session;
+    } catch (error) {
+      console.error("Database error in getProjectGuidance:", error);
+      return undefined;
+    }
+  }
+
+  async createProjectGuidance(insertSession: InsertProjectGuidance): Promise<ProjectGuidance> {
+    try {
+      const [session] = await db.insert(projectGuidances).values({
+        ...insertSession,
+        // Add default values for any fields not in the insert schema
+        status: "pending",
+        paymentConfirmed: false,
+        isStudent: true
+      }).returning();
+      return session;
+    } catch (error) {
+      console.error("Database error in createProjectGuidance:", error);
+      throw error;
+    }
+  }
+
+  async updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined> {
+    try {
+      const [updatedSession] = await db.update(projectGuidances)
+        .set({ 
+          paymentConfirmed: true, 
+          paymentId, 
+          amount: amount || null,
+          status: "active" 
+        })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateProjectGuidancePayment:", error);
+      return undefined;
+    }
+  }
+  
+  async updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined> {
+    try {
+      // First get the current session to preserve the original date if it exists
+      const [currentSession] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
+      if (!currentSession) return undefined;
+      
+      // Store the original date if this is the first time rescheduling
+      const originalDate = currentSession.originalDate || currentSession.date;
+      
+      const [updatedSession] = await db.update(projectGuidances)
+        .set({ 
+          date: newDate,
+          originalDate: originalDate,
+          duration: newDuration,
+          status: "rescheduled",
+          rescheduledBy,
+          rescheduledDate: new Date()
+        })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateProjectGuidanceSession:", error);
+      return undefined;
+    }
+  }
+  
+  async cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined> {
+    try {
+      const [updatedSession] = await db.update(projectGuidances)
+        .set({ 
+          status: "cancelled",
+          cancellationReason: reason,
+          cancellationDate: new Date(),
+          refundAmount,
+          refundPercentage
+        })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in cancelProjectGuidanceSession:", error);
+      return undefined;
+    }
+  }
+  
+  async updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined> {
+    try {
+      const [updatedSession] = await db.update(projectGuidances)
+        .set({ 
+          googleMeetLink,
+          status: "confirmed"
+        })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateProjectGuidanceMeetLink:", error);
+      return undefined;
+    }
+  }
+  
+  // Chat message operations
+  async getChatMessagesByUserId(userId: number): Promise<ChatMessage[]> {
+    try {
+      return await db.select()
+        .from(chatMessages)
+        .where(eq(chatMessages.userId, userId));
+    } catch (error) {
+      console.error("Database error in getChatMessagesByUserId:", error);
+      return [];
+    }
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    try {
+      const [createdMessage] = await db.insert(chatMessages)
+        .values(message)
+        .returning();
+      return createdMessage;
+    } catch (error) {
+      console.error("Database error in createChatMessage:", error);
+      throw error;
+    }
+  }
+  
+  // AI training data operations
+  async getAllAiTrainingData(): Promise<AiTrainingData[]> {
+    try {
+      return await db.select().from(aiTrainingData);
+    } catch (error) {
+      console.error("Database error in getAllAiTrainingData:", error);
+      return [];
+    }
+  }
+
+  async createAiTrainingData(data: InsertAiTrainingData): Promise<AiTrainingData> {
+    try {
+      const [trainingData] = await db.insert(aiTrainingData)
+        .values(data)
+        .returning();
+      return trainingData;
+    } catch (error) {
+      console.error("Database error in createAiTrainingData:", error);
+      throw error;
+    }
+  }
+  
+  // Token purchase operations
+  async getTokenPurchasesByUserId(userId: number): Promise<TokenPurchase[]> {
+    try {
+      return await db.select()
+        .from(tokenPurchases)
+        .where(eq(tokenPurchases.userId, userId));
+    } catch (error) {
+      console.error("Database error in getTokenPurchasesByUserId:", error);
+      return [];
+    }
+  }
+
+  async createTokenPurchase(purchase: InsertTokenPurchase): Promise<TokenPurchase> {
+    try {
+      const [tokenPurchase] = await db.insert(tokenPurchases)
+        .values(purchase)
+        .returning();
+      return tokenPurchase;
+    } catch (error) {
+      console.error("Database error in createTokenPurchase:", error);
+      throw error;
+    }
+  }
+  
+  // Available time slots operations
+  async getAllAvailableTimeSlots(): Promise<AvailableTimeSlot[]> {
+    try {
+      return await db.select().from(availableTimeSlots);
+    } catch (error) {
+      console.error("Database error in getAllAvailableTimeSlots:", error);
+      return [];
+    }
+  }
+
+  async getAvailableTimeSlotById(id: number): Promise<AvailableTimeSlot | undefined> {
+    try {
+      const [slot] = await db.select()
+        .from(availableTimeSlots)
+        .where(eq(availableTimeSlots.id, id));
+      return slot;
+    } catch (error) {
+      console.error("Database error in getAvailableTimeSlotById:", error);
+      return undefined;
+    }
+  }
+
+  async getAvailableTimeSlotByDate(date: string): Promise<AvailableTimeSlot | undefined> {
+    try {
+      const [slot] = await db.select()
+        .from(availableTimeSlots)
+        .where(eq(availableTimeSlots.date, date));
+      return slot;
+    } catch (error) {
+      console.error("Database error in getAvailableTimeSlotByDate:", error);
+      return undefined;
+    }
+  }
+
+  async createAvailableTimeSlot(slot: InsertAvailableTimeSlot): Promise<AvailableTimeSlot> {
+    try {
+      const [createdSlot] = await db.insert(availableTimeSlots)
+        .values(slot)
+        .returning();
+      return createdSlot;
+    } catch (error) {
+      console.error("Database error in createAvailableTimeSlot:", error);
+      throw error;
+    }
+  }
+
+  async updateAvailableTimeSlot(id: number, slots: string[]): Promise<AvailableTimeSlot | undefined> {
+    try {
+      const [updatedSlot] = await db.update(availableTimeSlots)
+        .set({ 
+          slots,
+          updatedAt: new Date()
+        })
+        .where(eq(availableTimeSlots.id, id))
+        .returning();
+      return updatedSlot;
+    } catch (error) {
+      console.error("Database error in updateAvailableTimeSlot:", error);
+      return undefined;
+    }
+  }
+
+  async deleteAvailableTimeSlot(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(availableTimeSlots)
+        .where(eq(availableTimeSlots.id, id));
+      return true;
+    } catch (error) {
+      console.error("Database error in deleteAvailableTimeSlot:", error);
+      return false;
+    }
   }
 
   private seedData() {
@@ -534,4 +876,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
