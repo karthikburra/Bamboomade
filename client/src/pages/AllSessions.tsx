@@ -680,9 +680,9 @@ export default function AllSessions() {
                                 <Dialog>
                                   <DialogTrigger asChild>
                                     <Button 
-                                      variant="outline" 
+                                      variant="secondary" 
                                       size="sm"
-                                      className="h-9 border-blue-700 text-blue-400 hover:bg-blue-900/30"
+                                      className="h-9 bg-blue-900/20 text-blue-400 hover:bg-blue-900/30"
                                       onClick={() => setSessionToReschedule(session)}
                                     >
                                       <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
@@ -915,9 +915,9 @@ export default function AllSessions() {
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button 
-                                variant="outline" 
+                                variant="secondary" 
                                 size="sm"
-                                className="h-9 border-red-700 text-red-400 hover:bg-red-900/30"
+                                className="h-9 bg-red-900/20 text-red-400 hover:bg-red-900/30"
                                 onClick={() => setSessionToCancel(session)}
                               >
                                 <XCircle className="h-3.5 w-3.5 mr-1.5" />
