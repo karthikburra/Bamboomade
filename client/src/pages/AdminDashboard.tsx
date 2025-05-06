@@ -1448,7 +1448,7 @@ export default function AdminDashboard() {
               </div>
               
               {/* Quick time slot buttons */}
-              <div className="flex flex-wrap gap-2 my-2">
+              <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 my-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -1492,14 +1492,14 @@ export default function AdminDashboard() {
               
               {selectedSlots.length > 0 ? (
                 <div className="mt-3 border border-gray-800 rounded-md p-3 bg-gray-800/50">
-                  <div className="flex flex-wrap gap-2 max-w-md">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
                     {selectedSlots.map((time) => (
                       <Badge 
                         key={time} 
                         variant="secondary"
                         className="bg-blue-900/30 text-blue-300 border-blue-800 flex items-center gap-1"
                       >
-                        <Clock className="w-3 h-3" /> 
+                        <Clock className="w-3 h-3 flex-shrink-0" /> 
                         {time}
                         <button 
                           onClick={() => removeTimeFromSelectedSlots(time)}
@@ -1577,22 +1577,22 @@ export default function AdminDashboard() {
             <div className="space-y-2">
               <Label htmlFor="editTime">Time Slots</Label>
               
-              <div className="flex flex-wrap gap-2 mt-1 mb-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5 sm:gap-2 mt-1 mb-4">
                 {timeSlotOptions.map((time) => (
                   <Badge 
                     key={time} 
                     variant={selectedSlots.includes(time) ? "default" : "outline"}
-                    className={`cursor-pointer px-3 py-1.5 ${
+                    className={`cursor-pointer px-2 sm:px-3 py-1.5 ${
                       selectedSlots.includes(time) 
                         ? "bg-blue-600 hover:bg-blue-700 text-white" 
                         : "bg-transparent hover:bg-blue-900/20 border-blue-800 text-blue-300"
-                    } flex items-center gap-1`}
+                    } flex items-center justify-center gap-1 text-xs sm:text-sm`}
                     onClick={() => toggleTimeSlot(time)}
                   >
                     {selectedSlots.includes(time) ? (
-                      <Check className="w-3 h-3" />
+                      <Check className="w-3 h-3 flex-shrink-0" />
                     ) : (
-                      <Clock className="w-3 h-3" />
+                      <Clock className="w-3 h-3 flex-shrink-0" />
                     )}
                     {time}
                   </Badge>
