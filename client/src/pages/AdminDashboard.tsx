@@ -1453,17 +1453,79 @@ export default function AdminDashboard() {
                 className="bg-blue-600 hover:bg-blue-700"
                 disabled={
                   selectedSlots.length === 0 || 
-                  (bulkMode ? (!dateRange.start || !dateRange.end || Object.values(selectedDays).every(v => !v)) : !newDate)
+                  (bulkMode ? (!dateRange.start || !dateRange.end || Object.values(selectedDays).every(v => !v)) : !newDate) ||
+                  addAvailableDatesMutation.isPending
                 }
                 onClick={() => {
-                  // We'll implement this mutation in the next step
-                  toast({
-                    title: "Feature coming soon",
-                    description: "The ability to add dates will be implemented shortly",
+                  // Calculate dates to add based on selection mode
+                  let datesToAdd: string[] = [];
+                  
+                  if (bulkMode) {
+                    // Generate dates in the range that match selected days of week
+                    if (dateRange.start && dateRange.end) {
+                      const start = new Date(dateRange.start);
+                      const end = new Date(dateRange.end);
+                      const current = new Date(start);
+                      
+                      // Map day names to JavaScript day numbers (0-6 where 0 is Sunday)
+                      const dayMap: {[key: string]: number} = {
+                        sunday: 0,
+                        monday: 1,
+                        tuesday: 2,
+                        wednesday: 3,
+                        thursday: 4,
+                        friday: 5,
+                        saturday: 6
+                      };
+                      
+                      // Get selected day numbers
+                      const selectedDayNumbers = Object.entries(selectedDays)
+                        .filter(([_, isSelected]) => isSelected)
+                        .map(([day]) => dayMap[day]);
+                      
+                      // Iterate through all dates in the range
+                      while (current <= end) {
+                        // Check if the current day of week is selected
+                        if (selectedDayNumbers.includes(current.getDay())) {
+                          datesToAdd.push(format(current, "yyyy-MM-dd"));
+                        }
+                        
+                        // Move to the next day
+                        current.setDate(current.getDate() + 1);
+                      }
+                    }
+                  } else {
+                    // Single date mode
+                    if (newDate) {
+                      datesToAdd = [newDate];
+                    }
+                  }
+                  
+                  if (datesToAdd.length === 0) {
+                    toast({
+                      title: "No dates selected",
+                      description: "Please select at least one date.",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  
+                  // Call the mutation with the dates and selected time slots
+                  addAvailableDatesMutation.mutate({
+                    dates: datesToAdd,
+                    timeSlots: selectedSlots
                   });
                 }}
               >
-                <Plus className="w-4 h-4 mr-2" /> Add Dates
+                {addAvailableDatesMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" /> Add Dates
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
