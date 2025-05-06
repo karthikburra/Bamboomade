@@ -115,13 +115,7 @@ const RazorpayPaymentForm = ({
           variant: 'default'
         });
         
-        // Redirect to payment success page if sessionId is available
-        if (sessionId) {
-          // Small delay to ensure toast is visible
-          setTimeout(() => {
-            window.location.href = `/payment-success?paymentId=${variables.razorpay_payment_id}&sessionId=${sessionId}`;
-          }, 1000);
-        }
+        // No redirect - success will be shown in the current page
       } else {
         onFailure('Payment verification failed');
         toast({

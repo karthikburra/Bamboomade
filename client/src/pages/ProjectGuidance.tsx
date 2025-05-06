@@ -380,12 +380,20 @@ function ProjectGuidance() {
     scrollToTop();
   };
   
-  const handlePaymentSuccess = (paymentId: string) => {
+  // Handle successful payment and set payment ID for displaying on the success page
+  const [paymentId, setPaymentId] = useState<string | null>(null);
+  
+  const handlePaymentSuccess = (receivedPaymentId: string) => {
     toast({
       title: "Payment Successful",
       description: "We will send your Google Meet link within 4 hours.",
     });
-    setStep(4); // Move to success step
+    
+    // Store the payment ID for display in success step
+    setPaymentId(receivedPaymentId);
+    
+    // Move to success step directly without page redirect
+    setStep(4);
   };
   
   const handlePaymentFailure = (error: string) => {
