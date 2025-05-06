@@ -86,7 +86,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   
   // Fetch available time slots from API with real-time updates
-  const { data: availableSlots, isLoading: isLoadingSlots } = useQuery({
+  const { 
+    data: availableSlots, 
+    isLoading: isLoadingSlots,
+    refetch: refetchAvailableSlots,
+    isFetching: isFetchingSlots 
+  } = useQuery({
     queryKey: ["/api/available-slots"],
     queryFn: async () => {
       try {
@@ -115,12 +120,14 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         return { slots: [] }; // Return empty slots on error
       }
     },
-    // Real-time refresh options
-    refetchInterval: 30000, // Refresh every 30 seconds
+    // Real-time refresh options - more aggressive to ensure immediate updates
+    refetchInterval: 10000, // Refresh every 10 seconds (was 30s)
+    refetchIntervalInBackground: true, // Keep refreshing even in background
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 5 * 60 * 1000 // Consider data stale after 5 minutes
+    staleTime: 0, // Always fetch fresh data (was 5 minutes)
+    cacheTime: 0, // Don't cache data between refetches
   });
   
   // Get available time slot information for the selected date
@@ -332,7 +339,23 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Select Date</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium">Select Date</h3>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetchAvailableSlots()}
+            disabled={isFetchingSlots}
+            className="flex items-center text-xs"
+          >
+            {isFetchingSlots ? (
+              <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5 mr-2" />
+            )}
+            Refresh
+          </Button>
+        </div>
         <Select
           value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
           onValueChange={(value) => {
