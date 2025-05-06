@@ -100,6 +100,7 @@ interface Session {
   calendarLink?: string | null;
   isRescheduled?: boolean;
   originalDate?: string | null;
+  isStudent?: boolean;
 }
 
 export default function AllSessions() {
@@ -164,7 +165,9 @@ export default function AllSessions() {
     // Student rates: ₹500 (30 mins) / ₹800 (60 mins)
     // Professional rates: ₹1000 (30 mins) / ₹1500 (60 mins)
     
-    const isStudent = session.studentName.toLowerCase().includes("student");
+    // Use the isStudent property from the session if available, otherwise fallback to checking the name
+    const isStudent = session.isStudent === true || 
+                     (session.isStudent === undefined && session.studentName.toLowerCase().includes("student"));
     
     if (session.duration === 30) {
       return isStudent ? 500 : 1000;
