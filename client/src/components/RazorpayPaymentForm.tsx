@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, CreditCard } from "lucide-react";
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from "@/lib/queryClient";
 
@@ -200,29 +200,21 @@ const RazorpayPaymentForm = ({
   return (
     <div className="flex flex-col items-center">
       <div className="w-full max-w-md p-6 rounded-lg bg-gray-900 shadow-md border border-green-800/30">
-        <h3 className="text-xl font-semibold mb-4 text-green-400">Secure Payment</h3>
-        <div className="space-y-4 mb-6">
-          <p className="flex justify-between">
-            <span className="text-gray-300">Amount:</span>
-            <span className="font-medium text-white">₹ {amount.toFixed(2)}</span>
-          </p>
-          <p className="flex justify-between">
-            <span className="text-gray-300">Order ID:</span>
-            <span className="font-medium text-gray-400 text-sm truncate max-w-[200px]">{orderId}</span>
-          </p>
-        </div>
         <Button 
           onClick={handlePayment} 
           disabled={isLoading || !scriptLoaded}
-          className="w-full bg-green-600 hover:bg-green-700"
+          className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-lg py-6 rounded-lg shadow-lg border border-green-500/30 transition-all duration-300 hover:scale-[1.02]"
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Processing Payment...
             </>
           ) : (
-            'Pay with Razorpay'
+            <>
+              <CreditCard className="mr-2 h-5 w-5" /> 
+              Pay ₹{amount.toFixed(2)} Now
+            </>
           )}
         </Button>
         <div className="mt-4 text-center text-xs text-gray-400">

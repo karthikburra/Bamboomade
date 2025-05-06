@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import RazorpayPaymentForm from "@/components/RazorpayPaymentForm";
@@ -23,76 +22,56 @@ const PaymentOptions = ({
   onSuccess,
   onFailure
 }: PaymentOptionsProps) => {
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-
-  const handleContinue = () => {
-    setShowPaymentForm(true);
-  };
-
-  const handleBack = () => {
-    setShowPaymentForm(false);
-  };
-
   // Generate a unique order ID that incorporates the session ID
   const orderId = `ORDER_${Date.now()}_${sessionId || 0}`;
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {!showPaymentForm ? (
-        <Card className="bg-gray-900 border-green-800/30 text-white">
-          <CardHeader>
-            <CardTitle className="text-xl text-green-400">Payment Information</CardTitle>
-            <CardDescription className="text-gray-400">
-              Proceed to pay securely with Razorpay
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 rounded-md border border-green-500 bg-green-900/20">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-700 p-2 rounded">
-                  <span className="font-bold text-white">Razorpay</span>
-                </div>
-                <span className="text-sm text-gray-300">Cards, UPI, Wallets, NetBanking</span>
-              </div>
+      <Card className="bg-gradient-to-br from-gray-900 to-gray-950 border-green-800/30 text-white mb-4 shadow-lg">
+        <CardHeader className="pb-2">
+          <div className="flex items-center">
+            <CreditCard className="h-5 w-5 text-green-400 mr-2" />
+            <CardTitle className="text-xl text-green-400">Payment Summary</CardTitle>
+          </div>
+          <CardDescription className="text-gray-400">
+            Review your order details
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-gray-800/60 rounded-md p-4 mb-4 border border-gray-700 shadow-inner">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-gray-300">Amount:</span>
+              <span className="font-bold text-green-400 text-xl">₹ {amount.toFixed(2)}</span>
             </div>
-            
-            <div className="mt-4 text-sm text-gray-400">
-              <p>• We accept all major credit/debit cards</p>
-              <p>• UPI payments from all apps</p>
-              <p>• Secure payment processing</p>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-gray-300">Order ID:</span>
+              <span className="font-medium text-gray-300 text-sm bg-gray-700/50 py-1 px-2 rounded">{orderId}</span>
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              onClick={handleContinue} 
-              className="w-full bg-green-600 hover:bg-green-700"
-            >
-              <CreditCard className="mr-2 h-4 w-4" /> Proceed to Payment
-            </Button>
-          </CardFooter>
-        </Card>
-      ) : (
-        <div>
-          <Button 
-            variant="outline" 
-            onClick={handleBack} 
-            className="mb-4 border-green-700 text-green-400 hover:bg-green-900/30"
-          >
-            ← Back to Payment Information
-          </Button>
-          
-          <RazorpayPaymentForm
-            amount={amount}
-            orderId={orderId}
-            sessionId={sessionId}
-            customerName={customerName}
-            customerEmail={customerEmail}
-            customerPhone={customerPhone}
-            onSuccess={onSuccess}
-            onFailure={onFailure}
-          />
-        </div>
-      )}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-300">Customer:</span>
+              <span className="font-medium text-gray-300 text-sm">{customerName}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center p-3 rounded-md border border-blue-600 bg-blue-900/20 mb-3">
+            <div className="bg-blue-700 p-1.5 rounded mr-2">
+              <span className="font-bold text-white text-sm">Razorpay</span>
+            </div>
+            <span className="text-sm text-gray-300">Cards, UPI, Wallets, NetBanking accepted</span>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <RazorpayPaymentForm
+        amount={amount}
+        orderId={orderId}
+        sessionId={sessionId}
+        customerName={customerName}
+        customerEmail={customerEmail}
+        customerPhone={customerPhone}
+        onSuccess={onSuccess}
+        onFailure={onFailure}
+      />
     </div>
   );
 };
