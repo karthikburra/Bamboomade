@@ -173,7 +173,17 @@ const Navbar: React.FC = () => {
                   
                   {/* Admin dashboard link removed */}
                   {user && (
-                    <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50">
+                    <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50 space-y-3">
+                      {/* View My Sessions link */}
+                      <ScrollLink
+                        href="/view-my-sessions"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
+                      >
+                        <MessageSquareText className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                        View My Sessions
+                      </ScrollLink>
+
                       {/* Token display removed */}
                       <Button 
                         variant="default" 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -84,6 +85,8 @@ export default function AllSessions() {
   const [copiedLinks, setCopiedLinks] = useState<{ [key: number]: boolean }>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location] = useLocation();
+  const isUserView = location === "/view-my-sessions";
   
   // Cancel session states
   const [sessionToCancel, setSessionToCancel] = useState<Session | null>(null);
@@ -291,16 +294,43 @@ export default function AllSessions() {
     fetchAllAvailableSlots();
   }, []);
   
-  // Check if email was passed as URL parameter
+  // Check if email was passed as URL parameter or if user is viewing their own sessions
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const email = params.get("email");
-    
-    if (email) {
-      setEmailFilter(email);
-      setIsFiltering(true);
+    // If coming from the user view route, automatically fetch user sessions
+    if (isUserView) {
+      // Get the user's email from authentication state
+      // We'll use an API call to get the current user's data
+      const fetchUserData = async () => {
+        try {
+          const response = await apiRequest("GET", "/api/auth/me");
+          const userData = await response.json();
+          
+          if (userData && userData.email) {
+            setEmailFilter(userData.email);
+            setIsFiltering(true);
+          } else {
+            // If not authenticated, redirect to login page
+            window.location.href = '/login';
+          }
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+          // If API call fails, user is likely not authenticated
+          window.location.href = '/login';
+        }
+      };
+      
+      fetchUserData();
+    } else {
+      // For the regular all-sessions page, check URL parameters
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get("email");
+      
+      if (email) {
+        setEmailFilter(email);
+        setIsFiltering(true);
+      }
     }
-  }, []);
+  }, [isUserView]);
   
   // Copy to clipboard function
   const copyToClipboard = (text: string | null | undefined, sessionId: number) => {
@@ -380,8 +410,8 @@ export default function AllSessions() {
   return (
     <div className="min-h-screen dark bg-gray-950 text-white pt-8 pb-12">
       <Helmet>
-        <title>Your Sessions | BambooMade</title>
-        <meta name="description" content="View your project guidance sessions" />
+        <title>{isUserView ? "My Sessions" : "All Sessions"} | BambooMade</title>
+        <meta name="description" content="View project guidance sessions" />
       </Helmet>
 
       <div className="container mx-auto px-4">
@@ -391,43 +421,47 @@ export default function AllSessions() {
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold">Your Project Guidance Sessions</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">
+            {isUserView ? "My Project Guidance Sessions" : "Project Guidance Sessions"}
+          </h1>
         </div>
         
-        {/* Email filter form */}
-        <Card className="mb-8 bg-gray-900 border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-lg">Find Your Sessions</CardTitle>
-            <CardDescription>
-              Enter your email address to see your booked sessions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex-1">
-                <Input
-                  type="email"
-                  placeholder="Enter your email address"
-                  value={emailFilter}
-                  onChange={(e) => setEmailFilter(e.target.value)}
-                  className="bg-gray-800 border-gray-700"
-                />
-              </div>
-              <Button 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => setIsFiltering(!!emailFilter)}
-                disabled={!emailFilter}
-              >
-                Find My Sessions
-              </Button>
-              <Link href="/project-guidance">
-                <Button variant="outline" className="border-green-600 text-green-500">
-                  Book a New Session
+        {/* Email filter form - only show on regular sessions page, not on user view */}
+        {!isUserView && (
+          <Card className="mb-8 bg-gray-900 border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-lg">Find Your Sessions</CardTitle>
+              <CardDescription>
+                Enter your email address to see your booked sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={emailFilter}
+                    onChange={(e) => setEmailFilter(e.target.value)}
+                    className="bg-gray-800 border-gray-700"
+                  />
+                </div>
+                <Button 
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => setIsFiltering(!!emailFilter)}
+                  disabled={!emailFilter}
+                >
+                  Find My Sessions
                 </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+                <Link href="/project-guidance">
+                  <Button variant="outline" className="border-green-600 text-green-500">
+                    Book a New Session
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         {/* Display when user has filtered by email */}
         {emailFilter && isFiltering && (
@@ -456,12 +490,14 @@ export default function AllSessions() {
           <Card className="bg-gray-900 border-gray-800">
             <CardHeader>
               <CardTitle>
-                {emailFilter && isFiltering ? "No Sessions Found" : "Enter Your Email"}
+                {emailFilter && isFiltering ? "No Sessions Found" : (isUserView ? "No Sessions Yet" : "Enter Your Email")}
               </CardTitle>
               <CardDescription>
                 {emailFilter && isFiltering 
                   ? `No project guidance sessions found for ${emailFilter}`
-                  : "Please enter your email address above to see your booked sessions"}
+                  : (isUserView 
+                     ? "You haven't booked any guidance sessions yet." 
+                     : "Please enter your email address above to see your booked sessions")}
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center py-8">
