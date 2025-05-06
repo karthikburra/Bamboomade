@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +29,7 @@ import {
   ExternalLink, RotateCcw, Copy, Check, Info, XCircle, AlertTriangle,
   RefreshCcw, MessageSquare, Clock8
 } from "lucide-react";
-import { Link } from "wouter";
+// Using Link from wouter
 import { 
   Tooltip,
   TooltipContent,
@@ -61,6 +61,19 @@ import { format, addDays, parseISO } from "date-fns";
 import { DayPicker } from "react-day-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Session {
   id: number;
@@ -672,68 +685,160 @@ export default function AllSessions() {
                                       <div className="flex flex-col space-y-1.5">
                                         <Label htmlFor="rescheduleDate">Select New Date</Label>
                                         <p className="text-gray-400 text-xs mb-2">
-                                          Only dates with available time slots are selectable. Green dates indicate available slots.
+                                          Only dates with available time slots are selectable.
                                         </p>
-                                        <div className="p-3 bg-gray-800 rounded-md border border-gray-700 flex justify-center max-w-full overflow-auto">
-                                          <DayPicker
-                                            mode="single"
-                                            selected={selectedDate}
-                                            onSelect={setSelectedDate}
-                                            disabled={[
-                                              { before: new Date() },
-                                              { dayOfWeek: [0, 6] }, // Disable weekends
-                                              (date) => {
-                                                // Disable dates that are not in availableDates
-                                                return !availableDates.some(availableDate => 
-                                                  availableDate.getFullYear() === date.getFullYear() &&
-                                                  availableDate.getMonth() === date.getMonth() &&
-                                                  availableDate.getDate() === date.getDate()
+                                        
+                                        {/* Date dropdown selector */}
+                                        <Select
+                                          value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
+                                          onValueChange={(value) => {
+                                            if (value) {
+                                              setSelectedDate(new Date(value));
+                                              // Reset time selection when date changes
+                                              setSelectedTimeSlot("");
+                                            } else {
+                                              setSelectedDate(undefined);
+                                            }
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-full">
+                                            <div className="flex items-center">
+                                              <Calendar className="mr-2 h-4 w-4" />
+                                              <SelectValue placeholder="Select a date" />
+                                            </div>
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {(() => {
+                                              // Generate available dates as options
+                                              const dateOptions = [];
+                                              const today = new Date();
+                                              today.setHours(0, 0, 0, 0);
+                                              
+                                              for (const availableDate of availableDates) {
+                                                const date = new Date(availableDate);
+                                                date.setHours(0, 0, 0, 0);
+                                                
+                                                // Format for display and value
+                                                const formattedDate = format(date, "yyyy-MM-dd");
+                                                const displayDate = format(date, "PPP");
+                                                
+                                                // Check if it's today
+                                                const isToday = date.getTime() === today.getTime();
+                                                
+                                                dateOptions.push(
+                                                  <SelectItem 
+                                                    key={formattedDate} 
+                                                    value={formattedDate}
+                                                    className={cn(
+                                                      "flex items-center",
+                                                      isToday && "font-bold"
+                                                    )}
+                                                  >
+                                                    <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                                                      {displayDate}{isToday ? " (Today)" : ""}
+                                                    </span>
+                                                  </SelectItem>
                                                 );
                                               }
-                                            ]}
-                                            modifiers={{
-                                              available: (date) => {
-                                                // Highlight dates that have available slots
-                                                return availableDates.some(availableDate => 
-                                                  availableDate.getFullYear() === date.getFullYear() &&
-                                                  availableDate.getMonth() === date.getMonth() &&
-                                                  availableDate.getDate() === date.getDate()
-                                                );
-                                              }
-                                            }}
-                                            modifiersStyles={{
-                                              available: { color: '#10b981', fontWeight: 'bold' }
-                                            }}
-                                            className="bg-gray-800 rounded-md text-white max-w-full sm:max-w-[300px]"
-                                          />
+                                              
+                                              return dateOptions;
+                                            })()}
+                                          </SelectContent>
+                                        </Select>
+                                        
+                                        {/* Optionally add a small calendar icon button to show the traditional calendar view */}
+                                        <div className="text-center mt-1">
+                                          <Popover>
+                                            <PopoverTrigger asChild>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                className="text-xs text-muted-foreground hover:text-foreground"
+                                              >
+                                                <Calendar className="h-3 w-3 mr-1" /> View Calendar
+                                              </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
+                                              <DayPicker
+                                                mode="single"
+                                                selected={selectedDate}
+                                                onSelect={setSelectedDate}
+                                                disabled={[
+                                                  { before: new Date() },
+                                                  { dayOfWeek: [0, 6] }, // Disable weekends
+                                                  (date) => {
+                                                    // Disable dates that are not in availableDates
+                                                    return !availableDates.some(availableDate => 
+                                                      availableDate.getFullYear() === date.getFullYear() &&
+                                                      availableDate.getMonth() === date.getMonth() &&
+                                                      availableDate.getDate() === date.getDate()
+                                                    );
+                                                  }
+                                                ]}
+                                                modifiers={{
+                                                  available: (date) => {
+                                                    // Highlight dates that have available slots
+                                                    return availableDates.some(availableDate => 
+                                                      availableDate.getFullYear() === date.getFullYear() &&
+                                                      availableDate.getMonth() === date.getMonth() &&
+                                                      availableDate.getDate() === date.getDate()
+                                                    );
+                                                  }
+                                                }}
+                                                modifiersClassNames={{
+                                                  available: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700",
+                                                  selected: "bg-green-600 text-white hover:bg-green-700 focus:bg-green-700"
+                                                }}
+                                                className="bg-gray-800 rounded-md text-white"
+                                              />
+                                            </PopoverContent>
+                                          </Popover>
                                         </div>
                                       </div>
                                       
                                       {selectedDate && (
                                         <div className="flex flex-col space-y-1.5">
                                           <Label htmlFor="rescheduleTime">Select New Time</Label>
-                                          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 w-full max-h-[150px] overflow-y-auto p-1">
-                                            {availableTimeSlots.length > 0 ? (
-                                              availableTimeSlots.map((slot, index) => (
-                                                <Button
-                                                  key={`${slot}-${index}`}
-                                                  type="button"
-                                                  size="sm"
-                                                  variant={selectedTimeSlot === slot ? "default" : "outline"}
-                                                  className={selectedTimeSlot === slot 
-                                                    ? "bg-green-600 hover:bg-green-700 text-white text-xs" 
-                                                    : "border-gray-700 text-gray-300 hover:bg-gray-800 text-xs"}
-                                                  onClick={() => setSelectedTimeSlot(slot)}
-                                                >
-                                                  {slot}
-                                                </Button>
-                                              ))
-                                            ) : (
-                                              <div className="text-gray-400 text-sm col-span-full text-center py-4">
-                                                No available time slots for this date. Please select another date.
-                                              </div>
-                                            )}
-                                          </div>
+                                          
+                                          {/* Time dropdown selector */}
+                                          <Select
+                                            value={selectedTimeSlot}
+                                            onValueChange={(time) => {
+                                              setSelectedTimeSlot(time);
+                                            }}
+                                            disabled={!selectedDate}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select a time" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {availableTimeSlots.length > 0 ? (
+                                                availableTimeSlots.map((time) => (
+                                                  <SelectItem 
+                                                    key={time} 
+                                                    value={time}
+                                                  >
+                                                    {time}
+                                                    {selectedTimeSlot === time && (
+                                                      <span className="ml-2 inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                                                        Selected
+                                                      </span>
+                                                    )}
+                                                  </SelectItem>
+                                                ))
+                                              ) : (
+                                                <SelectItem value="" disabled>
+                                                  No available time slots
+                                                </SelectItem>
+                                              )}
+                                            </SelectContent>
+                                          </Select>
+                                          
+                                          {availableTimeSlots.length === 0 && selectedDate && (
+                                            <p className="text-xs text-amber-600 mt-1">
+                                              No available time slots for this date. Please select another date.
+                                            </p>
+                                          )}
                                         </div>
                                       )}
                                       
