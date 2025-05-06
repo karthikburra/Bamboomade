@@ -195,6 +195,55 @@ const AIKnowledgeManagement: React.FC = () => {
   };
   
   // Filter content based on active tab
+  // Setup for Google Drive import form
+  const importForm = useForm<z.infer<typeof googleDriveImportSchema>>({
+    resolver: zodResolver(googleDriveImportSchema),
+    defaultValues: {
+      url: "",
+      title: "",
+      contentType: "document",
+      status: "active",
+    },
+  });
+  
+  // Mutation to extract content from Google Drive
+  const extractMutation = useMutation({
+    mutationFn: async (data: { url: string }) => {
+      const response = await apiRequest('POST', '/api/ai-knowledge/extract-from-drive', data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Content extracted",
+        description: "Successfully extracted content from Google Drive",
+      });
+      setImportedContent(data.contentPreview || "");
+      
+      // Pre-fill the add content form with the extracted content
+      form.setValue("content", data.contentPreview || "");
+      form.setValue("title", importForm.getValues().title);
+      form.setValue("contentType", importForm.getValues().contentType);
+      form.setValue("status", importForm.getValues().status);
+      form.setValue("source", importForm.getValues().url);
+      
+      // Close import dialog and open add dialog
+      setIsImportDialogOpen(false);
+      setIsAddDialogOpen(true);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: `Failed to extract content: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Handle form submission for importing from Google Drive
+  const onImport = (data: z.infer<typeof googleDriveImportSchema>) => {
+    extractMutation.mutate({ url: data.url });
+  };
+
   const filteredContent = knowledgeContent?.filter(item => {
     if (activeTab === "all") return true;
     return item.contentType === activeTab;
@@ -481,6 +530,88 @@ const AIKnowledgeManagement: React.FC = () => {
                 </Button>
                 <Button type="submit" disabled={addMutation.isPending}>
                   {addMutation.isPending ? "Adding..." : "Add Content"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Import from Google Drive Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Import from Google Drive</DialogTitle>
+            <DialogDescription>
+              Enter the Google Drive document URL to extract its content.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...importForm}>
+            <form onSubmit={importForm.handleSubmit(onImport)} className="space-y-4">
+              <FormField
+                control={importForm.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Google Drive URL</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://docs.google.com/document/d/..."
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Paste the shared link to your Google Drive document.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={importForm.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a title for this content" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={importForm.control}
+                name="contentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select content type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="document">Document</SelectItem>
+                        <SelectItem value="webpage">Web Page</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={extractMutation.isPending}>
+                  {extractMutation.isPending ? "Extracting..." : "Extract Content"}
                 </Button>
               </DialogFooter>
             </form>
