@@ -110,7 +110,7 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <div>
             <CardTitle className="text-xl text-green-600 dark:text-green-400">Payment Successful!</CardTitle>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Google Meet will be updated soon, please check your View My Session for updates
+              Google Meet link will be updated soon, please check your View My Session for updates
             </p>
           </div>
         </div>
