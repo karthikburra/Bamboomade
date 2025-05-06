@@ -2013,9 +2013,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create a map of all booked slots by date and time
       allSessions.forEach(session => {
+        // FIXED: Ensure we handle time zone conversion correctly
+        // The database stores dates in UTC, but we display in IST
+        // So we need to convert to IST before checking for conflicts
         const sessionDate = new Date(session.date);
-        const sessionDateStr = format(sessionDate, "yyyy-MM-dd");
-        const sessionTimeStr = format(sessionDate, "HH:mm");
+        
+        // Extract date parts in IST (Asia/Kolkata) timezone
+        // We need to use formatInTimeZone from date-fns-tz
+        // If date is "2025-05-15T14:30:00.000Z" (UTC), it may be the next day in IST
+        // First, ensure we're logging the original date for debugging
+        console.log(`DEBUG: Processing session ${session.id} with original UTC date: ${session.date}`);
+        
+        // Use the existing formatInIST helper for consistent timezone handling
+        const sessionDateStr = formatInIST(sessionDate, "yyyy-MM-dd");
+        const sessionTimeStr = formatInIST(sessionDate, "HH:mm");
+        
+        console.log(`DEBUG: After timezone conversion: date=${sessionDateStr}, time=${sessionTimeStr}`);
         
         // Add session to allSessionDetails for debugging regardless of status
         if (!allSessionDetails[sessionDateStr]) {
@@ -2024,7 +2037,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         allSessionDetails[sessionDateStr].push({
           sessionId: session.id,
           status: session.status || 'unknown',
-          time: sessionTimeStr
+          time: sessionTimeStr,
+          // Add original date string for debugging only
+          originalDateStr: String(session.date)
         });
         
         // Don't include cancelled sessions in booking conflicts
@@ -2035,8 +2050,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // If this is the session we're rescheduling, save its details but don't mark as booked
         if (sessionIdToExclude && session.id === sessionIdToExclude) {
-          excludedSessionDate = format(sessionDate, "yyyy-MM-dd");
-          excludedSessionTime = format(sessionDate, "HH:mm");
+          // FIXED: Use consistent time zone handling with formatInIST 
+          excludedSessionDate = formatInIST(sessionDate, "yyyy-MM-dd");
+          excludedSessionTime = formatInIST(sessionDate, "HH:mm");
           console.log(`Excluding session ${sessionIdToExclude} at ${excludedSessionDate} ${excludedSessionTime} from booking checks`);
           return; // Skip adding to booked slots
         }
