@@ -2085,21 +2085,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return; // Skip adding to booked slots
         }
         
-        // IMPROVED: Handle all non-cancelled status sessions, not just confirmed ones
-        // This ensures we catch pending, confirmed, and other statuses
+        // FIXED: Only mark sessions as booked if they are confirmed (paid)
+        // Pending sessions won't block bookings unless they are confirmed with payment
         if (session.status !== 'cancelled') {
           // Track in the appropriate map based on status
           const isConfirmed = session.paymentConfirmed || session.status === 'confirmed';
           const isPending = session.status === 'pending';
           
-          // Mark all non-cancelled sessions as booked
-          if (!bookedSlots[sessionDateStr]) {
-            bookedSlots[sessionDateStr] = [];
-          }
-          
-          // Add the booked time slot to the main bookedSlots map
-          if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
-            bookedSlots[sessionDateStr].push(sessionTimeStr);
+          // Only mark confirmed/paid sessions as booked
+          if (isConfirmed) {
+            if (!bookedSlots[sessionDateStr]) {
+              bookedSlots[sessionDateStr] = [];
+            }
+            
+            // Add the booked time slot to the main bookedSlots map
+            if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+              bookedSlots[sessionDateStr].push(sessionTimeStr);
+            }
           }
           
           // Also track pending sessions separately for debugging
@@ -2119,25 +2121,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             confirmedSessionCount++;
           }
           
-          // IMPROVED: Check if this is a half-hour booking and block the adjacent hours
-          // For example, a 13:30 booking conflicts with both 13:00 and 14:00 slots
-          const isHalfHourBooking = sessionTimeStr.endsWith(":30");
-          if (isHalfHourBooking) {
-            const hour = parseInt(sessionTimeStr.split(":")[0]);
-            
-            // Block the current hour (13:00) and next hour (14:00) for a 13:30 booking
-            const currentHour = `${hour.toString().padStart(2, '0')}:00`;
-            const nextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
-            
-            // Add conflicts for both adjacent full hours
-            if (!bookedSlots[sessionDateStr].includes(currentHour)) {
-              bookedSlots[sessionDateStr].push(currentHour);
-              console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${currentHour}`);
-            }
-            
-            if (!bookedSlots[sessionDateStr].includes(nextHour)) {
-              bookedSlots[sessionDateStr].push(nextHour);
-              console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${nextHour}`);
+          // IMPROVED: Only block adjacent hours for confirmed bookings with half-hour times
+          // For example, a confirmed 13:30 booking conflicts with both 13:00 and 14:00 slots
+          if (isConfirmed) {
+            const isHalfHourBooking = sessionTimeStr.endsWith(":30");
+            if (isHalfHourBooking) {
+              const hour = parseInt(sessionTimeStr.split(":")[0]);
+              
+              // Block the current hour (13:00) and next hour (14:00) for a 13:30 booking
+              const currentHour = `${hour.toString().padStart(2, '0')}:00`;
+              const nextHour = `${(hour + 1).toString().padStart(2, '0')}:00`;
+              
+              // Add conflicts for both adjacent full hours
+              if (!bookedSlots[sessionDateStr].includes(currentHour)) {
+                bookedSlots[sessionDateStr].push(currentHour);
+                console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${currentHour}`);
+              }
+              
+              if (!bookedSlots[sessionDateStr].includes(nextHour)) {
+                bookedSlots[sessionDateStr].push(nextHour);
+                console.log(`Half-hour booking at ${sessionTimeStr} is blocking full-hour slot at ${nextHour}`);
+              }
             }
           }
         }
@@ -2175,11 +2179,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             slot.date === excludedSessionDate && 
             timeSlot === excludedSessionTime;
           
-          // Check if slot is booked or pending due to exact match
-          const isExactTimeMatch = (
-            bookedTimesForDate.includes(timeSlot) || 
-            pendingTimesForDate.includes(timeSlot)
-          );
+          // FIXED: Only consider confirmed/paid sessions when checking for time slots
+          // Pending sessions are no longer blocking bookings
+          const isExactTimeMatch = bookedTimesForDate.includes(timeSlot);
           
           // IMPROVED: Check for half-hour bookings that would conflict with this full-hour slot
           // The logic is simpler now because we already marked half-hour bookings as conflicts
@@ -2196,12 +2198,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const previousHalfHour = `${(hour-1).toString().padStart(2, '0')}:30`;
           const nextHalfHour = `${hour.toString().padStart(2, '0')}:30`;
           
-          // Check for any conflicting half-hour bookings
+          // FIXED: Only check for half-hour conflicts from booked slots (which are already filtered to only include paid sessions)
+          // Pending sessions are no longer considered for conflicts 
           const isHalfHourConflict = (
             bookedTimesForDate.includes(previousHalfHour) || 
-            pendingTimesForDate.includes(previousHalfHour) ||
-            bookedTimesForDate.includes(nextHalfHour) || 
-            pendingTimesForDate.includes(nextHalfHour)
+            bookedTimesForDate.includes(nextHalfHour)
           );
           
           // If we have a conflict due to half-hour booking, log it for debugging
