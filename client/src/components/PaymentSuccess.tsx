@@ -109,6 +109,9 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-500" />
           <div>
             <CardTitle className="text-xl text-green-600 dark:text-green-400">Payment Successful!</CardTitle>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Google Meet will be updated soon, please check your View My Session for updates
+            </p>
           </div>
         </div>
       </CardHeader>
@@ -118,9 +121,6 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
           <>
             <div className="space-y-2">
               <h3 className="text-lg font-medium text-green-600 dark:text-green-400">Session Details</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                Will send you Google Meet link soon. You can check in "View My Session" page.
-              </p>
               <div className="space-y-1 text-sm">
                 <p className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Date:</span>
