@@ -41,7 +41,7 @@ import {
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
-  SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog
+  SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon
 } from "lucide-react";
 import {
   Select,
@@ -376,20 +376,74 @@ export default function AdminDashboard() {
                             />
                           </div>
                           <div className="w-full sm:w-auto">
-                            <Input
-                              placeholder="Filter by Date"
-                              value={dateFilter}
-                              onChange={(e) => setDateFilter(e.target.value)}
-                              className="bg-gray-800 border-gray-700 text-sm"
-                            />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal bg-gray-800 border-gray-700 text-sm",
+                                    !dateFilter && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {dateFilter ? dateFilter : "Filter by Date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 bg-gray-900 border-gray-700">
+                                <DayPicker
+                                  mode="single"
+                                  selected={dateFilter ? new Date(dateFilter) : undefined}
+                                  onSelect={(date) => setDateFilter(date ? format(date, "yyyy-MM-dd") : "")}
+                                  initialFocus
+                                  className="border-gray-700"
+                                  classNames={{
+                                    months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+                                    month: "space-y-4",
+                                    caption: "flex justify-center pt-1 relative items-center",
+                                    caption_label: "text-sm font-medium text-gray-300",
+                                    nav: "space-x-1 flex items-center",
+                                    nav_button: cn(
+                                      "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-gray-300"
+                                    ),
+                                    nav_button_previous: "absolute left-1",
+                                    nav_button_next: "absolute right-1",
+                                    table: "w-full border-collapse space-y-1",
+                                    head_row: "flex",
+                                    head_cell: "text-gray-400 rounded-md w-9 font-normal text-[0.8rem]",
+                                    row: "flex w-full mt-2",
+                                    cell: "h-9 w-9 text-center text-sm relative p-0 rounded-md focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-gray-800",
+                                    day: cn(
+                                      "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-md text-gray-300"
+                                    ),
+                                    day_selected:
+                                      "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                                    day_today: "bg-gray-800 text-accent-foreground",
+                                    day_outside: "text-gray-500 opacity-50",
+                                    day_disabled: "text-gray-500 opacity-50 line-through",
+                                    day_range_middle:
+                                      "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                                    day_hidden: "invisible",
+                                  }}
+                                />
+                              </PopoverContent>
+                            </Popover>
                           </div>
                           <div className="w-full sm:w-auto">
-                            <Input
-                              placeholder="Filter by Status"
+                            <Select
                               value={statusFilter}
-                              onChange={(e) => setStatusFilter(e.target.value)}
-                              className="bg-gray-800 border-gray-700 text-sm"
-                            />
+                              onValueChange={setStatusFilter}
+                            >
+                              <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-sm">
+                                <SelectValue placeholder="Filter by Status" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-900 border-gray-700">
+                                <SelectItem value="all">All Statuses</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="upcoming">Upcoming</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                                <SelectItem value="cancelled">Cancelled</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           {(emailFilter || dateFilter || statusFilter) && (
                             <Button 
