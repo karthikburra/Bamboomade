@@ -446,6 +446,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Development-only admin login endpoint (remove in production)
+  app.get("/api/auth/dev-admin-login", async (req, res) => {
+    try {
+      console.log("Development admin login");
+      
+      // Find or create the admin user
+      let user = await storage.getUserByEmail("info@bamboomade.in");
+      
+      if (!user) {
+        console.log("Dev login: Creating admin user");
+        user = await storage.createUser({
+          username: "admin",
+          password: await bcrypt.hash("bamboomade2023", 10),
+          email: "info@bamboomade.in",
+          role: "admin",
+          isAdmin: true
+        });
+      }
+      
+      // Set session variables
+      req.session.userId = user.id;
+      req.session.adminUser = {
+        email: "info@bamboomade.in",
+        isAdmin: true
+      };
+      
+      // Save session and respond
+      req.session.save((err) => {
+        if (err) {
+          console.error("Dev admin login: Error saving session:", err);
+          return res.status(500).json({ message: "Session save error" });
+        }
+        
+        console.log("Dev admin login successful");
+        res.json({ 
+          message: "Dev admin login successful",
+          email: "info@bamboomade.in",
+          isAdmin: true
+        });
+      });
+    } catch (error) {
+      console.error("Dev admin login error:", error);
+      res.status(500).json({ message: "Login failed", error: (error as Error).message });
+    }
+  });
+  
   // Admin session management routes
   app.get("/api/admin/sessions", isAdmin, async (req, res) => {
     try {
