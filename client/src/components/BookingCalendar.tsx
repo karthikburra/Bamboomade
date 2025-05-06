@@ -290,7 +290,6 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         >
           <SelectTrigger className="w-full">
             <div className="flex items-center">
-              <CalendarIcon className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Select a date" />
             </div>
           </SelectTrigger>
