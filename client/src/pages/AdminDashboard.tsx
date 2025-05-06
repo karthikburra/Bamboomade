@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { DayPicker, SelectSingleEventHandler } from "react-day-picker";
 import {
   Card,
   CardContent,
@@ -47,7 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays, addMonths, startOfMonth, endOfMonth, isSameMonth, getDay } from "date-fns";
 
 interface AvailableTimeSlot {
   id: number;
@@ -110,6 +111,22 @@ export default function AdminDashboard() {
     saturday: false,
     sunday: false,
   });
+  
+  // Calendar state
+  const [startDateMonth, setStartDateMonth] = useState<Date>(new Date());
+  const [endDateMonth, setEndDateMonth] = useState<Date>(new Date());
+  const [startPickerOpen, setStartPickerOpen] = useState<boolean>(false);
+  const [endPickerOpen, setEndPickerOpen] = useState<boolean>(false);
+  
+  // Fixed time slots for chips
+  const timeSlotOptions = useMemo(() => [
+    "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", 
+    "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
+  ], []);
+  
+  // References for calendar popups
+  const startDateRef = useRef<HTMLDivElement>(null);
+  const endDateRef = useRef<HTMLDivElement>(null);
   
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
@@ -449,6 +466,55 @@ export default function AdminDashboard() {
     
     return dateList;
   };
+  
+  // Handle date selection in calendar
+  const handleStartDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    const dateStr = date.toISOString().split('T')[0];
+    setDateRange(prev => ({ ...prev, start: dateStr }));
+    setStartPickerOpen(false);
+    
+    // If end date is before start date, update end date to match start date
+    if (dateRange.end && new Date(dateRange.end) < date) {
+      setDateRange(prev => ({ ...prev, end: dateStr }));
+    }
+  };
+  
+  const handleEndDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    const dateStr = date.toISOString().split('T')[0];
+    setDateRange(prev => ({ ...prev, end: dateStr }));
+    setEndPickerOpen(false);
+  };
+  
+  // Handle time slot selection by toggling
+  const toggleTimeSlot = (time: string) => {
+    if (selectedSlots.includes(time)) {
+      removeTimeFromSelectedSlots(time);
+    } else {
+      const uniqueSlots = Array.from(new Set([...selectedSlots, time]));
+      setSelectedSlots(uniqueSlots.sort());
+    }
+  };
+  
+  // Click outside handler for date pickers
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (startDateRef.current && !startDateRef.current.contains(event.target as Node)) {
+        setStartPickerOpen(false);
+      }
+      if (endDateRef.current && !endDateRef.current.contains(event.target as Node)) {
+        setEndPickerOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   
   // Handle bulk time slot creation
   const handleBulkTimeSlotCreation = async () => {

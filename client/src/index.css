@@ -2,6 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Day picker calendar styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: rgb(37 99 235);
+  --rdp-background-color: rgba(37, 99, 235, 0.2);
+  --rdp-accent-color-dark: rgb(37 99 235);
+  --rdp-background-color-dark: rgba(37, 99, 235, 0.2);
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 2px solid rgb(37 99 235);
+  margin: 1em;
+}
+
+.rdp-day_selected, 
+.rdp-day_selected:focus-visible, 
+.rdp-day_selected:hover {
+  background-color: var(--rdp-accent-color);
+  color: white;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: rgba(37, 99, 235, 0.1);
+}
+
+.rdp-months {
+  background-color: rgb(17 24 39);
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border: 1px solid rgb(31 41 55);
+}
+
+.rdp-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.5em;
+  text-align: left;
+}
+
+.rdp-caption_label {
+  color: white;
+  font-weight: 500;
+}
+
+.rdp-nav_button {
+  color: rgb(156 163 175);
+}
+
+.rdp-head_cell {
+  color: rgb(156 163 175);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.rdp-day {
+  color: white;
+  font-size: 0.875rem;
+}
+
+.rdp-day_outside {
+  color: rgb(75 85 99);
+}
+
 :root {
   /* Green palette for light mode */
   --background: 0 0% 100%;
