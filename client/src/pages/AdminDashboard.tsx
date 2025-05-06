@@ -295,6 +295,9 @@ export default function AdminDashboard() {
       setRescheduleDate("");
       setRescheduleTime("");
       setRescheduleDuration(0);
+      setSelectedRescheduleDate(undefined);
+      setAvailableTimeSlots([]);
+      setAvailableDates([]);
     },
     onError: (error) => {
       toast({
@@ -364,6 +367,17 @@ export default function AdminDashboard() {
       return;
     }
     
+    // Check if time slot is available (double-check)
+    if (!availableTimeSlots.includes(rescheduleTime)) {
+      toast({
+        title: "Error",
+        description: "The selected time slot is no longer available. Please choose another time.",
+        variant: "destructive",
+      });
+      fetchAvailableSlots(selectedRescheduleDate || new Date(rescheduleDate));
+      return;
+    }
+    
     // Combine date and time into a single ISO string
     const newDateTime = new Date(`${rescheduleDate}T${rescheduleTime}:00`);
     
@@ -372,6 +386,10 @@ export default function AdminDashboard() {
       newDate: newDateTime.toISOString(),
       newDuration: rescheduleDuration
     });
+    
+    // Reset the state
+    setSelectedRescheduleDate(undefined);
+    setAvailableTimeSlots([]);
   };
   
   // Fetch all available slots and dates
@@ -1172,7 +1190,18 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* Reschedule Session Dialog */}
-      <Dialog open={isRescheduleDialogOpen} onOpenChange={setIsRescheduleDialogOpen}>
+      <Dialog 
+        open={isRescheduleDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            // Reset state when closing the dialog
+            setSelectedRescheduleDate(undefined);
+            setAvailableTimeSlots([]);
+            setRescheduleDate("");
+            setRescheduleTime("");
+          }
+          setIsRescheduleDialogOpen(open);
+        }}>
         <DialogContent className="bg-gray-900 border-gray-800 text-white w-[95%] max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">Reschedule Session</DialogTitle>
@@ -1188,30 +1217,85 @@ export default function AdminDashboard() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
+            {/* Date Selection */}
             <div className="space-y-2">
-              <Label htmlFor="rescheduleDate">New Date</Label>
-              <Input
-                id="rescheduleDate"
-                type="date"
-                value={rescheduleDate}
-                onChange={(e) => setRescheduleDate(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white"
-                min={new Date().toISOString().split('T')[0]}
-              />
+              <Label>Select New Date</Label>
+              <div className="relative">
+                <div className="bg-gray-800 rounded-md p-2 border border-gray-700">
+                  {availableDates.length > 0 ? (
+                    <Select
+                      onValueChange={(dateStr) => {
+                        const selectedDate = new Date(dateStr);
+                        setSelectedRescheduleDate(selectedDate);
+                        setRescheduleDate(format(selectedDate, "yyyy-MM-dd"));
+                        fetchAvailableSlots(selectedDate);
+                      }}
+                    >
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectValue placeholder="Select available date" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700 text-white max-h-[300px]">
+                        {availableDates.map((date) => (
+                          <SelectItem 
+                            key={date.toISOString()} 
+                            value={date.toISOString()}
+                            className="cursor-pointer hover:bg-gray-700"
+                          >
+                            {format(date, "EEE, MMM d, yyyy")}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-center py-2 text-gray-400">
+                      <p>No available dates found</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             
+            {/* Time Selection */}
             <div className="space-y-2">
-              <Label htmlFor="rescheduleTime">New Time</Label>
-              <Input
-                id="rescheduleTime"
-                type="time"
-                value={rescheduleTime}
-                onChange={(e) => setRescheduleTime(e.target.value)}
-                className="bg-gray-800 border-gray-700 text-white"
-              />
+              <Label>Select New Time</Label>
+              <div className="bg-gray-800 rounded-md p-2 border border-gray-700">
+                {selectedRescheduleDate ? (
+                  availableTimeSlots.length > 0 ? (
+                    <Select 
+                      onValueChange={(time) => {
+                        setRescheduleTime(time);
+                      }}
+                    >
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectValue placeholder="Select available time" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700 text-white max-h-[300px]">
+                        {availableTimeSlots.map((time) => (
+                          <SelectItem 
+                            key={time} 
+                            value={time}
+                            className="cursor-pointer hover:bg-gray-700"
+                          >
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-center py-2 text-gray-400">
+                      <p>No available times for selected date</p>
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center py-2 text-gray-400">
+                    <p>Select a date first</p>
+                  </div>
+                )}
+              </div>
             </div>
             
+            {/* Duration Selection */}
             <div className="space-y-2">
               <Label htmlFor="rescheduleDuration">Duration (minutes)</Label>
               <Select 
@@ -1232,15 +1316,19 @@ export default function AdminDashboard() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsRescheduleDialogOpen(false)}
+              onClick={() => {
+                setIsRescheduleDialogOpen(false);
+                setSelectedRescheduleDate(undefined);
+                setAvailableTimeSlots([]);
+              }}
               className="border-gray-700 text-gray-300 hover:bg-gray-800"
             >
               Cancel
             </Button>
             <Button
               onClick={handleRescheduleSession}
-              disabled={isRescheduling}
-              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isRescheduling || !rescheduleDate || !rescheduleTime || !rescheduleDuration}
+              className="bg-green-600 hover:bg-green-700"
             >
               {isRescheduling ? (
                 <>
