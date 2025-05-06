@@ -20,7 +20,7 @@ const AIChatPrompt: React.FC = () => {
 
   return (
     <div className="fixed bottom-4 left-0 right-0 mx-auto w-full z-50 px-4">
-      <div className="bg-primary/90 border-2 border-primary/20 rounded-xl shadow-lg py-3 px-4 max-w-7xl mx-auto">
+      <div className="bg-zinc-900/95 border-2 border-primary/20 rounded-xl shadow-lg py-3 px-4 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:gap-4">
           <div className="flex items-center mb-2 md:mb-0 md:w-auto">
             <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-2">
@@ -70,21 +70,21 @@ const AIChatPrompt: React.FC = () => {
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              className="px-2 py-0.5 text-[10px] rounded-full border border-primary/20 bg-primary/5 text-white hover:bg-primary/10 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded-full border border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
               onClick={() => setQuestion("What are sustainable bamboo construction techniques?")}
             >
               Construction techniques
             </button>
             <button
               type="button"
-              className="px-2 py-0.5 text-[10px] rounded-full border border-primary/20 bg-primary/5 text-white hover:bg-primary/10 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded-full border border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
               onClick={() => setQuestion("Tell me about bamboo joinery methods")}
             >
               Joinery methods
             </button>
             <button
               type="button"
-              className="px-2 py-0.5 text-[10px] rounded-full border border-primary/20 bg-primary/5 text-white hover:bg-primary/10 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded-full border border-zinc-600 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
               onClick={() => setQuestion("What workshops do you offer?")}
             >
               Workshops
