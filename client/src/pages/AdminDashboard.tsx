@@ -794,11 +794,11 @@ export default function AdminDashboard() {
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
                                         <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
                                         <span className="truncate">
-                                          {session.formattedDate}
+                                          {format(new Date(session.date), 'MMM d, yyyy')}
                                         </span>
                                       </div>
                                       <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
-                                        <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {session.formattedTime}
+                                        <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {format(new Date(session.date), 'HH:mm')}
                                       </div>
                                     </div>
                                   </TableCell>
@@ -1031,7 +1031,7 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <p className="text-gray-400">Date & Time:</p>
-                    <p>{selectedSession?.formattedDate} at {selectedSession?.formattedTime}</p>
+                    <p>{selectedSession?.date ? format(new Date(selectedSession.date), "MMM d, yyyy") : ""} at {selectedSession?.date ? format(new Date(selectedSession.date), "HH:mm") : ""}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Topic:</p>
@@ -1098,7 +1098,7 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <p className="text-gray-400">Date & Time:</p>
-                    <p>{selectedSession?.formattedDate} at {selectedSession?.formattedTime}</p>
+                    <p>{selectedSession?.date ? format(new Date(selectedSession.date), "MMM d, yyyy") : ""} at {selectedSession?.date ? format(new Date(selectedSession.date), "HH:mm") : ""}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Topic:</p>
