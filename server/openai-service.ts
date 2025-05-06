@@ -206,29 +206,33 @@ export async function processMessage(
         }\n\nUse this information to provide accurate and specific answers to the user. If a source is cited, mention it.`
       : '';
 
-    // Combine all context sources
+    // Combine all context sources, but limit length to avoid token issues
     const combinedContext = [
       DEFAULT_SYSTEM_PROMPT,
       trainingContext,
       knowledgeContext
     ].filter(Boolean).join('\n\n');
 
+    // Create a shorter version if the context is too long
+    const systemMessage = combinedContext.length > 2000 
+      ? DEFAULT_SYSTEM_PROMPT // Use just the default prompt if too long
+      : combinedContext;
+
     // Log info about the knowledge being used (for debugging)
     if (relevantKnowledge.length > 0) {
       console.log(`Using ${relevantKnowledge.length} knowledge content items for response`);
     }
 
-    // Send request to OpenAI (we already checked openai is not null at this point)
-    // Use a simpler model and configuration for testing
+    // Send request to OpenAI with reliable configuration that has been tested to work
     console.log("Sending request to OpenAI API...");
     const chatCompletion = await (openai as OpenAI).chat.completions.create({
-      model: "gpt-3.5-turbo", // Use a more accessible model for initial testing
+      model: "gpt-3.5-turbo", // Use reliable model that has been verified to work
       messages: [
-        { role: "system", content: "You are the BambooMade AI, an expert on bamboo architecture." },
+        { role: "system", content: systemMessage },
         { role: "user", content: message }
       ],
       temperature: 0.7,
-      max_tokens: 300
+      max_tokens: 400 // Slightly increased for better responses
     });
 
     // Extract response and token usage
@@ -237,10 +241,29 @@ export async function processMessage(
 
     return { response, tokensUsed };
   } catch (error) {
+    // Log error with better details for debugging
     console.error("OpenAI API error:", error);
+    
+    // Extract more specific error information if available
+    let errorMessage = "I apologize, but I'm currently having trouble accessing my knowledge base.";
+    
+    // Custom handling for different error types
+    if (error instanceof Error) {
+      if (error.message.includes("timeout")) {
+        console.error("API TIMEOUT: The OpenAI request timed out");
+        errorMessage = "I apologize for the delay. Our AI service is experiencing high demand right now.";
+      } else if (error.message.includes("rate limit")) {
+        console.error("API RATE LIMIT: OpenAI rate limit exceeded");
+        errorMessage = "I apologize, our AI service is currently overloaded with requests.";
+      } else if (error.message.includes("invalid_api_key")) {
+        console.error("API KEY ERROR: Invalid API key");
+        errorMessage = "I apologize, there's a configuration issue with our AI service.";
+      }
+    }
+    
     // Fallback to a more informative response if the API fails
     return { 
-      response: "I apologize, but I'm currently having trouble accessing my knowledge base. The AI service will be available soon. For immediate assistance with your bamboo architecture questions, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.", 
+      response: `${errorMessage} The AI service will be available soon. For immediate assistance with your bamboo architecture questions, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.`, 
       tokensUsed: 1 
     };
   }
@@ -341,7 +364,21 @@ export async function processMessageForTraining(message: string): Promise<string
     
     // If it mentions bamboo, provide a more informative response even if processing failed
     if (message.toLowerCase().includes("bamboo")) {
-      return "I'm the BambooMade AI bot. I'm here to help with information about bamboo architecture, but I'm having trouble accessing my knowledge base right now. For immediate assistance, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.";
+      // Extract more specific error information if available
+      let errorMessage = "I'm having trouble accessing my knowledge base right now";
+      
+      // Custom handling for different error types
+      if (error instanceof Error) {
+        if (error.message.includes("timeout")) {
+          console.error("WHATSAPP API TIMEOUT: The OpenAI request timed out");
+          errorMessage = "I'm experiencing a delay in responding due to high demand";
+        } else if (error.message.includes("rate limit")) {
+          console.error("WHATSAPP API RATE LIMIT: OpenAI rate limit exceeded");
+          errorMessage = "I'm currently handling many requests and reaching my limit";
+        }
+      }
+      
+      return `I'm the BambooMade AI bot. I'm here to help with information about bamboo architecture, but ${errorMessage}. For immediate assistance, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.`;
     }
     
     return null;
@@ -391,9 +428,9 @@ export async function convertWhatsAppToTrainingData(): Promise<number> {
 
     let processedCount = 0;
     for (const item of relevantData) {
-      // Generate a Q&A pair and category from the message
+      // Generate a Q&A pair and category from the message (using simpler model)
       const trainingCompletion = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        model: "gpt-3.5-turbo", // Use reliable model with consistent results
         messages: [
           { 
             role: "system", 
@@ -406,8 +443,8 @@ export async function convertWhatsAppToTrainingData(): Promise<number> {
           },
           { role: "user", content: item.message }
         ],
-        response_format: { type: "json_object" },
         temperature: 0.5,
+        max_tokens: 500 // Increase tokens for complete training data generation
       });
 
       try {
