@@ -15,11 +15,20 @@ import {
   sendCancellationEmail
 } from "./email-service";
 import { initializeSheetsService, updateProjectGuidanceSession, addUserToSheet } from "./sheets-service";
-import { format, addMinutes } from "date-fns";
+import { format, formatInTimeZone } from "date-fns-tz";
+import { addMinutes } from "date-fns";
 import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
 import bcrypt from "bcrypt";
+
+// The time zone for India (IST)
+const TIMEZONE = 'Asia/Kolkata';
+
+// Helper function to format dates in IST
+function formatInIST(date: Date, formatStr: string): string {
+  return formatInTimeZone(date, TIMEZONE, formatStr);
+}
 
 // Import WhatsApp bot
 import whatsappBot from "./whatsapp-bot.js";
@@ -335,9 +344,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: session.email,
           phone: session.phone,
           date: session.date,
-          formattedDate: format(sessionDate, "MMMM d, yyyy"),
-          formattedTime: format(sessionDate, "h:mm a"),
-          formattedEndTime: format(sessionEndTime, "h:mm a"),
+          formattedDate: formatInIST(sessionDate, "MMMM d, yyyy"),
+          formattedTime: formatInIST(sessionDate, "h:mm a"),
+          formattedEndTime: formatInIST(sessionEndTime, "h:mm a"),
           duration: session.duration,
           topic: session.topic,
           notes: session.notes || '',
@@ -638,9 +647,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return {
           id: session.id,
           date: session.date,
-          formattedDate: format(sessionDate, "MMMM d, yyyy"),
-          formattedTime: format(sessionDate, "h:mm a"),
-          formattedEndTime: format(sessionEndTime, "h:mm a"),
+          formattedDate: formatInIST(sessionDate, "MMMM d, yyyy"),
+          formattedTime: formatInIST(sessionDate, "h:mm a"),
+          formattedEndTime: formatInIST(sessionEndTime, "h:mm a"),
           email: session.email,
           topic: session.topic,
           duration: session.duration,
@@ -650,7 +659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           googleMeetLink: googleMeetLink,
           calendarLink: calendarLink,
           isRescheduled: !!session.originalDate,
-          originalDate: session.originalDate ? format(new Date(session.originalDate), "MMMM d, yyyy") : null
+          originalDate: session.originalDate ? formatInIST(new Date(session.originalDate), "MMMM d, yyyy") : null
         };
       });
       
@@ -750,17 +759,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const sessionDate = new Date(session.date);
         return {
           id: session.id,
-          date: sessionDate.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          }),
-          time: sessionDate.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: true 
-          }),
+          date: formatInIST(sessionDate, 'EEEE, MMMM d, yyyy'),
+          time: formatInIST(sessionDate, 'h:mm a'),
           topic: session.topic,
           duration: session.duration,
           paymentStatus: session.paymentId ? 'Paid' : 'Pending',
