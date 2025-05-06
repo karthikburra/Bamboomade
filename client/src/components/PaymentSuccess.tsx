@@ -177,14 +177,22 @@ export default function PaymentSuccess({ paymentId, sessionId }: PaymentSuccessP
         )}
       </CardContent>
       
-      <CardFooter className="flex-col space-y-3">
+      <CardFooter className="flex justify-between space-x-3">
         <Button 
           variant="outline" 
-          className="w-full flex items-center border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+          className="flex-1 border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
           onClick={() => window.open(getCalendarLink(), '_blank')}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          Add to Google Calendar
+          Add to Calendar
+        </Button>
+        
+        <Button 
+          variant="default" 
+          className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+          onClick={() => window.location.href = "/"}
+        >
+          Return Home
         </Button>
       </CardFooter>
     </Card>
