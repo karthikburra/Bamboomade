@@ -28,7 +28,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       content: "Hello! I'm BambooMade AI, your expert on bamboo architecture and sustainable design. How can I assist you today?",
     },
   ]);
-  const [input, setInput] = useState("");
+  // Check if we have an initial question from the home page
+  const initialQuestion = typeof window !== 'undefined' ? sessionStorage.getItem("initialQuestion") || "" : "";
+  const [input, setInput] = useState(initialQuestion);
   const [isProcessing, setIsProcessing] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -69,6 +71,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  
+  // Submit initial question from homepage if available
+  useEffect(() => {
+    const initialQuestion = sessionStorage.getItem("initialQuestion");
+    if (initialQuestion && messages.length === 1 && !isProcessing) {
+      setInput(initialQuestion);
+      // Use setTimeout to ensure the input is set before submitting
+      const timer = setTimeout(() => {
+        if (!isProcessing) {
+          handleSendMessage();
+          // Clear from session storage to avoid resubmitting if user navigates back
+          sessionStorage.removeItem("initialQuestion");
+        }
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, isProcessing]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;

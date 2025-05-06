@@ -6,6 +6,7 @@ import CallToAction from "@/components/CallToAction";
 import TeamMembers from "@/components/TeamMembers";
 import WorkshopLocations from "@/components/WorkshopLocations";
 import MediumArticles from "@/components/MediumArticles";
+import AIChatPrompt from "@/components/AIChatPrompt";
 import { Helmet } from "react-helmet";
 
 const Home: React.FC = () => {
@@ -23,6 +24,7 @@ const Home: React.FC = () => {
       {/* <WorkshopLocations /> */}
       <TeamMembers />
       <CallToAction />
+      <AIChatPrompt />
     </>
   );
 };
