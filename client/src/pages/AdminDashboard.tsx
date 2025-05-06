@@ -856,7 +856,7 @@ export default function AdminDashboard() {
                                     variant="secondary"
                                     className="bg-blue-900/30 text-blue-300 border-blue-800 text-xs sm:text-sm"
                                   >
-                                    <Clock className="w-3 h-3 mr-1 hidden sm:inline" /> {time}
+                                    {time}
                                   </Badge>
                                 ))}
                               </div>
