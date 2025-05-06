@@ -1777,9 +1777,9 @@ export default function AdminDashboard() {
                             {slot.slotsWithStatus && (
                               <Badge variant="outline" className="bg-gray-800 ml-2 whitespace-nowrap">
                                 <span className="text-green-400">{slot.slotsWithStatus.filter(s => !s.isBooked).length}</span>
-                                <span className="mx-1">/</span>
-                                <span>{slot.slotsWithStatus.length}</span>
-                                <span className="ml-1">Available</span>
+                                <span className="mx-1 text-white">/</span>
+                                <span className="text-white">{slot.slotsWithStatus.length}</span>
+                                <span className="ml-1 text-white">Available</span>
                               </Badge>
                             )}
                           </h3>
@@ -1864,9 +1864,9 @@ export default function AdminDashboard() {
             
             <DialogFooter className="sticky bottom-0 bg-gray-900 pt-2 border-t border-gray-800">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => setViewSlotsDialogOpen(false)}
-                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                className="bg-gray-800 hover:bg-gray-700 text-white"
               >
                 Close
               </Button>
