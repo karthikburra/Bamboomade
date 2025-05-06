@@ -34,17 +34,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Label } from "../components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "../components/ui/popover";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
@@ -57,12 +57,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+} from "../components/ui/select";
+import { Switch } from "../components/ui/switch";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 
 
 interface TimeSlotWithStatus {
@@ -749,6 +749,7 @@ export default function AdminDashboard() {
                   <Button 
                     className="bg-blue-600 hover:bg-blue-700" 
                     size="sm"
+                    onClick={() => setIsAddSlotDialogOpen(true)}
                   >
                     <Plus className="w-4 h-4 mr-1" /> Add Date
                   </Button>
