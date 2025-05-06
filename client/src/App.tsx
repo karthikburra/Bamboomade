@@ -15,6 +15,7 @@ import AIChat from "@/pages/AIChat";
 import Admin from "@/pages/Admin";
 import Login from "@/pages/Login";
 import AdminLogin from "@/pages/AdminLogin";
+import DevAdminLogin from "@/pages/DevAdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AIKnowledgeManagement from "@/pages/AIKnowledgeManagement";
 import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/ai-knowledge-management" component={AIKnowledgeManagement} />
+      <Route path="/dev-admin-login" component={DevAdminLogin} />
       <Route path="/login" component={Login} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
       <Route path="/payment-success" component={PaymentSuccessPage} />
