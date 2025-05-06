@@ -7,7 +7,8 @@ import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 
   generateGoogleMeetLink, 
-  generateGoogleCalendarLink
+  generateGoogleCalendarLink,
+  sendVerificationCodeEmail
 } from "./email-service";
 // Google Sheets integration removed as requested
 import { format, formatInTimeZone } from "date-fns-tz";
@@ -1044,10 +1045,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In a real implementation, you would store this code with an expiry time
       // For simplicity in the demo, we'll just send it and validate in memory
       
-      // Email verification has been removed as requested
-      // For development purposes, we'll consider this step successful without sending an email
+      // Send the verification code email
+      console.log(`Sending verification code ${code} to ${email} for purpose: ${purpose}`);
+      const emailSuccess = await sendVerificationCodeEmail(
+        email,
+        code,
+        purpose === 'reschedule' ? 'reschedule' : 'access'
+      );
       
-      // Return success with the verification code (for demo purposes only)
+      if (!emailSuccess) {
+        console.error(`Failed to send verification email to ${email}`);
+      } else {
+        console.log(`Verification email sent successfully to ${email}`);
+      }
+      
+      // Return success with the verification code
       // In a production environment, never return the actual code to the client
       res.json({ 
         success: true, 
