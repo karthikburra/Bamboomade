@@ -1812,6 +1812,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to extract content from Google Drive" });
     }
   });
+  
+  // Export AI Knowledge Content as secure backup
+  app.get("/api/ai-knowledge/backup/export", isAdmin, async (req, res) => {
+    try {
+      const backupData = await storage.exportAiKnowledgeContentBackup();
+      
+      // Set appropriate headers for file download
+      res.setHeader('Content-Disposition', `attachment; filename=ai-knowledge-backup-${new Date().toISOString().slice(0, 10)}.json`);
+      res.setHeader('Content-Type', 'application/json');
+      
+      return res.status(200).json(backupData);
+    } catch (error) {
+      console.error("Error exporting AI knowledge content backup:", error);
+      return res.status(500).json({ 
+        message: "Failed to export backup", 
+        error: error.message 
+      });
+    }
+  });
+  
+  // Import AI Knowledge Content from secure backup
+  app.post("/api/ai-knowledge/backup/import", isAdmin, async (req, res) => {
+    try {
+      const backupData = req.body;
+      
+      // Validate the backup data structure
+      if (!backupData || !backupData.data || !Array.isArray(backupData.data) || 
+          !backupData.timestamp || !backupData.checksum) {
+        return res.status(400).json({ 
+          message: "Invalid backup data format. The backup should include data array, timestamp, and checksum." 
+        });
+      }
+      
+      const result = await storage.importAiKnowledgeContentBackup(backupData);
+      
+      return res.status(200).json({
+        message: "Backup imported successfully",
+        ...result
+      });
+    } catch (error) {
+      console.error("Error importing AI knowledge content backup:", error);
+      return res.status(500).json({ 
+        message: "Failed to import backup", 
+        error: error.message 
+      });
+    }
+  });
 
   // AI Training data routes (admin only)
   app.get("/api/admin/training-data", async (req, res) => {

@@ -21,7 +21,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCap
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Icons
-import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info } from 'lucide-react';
+import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon } from 'lucide-react';
 
 // Schema validation for AI knowledge content form
 const aiKnowledgeFormSchema = z.object({
@@ -63,9 +63,13 @@ const AIKnowledgeManagement: React.FC = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
   const [currentContent, setCurrentContent] = useState<AiKnowledgeContent | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [importedContent, setImportedContent] = useState<string>("");
+  const [backupFile, setBackupFile] = useState<File | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImportingBackup, setIsImportingBackup] = useState(false);
   
   // Form setup
   const form = useForm<z.infer<typeof aiKnowledgeFormSchema>>({
@@ -242,6 +246,106 @@ const AIKnowledgeManagement: React.FC = () => {
   // Handle form submission for importing from Google Drive
   const onImport = (data: z.infer<typeof googleDriveImportSchema>) => {
     extractMutation.mutate({ url: data.url });
+  };
+  
+  // Handle exporting AI knowledge content
+  const handleExportBackup = async () => {
+    try {
+      setIsExporting(true);
+      const response = await fetch('/api/ai-knowledge/backup/export');
+      
+      if (!response.ok) {
+        throw new Error('Failed to export backup');
+      }
+      
+      const data = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `ai-knowledge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      toast({
+        title: "Backup Exported",
+        description: "AI knowledge backup has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error exporting backup:', error);
+      toast({
+        title: "Export Failed",
+        description: `Failed to export backup: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
+  // Handle file input change for backup file
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setBackupFile(e.target.files[0]);
+    }
+  };
+  
+  // Mutation to import backup
+  const importBackupMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest('POST', '/api/ai-knowledge/backup/import', data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Backup Imported",
+        description: `Successfully imported ${data.imported} items with ${data.errors} errors.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+      setIsRestoreDialogOpen(false);
+      setBackupFile(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Import Failed",
+        description: `Failed to import backup: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Handle importing backup
+  const handleImportBackup = async () => {
+    if (!backupFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a backup file to import.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsImportingBackup(true);
+      const fileContent = await backupFile.text();
+      const backupData = JSON.parse(fileContent);
+      
+      // Validate backup structure
+      if (!backupData || !backupData.data || !Array.isArray(backupData.data) || 
+          !backupData.timestamp || !backupData.checksum) {
+        throw new Error("Invalid backup format");
+      }
+      
+      importBackupMutation.mutate(backupData);
+    } catch (error) {
+      console.error('Error importing backup:', error);
+      toast({
+        title: "Import Failed",
+        description: `Failed to process backup file: ${error instanceof Error ? error.message : 'Invalid backup format'}`,
+        variant: "destructive",
+      });
+      setIsImportingBackup(false);
+    }
   };
 
   const filteredContent = knowledgeContent?.filter(item => {
