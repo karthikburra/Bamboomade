@@ -158,13 +158,13 @@ const Hero: React.FC = () => {
                 <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
-            <Link href="/gallery" className="w-full sm:w-auto">
+            <Link href="/our-works" className="w-full sm:w-auto">
               <Button
                 size="lg"
                 variant="secondary"
                 className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 bg-green-800/30 text-green-400 hover:bg-green-800/50 border border-green-700"
               >
-                Explore Our Projects
+                Explore Our Experience
                 <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
