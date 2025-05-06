@@ -18,6 +18,167 @@ import { z } from "zod";
 import admin from "firebase-admin";
 import bcrypt from "bcrypt";
 
+/**
+ * Parses a SQL-like query string into a structured object
+ * Example: "SELECT * FROM content WHERE contentType = 'webpage' ORDER BY createdAt DESC LIMIT 10"
+ */
+function parseSqlLikeQuery(query: string) {
+  // Create the result structure
+  const result = {
+    valid: true,
+    error: '',
+    select: '*',
+    from: 'content',
+    where: [] as Array<{field: string, operator: string, value: any}>,
+    orderBy: null as null | {field: string, direction: 'ASC' | 'DESC'},
+    limit: null as null | number
+  };
+  
+  try {
+    // Normalize query
+    query = query.trim();
+    const upperQuery = query.toUpperCase();
+    
+    // Basic validation - must start with SELECT
+    if (!upperQuery.startsWith('SELECT')) {
+      return { valid: false, error: 'Query must start with SELECT' };
+    }
+    
+    // Parse SELECT clause
+    let parts = upperQuery.split('FROM');
+    if (parts.length < 2) {
+      return { valid: false, error: 'Missing FROM clause' };
+    }
+    
+    const selectClause = parts[0].replace('SELECT', '').trim();
+    result.select = selectClause === '*' ? '*' : selectClause.split(',').map(s => s.trim());
+    
+    // The rest of the query
+    let remainingQuery = parts[1].trim();
+    
+    // We assume FROM is always "content" for our AI Knowledge base
+    result.from = 'content';
+    
+    // Parse WHERE clause if it exists
+    if (upperQuery.includes('WHERE')) {
+      parts = remainingQuery.split('WHERE');
+      if (parts.length < 2) {
+        return { valid: false, error: 'Invalid WHERE clause' };
+      }
+      
+      remainingQuery = parts[1].trim();
+      
+      // Further split by ORDER BY or LIMIT if they exist
+      let whereClause = remainingQuery;
+      if (upperQuery.includes('ORDER BY')) {
+        whereClause = remainingQuery.split('ORDER BY')[0].trim();
+      } else if (upperQuery.includes('LIMIT')) {
+        whereClause = remainingQuery.split('LIMIT')[0].trim();
+      }
+      
+      // Parse WHERE conditions (supports multiple conditions)
+      const conditions = whereClause.split('AND').map(s => s.trim());
+      result.where = conditions.map(condition => {
+        // Check for different operators
+        let operator = '=';
+        let parts: string[] = [];
+        
+        if (condition.includes('!=')) {
+          operator = '!=';
+          parts = condition.split('!=').map(s => s.trim());
+        } else if (condition.includes('>=')) {
+          operator = '>=';
+          parts = condition.split('>=').map(s => s.trim());
+        } else if (condition.includes('<=')) {
+          operator = '<=';
+          parts = condition.split('<=').map(s => s.trim());
+        } else if (condition.includes('>')) {
+          operator = '>';
+          parts = condition.split('>').map(s => s.trim());
+        } else if (condition.includes('<')) {
+          operator = '<';
+          parts = condition.split('<').map(s => s.trim());
+        } else if (condition.includes('LIKE')) {
+          operator = 'LIKE';
+          parts = condition.split('LIKE').map(s => s.trim());
+        } else if (condition.includes('=')) {
+          operator = '=';
+          parts = condition.split('=').map(s => s.trim());
+        } else {
+          return { field: '', operator: '', value: '' }; // Invalid condition
+        }
+        
+        if (parts.length !== 2) {
+          return { field: '', operator: '', value: '' }; // Invalid condition
+        }
+        
+        const field = parts[0].toLowerCase();
+        let value: string | number | boolean = parts[1];
+        
+        // Process value - remove quotes if they exist
+        if (typeof value === 'string') {
+          if ((value.startsWith("'") && value.endsWith("'")) || 
+              (value.startsWith('"') && value.endsWith('"'))) {
+            value = value.substring(1, value.length - 1);
+          } else if (value === 'TRUE' || value === 'FALSE') {
+            value = value === 'TRUE';
+          } else if (!isNaN(Number(value))) {
+            value = Number(value);
+          }
+        }
+        
+        return { field, operator, value };
+      });
+    }
+    
+    // Parse ORDER BY clause if it exists
+    if (upperQuery.includes('ORDER BY')) {
+      parts = remainingQuery.split('ORDER BY');
+      if (parts.length < 2) {
+        return { valid: false, error: 'Invalid ORDER BY clause' };
+      }
+      
+      remainingQuery = parts[1].trim();
+      
+      // Further split by LIMIT if it exists
+      let orderByClause = remainingQuery;
+      if (upperQuery.includes('LIMIT')) {
+        orderByClause = remainingQuery.split('LIMIT')[0].trim();
+      }
+      
+      const orderParts = orderByClause.split(' ');
+      const field = orderParts[0].toLowerCase();
+      const direction: 'ASC' | 'DESC' = orderParts.length > 1 && orderParts[1] === 'DESC' ? 'DESC' : 'ASC';
+      
+      result.orderBy = { field, direction };
+    }
+    
+    // Parse LIMIT clause if it exists
+    if (upperQuery.includes('LIMIT')) {
+      parts = remainingQuery.split('LIMIT');
+      if (parts.length < 2) {
+        return { valid: false, error: 'Invalid LIMIT clause' };
+      }
+      
+      const limitValue = parts[1].trim();
+      const limit = parseInt(limitValue, 10);
+      
+      if (isNaN(limit) || limit < 0) {
+        return { valid: false, error: 'Invalid LIMIT value' };
+      }
+      
+      result.limit = limit;
+    }
+    
+    return result;
+  } catch (error) {
+    return { 
+      valid: false, 
+      error: `Failed to parse query: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
 // The time zone for India (IST)
 const TIMEZONE = 'Asia/Kolkata';
 
@@ -1874,6 +2035,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ 
         message: "Failed to export backup", 
         error: error.message 
+      });
+    }
+  });
+  
+  // SQL-like query API for AI Knowledge Content
+  app.post("/api/ai-knowledge/query", isAdmin, async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Query is required" 
+        });
+      }
+      
+      console.log("Processing SQL-like query:", query);
+      
+      // Parse the SQL-like query
+      const parsedQuery = parseSqlLikeQuery(query);
+      
+      if (!parsedQuery.valid) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid query syntax",
+          errors: parsedQuery.error
+        });
+      }
+      
+      // Execute the query
+      let result;
+      
+      // Get all knowledge content
+      const allKnowledgeContent = await storage.getAllAiKnowledgeContent();
+      
+      // Apply filters
+      let filteredContent = [...allKnowledgeContent];
+      
+      // Apply WHERE conditions if they exist
+      if (parsedQuery.where && parsedQuery.where.length > 0) {
+        filteredContent = filteredContent.filter(item => {
+          return parsedQuery.where.every(condition => {
+            const { field, operator, value } = condition;
+            
+            // Handle special case for content search with LIKE operator
+            if (field === 'content' && operator === 'LIKE') {
+              return item.content.toLowerCase().includes(value.toLowerCase().replace(/%/g, ''));
+            }
+            
+            // Handle special case for title search with LIKE operator
+            if (field === 'title' && operator === 'LIKE') {
+              return item.title.toLowerCase().includes(value.toLowerCase().replace(/%/g, ''));
+            }
+            
+            // Handle basic operators
+            switch (operator) {
+              case '=':
+                return item[field] === value;
+              case '!=':
+                return item[field] !== value;
+              case '>':
+                return item[field] > value;
+              case '<':
+                return item[field] < value;
+              case '>=':
+                return item[field] >= value;
+              case '<=':
+                return item[field] <= value;
+              default:
+                return true;
+            }
+          });
+        });
+      }
+      
+      // Apply sorting if specified
+      if (parsedQuery.orderBy) {
+        const { field, direction } = parsedQuery.orderBy;
+        filteredContent.sort((a, b) => {
+          if (direction === 'ASC') {
+            return a[field] > b[field] ? 1 : -1;
+          } else {
+            return a[field] < b[field] ? 1 : -1;
+          }
+        });
+      }
+      
+      // Apply limit if specified
+      if (parsedQuery.limit) {
+        filteredContent = filteredContent.slice(0, parsedQuery.limit);
+      }
+      
+      // Format the result
+      result = {
+        query: query,
+        count: filteredContent.length,
+        data: filteredContent,
+        fields: parsedQuery.select === '*' ? null : parsedQuery.select
+      };
+      
+      res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      console.error("Error executing AI knowledge query:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to execute query",
+        error: error.message
       });
     }
   });
