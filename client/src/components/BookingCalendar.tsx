@@ -85,7 +85,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
   // Add state for popover open/close
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   
-  // Fetch available time slots from API
+  // Fetch available time slots from API with automatic refreshing
   const { data: availableSlots, isLoading: isLoadingSlots } = useQuery({
     queryKey: ["/api/available-slots"],
     queryFn: async () => {
@@ -101,7 +101,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
           data.slots.forEach((slot: AvailableSlot) => {
             if (slot.slotsWithStatus) {
               const bookedCount = slot.slotsWithStatus.filter((s: TimeSlotWithStatus) => s.isBooked).length;
-              console.log(`Date ${slot.date} has ${bookedCount} booked slots out of ${slot.slotsWithStatus.length} total slots`);
+              const availableCount = slot.slotsWithStatus.length - bookedCount;
+              console.log(`Date ${slot.date} has ${availableCount}/${slot.slotsWithStatus.length} slots available`);
             } else {
               console.log(`Date ${slot.date} has no slotsWithStatus information`);
             }
@@ -114,8 +115,12 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
         return { slots: [] }; // Return empty slots on error
       }
     },
-    // Keep the data fresh, but not too frequent
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // Auto-refresh options to keep available slots up-to-date
+    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchOnMount: true,   // Refresh when component mounts
+    refetchOnWindowFocus: true, // Refresh when user focuses window
+    refetchOnReconnect: true, // Refresh when reconnecting after connection loss
+    staleTime: 5 * 60 * 1000 // 5 minutes
   });
   
   // Get available time slot information for the selected date
@@ -421,12 +426,16 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                         ).length;
                         const availableSlotCount = totalSlots - bookedSlots;
                         
-                        // Show date with available slots info
+                        // Show date with available slots info in a more prominent way
                         return (
-                          <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
-                            {format(date, "do MMM")}{isToday ? " (Today)" : ""} 
-                            <span className="ml-1 text-sm font-medium">
-                              ({availableSlotCount}/{totalSlots} slots)
+                          <span className={`${isToday ? "text-green-600 dark:text-green-500" : ""} flex items-center`}>
+                            <span className="mr-1">{format(date, "do MMM")}{isToday ? " (Today)" : ""}</span>
+                            <span className={`ml-1 text-sm font-medium px-1.5 py-0.5 rounded-md ${
+                              availableSlotCount === 0 ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" :
+                              availableSlotCount < totalSlots/2 ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" :
+                              "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                            }`}>
+                              {availableSlotCount}/{totalSlots}
                             </span>
                           </span>
                         );
@@ -434,67 +443,30 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                       
                       <div className="ml-2">
                         {(() => {
-                      // Keep the status indicator
-                      if (!availableSlots || !availableSlots.slots) return null;
-                      
-                      const matchingSlot: AvailableSlot | undefined = availableSlots.slots.find(
-                        (slot: AvailableSlot) => slot.date === formattedDate
-                      );
-                      
-                      if (!matchingSlot || !matchingSlot.slotsWithStatus) return null;
-                      
-                      const totalSlots = matchingSlot.slotsWithStatus.length;
-                      const bookedSlots = matchingSlot.slotsWithStatus.filter(
-                        (slot: TimeSlotWithStatus) => slot.isBooked
-                      ).length;
-                      
-                      if (bookedSlots === 0) {
-                        return (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-end w-full">
-                                  <span className="text-xs text-green-500">Available</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>All slots available</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      } else if (bookedSlots < totalSlots) {
-                        return (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-end w-full">
-                                  <span className="text-xs text-amber-500">{totalSlots - bookedSlots}/{totalSlots}</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{totalSlots - bookedSlots} out of {totalSlots} slots available</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      } else {
-                        return (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex items-center justify-end w-full">
-                                  <span className="text-xs text-red-500">Booked</span>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>All slots booked</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      }
-                    })()}
+                          // Add a visual status indicator with icon
+                          if (!availableSlots || !availableSlots.slots) return null;
+                          
+                          const matchingSlot: AvailableSlot | undefined = availableSlots.slots.find(
+                            (slot: AvailableSlot) => slot.date === formattedDate
+                          );
+                          
+                          if (!matchingSlot || !matchingSlot.slotsWithStatus) return null;
+                          
+                          const totalSlots = matchingSlot.slotsWithStatus.length;
+                          const bookedSlots = matchingSlot.slotsWithStatus.filter(
+                            (slot: TimeSlotWithStatus) => slot.isBooked
+                          ).length;
+                          const availableSlotCount = totalSlots - bookedSlots;
+                          
+                          // Use icons to indicate status
+                          if (availableSlotCount === 0) {
+                            return <Ban className="h-4 w-4 text-red-500" />;
+                          } else if (availableSlotCount === totalSlots) {
+                            return <Check className="h-4 w-4 text-green-500" />;
+                          } else {
+                            return <Clock className="h-4 w-4 text-amber-500" />;
+                          }
+                        })()}
                       </div>
                     </div>
                   </SelectItem>
