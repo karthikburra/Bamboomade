@@ -1526,17 +1526,17 @@ function ProjectGuidance() {
                                   <>
                                     {/* Informational text about booking status */}
                                     <div className="mb-3 text-xs flex flex-wrap gap-2">
-                                      <div className="flex items-center">
+                                      <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
                                         <div className="w-3 h-3 bg-green-600 rounded-full mr-1"></div>
-                                        <span>Selected</span>
+                                        <span className="font-medium text-gray-800 dark:text-gray-200">Selected</span>
                                       </div>
-                                      <div className="flex items-center">
-                                        <div className="w-3 h-3 bg-gray-100 dark:bg-gray-800 rounded-full mr-1"></div>
-                                        <span>Available</span>
+                                      <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                                        <div className="w-3 h-3 bg-gray-400 dark:bg-gray-600 rounded-full mr-1"></div>
+                                        <span className="font-medium text-gray-800 dark:text-gray-200">Available</span>
                                       </div>
-                                      <div className="flex items-center">
-                                        <div className="w-3 h-3 bg-gray-300 dark:bg-gray-700 rounded-full mr-1"></div>
-                                        <span>Booked</span>
+                                      <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                                        <div className="w-3 h-3 bg-red-400 dark:bg-red-600 rounded-full mr-1"></div>
+                                        <span className="font-medium text-gray-800 dark:text-gray-200">Booked</span>
                                       </div>
                                     </div>
                                   
@@ -1561,8 +1561,8 @@ function ProjectGuidance() {
                                             {time}
                                             {booked && (
                                               <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="absolute inset-0 bg-gray-700 opacity-10 rounded-md"></div>
-                                                <span className="text-xs font-medium text-red-600 dark:text-red-400 z-10">
+                                                <div className="absolute inset-0 bg-gray-700 opacity-20 rounded-md"></div>
+                                                <span className="text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 px-2 py-0.5 rounded-md z-10">
                                                   Booked
                                                 </span>
                                               </div>

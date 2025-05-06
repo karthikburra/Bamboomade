@@ -261,7 +261,7 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                       >
                         {time}
                         {booked && (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 dark:bg-red-900 px-2 py-0.5 text-xs font-medium text-red-800 dark:text-red-300">
                             Booked
                           </span>
                         )}
