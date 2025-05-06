@@ -605,11 +605,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const sessionDate = new Date(session.date);
         const sessionEndTime = addMinutes(sessionDate, session.duration);
         
-        // Always show Google Meet link when available for paid sessions
+        // Always show Google Meet link when available regardless of payment status
         let googleMeetLink = null;
         let calendarLink = null;
         
-        if (session.paymentConfirmed && session.googleMeetLink) {
+        if (session.googleMeetLink) {
           // Use the stored Google Meet link if available
           googleMeetLink = session.googleMeetLink;
         } else if (session.paymentConfirmed) {
@@ -621,8 +621,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
         }
         
-        // Generate calendar link for confirmed sessions
-        if (session.paymentConfirmed && googleMeetLink) {
+        // Generate calendar link for any session with a Google Meet link
+        if (googleMeetLink) {
           calendarLink = generateGoogleCalendarLink(
             session.id,
             googleMeetLink,
