@@ -5,6 +5,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker, SelectSingleEventHandler } from "react-day-picker";
+import { format, addMinutes } from "date-fns";
+import { formatInIST } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -37,6 +40,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
@@ -51,10 +59,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { addDays, format, isAfter, isBefore, isToday, parse, parseISO, startOfToday } from "date-fns";
-import { cn } from "@/lib/utils";
-import { formatInIST, getCurrentISTDate } from "@/lib/date-utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -193,41 +197,42 @@ export default function AdminDashboard() {
     });
   };
 
-  // Mock data for sessions (in a real app, this would come from backend)
-  const sessions: Session[] = [
-    // Example session data
-    {
-      id: 1,
-      formattedDate: "May 15, 2025",
-      formattedTime: "10:00",
-      date: "2025-05-15T04:30:00.000Z",
-      email: "student@example.com",
-      phone: "9876543210",
-      topic: "Bamboo furniture design",
-      notes: "",
-      duration: 60,
-      paymentStatus: "Paid",
-      studentName: "John Student",
-      status: "pending",
-      isStudent: true
-    },
-    {
-      id: 2,
-      formattedDate: "May 16, 2025",
-      formattedTime: "14:00",
-      date: "2025-05-16T08:30:00.000Z",
-      email: "pro@example.com",
-      phone: "9876543211",
-      topic: "Bamboo structural design",
-      notes: "",
-      duration: 30,
-      paymentStatus: "Paid",
-      studentName: "Jane Professional",
-      status: "upcoming",
-      googleMeetLink: "https://meet.google.com/123-abc-xyz",
-      isStudent: false
+  // Fetch real session data from the API
+  const { data: sessionsData, isLoading: isSessionsLoading } = useQuery({
+    queryKey: ["/api/project-guidance"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/project-guidance");
+      const data = await response.json();
+      return data;
     }
-  ];
+  });
+  
+  // Format the session data for display
+  const sessions: Session[] = useMemo(() => {
+    if (!sessionsData || !Array.isArray(sessionsData)) return [];
+    
+    return sessionsData.map((session: any) => {
+      const sessionDate = new Date(session.date);
+      return {
+        id: session.id,
+        formattedDate: formatInIST(sessionDate, 'MMM d, yyyy'),
+        formattedTime: formatInIST(sessionDate, 'HH:mm'),
+        date: session.date,
+        email: session.email,
+        phone: session.phone,
+        topic: session.topic,
+        notes: session.notes || "",
+        duration: session.duration,
+        paymentStatus: session.paymentConfirmed ? "Paid" : "Pending",
+        studentName: session.studentName,
+        status: session.status || "pending",
+        googleMeetLink: session.googleMeetLink,
+        isStudent: session.isStudent !== undefined ? session.isStudent : true,
+        originalDate: session.originalDate,
+        rescheduledBy: session.rescheduledBy
+      };
+    });
+  }, [sessionsData]);
 
   // Split sessions into categories
   const pendingSessions = applyFilters(sessions.filter((s: Session) => 
@@ -359,7 +364,11 @@ export default function AdminDashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {displaySessions.length === 0 ? (
+                    {isSessionsLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full"></div>
+                      </div>
+                    ) : displaySessions.length === 0 ? (
                       <div className="text-center py-8 text-gray-400">
                         <p>{emptyMessage}</p>
                       </div>
@@ -543,6 +552,7 @@ export default function AdminDashboard() {
                                         <Button 
                                           size="sm"
                                           className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                          onClick={() => window.open(session.googleMeetLink, '_blank')}
                                         >
                                           <Video className="w-3.5 h-3.5 mr-1.5" /> 
                                           <span className="hidden sm:inline">Open Meet</span>
@@ -552,12 +562,44 @@ export default function AdminDashboard() {
                                         <Button 
                                           size="sm"
                                           className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                          onClick={() => {
+                                            setSelectedSession(session);
+                                            setIsDialogOpen(true);
+                                          }}
                                         >
                                           <Plus className="w-3.5 h-3.5 mr-1.5" /> 
                                           <span className="hidden sm:inline">Add Meet Link</span>
                                           <span className="sm:hidden">Add</span>
                                         </Button>
                                       )}
+                                      
+                                      <div className="flex gap-1 mt-1">
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="whitespace-nowrap h-7 text-xs px-2 border-amber-700/50 text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 hover:border-amber-700"
+                                          onClick={() => {
+                                            setSelectedSession(session);
+                                            setIsRescheduleDialogOpen(true);
+                                          }}
+                                        >
+                                          <Calendar className="w-3 h-3 mr-1" /> 
+                                          <span>Reschedule</span>
+                                        </Button>
+                                        
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="whitespace-nowrap h-7 text-xs px-2 border-red-700/50 text-red-400 hover:text-red-300 hover:bg-red-950/30 hover:border-red-700"
+                                          onClick={() => {
+                                            setSelectedSession(session);
+                                            setIsCancelDialogOpen(true);
+                                          }}
+                                        >
+                                          <X className="w-3 h-3 mr-1" /> 
+                                          <span>Cancel</span>
+                                        </Button>
+                                      </div>
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden sm:table-cell">
