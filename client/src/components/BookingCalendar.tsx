@@ -324,11 +324,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                       isToday && "font-bold"
                     )}
                   >
-                    <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
-                      {displayDate}{isToday ? " (Today)" : ""}
-                    </span>
-                    
-                    {(() => {
+                    <div className="flex justify-between items-center w-full">
+                      <span className={isToday ? "text-green-600 dark:text-green-500" : ""}>
+                        {displayDate}{isToday ? " (Today)" : ""}
+                      </span>
+                      
+                      <div className="ml-9">
+                        {(() => {
                       // Add booking status indicator
                       if (!availableSlots || !availableSlots.slots) return null;
                       
@@ -390,6 +392,8 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                         );
                       }
                     })()}
+                      </div>
+                    </div>
                   </SelectItem>
                 );
               }
@@ -485,11 +489,13 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                     >
                       <div className="flex justify-between items-center w-full">
                         <span>{time}</span>
-                        {props.selectedTime === time && (
-                          <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
-                            Selected
-                          </span>
-                        )}
+                        <div className="ml-9">
+                          {props.selectedTime === time && (
+                            <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
+                              Selected
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </SelectItem>
                   </div>
