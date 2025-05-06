@@ -121,6 +121,7 @@ export default function AllSessions() {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [dateAvailability, setDateAvailability] = useState<{[key: string]: number}>({}); // Tracks available slots per date
   
   // Calculate refund amount based on cancellation policy
   const calculateRefundAmount = (session: Session) => {
@@ -214,24 +215,43 @@ export default function AllSessions() {
       const data = await response.json();
       
       if (data.success) {
+        // Track date availability
+        const availabilityMap: {[key: string]: number} = {};
+        
         // Process all available dates that have non-booked slots
         const dates = data.slots
           .filter((slot: any) => {
             // Only include dates that have at least one non-booked time slot
-            return slot.slotsWithStatus.some((s: any) => !s.isBooked);
+            const hasAvailableSlots = slot.slotsWithStatus.some((s: any) => !s.isBooked);
+            
+            // Count available slots for each date
+            if (hasAvailableSlots) {
+              const availableCount = slot.slotsWithStatus.filter((s: any) => !s.isBooked).length;
+              const totalCount = slot.slotsWithStatus.length;
+              availabilityMap[slot.date] = availableCount;
+            }
+            
+            return hasAvailableSlots;
           })
           .map((slot: any) => {
             // Convert date strings to Date objects
             return new Date(slot.date);
           });
         
+        // Debug log to check availability
+        Object.keys(availabilityMap).forEach(date => {
+          console.log(`Date ${date} has ${availabilityMap[date]}/4 slots available`);
+        });
+        
         setAvailableDates(dates);
+        setDateAvailability(availabilityMap);
         return data.slots;
       }
       return [];
     } catch (error) {
       console.error("Failed to fetch available slots:", error);
       setAvailableDates([]);
+      setDateAvailability({});
       return [];
     }
   };
@@ -745,12 +765,15 @@ export default function AllSessions() {
                                                     key={formattedDate} 
                                                     value={formattedDate}
                                                     className={cn(
-                                                      "flex items-center text-white data-[highlighted]:bg-gray-700",
+                                                      "flex items-center justify-between text-white data-[highlighted]:bg-gray-700",
                                                       isToday && "font-bold"
                                                     )}
                                                   >
                                                     <span className={isToday ? "text-green-500" : ""}>
                                                       {displayDate}{isToday ? " (Today)" : ""}
+                                                    </span>
+                                                    <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-green-900/40 text-green-400">
+                                                      {dateAvailability[formattedDate] || 0} slots available
                                                     </span>
                                                   </SelectItem>
                                                 );
