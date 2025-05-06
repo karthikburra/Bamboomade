@@ -203,7 +203,6 @@ const AIKnowledgeManagement: React.FC = () => {
     }
   };
   
-  // Filter content based on active tab
   // Setup for Google Drive import form
   const importForm = useForm<z.infer<typeof googleDriveImportSchema>>({
     resolver: zodResolver(googleDriveImportSchema),
@@ -366,25 +365,27 @@ const AIKnowledgeManagement: React.FC = () => {
     
     try {
       setIsExecutingSql(true);
+      
       const response = await apiRequest('POST', '/api/ai-knowledge/query', { query: sqlQuery });
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Query execution failed');
+        throw new Error(errorData.message || "Failed to execute query");
       }
       
       const data = await response.json();
+      
       setSqlResult(data);
       
       toast({
         title: "Query Executed",
-        description: `Found ${data.result.count} results.`,
+        description: `Found ${data.result.count} result(s) in ${data.result.executionTime}ms`,
       });
     } catch (error) {
       console.error('Error executing SQL query:', error);
       toast({
         title: "Query Failed",
-        description: `Failed to execute query: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
     } finally {
@@ -617,257 +618,338 @@ const AIKnowledgeManagement: React.FC = () => {
                             {item.status}
                           </Badge>
                         </div>
-                      </div>
-                      
-                      {item.source && (
-                        <div className="mt-2 text-sm truncate">
+                        
+                        <div className="col-span-2 mt-1">
                           <span className="text-gray-500 dark:text-gray-400">Source:</span>
-                          <a href={item.source} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 dark:text-blue-400 hover:underline inline-flex items-center">
-                            <LinkIcon className="h-3 w-3 mr-1" />
-                            {item.source}
-                          </a>
+                          {item.source ? (
+                            <a href={item.source} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 dark:text-blue-400 hover:underline break-all">
+                              {item.source}
+                            </a>
+                          ) : (
+                            <span className="ml-2 text-gray-500 dark:text-gray-400">None</span>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
           ) : (
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardContent className="p-6 text-center">
-                <p className="text-gray-500 dark:text-gray-400 mb-4">No knowledge content found.</p>
-                <Button 
-                  onClick={() => {
-                    form.reset();
-                    setIsAddDialogOpen(true);
-                  }}
-                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Content
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="text-center py-12">
+              <Info className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-4 text-lg font-medium dark:text-white">No content found</h3>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {activeTab === "all" 
+                  ? "Add some knowledge content to get started." 
+                  : `No content of type "${activeTab}" found.`}
+              </p>
+              <Button 
+                onClick={() => {
+                  form.reset();
+                  setIsAddDialogOpen(true);
+                }}
+                className="mt-4 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Content
+              </Button>
+            </div>
           )}
         </TabsContent>
       </Tabs>
       
-      {/* Restore Backup Dialog */}
-      <Dialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="dark:text-gray-100">Restore Knowledge Backup</DialogTitle>
-            <DialogDescription className="dark:text-gray-300">
-              Upload a previously exported backup file to restore AI knowledge content.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <div className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-gray-200">
-                Backup File
-              </div>
-              <Input 
-                id="backup-file" 
-                type="file" 
-                accept=".json"
-                onChange={handleFileChange}
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-              />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Select a JSON backup file exported from AI Knowledge Management.
-              </p>
-            </div>
-            
-            {backupFile && (
-              <div className="p-3 border border-blue-200 rounded-md bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
-                <p className="text-sm font-medium dark:text-blue-300">Selected file: {backupFile.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Size: {(backupFile.size / 1024).toFixed(2)} KB
-                </p>
-              </div>
-            )}
-            
-            <Alert className="dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-200">
-              <AlertTitle className="flex items-center text-amber-600 dark:text-amber-300">
-                <Info className="h-4 w-4 mr-2" />
-                Warning
-              </AlertTitle>
-              <AlertDescription className="dark:text-amber-200">
-                Restoring a backup will merge content with existing items. Duplicate titles will be updated with the backup version.
-              </AlertDescription>
-            </Alert>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsRestoreDialogOpen(false)}
-              className="dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200 dark:border-gray-600"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleImportBackup}
-              disabled={!backupFile || isImportingBackup}
-              className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-            >
-              {isImportingBackup ? (
-                <>
-                  <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
-                  Importing...
-                </>
-              ) : (
-                <>
-                  <SaveAll className="mr-2 h-4 w-4" />
-                  Restore Backup
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Add Content Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto dark:bg-gray-800 dark:border-gray-700">
+        <DialogContent className="max-w-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="dark:text-white">Add New Knowledge Content</DialogTitle>
+            <DialogTitle className="text-xl font-bold dark:text-white">
+              <div className="flex items-center">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Add Knowledge Content
+              </div>
+            </DialogTitle>
             <DialogDescription className="dark:text-gray-300">
-              Add content to improve the AI knowledge base. This can be documents, events, or websites.
+              Add new content to the AI knowledge base.
             </DialogDescription>
           </DialogHeader>
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Title</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter a descriptive title" 
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="contentType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel className="dark:text-gray-200">Title</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
+                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
                       </FormControl>
-                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                        <SelectItem value="document" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Document</SelectItem>
-                        <SelectItem value="webpage" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Web Page</SelectItem>
-                        <SelectItem value="event" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Event</SelectItem>
-                        <SelectItem value="manual" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Manual Entry</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription className="dark:text-gray-400">
-                      Select the type of content you are adding.
-                    </FormDescription>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="source"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Source URL</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="https://example.com/document or Google Drive URL" 
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="dark:text-gray-400">
-                      Enter the URL where this content can be found (optional).
-                    </FormDescription>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Content</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter the content or paste from a document" 
-                        className="min-h-[200px] dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="dark:text-gray-400">
-                      The content will be used by the AI to answer user questions.
-                    </FormDescription>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="contentType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
+                            <SelectValue placeholder="Select content type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          <SelectItem value="document" className="dark:text-gray-100 dark:focus:bg-gray-700">Document</SelectItem>
+                          <SelectItem value="webpage" className="dark:text-gray-100 dark:focus:bg-gray-700">Webpage</SelectItem>
+                          <SelectItem value="event" className="dark:text-gray-100 dark:focus:bg-gray-700">Event</SelectItem>
+                          <SelectItem value="manual" className="dark:text-gray-100 dark:focus:bg-gray-700">Manual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-gray-200">Status</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          <SelectItem value="active" className="dark:text-gray-100 dark:focus:bg-gray-700">Active</SelectItem>
+                          <SelectItem value="inactive" className="dark:text-gray-100 dark:focus:bg-gray-700">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="source"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel className="dark:text-gray-200">Source URL (optional)</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
+                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
                       </FormControl>
-                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                        <SelectItem value="active" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Active</SelectItem>
-                        <SelectItem value="archived" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription className="dark:text-gray-400">
-                      Active content will be used by the AI. Archived content will be ignored.
-                    </FormDescription>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel className="dark:text-gray-200">Content</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          className="min-h-[200px] dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsAddDialogOpen(false)}
-                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
                 >
                   Cancel
                 </Button>
                 <Button 
-                  type="submit" 
+                  type="submit"
                   disabled={addMutation.isPending}
-                  className="dark:bg-primary dark:text-white dark:hover:bg-primary/90"
+                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
                 >
-                  {addMutation.isPending ? "Adding..." : "Add Content"}
+                  {addMutation.isPending ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Content
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Content Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold dark:text-white">
+              <div className="flex items-center">
+                <Pencil className="mr-2 h-5 w-5" />
+                Edit Knowledge Content
+              </div>
+            </DialogTitle>
+            <DialogDescription className="dark:text-gray-300">
+              Update the content details.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onUpdate)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel className="dark:text-gray-200">Title</FormLabel>
+                      <FormControl>
+                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="contentType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
+                            <SelectValue placeholder="Select content type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          <SelectItem value="document" className="dark:text-gray-100 dark:focus:bg-gray-700">Document</SelectItem>
+                          <SelectItem value="webpage" className="dark:text-gray-100 dark:focus:bg-gray-700">Webpage</SelectItem>
+                          <SelectItem value="event" className="dark:text-gray-100 dark:focus:bg-gray-700">Event</SelectItem>
+                          <SelectItem value="manual" className="dark:text-gray-100 dark:focus:bg-gray-700">Manual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-gray-200">Status</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          <SelectItem value="active" className="dark:text-gray-100 dark:focus:bg-gray-700">Active</SelectItem>
+                          <SelectItem value="inactive" className="dark:text-gray-100 dark:focus:bg-gray-700">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="source"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel className="dark:text-gray-200">Source URL (optional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel className="dark:text-gray-200">Content</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          className="min-h-[200px] dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                  className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+                >
+                  {updateMutation.isPending ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Update Content
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -877,11 +959,16 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Import from Google Drive Dialog */}
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="max-w-md dark:bg-gray-800 dark:border-gray-700">
+        <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="dark:text-white">Import from Google Drive</DialogTitle>
+            <DialogTitle className="text-xl font-bold dark:text-white">
+              <div className="flex items-center">
+                <Upload className="mr-2 h-5 w-5" />
+                Import from Google Drive
+              </div>
+            </DialogTitle>
             <DialogDescription className="dark:text-gray-300">
-              Enter the Google Drive document URL to extract its content.
+              Extract content from a Google Drive file. Currently supports Google Docs and shared text documents.
             </DialogDescription>
           </DialogHeader>
           
@@ -895,15 +982,15 @@ const AIKnowledgeManagement: React.FC = () => {
                     <FormLabel className="dark:text-gray-200">Google Drive URL</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="https://docs.google.com/document/d/..."
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
                         {...field} 
+                        placeholder="https://drive.google.com/file/d/..."
+                        className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" 
                       />
                     </FormControl>
-                    <FormDescription className="dark:text-gray-400">
-                      Paste the shared link to your Google Drive document.
+                    <FormDescription className="text-xs dark:text-gray-400">
+                      Paste the shareable Google Drive link. Must be publicly accessible.
                     </FormDescription>
-                    <FormMessage className="dark:text-red-400" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -915,55 +1002,92 @@ const AIKnowledgeManagement: React.FC = () => {
                   <FormItem>
                     <FormLabel className="dark:text-gray-200">Title</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Enter a title for this content" 
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
+                      <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
                     </FormControl>
-                    <FormMessage className="dark:text-red-400" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
               
-              <FormField
-                control={importForm.control}
-                name="contentType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                        <SelectItem value="document" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Document</SelectItem>
-                        <SelectItem value="webpage" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Web Page</SelectItem>
-                        <SelectItem value="event" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Event</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={importForm.control}
+                  name="contentType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
+                            <SelectValue placeholder="Select content type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          <SelectItem value="document" className="dark:text-gray-100 dark:focus:bg-gray-700">Document</SelectItem>
+                          <SelectItem value="webpage" className="dark:text-gray-100 dark:focus:bg-gray-700">Webpage</SelectItem>
+                          <SelectItem value="event" className="dark:text-gray-100 dark:focus:bg-gray-700">Event</SelectItem>
+                          <SelectItem value="manual" className="dark:text-gray-100 dark:focus:bg-gray-700">Manual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={importForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-gray-200">Status</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          <SelectItem value="active" className="dark:text-gray-100 dark:focus:bg-gray-700">Active</SelectItem>
+                          <SelectItem value="inactive" className="dark:text-gray-100 dark:focus:bg-gray-700">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsImportDialogOpen(false)}
-                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
                 >
                   Cancel
                 </Button>
                 <Button 
-                  type="submit" 
+                  type="submit"
                   disabled={extractMutation.isPending}
-                  className="dark:bg-primary dark:text-white dark:hover:bg-primary/90"
+                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
                 >
-                  {extractMutation.isPending ? "Extracting..." : "Extract Content"}
+                  {extractMutation.isPending ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                      Extracting...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCcw className="mr-2 h-4 w-4" />
+                      Extract Content
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -971,140 +1095,73 @@ const AIKnowledgeManagement: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Content Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto dark:bg-gray-800 dark:border-gray-700">
+      {/* Restore Backup Dialog */}
+      <Dialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
+        <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="dark:text-white">Edit Knowledge Content</DialogTitle>
+            <DialogTitle className="text-xl font-bold dark:text-white">
+              <div className="flex items-center">
+                <SaveAll className="mr-2 h-5 w-5" />
+                Restore Knowledge Backup
+              </div>
+            </DialogTitle>
             <DialogDescription className="dark:text-gray-300">
-              Update the content in the AI knowledge base.
+              Upload a previously exported AI knowledge backup file.
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onUpdate)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Title</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter a descriptive title" 
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              <Label htmlFor="backup-file" className="text-sm font-medium dark:text-gray-200">Backup File</Label>
+              <Input
+                id="backup-file"
+                type="file"
+                accept=".json"
+                onChange={handleFileChange}
+                className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
               />
-              
-              <FormField
-                control={form.control}
-                name="contentType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                          <SelectValue placeholder="Select content type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                        <SelectItem value="document" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Document</SelectItem>
-                        <SelectItem value="webpage" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Web Page</SelectItem>
-                        <SelectItem value="event" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Event</SelectItem>
-                        <SelectItem value="manual" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Manual Entry</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="source"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Source URL</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="https://example.com/document or Google Drive URL" 
-                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription className="dark:text-gray-400">
-                      Enter the URL where this content can be found (optional).
-                    </FormDescription>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Content</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter the content or paste from a document" 
-                        className="min-h-[200px] dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-gray-200">Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                        <SelectItem value="active" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Active</SelectItem>
-                        <SelectItem value="archived" className="dark:text-gray-200 dark:focus:bg-gray-700 dark:hover:bg-gray-700">Archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsEditDialogOpen(false)}
-                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={updateMutation.isPending}
-                  className="dark:bg-primary dark:text-white dark:hover:bg-primary/90"
-                >
-                  {updateMutation.isPending ? "Saving..." : "Save Changes"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Select a backup file (.json) that was previously exported from this system.
+              </p>
+            </div>
+            
+            <Alert variant="warning" className="dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-100">
+              <AlertTitle className="flex items-center">
+                <Info className="h-4 w-4 mr-2" />
+                Warning
+              </AlertTitle>
+              <AlertDescription className="dark:text-amber-200">
+                Restoring a backup will attempt to import all content from the file. Existing content with the same IDs may be updated or skipped.
+              </AlertDescription>
+            </Alert>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsRestoreDialogOpen(false)}
+              className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleImportBackup}
+              disabled={!backupFile || isImportingBackup || importBackupMutation.isPending}
+              className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+            >
+              {isImportingBackup || importBackupMutation.isPending ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                  Importing...
+                </>
+              ) : (
+                <>
+                  <SaveAll className="mr-2 h-4 w-4" />
+                  Restore Backup
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

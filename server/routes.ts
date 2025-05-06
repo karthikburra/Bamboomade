@@ -2053,6 +2053,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Processing SQL-like query:", query);
       
+      // Start timing the query execution
+      const startTime = Date.now();
+      
       // Parse the SQL-like query
       const parsedQuery = parseSqlLikeQuery(query);
       
@@ -2074,10 +2077,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let filteredContent = [...allKnowledgeContent];
       
       // Apply WHERE conditions if they exist
-      if (parsedQuery.where && parsedQuery.where.length > 0) {
+      if (parsedQuery.valid && parsedQuery.where && parsedQuery.where.length > 0) {
         filteredContent = filteredContent.filter(item => {
           return parsedQuery.where.every(condition => {
             const { field, operator, value } = condition;
+            
+            // Check if field exists on item
+            if (!(field in item)) {
+              console.warn(`Field "${field}" not found on item`);
+              return false;
+            }
             
             // Handle special case for content search with LIKE operator
             if (field === 'content' && operator === 'LIKE') {
@@ -2111,28 +2120,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Apply sorting if specified
-      if (parsedQuery.orderBy) {
+      if (parsedQuery.valid && parsedQuery.orderBy) {
         const { field, direction } = parsedQuery.orderBy;
-        filteredContent.sort((a, b) => {
-          if (direction === 'ASC') {
-            return a[field] > b[field] ? 1 : -1;
-          } else {
-            return a[field] < b[field] ? 1 : -1;
-          }
-        });
+        
+        // Check if field exists on any item before sorting
+        if (filteredContent.length > 0 && field in filteredContent[0]) {
+          filteredContent.sort((a, b) => {
+            if (direction === 'ASC') {
+              return a[field] > b[field] ? 1 : -1;
+            } else {
+              return a[field] < b[field] ? 1 : -1;
+            }
+          });
+        } else {
+          console.warn(`Sort field "${field}" not found on items`);
+        }
       }
       
       // Apply limit if specified
-      if (parsedQuery.limit) {
+      if (parsedQuery.valid && parsedQuery.limit) {
         filteredContent = filteredContent.slice(0, parsedQuery.limit);
       }
+      
+      // Calculate execution time
+      const executionTime = Date.now() - startTime;
       
       // Format the result
       result = {
         query: query,
         count: filteredContent.length,
         data: filteredContent,
-        fields: parsedQuery.select === '*' ? null : parsedQuery.select
+        fields: parsedQuery.valid && parsedQuery.select === '*' ? null : parsedQuery.select,
+        executionTime: executionTime
       };
       
       res.json({
@@ -2144,7 +2163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: "Failed to execute query",
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
