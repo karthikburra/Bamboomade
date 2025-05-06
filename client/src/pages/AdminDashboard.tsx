@@ -39,7 +39,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
-  X, AlertTriangle, CalendarRange, Video
+  X, AlertTriangle, CalendarRange, Video, Search
 } from "lucide-react";
 import {
   Select,
@@ -64,7 +64,7 @@ interface Session {
   formattedDate: string;
   formattedTime: string;
   date: string;
-  email: string;
+  email: string; // Used for web search functionality
   phone: string;
   topic: string;
   notes: string;
@@ -1001,6 +1001,18 @@ export default function AdminDashboard() {
                                         <span className="sm:hidden">Move</span>
                                       </Button>
                                     )}
+                                    
+                                    {/* Web Search button - always shown */}
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="whitespace-nowrap border-orange-700 text-orange-400 hover:bg-orange-900/30 h-8 text-xs px-2 sm:text-sm sm:px-3 mt-1"
+                                      onClick={() => window.open('https://www.google.com/search?q=' + encodeURIComponent(session.studentName + ' ' + session.email), '_blank')}
+                                    >
+                                      <Search className="w-3 h-3 mr-1" />
+                                      <span className="hidden sm:inline">Web Search</span>
+                                      <span className="sm:hidden">Search</span>
+                                    </Button>
                                   </div>
                                 </TableCell>
                                 <TableCell className="hidden sm:table-cell">
