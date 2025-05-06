@@ -85,8 +85,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       // Use setTimeout to ensure the input is set before submitting
       const timer = setTimeout(() => {
         if (!isProcessing) {
-          // Set shouldAutoScroll to true for initial question too
-          setShouldAutoScroll(true);
+          // Removed auto-scrolling for initial question too
           handleSendMessage();
           // Clear from session storage to avoid resubmitting if user navigates back
           sessionStorage.removeItem("initialQuestion");
@@ -117,8 +116,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsProcessing(true);
-    // Only auto-scroll when user sends a message
-    setShouldAutoScroll(true);
+    // Removed auto-scrolling completely
 
     try {
       const { response, tokensUsed, remainingTokens } = await processAiChat(userMessage.content);
