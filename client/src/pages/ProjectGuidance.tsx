@@ -1576,7 +1576,6 @@ function ProjectGuidance() {
                                       >
                                         <SelectTrigger className="w-full">
                                           <div className="flex items-center">
-                                            <Clock className="mr-2 h-4 w-4" />
                                             <SelectValue placeholder="Select a time" />
                                           </div>
                                         </SelectTrigger>
