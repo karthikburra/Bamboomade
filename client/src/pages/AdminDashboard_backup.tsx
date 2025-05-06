@@ -1614,7 +1614,9 @@ export default function AdminDashboard() {
                   >
                     {selectedSlots.includes(time) ? (
                       <Check className="w-3 h-3 flex-shrink-0" />
-                    ) : null}
+                    ) : (
+                      
+                    )}
                     {time}
                   </Badge>
                 ))}
@@ -1782,7 +1784,9 @@ export default function AdminDashboard() {
                   >
                     {selectedSlots.includes(time) ? (
                       <Check className="w-3 h-3 flex-shrink-0" />
-                    ) : null}
+                    ) : (
+                      
+                    )}
                     {time}
                   </Badge>
                 ))}
