@@ -1517,14 +1517,14 @@ export default function AdminDashboard() {
 
         {/* Add Date Dialog with Multi-Date Selection */}
         <Dialog open={isAddSlotDialogOpen} onOpenChange={setIsAddSlotDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl">
-            <DialogHeader>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-3xl max-h-[90vh] overflow-hidden">
+            <DialogHeader className="sticky top-0 bg-gray-900 z-10 pb-2">
               <DialogTitle>Add Available Dates</DialogTitle>
               <DialogDescription>
                 Select dates and time slots when you are available for project guidance sessions
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6 py-4">
+            <div className="space-y-6 py-4 overflow-y-auto pr-1 max-h-[calc(90vh-12rem)] custom-scrollbar">
               {/* Selection Mode Toggle */}
               <div className="flex items-center justify-between bg-gray-800 p-3 rounded-md">
                 <div>
@@ -1794,7 +1794,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 bg-gray-900 pt-2 border-t border-gray-800">
               <Button
                 variant="outline"
                 onClick={() => {
