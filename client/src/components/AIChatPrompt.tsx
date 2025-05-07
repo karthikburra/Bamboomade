@@ -36,13 +36,15 @@ const AIChatPrompt: React.FC = () => {
                 strokeLinejoin="round" 
                 className="w-3.5 h-3.5 text-primary-foreground"
               >
-                <path d="M21 12.5c0 .3-.1.6-.2.9"></path>
-                <path d="M14 19.5c-.4 0-.8-.1-1.2-.3"></path>
-                <path d="M3 13l0-.3c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8"></path>
-                <path d="M13 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path>
-                <path d="M18 22a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
-                <path d="m16.5 19 3-3"></path>
-                <path d="M7 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
+                <path d="M9 3H5a2 2 0 0 0-2 2v4"></path>
+                <path d="M13 21h4a2 2 0 0 0 2-2v-4"></path>
+                <path d="M21 9V5a2 2 0 0 0-2-2h-4"></path>
+                <path d="M3 13v4a2 2 0 0 0 2 2h4"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M9 15v6"></path>
+                <path d="M15 9V3"></path>
+                <path d="M15 15v6"></path>
+                <path d="M9 9V3"></path>
               </svg>
             </div>
             <h3 className="text-sm font-medium text-white">Ask BambooMade AI</h3>
