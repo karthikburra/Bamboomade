@@ -102,6 +102,8 @@ interface Session {
 }
 
 export default function AdminDashboard() {
+  const { toast } = useToast();
+  
   // Session management state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [meetLink, setMeetLink] = useState("");
@@ -178,7 +180,6 @@ export default function AdminDashboard() {
   const startDateRef = useRef<HTMLDivElement>(null);
   const endDateRef = useRef<HTMLDivElement>(null);
   
-  const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
@@ -1015,13 +1016,60 @@ export default function AdminDashboard() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="meet-link">Google Meet Link</Label>
-                <Input
-                  id="meet-link"
-                  placeholder="https://meet.google.com/xxx-xxxx-xxx"
-                  value={meetLink}
-                  onChange={(e) => setMeetLink(e.target.value)}
-                  className="bg-gray-800 border-gray-700"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="meet-link"
+                    placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                    value={meetLink}
+                    onChange={(e) => setMeetLink(e.target.value)}
+                    className="bg-gray-800 border-gray-700 flex-grow"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="border-gray-700 text-gray-300 whitespace-nowrap"
+                    onClick={() => {
+                      if (meetLink) {
+                        navigator.clipboard.writeText(meetLink);
+                        toast({
+                          title: "Copied!",
+                          description: "Link copied to clipboard",
+                          variant: "default",
+                        });
+                      }
+                    }}
+                    disabled={!meetLink}
+                  >
+                    Copy
+                  </Button>
+                </div>
+                {selectedSession?.googleMeetLink && (
+                  <div className="mt-2 bg-gray-800/50 p-2 rounded-md border border-gray-700">
+                    <p className="text-xs text-gray-400 mb-1">Existing Google Meet Link:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs text-green-400 bg-green-950/30 p-1 rounded flex-grow overflow-x-auto">
+                        {selectedSession.googleMeetLink}
+                      </code>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="border-gray-700 text-gray-300 h-7 px-2"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedSession.googleMeetLink || "");
+                          toast({
+                            title: "Copied!",
+                            description: "Existing link copied to clipboard",
+                            variant: "default",
+                          });
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="bg-gray-800 p-3 rounded-md space-y-2">
                 <h4 className="text-sm font-medium">Session Details</h4>
