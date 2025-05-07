@@ -5,10 +5,9 @@ import {
   Phone, 
   Mail, 
   Instagram, 
-  Facebook, 
-  Twitter, 
   Linkedin 
 } from "lucide-react";
+import { SiMedium } from "react-icons/si";
 import { cn } from "@/lib/utils";
 
 interface FooterProps {
@@ -30,21 +29,17 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
               </p>
             </div>
             <div className="flex space-x-4 sm:space-x-6">
-              <a href="#" className="text-primary-200 hover:text-primary-50">
+              <a href="https://www.instagram.com/bamboo__made/" target="_blank" rel="noopener noreferrer" className="text-primary-200 hover:text-primary-50">
                 <Instagram size={18} className="sm:w-5 sm:h-5" />
                 <span className="sr-only">Instagram</span>
               </a>
-              <a href="#" className="text-primary-200 hover:text-primary-50">
-                <Facebook size={18} className="sm:w-5 sm:h-5" />
-                <span className="sr-only">Facebook</span>
-              </a>
-              <a href="#" className="text-primary-200 hover:text-primary-50">
-                <Twitter size={18} className="sm:w-5 sm:h-5" />
-                <span className="sr-only">Twitter</span>
-              </a>
-              <a href="#" className="text-primary-200 hover:text-primary-50">
+              <a href="https://www.linkedin.com/company/99067616/admin/dashboard/" target="_blank" rel="noopener noreferrer" className="text-primary-200 hover:text-primary-50">
                 <Linkedin size={18} className="sm:w-5 sm:h-5" />
                 <span className="sr-only">LinkedIn</span>
+              </a>
+              <a href="https://medium.com/@bamboomade" target="_blank" rel="noopener noreferrer" className="text-primary-200 hover:text-primary-50">
+                <SiMedium size={18} className="sm:w-5 sm:h-5" />
+                <span className="sr-only">Medium</span>
               </a>
             </div>
           </div>
