@@ -58,6 +58,14 @@ interface AiKnowledgeContent {
   createdBy: number;
 }
 
+// Types for rule content
+interface RuleItem {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+}
+
 // Define import schema for Google Drive link
 const googleDriveImportSchema = z.object({
   url: z.string()
@@ -71,6 +79,7 @@ const googleDriveImportSchema = z.object({
 });
 
 const AIKnowledgeManagement: React.FC = () => {
+  // State hooks
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -95,6 +104,30 @@ const AIKnowledgeManagement: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<AiKnowledgeContent | null>(null);
+  const [isRuleSelected, setIsRuleSelected] = useState(false);
+  const [selectedRule, setSelectedRule] = useState<RuleItem | null>(null);
+  
+  // Predefined rules for training
+  const trainingRules: RuleItem[] = [
+    { 
+      id: 'rule1', 
+      title: 'Response Guidelines', 
+      content: 'Guidelines for how the AI should respond to questions about bamboo architecture.',
+      type: 'rule'
+    },
+    { 
+      id: 'rule2', 
+      title: 'Default Behavior', 
+      content: 'Default behavior settings for the AI in various situations.',
+      type: 'rule'
+    },
+    { 
+      id: 'rule3', 
+      title: 'Training Examples', 
+      content: 'Example QA pairs to guide the AI in responding to common questions.',
+      type: 'rule'
+    },
+  ];
   
   // Form setup
   const form = useForm<z.infer<typeof aiKnowledgeFormSchema>>({
@@ -368,6 +401,7 @@ const AIKnowledgeManagement: React.FC = () => {
         description: `Failed to process backup file: ${error instanceof Error ? error.message : 'Invalid backup format'}`,
         variant: "destructive",
       });
+    } finally {
       setIsImportingBackup(false);
     }
   };
@@ -448,13 +482,21 @@ const AIKnowledgeManagement: React.FC = () => {
   
   // Format title of content for display in sidebar
   const formatSidebarTitle = (title: string, index: number) => {
-    return `${title.length > 25 ? title.substring(0, 22) + '...' : title}`;
+    return `${title.contentType} ${index}: ${title.length > 20 ? title.substring(0, 17) + '...' : title}`;
   };
   
   // Handle selection of an item from the sidebar
   const handleItemSelect = (item: AiKnowledgeContent) => {
     setSelectedItem(item);
     setSelectedCategory(item.contentType);
+    setIsRuleSelected(false);
+  };
+  
+  // Handle selection of a rule
+  const handleRuleSelect = (rule: RuleItem) => {
+    setSelectedRule(rule);
+    setIsRuleSelected(true);
+    setSelectedItem(null);
   };
   
   // Fix variant type error
@@ -523,7 +565,7 @@ const AIKnowledgeManagement: React.FC = () => {
                         {category === 'event' && <Calendar className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
                         {category === 'webpage' && <Globe className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
                         {category === 'manual' && <Book className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
-                        <span className="truncate">{formatSidebarTitle(item.title, idx + 1)}</span>
+                        <span className="truncate">{`${category.charAt(0).toUpperCase() + category.slice(1)} ${idx + 1}: ${item.title.length > 15 ? item.title.substring(0, 12) + '...' : item.title}`}</span>
                       </div>
                     ))}
                   </div>
@@ -547,27 +589,21 @@ const AIKnowledgeManagement: React.FC = () => {
               
               {selectedCategory === 'rules' && (
                 <div className="mt-1 ml-6 space-y-1 text-sm">
-                  <div 
-                    className="flex items-center py-1.5 px-2 rounded cursor-pointer hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
-                    onClick={() => {/* Add rule handler */}}
-                  >
-                    <FileCheck className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
-                    <span className="truncate">Response Guidelines</span>
-                  </div>
-                  <div 
-                    className="flex items-center py-1.5 px-2 rounded cursor-pointer hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
-                    onClick={() => {/* Add rule handler */}}
-                  >
-                    <Settings className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
-                    <span className="truncate">Default Behavior</span>
-                  </div>
-                  <div 
-                    className="flex items-center py-1.5 px-2 rounded cursor-pointer hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
-                    onClick={() => {/* Add rule handler */}}
-                  >
-                    <BookIcon className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
-                    <span className="truncate">Training Examples</span>
-                  </div>
+                  {trainingRules.map((rule, idx) => (
+                    <div 
+                      key={rule.id} 
+                      className={cn(
+                        "flex items-center py-1.5 px-2 rounded cursor-pointer",
+                        selectedRule?.id === rule.id ? "bg-accent/80 text-accent-foreground" : "hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
+                      )}
+                      onClick={() => handleRuleSelect(rule)}
+                    >
+                      {rule.title === 'Response Guidelines' && <FileCheck className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                      {rule.title === 'Default Behavior' && <Settings className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                      {rule.title === 'Training Examples' && <BookIcon className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                      <span className="truncate">{rule.title}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -579,7 +615,7 @@ const AIKnowledgeManagement: React.FC = () => {
   
   // Content display component when an item is selected
   const ContentDisplay = ({ item }: { item: AiKnowledgeContent | null }) => {
-    if (!item) return (
+    if (!item && !isRuleSelected) return (
       <div className="flex flex-col items-center justify-center h-full">
         <div className="text-center max-w-md">
           <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -590,6 +626,87 @@ const AIKnowledgeManagement: React.FC = () => {
         </div>
       </div>
     );
+    
+    if (isRuleSelected && selectedRule) {
+      return (
+        <div className="p-6 h-full overflow-auto">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">{selectedRule.title}</h2>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="outline" className="capitalize">Rule</Badge>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Rule
+              </Button>
+            </div>
+          </div>
+          
+          <div className="mt-6 prose dark:prose-invert max-w-none">
+            <p>{selectedRule.content}</p>
+            
+            {selectedRule.title === 'Response Guidelines' && (
+              <div className="mt-4 p-4 bg-accent/30 rounded">
+                <h3>Response Format Guidelines</h3>
+                <ol className="list-decimal ml-5 space-y-2">
+                  <li>Always respond in clear, simple language accessible to non-technical users</li>
+                  <li>For bamboo architecture questions, prioritize practical advice over theoretical details</li>
+                  <li>When discussing workshops, include pricing, location and difficulty level</li>
+                  <li>For project-specific questions, emphasize feasibility and regional considerations</li>
+                  <li>Always offer alternatives when a specific technique or material is not recommended</li>
+                </ol>
+              </div>
+            )}
+            
+            {selectedRule.title === 'Default Behavior' && (
+              <div className="mt-4 p-4 bg-accent/30 rounded">
+                <h3>Default Behavior Settings</h3>
+                <ul className="list-disc ml-5 space-y-2">
+                  <li><strong>Uncertainty handling:</strong> Acknowledge limitations and offer to connect with human experts</li>
+                  <li><strong>Knowledge boundaries:</strong> Stay within bamboo architecture expertise, decline unrelated topics</li>
+                  <li><strong>Resource linking:</strong> Refer to specific BambooMade workshops and services when relevant</li>
+                  <li><strong>Content prioritization:</strong> Focus on practical application over theory</li>
+                  <li><strong>Regional adaptation:</strong> Adjust recommendations based on user's regional context</li>
+                </ul>
+              </div>
+            )}
+            
+            {selectedRule.title === 'Training Examples' && (
+              <div className="mt-4 space-y-4">
+                <div className="p-4 bg-accent/30 rounded">
+                  <h4 className="text-sm font-medium mb-2">Example 1: Workshop Question</h4>
+                  <div className="space-y-2">
+                    <p className="bg-muted/50 p-2 rounded"><strong>Q:</strong> Do you have any workshops on bamboo joinery?</p>
+                    <p className="bg-primary/10 p-2 rounded"><strong>A:</strong> Yes, we offer specialized workshops on bamboo joinery techniques! Our "Fundamentals of Bamboo Joinery" workshop covers traditional and modern connecting methods, runs for 2 days, and costs ₹7,500 for professionals and ₹5,000 for students. The next session is scheduled for [date] in Hyderabad. Would you like me to share the detailed curriculum or help you register?</p>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-accent/30 rounded">
+                  <h4 className="text-sm font-medium mb-2">Example 2: Technical Question</h4>
+                  <div className="space-y-2">
+                    <p className="bg-muted/50 p-2 rounded"><strong>Q:</strong> What's the best bamboo species for a pergola in a coastal area?</p>
+                    <p className="bg-primary/10 p-2 rounded"><strong>A:</strong> For coastal areas, Dendrocalamus stocksii (Solid Bamboo) is ideal for pergolas due to its salt-air resistance and structural strength. Bambusa bambos is another good option if treated properly. The key for coastal applications is proper treatment against moisture and insects. I recommend our specialized bamboo treatment workshop that covers these specific scenarios, or you can book a project guidance session for personalized advice on your specific location.</p>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-accent/30 rounded">
+                  <h4 className="text-sm font-medium mb-2">Example 3: Project Request</h4>
+                  <div className="space-y-2">
+                    <p className="bg-muted/50 p-2 rounded"><strong>Q:</strong> Can you help me design a bamboo treehouse?</p>
+                    <p className="bg-primary/10 p-2 rounded"><strong>A:</strong> I'd be happy to discuss bamboo treehouse design concepts! For a complete design, you'd benefit from our project guidance service where our experts can provide personalized advice. Sessions start at ₹500 for 30 minutes (students) or ₹1000 for 30 minutes (professionals). If you'd prefer to learn the design principles yourself, our "Bamboo Structural Design" workshop covers load calculations and joineries needed for elevated structures. Would you like details about booking a guidance session or attending our upcoming workshops?</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    if (!item) return null;
     
     return (
       <div className="p-6 h-full overflow-auto">
@@ -786,7 +903,7 @@ const AIKnowledgeManagement: React.FC = () => {
           
           {/* Content display area */}
           <div className="h-[calc(100vh-14rem)]">
-            {selectedItem ? (
+            {selectedItem || isRuleSelected ? (
               <ContentDisplay item={selectedItem} />
             ) : isLoading ? (
               <div className="flex justify-center items-center h-full">
