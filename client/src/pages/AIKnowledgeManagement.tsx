@@ -586,7 +586,26 @@ const AIKnowledgeManagement: React.FC = () => {
     return (
       <div className="w-64 h-full border-r dark:border-gray-700 dark:bg-gray-900 flex flex-col">
         <div className="p-4 border-b dark:border-gray-700 flex items-center">
-          <Brain className="h-5 w-5 text-primary mr-2" />
+          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-2">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              className="w-3 h-3 text-primary-foreground"
+            >
+              <path d="M21 12.5c0 .3-.1.6-.2.9"></path>
+              <path d="M14 19.5c-.4 0-.8-.1-1.2-.3"></path>
+              <path d="M3 13l0-.3c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8"></path>
+              <path d="M13 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path>
+              <path d="M18 22a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
+              <path d="m16.5 19 3-3"></path>
+              <path d="M7 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
+            </svg>
+          </div>
           <h3 className="font-semibold text-lg">Knowledge Base</h3>
         </div>
         
@@ -937,6 +956,26 @@ const AIKnowledgeManagement: React.FC = () => {
           {/* Header with action buttons */}
           <div className="p-6 border-b dark:border-gray-700">
             <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  className="w-4 h-4 text-primary-foreground"
+                >
+                  <path d="M21 12.5c0 .3-.1.6-.2.9"></path>
+                  <path d="M14 19.5c-.4 0-.8-.1-1.2-.3"></path>
+                  <path d="M3 13l0-.3c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8"></path>
+                  <path d="M13 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path>
+                  <path d="M18 22a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
+                  <path d="m16.5 19 3-3"></path>
+                  <path d="M7 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
+                </svg>
+              </div>
               <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
             </div>
           </div>
