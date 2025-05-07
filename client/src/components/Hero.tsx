@@ -144,20 +144,6 @@ const Hero: React.FC = () => {
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
 
-          <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-sm sm:text-base md:text-lg text-white max-w-3xl flex items-center gap-4">
-            <a href="mailto:Info@bamboomade.in" className="flex items-center gap-2 hover:text-green-300 transition-colors">
-              <div className="bg-green-500 hover:bg-green-600 p-2 rounded-full transition-colors">
-                <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <span className="hidden sm:inline">Email Us</span>
-            </a>
-            <a href="https://wa.me/8971690163" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-green-300 transition-colors">
-              <div className="bg-green-500 hover:bg-green-600 p-2 rounded-full transition-colors">
-                <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-              </div>
-              <span className="hidden sm:inline">WhatsApp</span>
-            </a>
-          </div>
           <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full">
             <Link href="/project-guidance" className="w-full sm:w-auto">
               <Button
@@ -179,7 +165,29 @@ const Hero: React.FC = () => {
                 <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
-
+          </div>
+          
+          <div className="mt-4 sm:mt-5 md:mt-6 flex gap-3 sm:gap-4">
+            <a href="mailto:Info@bamboomade.in" className="flex items-center gap-2 text-green-300 hover:text-green-200 transition-colors">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-transparent border border-green-700/50 hover:bg-green-900/30 text-green-300 hover:text-green-200 h-9 sm:h-10"
+              >
+                <Mail className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="text-xs sm:text-sm">Email Us</span>
+              </Button>
+            </a>
+            <a href="https://wa.me/8971690163" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-300 hover:text-green-200 transition-colors">
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-transparent border border-green-700/50 hover:bg-green-900/30 text-green-300 hover:text-green-200 h-9 sm:h-10"
+              >
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="text-xs sm:text-sm">WhatsApp</span>
+              </Button>
+            </a>
           </div>
         </div>
       </div>
