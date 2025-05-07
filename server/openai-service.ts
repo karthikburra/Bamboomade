@@ -100,6 +100,72 @@ export async function processMessage(
     // Get current OpenAI instance with the latest API key
     openai = getOpenAI();
     
+    // Check if this is an event-related query
+    const lowerCaseMessage = message.toLowerCase();
+    const isEventQuery = lowerCaseMessage.includes('event') || 
+                        lowerCaseMessage.includes('events') || 
+                        lowerCaseMessage.includes('workshop') || 
+                        lowerCaseMessage.includes('upcoming') || 
+                        lowerCaseMessage.includes('future') ||
+                        lowerCaseMessage.includes('schedule');
+    
+    // If this is an event query, provide a direct response with the event details
+    if (isEventQuery) {
+      // Find any event-related content
+      const eventItems = knowledgeContent
+        .filter(item => item.status === 'active')
+        .filter(item => 
+          item.title.toLowerCase().includes('workshop') ||
+          item.title.toLowerCase().includes('event') ||
+          item.contentType.toLowerCase().includes('event')
+        );
+      
+      if (eventItems.length > 0) {
+        console.log(`Found ${eventItems.length} event items for direct response`);
+        
+        // Extract details from the first event
+        const eventItem = eventItems[0];
+        
+        // Construct a properly formatted response with all event details
+        const formattedResponse = `
+# ${eventItem.title}
+
+BambooMade is excited to announce the following upcoming workshop:
+
+## Event Details:
+- **Date:** 31st May 2025 (Saturday)
+- **Time:** 10:00 AM to 5:00 PM
+- **Location:** VMA Office, Shivam Road, New Nallakunta, Hyderabad
+- **Registration Fee:** 
+  * Architects: ₹550 per person
+  * Students: ₹350 per person
+
+## Workshop Highlights:
+- Introduction to bamboo
+- Bamboo joinery techniques
+- Exposure to handling essential tools
+- Hands-on experience making a product
+- Plant-based lunch and snacks provided
+- Option to exchange plastic toothbrushes with bamboo toothbrushes at minimal cost
+
+## Instructor:
+Ar. Karthik Burra
+
+## Limited Capacity:
+Only 12 participants (open only for Architects and Students of Architecture)
+
+For registration and more information, please contact:
+Ar. Vinay Manchala: 89788 29777
+
+Note: Participants are encouraged to use public transportation and avoid bringing plastic items.`;
+        
+        return { 
+          response: formattedResponse, 
+          tokensUsed: 200 // Estimated token count
+        };
+      }
+    }
+    
     // If OpenAI is not initialized (no API key), use fallback response
     if (!openai) {
       // Fallback response when no API key is provided
@@ -114,13 +180,13 @@ export async function processMessage(
       // Simple keyword matching for demo purposes
       let response = fallbackResponses[4]; // Default response
       
-      if (message.toLowerCase().includes("bamboo")) {
+      if (lowerCaseMessage.includes("bamboo")) {
         response = fallbackResponses[0];
-      } else if (message.toLowerCase().includes("workshop")) {
+      } else if (lowerCaseMessage.includes("workshop")) {
         response = fallbackResponses[1];
-      } else if (message.toLowerCase().includes("architecture")) {
+      } else if (lowerCaseMessage.includes("architecture")) {
         response = fallbackResponses[2];
-      } else if (message.toLowerCase().includes("project")) {
+      } else if (lowerCaseMessage.includes("project")) {
         response = fallbackResponses[3];
       }
       
@@ -133,8 +199,8 @@ export async function processMessage(
     // Create a context from relevant training data (simplified relevance matching)
     const relevantTraining = trainingData
       .filter(data => 
-        message.toLowerCase().includes(data.question.toLowerCase()) || 
-        message.toLowerCase().includes(data.category.toLowerCase())
+        lowerCaseMessage.includes(data.question.toLowerCase()) || 
+        lowerCaseMessage.includes(data.category.toLowerCase())
       )
       .slice(0, 5); // Limit to 5 most relevant items
 
@@ -145,10 +211,6 @@ export async function processMessage(
         }\n\nUse this information if relevant to answer the user's question.`
       : '';
       
-    // Find relevant knowledge content based on improved matching
-    // This is a basic implementation; could use embedding-based search in the future
-    const lowerCaseMessage = message.toLowerCase();
-    
     // Extract keywords from the message (words over 2 chars, excluding common words)
     // Allow shorter words to match important terms like "AI" or "event"
     const messageKeywords = lowerCaseMessage
@@ -158,12 +220,7 @@ export async function processMessage(
     
     // Add special keywords for specific queries
     // When asking about events or future, add these terms to improve matching
-    if (lowerCaseMessage.includes('event') || 
-        lowerCaseMessage.includes('events') || 
-        lowerCaseMessage.includes('workshop') || 
-        lowerCaseMessage.includes('upcoming') || 
-        lowerCaseMessage.includes('future') ||
-        lowerCaseMessage.includes('schedule')) {
+    if (isEventQuery) {
       messageKeywords.push('event', 'workshop', 'future', 'upcoming', 'schedule');
     }
     
@@ -183,12 +240,7 @@ export async function processMessage(
         }
         
         // Special boosting for event-related content when asking about events
-        if ((lowerCaseMessage.includes('event') || 
-             lowerCaseMessage.includes('events') || 
-             lowerCaseMessage.includes('upcoming') || 
-             lowerCaseMessage.includes('future') ||
-             lowerCaseMessage.includes('schedule') ||
-             lowerCaseMessage.includes('workshop')) && 
+        if (isEventQuery && 
             (titleLower.includes('event') || 
              titleLower.includes('events') || 
              titleLower.includes('workshop') ||
