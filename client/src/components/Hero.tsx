@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight, MessageCircle, Mail, Phone } from "lucide-react";
 import WhatsAppContact from "./WhatsAppContact";
 import heroImage from "@assets/Hero.png";
 
@@ -144,8 +144,19 @@ const Hero: React.FC = () => {
             "Achieving artistic, functional, and sustainable design solutions."
           </p>
 
-          <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-sm sm:text-base md:text-lg text-white max-w-3xl">
-            <p className="mt-1 sm:mt-2">Email: <a href="mailto:Info@bamboomade.in" className="underline hover:text-green-300">Info@bamboomade.in</a></p>
+          <div className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 text-sm sm:text-base md:text-lg text-white max-w-3xl flex items-center gap-4">
+            <a href="mailto:Info@bamboomade.in" className="flex items-center gap-2 hover:text-green-300 transition-colors">
+              <div className="bg-green-500 hover:bg-green-600 p-2 rounded-full transition-colors">
+                <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <span className="hidden sm:inline">Email Us</span>
+            </a>
+            <a href="https://wa.me/8971690163" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-green-300 transition-colors">
+              <div className="bg-green-500 hover:bg-green-600 p-2 rounded-full transition-colors">
+                <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <span className="hidden sm:inline">WhatsApp</span>
+            </a>
           </div>
           <div className="mt-5 sm:mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full">
             <Link href="/project-guidance" className="w-full sm:w-auto">
