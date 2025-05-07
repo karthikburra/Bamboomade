@@ -4,17 +4,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Calendar, Database, Users, HelpCircle } from "lucide-react";
 
 interface AdminTabsProps {
-  defaultTab?: string;
+  value?: string;
+  defaultTab?: string; // For backwards compatibility
   onTabChange?: (tab: string) => void;
   children: React.ReactNode;
 }
 
 const AdminTabs: React.FC<AdminTabsProps> = ({ 
+  value,
   defaultTab = "summary", 
   onTabChange, 
   children 
 }) => {
   const [location, navigate] = useLocation();
+  
+  // Use value prop if provided, otherwise fall back to defaultTab
+  const activeTab = value || defaultTab;
   
   const handleTabChange = (tab: string) => {
     if (onTabChange) {
@@ -42,7 +47,8 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
 
   return (
     <Tabs 
-      defaultValue={defaultTab} 
+      value={activeTab}
+      defaultValue={defaultTab}
       onValueChange={handleTabChange}
       className="space-y-6"
     >

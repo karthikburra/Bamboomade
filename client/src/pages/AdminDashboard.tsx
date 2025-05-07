@@ -604,10 +604,11 @@ export default function AdminDashboard() {
         )}
         
         <AdminTabs 
-          defaultTab={tabParam && ["sessions", "knowledge", "users", "summary"].includes(tabParam) 
-            ? tabParam 
-            : "sessions"}
+          value={activeTab}
           onTabChange={(value) => {
+            // Update component state
+            setActiveTab(value);
+            
             // Update URL when tab changes without full page reload
             const newSearchParams = new URLSearchParams(search);
             newSearchParams.set("tab", value);
