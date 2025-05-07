@@ -784,6 +784,22 @@ export default function AdminDashboard() {
                                       <span className="max-w-[80px] truncate" title={session.email}>
                                         {session.email}
                                       </span>
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="ml-1 h-5 w-5 p-0 text-gray-400 hover:text-white"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(session.email);
+                                          toast({
+                                            title: "Copied!",
+                                            description: "Email copied to clipboard",
+                                            variant: "default",
+                                          });
+                                        }}
+                                      >
+                                        <Copy className="h-3 w-3" />
+                                      </Button>
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden sm:table-cell">
@@ -792,6 +808,22 @@ export default function AdminDashboard() {
                                       <span className="max-w-[120px] truncate" title={session.email}>
                                         {session.email}
                                       </span>
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="ml-1 h-5 w-5 p-0 text-gray-400 hover:text-white"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(session.email);
+                                          toast({
+                                            title: "Copied!",
+                                            description: "Email copied to clipboard",
+                                            variant: "default",
+                                          });
+                                        }}
+                                      >
+                                        <Copy className="h-3 w-3" />
+                                      </Button>
                                     </div>
                                     <div className="flex items-center text-xs text-gray-300">
                                       <Phone className="w-3 h-3 mr-1" /> {session.phone}
