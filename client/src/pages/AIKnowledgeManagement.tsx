@@ -22,7 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 // Icons
-import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon, Database, Code, Search } from 'lucide-react';
+import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon, Database, Code, Search, Sparkles, Send, MessageSquare, Brain } from 'lucide-react';
 
 // Schema validation for AI knowledge content form
 const aiKnowledgeFormSchema = z.object({
@@ -75,6 +75,12 @@ const AIKnowledgeManagement: React.FC = () => {
   const [sqlQuery, setSqlQuery] = useState<string>("SELECT * FROM content");
   const [sqlResult, setSqlResult] = useState<any>(null);
   const [isExecutingSql, setIsExecutingSql] = useState(false);
+  
+  // AI Training Chat Interface
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{role: string, content: string}>>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isProcessingChat, setIsProcessingChat] = useState(false);
   
   // Form setup
   const form = useForm<z.infer<typeof aiKnowledgeFormSchema>>({
@@ -392,6 +398,59 @@ const AIKnowledgeManagement: React.FC = () => {
       setIsExecutingSql(false);
     }
   };
+  
+  // AI Training Chat Functions
+  const sendChatMessage = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest('POST', '/api/chat/ai-training', {
+        message,
+        previousMessages: chatMessages
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Add AI response to chat
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+      
+      // If content was added to knowledge base
+      if (data.addedContent) {
+        toast({
+          title: "Knowledge Added",
+          description: `New content "${data.addedContent.title}" has been added to the knowledge base.`,
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+      }
+      
+      setIsProcessingChat(false);
+    },
+    onError: (error: any) => {
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "Sorry, I encountered an error processing your request. Please try again." 
+      }]);
+      toast({
+        title: "Chat Error",
+        description: `Error: ${error.message}`,
+        variant: "destructive",
+      });
+      setIsProcessingChat(false);
+    }
+  });
+
+  const handleSendChat = () => {
+    if (!chatInput.trim() || isProcessingChat) return;
+    
+    // Add user message to chat
+    const newMessage = { role: 'user', content: chatInput };
+    setChatMessages(prev => [...prev, newMessage]);
+    
+    // Process message
+    setIsProcessingChat(true);
+    sendChatMessage.mutate(chatInput);
+    
+    // Clear input
+    setChatInput("");
+  };
 
   const filteredContent = knowledgeContent?.filter(item => {
     if (activeTab === "all") return true;
@@ -411,6 +470,13 @@ const AIKnowledgeManagement: React.FC = () => {
           <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
         </div>
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          <Button
+            onClick={() => setAiChatOpen(true)}
+            className="flex-1 md:flex-none bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            <span className="whitespace-nowrap">AI Training Chat</span>
+          </Button>
           <Button
             variant="outline"
             className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
