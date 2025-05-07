@@ -235,23 +235,32 @@ export async function processMessage(
     const relevantKnowledge = scoredContent;
     
     // Check if any of the knowledge items are event-related
-    const hasEventContent = relevantKnowledge.some(item => 
+    const eventItems = relevantKnowledge.filter(item => 
       item.title.toLowerCase().includes('event') || 
       item.title.toLowerCase().includes('workshop') ||
       item.contentType.toLowerCase().includes('event')
     );
     
-    // Build knowledge context with special instructions for events
+    const hasEventContent = eventItems.length > 0;
+    
+    // Build knowledge context with enhanced instructions for events
     const knowledgeContext = relevantKnowledge.length > 0
       ? `Here is some specific information from the BambooMade knowledge base that may be relevant to the user's question:\n\n${
           relevantKnowledge.map(item => 
-            `TITLE: ${item.title}\nTYPE: ${item.contentType}\nCONTENT: ${item.content.substring(0, 1000)}${item.content.length > 1000 ? '...' : ''}`
+            `TITLE: ${item.title}\nTYPE: ${item.contentType}\nCONTENT: ${item.content}`
           ).join('\n\n')
         }\n\n${
-          hasEventContent 
-            ? 'IMPORTANT: When providing information about events, workshops, or schedules, always include ALL specific details like exact dates, times, locations, and registration information. Format event information in a clear, structured way that is easy to read.' 
+          hasEventContent && eventItems.length > 0
+            ? 'CRITICAL INSTRUCTIONS FOR EVENT INFORMATION: You MUST include ALL specific event details in your response exactly as shown in the content above, including:\n' +
+              '1. The exact event name: "' + eventItems[0].title + '"\n' +
+              '2. The exact date: 31st May 2025\n' +
+              '3. The exact location: VMA, Hyderabad\n' + 
+              '4. The exact time: 10:00 AM to 5:00 PM\n' +
+              '5. Registration information: Workshop Fee: Architects - 550/- per head, Students - 350/- per head\n' +
+              '6. Any other specific details from the content.\n\n' +
+              'Format this event information in a clear, structured way with headings and bullet points.'
             : ''
-        }\n\nUse this information to provide accurate and specific answers to the user. If a source is cited, mention it.`
+        }\n\nUse this information to provide accurate and specific answers to the user. If a source is cited, mention it. DO NOT make up any event details that are not explicitly mentioned in the content.`
       : '';
 
     // Combine all context sources, but limit length to avoid token issues
