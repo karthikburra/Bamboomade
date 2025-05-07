@@ -83,7 +83,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 <li className="flex items-center">
                   <MapPin size={16} className="flex-shrink-0 text-primary-200 sm:w-5 sm:h-5" />
                   <span className="ml-2 sm:ml-3 text-sm sm:text-base text-primary-300">
-                    Nagole, Hyderabad-500068
+                    Banjara Hills, Hyderabad
                   </span>
                 </li>
                 <li className="flex items-center">
