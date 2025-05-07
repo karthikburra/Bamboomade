@@ -861,7 +861,14 @@ export default function AdminDashboard() {
                                           <Button 
                                             size="sm"
                                             className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                            onClick={() => window.open(session.googleMeetLink, '_blank')}
+                                            onClick={() => {
+                                              // Ensure URL has protocol prefix for proper browser opening
+                                              let meetUrl = session.googleMeetLink;
+                                              if (meetUrl && !meetUrl.startsWith('http')) {
+                                                meetUrl = 'https://' + meetUrl;
+                                              }
+                                              window.open(meetUrl, '_blank', 'noopener,noreferrer');
+                                            }}
                                           >
                                             <Video className="w-3.5 h-3.5 mr-1.5" /> 
                                             <span className="hidden sm:inline">Open Meet</span>
@@ -1095,26 +1102,45 @@ export default function AdminDashboard() {
                 {selectedSession?.googleMeetLink && (
                   <div className="mt-2 bg-gray-800/50 p-2 rounded-md border border-gray-700">
                     <p className="text-xs text-gray-400 mb-1">Existing Google Meet Link:</p>
-                    <div className="flex items-center gap-2">
-                      <code className="text-xs text-green-400 bg-green-950/30 p-1 rounded flex-grow overflow-x-auto">
-                        {selectedSession.googleMeetLink}
-                      </code>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="border-gray-700 text-gray-300 h-7 px-2"
-                        onClick={() => {
-                          navigator.clipboard.writeText(selectedSession.googleMeetLink || "");
-                          toast({
-                            title: "Copied!",
-                            description: "Existing link copied to clipboard",
-                            variant: "default",
-                          });
-                        }}
-                      >
-                        <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
-                      </Button>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <code className="text-xs text-green-400 bg-green-950/30 p-1 rounded flex-grow overflow-x-auto">
+                          {selectedSession.googleMeetLink}
+                        </code>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-700 text-gray-300 h-7 px-2 shrink-0"
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedSession.googleMeetLink || "");
+                            toast({
+                              title: "Copied!",
+                              description: "Existing link copied to clipboard",
+                              variant: "default",
+                            });
+                          }}
+                        >
+                          <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
+                        </Button>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 h-7 px-2"
+                          onClick={() => {
+                            // Ensure URL has protocol prefix for proper browser opening
+                            let meetUrl = selectedSession.googleMeetLink;
+                            if (meetUrl && !meetUrl.startsWith('http')) {
+                              meetUrl = 'https://' + meetUrl;
+                            }
+                            window.open(meetUrl, '_blank', 'noopener,noreferrer');
+                          }}
+                        >
+                          <Video className="w-3.5 h-3.5 mr-1.5" /> Open in new tab
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
