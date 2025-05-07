@@ -554,43 +554,46 @@ export default function AdminDashboard() {
           </div>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-amber-900/20 border-amber-900">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-green-900/20 border-green-900">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-red-900/20 border-red-900">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Stats summary only shown on Sessions tab */}
+        {activeTab === "sessions" && (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
+              </CardHeader>
+              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-amber-900/20 border-amber-900">
+              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
+              </CardHeader>
+              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-green-900/20 border-green-900">
+              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
+              </CardHeader>
+              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-red-900/20 border-red-900">
+              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
+              </CardHeader>
+              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
         
         <AdminTabs 
           defaultTab={tabParam && ["sessions", "knowledge", "users", "summary"].includes(tabParam) 
