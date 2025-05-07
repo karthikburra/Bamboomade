@@ -26,11 +26,9 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       onTabChange(tab);
     }
     
-    // Navigate to appropriate page based on the selected tab
+    // Handle tab changes without always redirecting
+    // This allows the summary tab to work within the same page
     switch (tab) {
-      case "summary":
-        navigate("/admin-home");
-        break;
       case "sessions":
         navigate("/admin-dashboard?tab=pending");
         break;
@@ -40,8 +38,15 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       case "users":
         navigate("/admin-dashboard?tab=users");
         break;
+      case "summary":
+        // Check if already on AdminDashboard, no need to redirect then
+        if (location !== "/admin-dashboard") {
+          navigate("/admin-dashboard?tab=summary");
+        }
+        break;
       default:
-        navigate("/admin-home");
+        // No redirection by default - rely on the activeTab state
+        break;
     }
   };
 
