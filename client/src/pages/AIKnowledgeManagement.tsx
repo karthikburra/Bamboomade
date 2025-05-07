@@ -30,7 +30,8 @@ import {
   FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, 
   Upload as UploadIcon, Database, Code, Search, Sparkles, Send, 
   MessageSquare, Brain, Lightbulb, Menu, BookOpen, GraduationCap,
-  Globe, Settings, Book, FileCheck, BookOpen as BookIcon 
+  Globe, Settings, Book, FileCheck, BookOpen as BookIcon,
+  X, Loader2, LayoutGrid, Edit
 } from 'lucide-react';
 
 // Import AI Training Chat
@@ -99,6 +100,72 @@ const AIKnowledgeManagement: React.FC = () => {
   
   // AI Training Chat Interface
   const [aiChatOpen, setAiChatOpen] = useState(false);
+  
+  // Direct AI Analysis feature
+  const [aiAnalysisText, setAiAnalysisText] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<{
+    title: string;
+    contentType: string;
+  } | null>(null);
+  
+  // Function to analyze content directly in the input
+  const handleAnalyzeContent = async () => {
+    if (aiAnalysisText.trim().length < 10) return;
+    
+    setIsAnalyzing(true);
+    try {
+      const response = await apiRequest('POST', '/api/ai-knowledge/analyze', {
+        content: aiAnalysisText
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to analyze content');
+      }
+      
+      const data = await response.json();
+      setAiAnalysisResult({
+        title: data.title || 'Untitled Content',
+        contentType: data.contentType || 'document'
+      });
+      
+      toast({
+        title: "Content Analyzed",
+        description: "AI has analyzed your content and suggested categorization.",
+      });
+    } catch (error) {
+      toast({
+        title: "Analysis Failed",
+        description: `Failed to analyze content: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+  
+  // Function to save analyzed content directly
+  const handleDirectSave = async (title: string, contentType: string, content: string) => {
+    if (!title || !contentType || !content) {
+      toast({
+        title: "Missing Information",
+        description: "Title, content type, and content are required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addMutation.mutate({
+      title,
+      contentType,
+      content,
+      status: 'active',
+    });
+    
+    // Reset analysis state after saving
+    setAiAnalysisText('');
+    setAiAnalysisResult(null);
+  };
   
   // Navigation state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -548,6 +615,13 @@ const AIKnowledgeManagement: React.FC = () => {
                   </div>
                   <span className="text-xs font-medium">{contentTypeCount['webpage'] || 0}</span>
                 </div>
+                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
+                  <div className="flex items-center">
+                    <LayoutGrid className="h-3.5 w-3.5 mr-2 text-primary" />
+                    <span className="text-xs">Total</span>
+                  </div>
+                  <span className="text-xs font-medium">{knowledgeContent?.length || 0}</span>
+                </div>
               </div>
             </div>
             
@@ -628,8 +702,17 @@ const AIKnowledgeManagement: React.FC = () => {
           </div>
         </ScrollArea>
         
-        {/* AI Training Chat button at bottom of sidebar */}
-        <div className="p-3 border-t dark:border-gray-700">
+        {/* Bottom sidebar actions */}
+        <div className="p-3 pt-2 border-t dark:border-gray-700 space-y-2">
+          <Button
+            variant="outline"
+            className="w-full justify-start text-sm dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+            onClick={() => setIsSqlDialogOpen(true)}
+          >
+            <Database className="h-4 w-4 mr-2" />
+            SQL Query
+          </Button>
+          
           <Button
             variant="default"
             className="w-full justify-start text-sm bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
@@ -895,44 +978,7 @@ const AIKnowledgeManagement: React.FC = () => {
               </div>
             </div>
             
-            {/* Stats cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mt-6">
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
-                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Total Content</CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
-                  <p className="text-xl md:text-2xl font-bold dark:text-white">{knowledgeContent?.length || 0}</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
-                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Documents</CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
-                  <p className="text-xl md:text-2xl font-bold dark:text-white">{contentTypeCount['document'] || 0}</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
-                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Events</CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
-                  <p className="text-xl md:text-2xl font-bold dark:text-white">{contentTypeCount['event'] || 0}</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
-                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Websites</CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
-                  <p className="text-xl md:text-2xl font-bold dark:text-white">{contentTypeCount['webpage'] || 0}</p>
-                </CardContent>
-              </Card>
-            </div>
+            {/* No stats cards - info already in sidebar */}
           </div>
           
           {/* Content display area */}
@@ -975,48 +1021,129 @@ const AIKnowledgeManagement: React.FC = () => {
               )}
             </div>
             
-            {/* AI Chat input at bottom */}
+            {/* Direct AI Training input at bottom */}
             <div className="p-4 border-t dark:border-gray-700 bg-background">
-              <div className="flex gap-2 items-center">
-                <Input
-                  placeholder="Ask AI about bamboo architecture or content management..."
-                  className="flex-1 dark:bg-gray-800 dark:border-gray-700"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      setAiChatOpen(true);
-                    }
-                  }}
-                  onClick={() => setAiChatOpen(true)}
-                />
-                <Button
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
-                  onClick={() => setAiChatOpen(true)}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="mt-2 flex justify-between">
-                <div className="text-xs text-muted-foreground dark:text-gray-400">
-                  Press Enter to open AI Training Chat
+              <div className="flex flex-col gap-2">
+                {/* Analysis results section */}
+                {aiAnalysisResult && (
+                  <div className="mb-3 bg-accent/20 p-3 rounded-md dark:bg-gray-800/80 border dark:border-gray-700">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium text-sm">Content Analysis</h4>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0" 
+                        onClick={() => setAiAnalysisResult(null)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Detected Type</p>
+                        <div className="flex items-center">
+                          {aiAnalysisResult.contentType === 'document' && <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-500" />}
+                          {aiAnalysisResult.contentType === 'event' && <Calendar className="h-3.5 w-3.5 mr-1.5 text-green-500" />}
+                          {aiAnalysisResult.contentType === 'webpage' && <Globe className="h-3.5 w-3.5 mr-1.5 text-purple-500" />}
+                          <span className="font-medium text-sm capitalize">{aiAnalysisResult.contentType}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Suggested Title</p>
+                        <p className="font-medium text-sm">{aiAnalysisResult.title}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 justify-end mt-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          form.reset();
+                          form.setValue('title', aiAnalysisResult.title);
+                          form.setValue('contentType', aiAnalysisResult.contentType);
+                          form.setValue('content', aiAnalysisText);
+                          form.setValue('status', 'active');
+                          setIsAddDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="h-3.5 w-3.5 mr-1.5" />
+                        Edit Before Adding
+                      </Button>
+                      <Button 
+                        size="sm"
+                        className="h-7 text-xs bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
+                        onClick={() => handleDirectSave(aiAnalysisResult.title, aiAnalysisResult.contentType, aiAnalysisText)}
+                      >
+                        <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
+                        Add to Knowledge Base
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Text input area */}
+                <div className="relative">
+                  <Textarea
+                    placeholder="Enter content to analyze and add to the knowledge base..."
+                    className="min-h-[100px] pr-16 resize-none dark:bg-gray-800 dark:border-gray-700"
+                    value={aiAnalysisText}
+                    onChange={(e) => setAiAnalysisText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        handleAnalyzeContent();
+                      }
+                    }}
+                  />
+                  <Button
+                    className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
+                    onClick={handleAnalyzeContent}
+                    disabled={isAnalyzing || aiAnalysisText.trim().length < 10}
+                    title="Analyze content (Ctrl+Enter)"
+                  >
+                    {isAnalyzing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 px-2 text-xs hover:bg-accent dark:text-gray-400"
-                    onClick={() => setAiChatOpen(true)}
+                
+                <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
+                  <span>{isAnalyzing ? "Analyzing content..." : "Enter content and click the analyze button"}</span>
+                  <span className="text-right">
+                    Press <kbd className="px-1.5 py-0.5 bg-muted rounded border dark:bg-gray-700 dark:border-gray-600">Ctrl+Enter</kbd> to analyze
+                  </span>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Badge 
+                    variant="outline"
+                    className="cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => setAiAnalysisText("The Bamboo Sustainable Building Workshop is a hands-on 3-day program covering bamboo selection, treatment, joinery techniques, and construction methods. The workshop costs ₹8,000 for professionals and ₹5,500 for students, with the next session scheduled for June 15-17, 2025 in Hyderabad.")}
                   >
-                    Add knowledge content
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 px-2 text-xs hover:bg-accent dark:text-gray-400"
-                    onClick={() => setAiChatOpen(true)}
+                    <Calendar className="h-3 w-3 mr-1.5" />
+                    Event sample
+                  </Badge>
+                  <Badge 
+                    variant="outline"
+                    className="cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => setAiAnalysisText("Bambusa Bambos is a thorny bamboo species native to India, characterized by its thick-walled culms that can reach heights of 30 meters. It's widely used in construction, paper production, and furniture making due to its exceptional strength-to-weight ratio.")}
                   >
-                    Train AI responses
-                  </Button>
+                    <FileText className="h-3 w-3 mr-1.5" />
+                    Document sample
+                  </Badge>
+                  <Badge 
+                    variant="outline"
+                    className="cursor-pointer hover:bg-accent/50 transition-colors"
+                    onClick={() => setAiAnalysisText("The International Bamboo Architecture Biennale website showcases innovative bamboo structures from around the world. Visit www.bamboobiennale.org to explore the gallery of award-winning designs, access research papers on sustainable bamboo construction, and learn about upcoming exhibitions.")}
+                  >
+                    <Globe className="h-3 w-3 mr-1.5" />
+                    Website sample
+                  </Badge>
                 </div>
               </div>
             </div>
