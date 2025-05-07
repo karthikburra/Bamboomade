@@ -523,18 +523,35 @@ const AIKnowledgeManagement: React.FC = () => {
         
         <ScrollArea className="flex-1">
           <div className="px-3 py-2">
-            <div className="mb-4">
-              <Button
-                variant="ghost"
-                className="w-full justify-start font-normal text-sm px-2 py-1.5 h-auto"
-                onClick={() => setAiChatOpen(true)}
-              >
-                <Sparkles className="h-4 w-4 mr-2 text-primary" />
-                AI Training Chat
-              </Button>
+            {/* Stats cards in sidebar */}
+            <div className="space-y-2 mb-4">
+              <div className="text-sm font-medium text-muted-foreground dark:text-gray-400 px-2">Content Statistics</div>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
+                  <div className="flex items-center">
+                    <FileText className="h-3.5 w-3.5 mr-2 text-primary" />
+                    <span className="text-xs">Documents</span>
+                  </div>
+                  <span className="text-xs font-medium">{contentTypeCount['document'] || 0}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
+                  <div className="flex items-center">
+                    <Calendar className="h-3.5 w-3.5 mr-2 text-primary" />
+                    <span className="text-xs">Events</span>
+                  </div>
+                  <span className="text-xs font-medium">{contentTypeCount['event'] || 0}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
+                  <div className="flex items-center">
+                    <Globe className="h-3.5 w-3.5 mr-2 text-primary" />
+                    <span className="text-xs">Websites</span>
+                  </div>
+                  <span className="text-xs font-medium">{contentTypeCount['webpage'] || 0}</span>
+                </div>
+              </div>
             </div>
             
-            <Separator className="my-2" />
+            <Separator className="my-3" />
             
             {Object.entries(categorizedContent).map(([category, items]) => (
               <div key={category} className="mb-4">
@@ -573,7 +590,7 @@ const AIKnowledgeManagement: React.FC = () => {
               </div>
             ))}
             
-            <Separator className="my-4" />
+            <Separator className="my-3" />
             
             <div className="mb-4">
               <div 
@@ -585,6 +602,7 @@ const AIKnowledgeManagement: React.FC = () => {
               >
                 <GraduationCap className="h-4 w-4 mr-2" />
                 <span>Rules & Training</span>
+                <span className="ml-auto text-xs text-muted-foreground dark:text-gray-400">{trainingRules.length}</span>
               </div>
               
               {selectedCategory === 'rules' && (
@@ -609,6 +627,18 @@ const AIKnowledgeManagement: React.FC = () => {
             </div>
           </div>
         </ScrollArea>
+        
+        {/* AI Training Chat button at bottom of sidebar */}
+        <div className="p-3 border-t dark:border-gray-700">
+          <Button
+            variant="default"
+            className="w-full justify-start text-sm bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
+            onClick={() => setAiChatOpen(true)}
+          >
+            <Sparkles className="h-4 w-4 mr-2 text-white" />
+            AI Training Chat
+          </Button>
+        </div>
       </div>
     );
   };
@@ -804,23 +834,6 @@ const AIKnowledgeManagement: React.FC = () => {
                 <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
               </div>
               <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                <Button
-                  onClick={() => setAiChatOpen(true)}
-                  className="flex-1 md:flex-none bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">AI Training Chat</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-                  onClick={() => {
-                    setIsImportDialogOpen(true);
-                  }}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">Import from Drive</span>
-                </Button>
                 <Button 
                   className="flex-1 md:flex-none dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
                   onClick={() => {
@@ -831,33 +844,54 @@ const AIKnowledgeManagement: React.FC = () => {
                   <PlusCircle className="mr-2 h-4 w-4" />
                   <span className="whitespace-nowrap">Add New Content</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-                  onClick={() => setIsSqlDialogOpen(true)}
-                >
-                  <Database className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">SQL Query</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-                  onClick={handleExportBackup}
-                  disabled={isExporting || knowledgeContent?.length === 0}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">
-                    {isExporting ? "Exporting..." : "Export Backup"}
-                  </span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-                  onClick={() => setIsRestoreDialogOpen(true)}
-                >
-                  <SaveAll className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">Restore Backup</span>
-                </Button>
+                
+                {/* Data Management Dropdown */}
+                <div className="relative flex-1 md:flex-none">
+                  <Dialog open={isSqlDialogOpen} onOpenChange={setIsSqlDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700">
+                        <Database className="mr-2 h-4 w-4" />
+                        <span className="whitespace-nowrap">SQL Query</span>
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
+                </div>
+                
+                {/* Import/Export/Backup Dropdown */}
+                <div className="relative flex-1 md:flex-none">
+                  <Select>
+                    <SelectTrigger className="dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700 text-sm w-full sm:w-auto">
+                      <div className="flex items-center">
+                        <SaveAll className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Data Management" defaultValue="data" />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                      <SelectItem value="import" onClick={() => setIsImportDialogOpen(true)}>
+                        <div className="flex items-center">
+                          <Upload className="mr-2 h-4 w-4" />
+                          <span>Import from Drive</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem 
+                        value="export" 
+                        onClick={handleExportBackup}
+                        disabled={isExporting || knowledgeContent?.length === 0}
+                      >
+                        <div className="flex items-center">
+                          <Download className="mr-2 h-4 w-4" />
+                          <span>{isExporting ? "Exporting..." : "Export Backup"}</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="restore" onClick={() => setIsRestoreDialogOpen(true)}>
+                        <div className="flex items-center">
+                          <SaveAll className="mr-2 h-4 w-4" />
+                          <span>Restore Backup</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             
