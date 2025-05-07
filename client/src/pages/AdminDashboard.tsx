@@ -562,20 +562,6 @@ export default function AdminDashboard() {
             {/* Page header moved below tabs */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
               <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-              <div className="flex items-center gap-3">
-                <Button 
-                  variant="outline" 
-                  className="flex items-center gap-2 self-end sm:self-auto"
-                  onClick={() => setLocation("/ai-knowledge-management")}
-                >
-                  <Database size={18} />
-                  <span>Knowledge Base</span>
-                </Button>
-                <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto">
-                  <LogOut size={18} />
-                  <span>Logout</span>
-                </Button>
-              </div>
             </div>
         
             {/* Stats summary only shown on Sessions tab */}
