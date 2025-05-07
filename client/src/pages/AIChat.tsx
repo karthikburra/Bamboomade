@@ -37,7 +37,7 @@ const AIChat: React.FC = () => {
               BambooMade AI
             </h1>
             <p className="mt-4 text-lg text-zinc-400 max-w-2xl mx-auto">
-              Chat with our specialized bamboo architecture AI assistant to get expert guidance on sustainable bamboo construction and design.
+              <span className="text-green-400 font-medium">All Bamboo Data in one place.</span> Chat with our specialized bamboo architecture AI assistant to get expert guidance on sustainable bamboo construction and design.
             </p>
             <p className="mt-2 text-base text-green-500 font-medium">
               Try it now - first 5 questions free, then login to continue!
