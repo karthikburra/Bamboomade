@@ -6,9 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Loader2, Send, AlertTriangle, ChevronDown, 
-  Copy, CheckCircle, Sparkles, Share2, RotateCcw
+  Copy, CheckCircle, Sparkles, Share2, RotateCcw, Info
 } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
 import { Link } from "wouter";
@@ -104,6 +105,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;
     
+    // Check if this is a command to add knowledge content
+    if (input.trim().startsWith("/add-source")) {
+      handleAddSource(input.trim());
+      return;
+    }
+    
     const newQuestionCount = questionCount + 1;
     setQuestionCount(newQuestionCount);
     
@@ -158,6 +165,116 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       };
 
       setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  // Function to handle adding a source to the AI knowledge base
+  const handleAddSource = async (input: string) => {
+    try {
+      setIsProcessing(true);
+      
+      // Parse the command format: /add-source title: Title | content: Content | source: URL (optional)
+      const messageContent = input.replace("/add-source", "").trim();
+      
+      // Simple parsing logic - can be enhanced for better detection
+      let title = "";
+      let content = "";
+      let source = "";
+      
+      // Simple parsing by splitting the message by pipes and looking for prefixes
+      const parts = messageContent.split('|');
+      
+      for (const part of parts) {
+        const trimmedPart = part.trim();
+        
+        if (trimmedPart.startsWith('title:')) {
+          title = trimmedPart.substring('title:'.length).trim();
+        } else if (trimmedPart.startsWith('content:')) {
+          content = trimmedPart.substring('content:'.length).trim();
+        } else if (trimmedPart.startsWith('source:')) {
+          source = trimmedPart.substring('source:'.length).trim();
+        }
+      }
+      
+      // Validation
+      if (!title || !content) {
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          role: "assistant",
+          content: "Please provide both a title and content for your knowledge source. Format: /add-source title: Your Title | content: Your Content | source: URL (optional)"
+        };
+        setMessages(prev => [...prev, { 
+          id: `user-${Date.now()}`, 
+          role: "user", 
+          content: input 
+        }, errorMessage]);
+        setInput("");
+        return;
+      }
+      
+      // Add to AI knowledge base via API
+      const response = await fetch('/api/ai-knowledge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          content,
+          source: source || null,
+          contentType: 'manual',
+          status: 'active'
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add knowledge content');
+      }
+      
+      // Success message
+      const successMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: "assistant",
+        content: `✅ Source successfully added to the knowledge base!\n\n**Title:** ${title}\n\nYou can manage all sources in the AI Knowledge Management section of the admin dashboard.`
+      };
+      
+      setMessages(prev => [...prev, { 
+        id: `user-${Date.now()}`, 
+        role: "user", 
+        content: input 
+      }, successMessage]);
+      setInput("");
+      
+      toast({
+        title: "Source Added",
+        description: "Knowledge source has been added successfully.",
+        duration: 3000,
+      });
+      
+    } catch (error) {
+      console.error("Error adding source:", error);
+      
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: "assistant",
+        content: "Failed to add knowledge source. Please make sure you're logged in as an admin and try again."
+      };
+      
+      setMessages(prev => [...prev, { 
+        id: `user-${Date.now()}`, 
+        role: "user", 
+        content: input 
+      }, errorMessage]);
+      setInput("");
+      
+      toast({
+        title: "Error",
+        description: "Failed to add knowledge source.",
+        variant: "destructive",
+        duration: 3000,
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -241,7 +358,41 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
               BETA
             </Badge>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                  title="Chat commands help"
+                >
+                  <Info size={16} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4 bg-zinc-900 border-zinc-700 text-zinc-200">
+                <div className="space-y-2">
+                  <h3 className="font-medium text-green-400 flex items-center">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Chat Commands
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    You can use special commands in the chat to perform additional actions:
+                  </p>
+                  <div className="space-y-3 mt-2">
+                    <div className="bg-zinc-800 p-2 rounded border border-zinc-700">
+                      <code className="text-xs text-green-400 font-mono">/add-source title: Your Title | content: Your Content | source: URL</code>
+                      <p className="text-xs mt-1 text-zinc-300">
+                        Add new knowledge content to the AI database directly from chat. The content will be available for the AI to use in future conversations.
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-2">
+                    All added content can be managed from the AI Knowledge Management section in the admin dashboard.
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button 
               variant="ghost" 
               size="icon" 
