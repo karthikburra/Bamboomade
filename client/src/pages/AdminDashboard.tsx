@@ -1122,6 +1122,87 @@ export default function AdminDashboard() {
           </TabsContent>
           </Tabs>
           </TabsContent>
+          
+          {/* Knowledge Base Tab */}
+          <TabsContent value="knowledge" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle>AI Knowledge Management</CardTitle>
+                <CardDescription>
+                  Manage the AI knowledge base content for the chatbot
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Button 
+                    onClick={() => setLocation("/ai-knowledge-management")}
+                    className="bg-green-700 hover:bg-green-800"
+                  >
+                    <Database className="w-4 h-4 mr-2" /> Go to Knowledge Management
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>
+                  Manage users and their permissions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <p className="text-gray-400 mb-4">User management will be implemented in a future update.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Summary Tab */}
+          <TabsContent value="summary" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle>Dashboard Summary</CardTitle>
+                <CardDescription>
+                  Overview of sessions and AI statistics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Session Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Pending Sessions</h3>
+                    <p className="text-2xl font-bold">{pendingSessions.length}</p>
+                  </div>
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Upcoming Sessions</h3>
+                    <p className="text-2xl font-bold">{upcomingSessions.length}</p>
+                  </div>
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Total Completed</h3>
+                    <p className="text-2xl font-bold">{completedSessions.length}</p>
+                  </div>
+                  <div className="bg-gray-800 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-400 mb-1">Total Cancelled</h3>
+                    <p className="text-2xl font-bold">{cancelledSessions.length}</p>
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <Button 
+                    onClick={() => setLocation("/admin-home")}
+                    className="bg-green-700 hover:bg-green-800"
+                  >
+                    <ChevronDown className="w-4 h-4 mr-2" /> View Detailed Analytics
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </AdminTabs>
         
         {/* Meet Link Dialog */}
