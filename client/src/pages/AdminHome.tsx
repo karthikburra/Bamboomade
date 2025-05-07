@@ -123,7 +123,7 @@ const AdminHome: React.FC = () => {
                 <Button 
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                   size="lg"
-                  onClick={() => navigate("/admin-dashboard")}
+                  onClick={() => navigate("/admin-dashboard?tab=pending")}
                 >
                   <Calendar className="h-5 w-5 mr-2" />
                   Open Session Dashboard

@@ -591,7 +591,18 @@ export default function AdminDashboard() {
           </Card>
         </div>
         
-        <Tabs defaultValue="pending" className="space-y-4">
+        <Tabs 
+          defaultValue={tabParam && ["pending", "upcoming", "completed", "cancelled", "all", "availability", "users"].includes(tabParam) 
+            ? tabParam 
+            : "pending"} 
+          className="space-y-4"
+          onValueChange={(value) => {
+            // Update URL when tab changes without full page reload
+            const newSearchParams = new URLSearchParams(search);
+            newSearchParams.set("tab", value);
+            setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
+          }}
+        >
           <div className="relative overflow-x-auto pb-1">
             <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
               <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
@@ -611,6 +622,9 @@ export default function AdminDashboard() {
               </TabsTrigger>
               <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
                 Availability
+              </TabsTrigger>
+              <TabsTrigger value="users" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">
+                User Management
               </TabsTrigger>
             </TabsList>
           </div>
@@ -959,6 +973,39 @@ export default function AdminDashboard() {
               </TabsContent>
             );
           })}
+          
+          {/* User Management tab */}
+          <TabsContent value="users" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>User Management</CardTitle>
+                    <CardDescription>
+                      Manage user accounts and permissions
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
+                  <UserCog className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">User Management</h3>
+                  <p className="text-muted-foreground mb-6">
+                    The user management functionality is currently being developed. You'll be able to view and manage all user accounts in this section soon.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="border-purple-800 text-purple-400 hover:bg-purple-950/50"
+                    onClick={() => setLocation("/admin")}
+                  >
+                    <UserCog className="h-4 w-4 mr-2" />
+                    Go to Legacy Admin Page
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
           
           {/* Availability management tab */}
           <TabsContent value="availability" className="space-y-4">
