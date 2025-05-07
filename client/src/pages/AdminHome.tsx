@@ -11,7 +11,8 @@ import {
   PieChart
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
+import AdminTabs from "@/components/AdminTabs";
 import { format, isPast, isToday, addDays, differenceInDays } from "date-fns";
 
 // Data fetching for dashboard summary
@@ -169,31 +170,7 @@ const AdminHome: React.FC = () => {
             });
             
             return (
-              <Tabs 
-                defaultValue={activeTab} 
-                onValueChange={setActiveTab}
-                className="space-y-6"
-              >
-                <div className="relative overflow-x-auto pb-1">
-                  <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-                    <TabsTrigger value="summary" className="data-[state=active]:bg-green-700 text-sm">
-                      <BarChart3 className="w-4 h-4 mr-2" />
-                      Dashboard Summary
-                    </TabsTrigger>
-                    <TabsTrigger value="sessions" className="data-[state=active]:bg-green-700 text-sm">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      Session Management
-                    </TabsTrigger>
-                    <TabsTrigger value="knowledge" className="data-[state=active]:bg-blue-600 text-sm">
-                      <Database className="w-4 h-4 mr-2" />
-                      AI Knowledge Base
-                    </TabsTrigger>
-                    <TabsTrigger value="users" className="data-[state=active]:bg-purple-600 text-sm">
-                      <Users className="w-4 h-4 mr-2" />
-                      User Management
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
+              <AdminTabs defaultTab="summary" onTabChange={setActiveTab}>
           
                 {/* Dashboard Summary Tab */}
                 <TabsContent value="summary" className="space-y-6">
@@ -689,7 +666,7 @@ const AdminHome: React.FC = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-              </Tabs>
+              </AdminTabs>
             );
           })()}
         </div>
