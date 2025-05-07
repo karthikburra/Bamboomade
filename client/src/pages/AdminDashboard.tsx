@@ -544,78 +544,7 @@ export default function AdminDashboard() {
       </Helmet>
       
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        {/* Move AdminTabs component to top of the page */}
-        <AdminTabs 
-          value={activeTab}
-          onTabChange={(value) => {
-            setActiveTab(value);
-            const newSearchParams = new URLSearchParams(search);
-            newSearchParams.set("tab", value);
-            setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
-          }}
-        >
-          {/* Tabs content will be rendered at the end of the component */}
-        </AdminTabs>
-        
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 self-end sm:self-auto"
-              onClick={() => setLocation("/ai-knowledge-management")}
-            >
-              <Database size={18} />
-              <span>Knowledge Base</span>
-            </Button>
-            <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto">
-              <LogOut size={18} />
-              <span>Logout</span>
-            </Button>
-          </div>
-        </div>
-        
-        {/* Stats summary only shown on Sessions tab */}
-        {activeTab === "sessions" && (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-amber-900/20 border-amber-900">
-              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-green-900/20 border-green-900">
-              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-red-900/20 border-red-900">
-              <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        
+        {/* AdminTabs component at the top of the page, before any headers */}
         <AdminTabs 
           value={activeTab}
           onTabChange={(value) => {
@@ -630,6 +559,64 @@ export default function AdminDashboard() {
         >
           {/* Sessions Tab - Contains session management */}
           <TabsContent value="sessions" className="space-y-4">
+            {/* Page header moved below tabs */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 self-end sm:self-auto"
+                  onClick={() => setLocation("/ai-knowledge-management")}
+                >
+                  <Database size={18} />
+                  <span>Knowledge Base</span>
+                </Button>
+                <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto">
+                  <LogOut size={18} />
+                  <span>Logout</span>
+                </Button>
+              </div>
+            </div>
+        
+            {/* Stats summary only shown on Sessions tab */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                  <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                  <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-amber-900/20 border-amber-900">
+                <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                  <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                  <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-green-900/20 border-green-900">
+                <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                  <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                  <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-red-900/20 border-red-900">
+                <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                  <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                  <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
+                </CardContent>
+              </Card>
+            </div>
+            
             <Tabs 
               defaultValue={tabParam && ["pending", "upcoming", "completed", "cancelled", "all", "availability"].includes(tabParam) 
                 ? tabParam 
