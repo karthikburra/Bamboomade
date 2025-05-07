@@ -82,7 +82,7 @@ const Navbar: React.FC = () => {
                 }`}
               >
                 <span className="relative flex items-center">
-                  {link.icon && <link.icon className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />}
+                  {link.icon && <link.icon className="mr-1.5 h-[0.9em] w-[0.9em] sm:h-[1em] sm:w-[1em] md:h-[1.1em] md:w-[1.1em]" />}
                   {link.label}
                   {link.isNew && (
                     <Badge className="absolute -top-2 -right-5 sm:-right-6 bg-green-600 hover:bg-green-600 text-white text-[8px] sm:text-[9px] px-0.5 sm:px-1 py-0">
@@ -134,7 +134,7 @@ const Navbar: React.FC = () => {
                       }`}
                     >
                       <span className="relative flex items-center">
-                        {link.icon && <link.icon className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />}
+                        {link.icon && <link.icon className="mr-2 h-[1em] w-[1em] sm:h-[1.1em] sm:w-[1.1em] md:h-[1.2em] md:w-[1.2em]" />}
                         {link.label}
                         {link.isNew && (
                           <Badge className="absolute -top-2 -right-5 bg-green-600 hover:bg-green-600 text-white text-[8px] px-0.5 py-0">
@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
                         onClick={() => setIsMenuOpen(false)}
                         className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                       >
-                        <MessageSquareText className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                        <MessageSquareText className="mr-2 h-[1em] w-[1em] sm:h-[1.1em] sm:w-[1.1em] md:h-[1.2em] md:w-[1.2em]" />
                         View My Sessions
                       </ScrollLink>
 
