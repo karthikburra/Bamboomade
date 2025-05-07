@@ -52,7 +52,7 @@ const Navbar: React.FC = () => {
     { href: "/our-works", label: "Our Experience" }, 
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
-    { href: "/ai-chat", label: "AI Chat", isNew: true },
+    { href: "/ai-chat", label: "AI Chat", isBeta: true },
   ];
 
   const isActive = (path: string) => location === path;
@@ -86,6 +86,11 @@ const Navbar: React.FC = () => {
                   {link.isNew && (
                     <Badge className="absolute -top-3 -right-1 bg-amber-500 hover:bg-amber-500 text-white text-[6px] sm:text-[7px] px-[3px] py-0 rounded-[2px] h-[10px] flex items-center">
                       New
+                    </Badge>
+                  )}
+                  {link.isBeta && (
+                    <Badge className="absolute -top-3 -right-1 bg-blue-500 hover:bg-blue-500 text-white text-[6px] sm:text-[7px] px-[3px] py-0 rounded-[2px] h-[10px] flex items-center">
+                      Beta
                     </Badge>
                   )}
                 </span>
@@ -137,6 +142,11 @@ const Navbar: React.FC = () => {
                         {link.isNew && (
                           <Badge className="absolute -top-3 -right-1 bg-amber-500 hover:bg-amber-500 text-white text-[6px] sm:text-[7px] px-[3px] py-0 rounded-[2px] h-[10px] flex items-center">
                             New
+                          </Badge>
+                        )}
+                        {link.isBeta && (
+                          <Badge className="absolute -top-3 -right-1 bg-blue-500 hover:bg-blue-500 text-white text-[6px] sm:text-[7px] px-[3px] py-0 rounded-[2px] h-[10px] flex items-center">
+                            Beta
                           </Badge>
                         )}
                       </span>
