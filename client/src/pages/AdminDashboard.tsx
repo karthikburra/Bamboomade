@@ -103,10 +103,27 @@ interface Session {
 }
 
 export default function AdminDashboard() {
+  // Get shared resources and utilities
+  const { toast } = useToast();
+  const [_, setLocation] = useLocation();
+  const search = useSearch();
+  const queryClient = useQueryClient();
+  
+  // Parse URL query parameters for tab
+  const searchParams = new URLSearchParams(search);
+  const tabParam = searchParams.get("tab");
+
   // Session management state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [meetLink, setMeetLink] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // Active tab state
+  const [activeTab, setActiveTab] = useState(
+    tabParam && ["sessions", "knowledge", "users", "summary"].includes(tabParam) 
+      ? tabParam 
+      : "sessions"
+  );
   
   // Filter state
   const [emailFilter, setEmailFilter] = useState("");
@@ -178,15 +195,6 @@ export default function AdminDashboard() {
   // References for calendar popups
   const startDateRef = useRef<HTMLDivElement>(null);
   const endDateRef = useRef<HTMLDivElement>(null);
-  
-  const { toast } = useToast();
-  const [_, setLocation] = useLocation();
-  const search = useSearch();
-  const queryClient = useQueryClient();
-  
-  // Parse URL query parameters for tab
-  const searchParams = new URLSearchParams(search);
-  const tabParam = searchParams.get("tab");
 
   // Check if user is authenticated and is admin
   const { data: userData, isLoading: isAuthLoading } = useQuery({
