@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { 
-  Menu, X, Sparkles, MessageSquareText
+  Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -48,10 +48,11 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/our-works", label: "Our Experience" }, // Keep only Our Experience pointing to our-works page
-    { href: "/project-guidance", label: "Project Guidance" },
-    { href: "/contact", label: "Contact" },
+    { href: "/", label: "Home", icon: Home },
+    { href: "/our-works", label: "Our Experience", icon: Briefcase }, 
+    { href: "/project-guidance", label: "Project Guidance", icon: Calendar, isNew: true },
+    { href: "/contact", label: "Contact", icon: Phone },
+    { href: "/ai-chat", label: "AI Chat", icon: Sparkles, isNew: true },
   ];
 
   const isActive = (path: string) => location === path;
@@ -80,9 +81,10 @@ const Navbar: React.FC = () => {
                     : "text-green-400"
                 }`}
               >
-                <span className="relative">
+                <span className="relative flex items-center">
+                  {link.icon && <link.icon className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />}
                   {link.label}
-                  {link.label === "Project Guidance" && (
+                  {link.isNew && (
                     <Badge className="absolute -top-2 -right-5 sm:-right-6 bg-green-600 hover:bg-green-600 text-white text-[8px] sm:text-[9px] px-0.5 sm:px-1 py-0">
                       New
                     </Badge>
@@ -94,30 +96,6 @@ const Navbar: React.FC = () => {
         )}
 
         <div className="flex flex-1 items-center justify-end space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
-          {!isMobile ? (
-            <ScrollLink href="/ai-chat">
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm md:text-base h-8 sm:h-9 md:h-10 px-2 sm:px-3 md:px-4"
-              >
-                <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-                <span className="hidden sm:inline">AI Chat</span>
-                <span className="sm:hidden">AI</span>
-                <Badge className="ml-1 sm:ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
-              </Button>
-            </ScrollLink>
-          ) : (
-            <ScrollLink href="/ai-chat">
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white p-1 h-8 w-8 sm:h-9 sm:w-9"
-              >
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-            </ScrollLink>
-          )}
           
           {/* Theme toggle, admin buttons, token display, and logout button removed */}
 
@@ -155,9 +133,10 @@ const Navbar: React.FC = () => {
                           : "text-green-400"
                       }`}
                     >
-                      <span className="relative">
+                      <span className="relative flex items-center">
+                        {link.icon && <link.icon className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />}
                         {link.label}
-                        {link.label === "Project Guidance" && (
+                        {link.isNew && (
                           <Badge className="absolute -top-2 -right-5 bg-green-600 hover:bg-green-600 text-white text-[8px] px-0.5 py-0">
                             New
                           </Badge>
@@ -166,24 +145,7 @@ const Navbar: React.FC = () => {
                     </ScrollLink>
                   ))}
                   
-                  <div className="space-y-2 sm:space-y-3 py-3 sm:py-4 border-t border-b border-green-800/50">
-                    <div className="flex items-center text-sm sm:text-base md:text-lg font-medium text-green-300">
-                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-                      AI Chat
-                      <Badge className="ml-2 bg-green-600 hover:bg-green-600 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">New</Badge>
-                    </div>
-                    
-                    <ScrollLink
-                      href="/ai-chat"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center pl-6 sm:pl-7 text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
-                    >
-                      <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
-                      Chat with AI
-                    </ScrollLink>
-                    
-                    {/* "Add to WhatsApp" option hidden as requested */}
-                  </div>
+                  {/* AI Chat section removed as it's now in the main navigation */}
                   
                   {/* Admin dashboard link removed */}
                   {user && (
