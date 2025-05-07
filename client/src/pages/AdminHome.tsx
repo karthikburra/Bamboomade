@@ -13,11 +13,16 @@ const AdminHome: React.FC = () => {
   const [_, navigate] = useLocation();
   
   // Fetch current user data to check for admin status
-  const { data: userData, isLoading, isError } = useQuery({
+  const { data: adminData, isLoading, isError } = useQuery({
     queryKey: ["/api/auth/admin-check"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/auth/admin-check");
-      return response.json();
+      try {
+        const response = await apiRequest("GET", "/api/auth/admin-check");
+        return response.json();
+      } catch (error) {
+        console.error("Admin check error:", error);
+        return { isAdmin: false };
+      }
     },
     retry: false
   });

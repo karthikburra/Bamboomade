@@ -3,11 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet";
-import AdminDashboard from "@/components/AdminDashboard";
+import { useLocation } from "wouter";
 import { Shield, AlertTriangle } from "lucide-react";
 
 const Admin: React.FC = () => {
   const { toast } = useToast();
+  const [_, navigate] = useLocation();
   
   // Fetch current user data to check for admin status
   const { data: userData, isLoading } = useQuery({
@@ -15,17 +16,22 @@ const Admin: React.FC = () => {
     enabled: true,
   });
   
-  // Check if user is admin and redirect if not
+  // Check if user is admin and redirect to the admin home page
   useEffect(() => {
-    if (!isLoading && userData && !userData.isAdmin) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access the admin dashboard.",
-        variant: "destructive",
-      });
-      window.location.href = "/";
+    if (!isLoading) {
+      if (userData && userData.isAdmin) {
+        // Redirect to the new Admin Home page
+        navigate("/admin-home");
+      } else if (userData && !userData.isAdmin) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access the admin dashboard.",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
     }
-  }, [userData, isLoading, toast]);
+  }, [userData, isLoading, toast, navigate]);
 
   if (isLoading) {
     return (
@@ -42,15 +48,15 @@ const Admin: React.FC = () => {
   if (!userData || !userData.isAdmin) {
     return (
       <div className="container py-12 max-w-md mx-auto">
-        <Card>
+        <Card className="bg-gray-900 border-gray-800">
           <CardHeader>
             <div className="flex items-center justify-center mb-4">
-              <Shield className="h-12 w-12 text-destructive" />
+              <Shield className="h-12 w-12 text-red-500" />
             </div>
             <CardTitle className="text-center">Access Denied</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center mb-4 bg-destructive/10 text-destructive p-3 rounded-md">
+            <div className="flex items-center mb-4 bg-red-950/50 text-red-400 p-3 rounded-md">
               <AlertTriangle className="h-4 w-4 mr-2" />
               <p className="text-sm">
                 You don't have permission to access this page. 
@@ -63,25 +69,18 @@ const Admin: React.FC = () => {
     );
   }
 
+  // This return section should rarely be shown as we redirect in the useEffect
   return (
     <>
       <Helmet>
-        <title>Admin Dashboard | BambooMade</title>
-        <meta name="description" content="Admin dashboard for BambooMade platform" />
+        <title>Admin Redirecting | BambooMade</title>
+        <meta name="description" content="Redirecting to admin dashboard" />
       </Helmet>
       
-      <div className="bg-background py-12">
-        <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Admin Dashboard
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              Manage BambooMade AI training data, project guidance sessions, and user accounts.
-            </p>
-          </div>
-          
-          <AdminDashboard />
+      <div className="bg-background min-h-screen py-12 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-10 h-10 border-4 border-green-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-lg">Redirecting to admin dashboard...</p>
         </div>
       </div>
     </>
