@@ -744,14 +744,7 @@ const AIKnowledgeManagement: React.FC = () => {
             </SelectContent>
           </Select>
           
-          <Button
-            variant="default"
-            className="w-full justify-start text-sm bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
-            onClick={() => setAiChatOpen(true)}
-          >
-            <Sparkles className="h-4 w-4 mr-2 text-white" />
-            AI Training Chat
-          </Button>
+
         </div>
       </div>
     );
@@ -765,7 +758,7 @@ const AIKnowledgeManagement: React.FC = () => {
           <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-xl font-medium mb-2">Select content from sidebar</h3>
           <p className="text-muted-foreground">
-            Choose an item from the sidebar to view its details or use the AI Training Chat to add new knowledge.
+            Choose an item from the sidebar to view its details or use the content analysis box below to add new knowledge.
           </p>
         </div>
       </div>
