@@ -17,6 +17,12 @@ interface ChatMessage {
   content: string;
 }
 
+// For OpenAI API message format
+interface OpenAIMessage {
+  role: string;
+  content: string;
+}
+
 interface AITrainingChatProps {
   open: boolean;
   onClose: () => void;
@@ -42,7 +48,7 @@ const AITrainingChat: React.FC<AITrainingChatProps> = ({ open, onClose, onConten
   const sendChatMessage = useMutation({
     mutationFn: async (message: string) => {
       // Include previous messages for context (limit to last 5 messages)
-      const previousMessages = chatMessages.slice(-5).map(msg => ({
+      const previousMessages: OpenAIMessage[] = chatMessages.slice(-5).map(msg => ({
         role: msg.role,
         content: msg.content
       }));
@@ -56,7 +62,7 @@ const AITrainingChat: React.FC<AITrainingChatProps> = ({ open, onClose, onConten
     },
     onSuccess: (data) => {
       // Add AI response to chat
-      setChatMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+      setChatMessages(prev => [...prev, { role: 'assistant' as const, content: data.message }]);
       setIsProcessingChat(false);
       
       // If content was added to the knowledge base
@@ -76,7 +82,7 @@ const AITrainingChat: React.FC<AITrainingChatProps> = ({ open, onClose, onConten
     onError: (error) => {
       console.error("Error sending chat message:", error);
       setChatMessages(prev => [...prev, { 
-        role: 'assistant', 
+        role: 'assistant' as const, 
         content: "Sorry, there was an error processing your request. Please try again." 
       }]);
       setIsProcessingChat(false);
@@ -93,7 +99,7 @@ const AITrainingChat: React.FC<AITrainingChatProps> = ({ open, onClose, onConten
     if (!chatInput.trim() || isProcessingChat) return;
     
     // Add user message to chat
-    const newMessage = { role: 'user', content: chatInput };
+    const newMessage = { role: 'user' as const, content: chatInput };
     setChatMessages(prev => [...prev, newMessage]);
     
     // Process message
