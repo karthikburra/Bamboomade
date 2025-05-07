@@ -51,7 +51,7 @@ import {
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
   SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
-  Info, Database, Copy
+  Info, Database, Copy, BarChart3, Users
 } from "lucide-react";
 import {
   Select,
@@ -544,6 +544,19 @@ export default function AdminDashboard() {
       </Helmet>
       
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        {/* Move AdminTabs component to top of the page */}
+        <AdminTabs 
+          value={activeTab}
+          onTabChange={(value) => {
+            setActiveTab(value);
+            const newSearchParams = new URLSearchParams(search);
+            newSearchParams.set("tab", value);
+            setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
+          }}
+        >
+          {/* Tabs content will be rendered at the end of the component */}
+        </AdminTabs>
+        
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
           <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex items-center gap-3">
