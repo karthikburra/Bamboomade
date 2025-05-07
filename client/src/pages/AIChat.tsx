@@ -1,8 +1,11 @@
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Info, Calendar, Book, Users, PanelRight, Lightbulb, Award, Brain } from "lucide-react";
 import ChatInterface from "@/components/ChatInterface";
 import useScrollTop from "@/hooks/use-scroll-top";
+import { Link } from "wouter";
 
 const AIChat: React.FC = () => {
   // Ensure page scrolls to top when component mounts
@@ -20,9 +23,16 @@ const AIChat: React.FC = () => {
         <meta name="description" content="Chat with our specialized bamboo architecture AI assistant to get expert guidance on sustainable bamboo construction and design." />
       </Helmet>
       
-      <div className="bg-background py-12">
+      <div className="bg-gradient-to-b from-primary-50/50 to-background py-12">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 text-center">
+            <div className="flex items-center justify-center mb-4">
+              <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 border border-green-200">
+                <Sparkles className="h-4 w-4 mr-2 text-green-600" />
+                <span className="text-sm font-medium">AI-Powered Assistant</span>
+              </div>
+            </div>
+            
             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
               BambooMade AI
             </h1>
@@ -40,17 +50,73 @@ const AIChat: React.FC = () => {
             </div>
             
             <div className="space-y-6">
-              <Card>
+              <Card className="border-primary-100 overflow-hidden">
+                <CardHeader className="bg-primary-50 border-b border-primary-100 pb-4">
+                  <CardTitle className="text-primary-800 flex items-center">
+                    <Info className="h-5 w-5 mr-2 text-primary-600" />
+                    How Can I Help?
+                  </CardTitle>
+                </CardHeader>
                 <CardContent className="pt-6">
-                  <h3 className="text-lg font-medium mb-2">Ask About:</h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li>• Bamboo species for construction</li>
-                    <li>• Sustainable design techniques</li>
-                    <li>• Joinery and connection methods</li>
-                    <li>• Treatment and preservation</li>
-                    <li>• Project-specific advice</li>
-                    <li>• Workshop techniques</li>
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex">
+                      <Book className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                      <span>Get information about bamboo species, properties, and applications</span>
+                    </li>
+                    <li className="flex">
+                      <Lightbulb className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                      <span>Learn sustainable design techniques with bamboo</span>
+                    </li>
+                    <li className="flex">
+                      <PanelRight className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                      <span>Understand joinery and connection methods</span>
+                    </li>
+                    <li className="flex">
+                      <Brain className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                      <span>Get project-specific advice and recommendations</span>
+                    </li>
+                    <li className="flex">
+                      <Calendar className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                      <span>Find out about upcoming workshops and events</span>
+                    </li>
+                    <li className="flex">
+                      <Award className="h-5 w-5 mr-2 text-primary-600 flex-shrink-0" />
+                      <span>Learn about BambooMade's previous projects</span>
+                    </li>
                   </ul>
+                </CardContent>
+                <CardFooter className="bg-primary-50/50 border-t border-primary-100 flex flex-col items-stretch pt-4">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Need more personalized guidance for your bamboo architecture project?
+                  </p>
+                  <Link href="/project-guidance">
+                    <Button className="w-full" variant="outline">
+                      <Users className="h-4 w-4 mr-2" />
+                      Book Project Guidance
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+              
+              <Card className="border-primary-100">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-primary-800">
+                    <span className="flex items-center">
+                      <Sparkles className="h-4 w-4 mr-2 text-primary-600" />
+                      How Our AI Works
+                    </span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-xs space-y-1">
+                    <p>Our AI is trained on bamboo architecture knowledge and is constantly updated with:</p>
+                    <ul className="list-disc list-inside pl-2 space-y-1">
+                      <li>Expert knowledge from bamboo architects</li>
+                      <li>Latest bamboo construction techniques</li>
+                      <li>Sustainable design principles</li>
+                      <li>Real-time workshop and event information</li>
+                    </ul>
+                  </CardDescription>
                 </CardContent>
               </Card>
             </div>
