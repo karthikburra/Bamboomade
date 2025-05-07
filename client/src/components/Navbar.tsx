@@ -48,11 +48,11 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/our-works", label: "Our Experience", icon: Briefcase }, 
-    { href: "/project-guidance", label: "Project Guidance", icon: Calendar, isNew: true },
-    { href: "/contact", label: "Contact", icon: Phone },
-    { href: "/ai-chat", label: "AI Chat", icon: Sparkles, isNew: true },
+    { href: "/", label: "Home" },
+    { href: "/our-works", label: "Our Experience" }, 
+    { href: "/project-guidance", label: "Project Guidance", isNew: true },
+    { href: "/contact", label: "Contact" },
+    { href: "/ai-chat", label: "AI Chat", isNew: true },
   ];
 
   const isActive = (path: string) => location === path;
@@ -70,22 +70,21 @@ const Navbar: React.FC = () => {
         </div>
 
         {!isMobile && (
-          <nav className="flex flex-1 items-center space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-xs sm:text-sm md:text-base font-medium">
+          <nav className="flex flex-1 items-center justify-center space-x-2 sm:space-x-3 md:space-x-5 lg:space-x-8 text-[10px] sm:text-xs md:text-sm lg:text-base font-medium">
             {navLinks.map((link) => (
               <ScrollLink
                 key={`${link.href}-${link.label}`}
                 href={link.href}
-                className={`transition-colors hover:text-green-300 ${
+                className={`transition-colors hover:text-green-300 py-1 ${
                   isActive(link.href)
                     ? "text-green-300 font-semibold"
                     : "text-green-400"
                 }`}
               >
-                <span className="relative flex items-center">
-                  {link.icon && <link.icon className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />}
+                <span className="relative whitespace-nowrap">
                   {link.label}
                   {link.isNew && (
-                    <Badge className="absolute -top-2 -right-5 sm:-right-6 bg-green-600 hover:bg-green-600 text-white text-[8px] sm:text-[9px] px-0.5 sm:px-1 py-0">
+                    <Badge className="absolute -top-2 -right-3 sm:-right-4 md:-right-5 bg-green-600 hover:bg-green-600 text-white text-[7px] sm:text-[8px] md:text-[9px] px-0.5 py-0">
                       New
                     </Badge>
                   )}
@@ -133,11 +132,10 @@ const Navbar: React.FC = () => {
                           : "text-green-400"
                       }`}
                     >
-                      <span className="relative flex items-center">
-                        {link.icon && <link.icon className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />}
+                      <span className="relative whitespace-nowrap">
                         {link.label}
                         {link.isNew && (
-                          <Badge className="absolute -top-2 -right-5 bg-green-600 hover:bg-green-600 text-white text-[8px] px-0.5 py-0">
+                          <Badge className="absolute -top-2 -right-4 bg-green-600 hover:bg-green-600 text-white text-[8px] px-0.5 py-0">
                             New
                           </Badge>
                         )}
