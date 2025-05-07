@@ -596,33 +596,12 @@ const AIKnowledgeManagement: React.FC = () => {
             <div className="space-y-2 mb-4">
               <div className="text-sm font-medium text-muted-foreground dark:text-gray-400 px-2">Content Statistics</div>
               <div className="grid grid-cols-1 gap-2">
-                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
+                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-2 px-3">
                   <div className="flex items-center">
-                    <FileText className="h-3.5 w-3.5 mr-2 text-primary" />
-                    <span className="text-xs">Documents</span>
+                    <LayoutGrid className="h-4 w-4 mr-2 text-primary" />
+                    <span className="text-sm">Total Content Items</span>
                   </div>
-                  <span className="text-xs font-medium">{contentTypeCount['document'] || 0}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
-                  <div className="flex items-center">
-                    <Calendar className="h-3.5 w-3.5 mr-2 text-primary" />
-                    <span className="text-xs">Events</span>
-                  </div>
-                  <span className="text-xs font-medium">{contentTypeCount['event'] || 0}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
-                  <div className="flex items-center">
-                    <Globe className="h-3.5 w-3.5 mr-2 text-primary" />
-                    <span className="text-xs">Websites</span>
-                  </div>
-                  <span className="text-xs font-medium">{contentTypeCount['webpage'] || 0}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-md bg-muted/40 dark:bg-gray-800 py-1.5 px-3">
-                  <div className="flex items-center">
-                    <LayoutGrid className="h-3.5 w-3.5 mr-2 text-primary" />
-                    <span className="text-xs">Total</span>
-                  </div>
-                  <span className="text-xs font-medium">{knowledgeContent?.length || 0}</span>
+                  <Badge className="ml-2 bg-primary text-primary-foreground">{knowledgeContent?.length || 0}</Badge>
                 </div>
               </div>
             </div>
@@ -639,7 +618,12 @@ const AIKnowledgeManagement: React.FC = () => {
                   onClick={() => setSelectedCategory(prev => prev === category ? null : category)}
                 >
                   {categoryIcons[category] || <FileText className="h-4 w-4 mr-2" />}
-                  <span className="capitalize">{category}s</span>
+                  <span>
+                    {category === 'document' && 'Documents'}
+                    {category === 'event' && 'Workshops & Events'}
+                    {category === 'webpage' && 'External Resources'}
+                    {category === 'manual' && 'Manuals & Guides'}
+                  </span>
                   <span className="ml-auto text-xs text-muted-foreground dark:text-gray-400">{items.length}</span>
                 </div>
                 
@@ -658,7 +642,7 @@ const AIKnowledgeManagement: React.FC = () => {
                         {category === 'event' && <Calendar className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
                         {category === 'webpage' && <Globe className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
                         {category === 'manual' && <Book className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
-                        <span className="truncate">{`${category.charAt(0).toUpperCase() + category.slice(1)} ${idx + 1}: ${item.title.length > 15 ? item.title.substring(0, 12) + '...' : item.title}`}</span>
+                        <span className="truncate">{item.title.length > 25 ? item.title.substring(0, 22) + '...' : item.title}</span>
                       </div>
                     ))}
                   </div>
