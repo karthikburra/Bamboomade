@@ -29,7 +29,7 @@ const AdminHome: React.FC = () => {
   
   // Check if user is admin and redirect if not
   useEffect(() => {
-    if (!isLoading && (!userData || !userData.isAdmin)) {
+    if (!isLoading && (!adminData || !adminData.isAdmin)) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access the admin dashboard.",
@@ -37,7 +37,7 @@ const AdminHome: React.FC = () => {
       });
       navigate("/");
     }
-  }, [userData, isLoading, toast, navigate]);
+  }, [adminData, isLoading, toast, navigate]);
 
   if (isLoading) {
     return (
@@ -51,7 +51,7 @@ const AdminHome: React.FC = () => {
   }
   
   // If not admin or not logged in, show access denied
-  if (isError || !userData || !userData.isAdmin) {
+  if (isError || !adminData || !adminData.isAdmin) {
     return (
       <div className="container py-12 max-w-md mx-auto">
         <Card className="bg-gray-900 border-gray-800">
@@ -189,7 +189,7 @@ const AdminHome: React.FC = () => {
               <Button 
                 variant="outline" 
                 className="border-purple-800 text-purple-400 hover:bg-purple-950/50"
-                onClick={() => navigate("/admin")}
+                onClick={() => window.open("/admin-dashboard?tab=users", "_blank")}
               >
                 <UserCog className="h-4 w-4 mr-2" />
                 Manage Users

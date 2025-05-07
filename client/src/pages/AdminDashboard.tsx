@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import { useToast } from "../hooks/use-toast";
 import { apiRequest } from "../lib/queryClient";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DayPicker } from "react-day-picker";
 import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
@@ -180,7 +180,12 @@ export default function AdminDashboard() {
   
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
+  const search = useSearch();
   const queryClient = useQueryClient();
+  
+  // Parse URL query parameters for tab
+  const searchParams = new URLSearchParams(search);
+  const tabParam = searchParams.get("tab");
 
   // Check if user is authenticated and is admin
   const { data: userData, isLoading: isAuthLoading } = useQuery({
