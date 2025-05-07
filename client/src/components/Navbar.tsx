@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
                 <span className="relative whitespace-nowrap">
                   {link.label}
                   {link.isNew && (
-                    <Badge className="absolute -top-2 -right-3 sm:-right-4 md:-right-5 bg-amber-500 hover:bg-amber-500 text-white text-[7px] sm:text-[8px] md:text-[9px] px-1 py-[1px] rounded-sm">
+                    <Badge className="absolute -top-3 -right-1 bg-amber-500 hover:bg-amber-500 text-white text-[6px] sm:text-[7px] px-[3px] py-0 rounded-[2px] h-[10px] flex items-center">
                       New
                     </Badge>
                   )}
@@ -135,7 +135,7 @@ const Navbar: React.FC = () => {
                       <span className="relative whitespace-nowrap">
                         {link.label}
                         {link.isNew && (
-                          <Badge className="absolute -top-2 -right-4 bg-amber-500 hover:bg-amber-500 text-white text-[8px] px-1 py-[1px] rounded-sm">
+                          <Badge className="absolute -top-3 -right-1 bg-amber-500 hover:bg-amber-500 text-white text-[6px] sm:text-[7px] px-[3px] py-0 rounded-[2px] h-[10px] flex items-center">
                             New
                           </Badge>
                         )}
