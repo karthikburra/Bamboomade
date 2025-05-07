@@ -548,8 +548,8 @@ const AIKnowledgeManagement: React.FC = () => {
   }, [knowledgeContent]);
   
   // Format title of content for display in sidebar
-  const formatSidebarTitle = (title: string, index: number) => {
-    return `${title.contentType} ${index}: ${title.length > 20 ? title.substring(0, 17) + '...' : title}`;
+  const formatSidebarTitle = (item: AiKnowledgeContent, index: number) => {
+    return `${item.contentType} ${index}: ${item.title.length > 20 ? item.title.substring(0, 17) + '...' : item.title}`;
   };
   
   // Handle selection of an item from the sidebar
@@ -565,6 +565,8 @@ const AIKnowledgeManagement: React.FC = () => {
     setIsRuleSelected(true);
     setSelectedItem(null);
   };
+  
+
   
   // Fix variant type error
   const fixedVariant = (variant: string): "default" | "destructive" | null | undefined => {
