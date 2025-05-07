@@ -691,6 +691,18 @@ const AIKnowledgeManagement: React.FC = () => {
         {/* Bottom sidebar actions */}
         <div className="p-3 pt-2 border-t dark:border-gray-700 space-y-2">
           <Button
+            variant="default"
+            className="w-full justify-start text-sm bg-primary dark:text-primary-foreground"
+            onClick={() => {
+              form.reset();
+              setIsAddDialogOpen(true);
+            }}
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Add New Content
+          </Button>
+          
+          <Button
             variant="outline"
             className="w-full justify-start text-sm dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
             onClick={() => setIsSqlDialogOpen(true)}
@@ -698,6 +710,39 @@ const AIKnowledgeManagement: React.FC = () => {
             <Database className="h-4 w-4 mr-2" />
             SQL Query
           </Button>
+          
+          <Select>
+            <SelectTrigger className="w-full justify-start text-sm dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700">
+              <div className="flex items-center">
+                <SaveAll className="h-4 w-4 mr-2" />
+                <span>Data Management</span>
+              </div>
+            </SelectTrigger>
+            <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+              <SelectItem value="import" onClick={() => setIsImportDialogOpen(true)}>
+                <div className="flex items-center">
+                  <Upload className="mr-2 h-4 w-4" />
+                  <span>Import from Drive</span>
+                </div>
+              </SelectItem>
+              <SelectItem 
+                value="export" 
+                onClick={handleExportBackup}
+                disabled={isExporting || knowledgeContent?.length === 0}
+              >
+                <div className="flex items-center">
+                  <Download className="mr-2 h-4 w-4" />
+                  <span>{isExporting ? "Exporting..." : "Export Backup"}</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="restore" onClick={() => setIsRestoreDialogOpen(true)}>
+                <div className="flex items-center">
+                  <SaveAll className="mr-2 h-4 w-4" />
+                  <span>Restore Backup</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
           
           <Button
             variant="default"
@@ -898,73 +943,9 @@ const AIKnowledgeManagement: React.FC = () => {
         <div className="flex-1 overflow-auto">
           {/* Header with action buttons */}
           <div className="p-6 border-b dark:border-gray-700">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <div className="flex items-center">
-                <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
-              </div>
-              <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                <Button 
-                  className="flex-1 md:flex-none dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                  onClick={() => {
-                    form.reset();
-                    setIsAddDialogOpen(true);
-                  }}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span className="whitespace-nowrap">Add New Content</span>
-                </Button>
-                
-                {/* Data Management Dropdown */}
-                <div className="relative flex-1 md:flex-none">
-                  <Dialog open={isSqlDialogOpen} onOpenChange={setIsSqlDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700">
-                        <Database className="mr-2 h-4 w-4" />
-                        <span className="whitespace-nowrap">SQL Query</span>
-                      </Button>
-                    </DialogTrigger>
-                  </Dialog>
-                </div>
-                
-                {/* Import/Export/Backup Dropdown */}
-                <div className="relative flex-1 md:flex-none">
-                  <Select>
-                    <SelectTrigger className="dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700 text-sm w-full sm:w-auto">
-                      <div className="flex items-center">
-                        <SaveAll className="h-4 w-4 mr-2" />
-                        <SelectValue placeholder="Data Management" defaultValue="data" />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                      <SelectItem value="import" onClick={() => setIsImportDialogOpen(true)}>
-                        <div className="flex items-center">
-                          <Upload className="mr-2 h-4 w-4" />
-                          <span>Import from Drive</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem 
-                        value="export" 
-                        onClick={handleExportBackup}
-                        disabled={isExporting || knowledgeContent?.length === 0}
-                      >
-                        <div className="flex items-center">
-                          <Download className="mr-2 h-4 w-4" />
-                          <span>{isExporting ? "Exporting..." : "Export Backup"}</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="restore" onClick={() => setIsRestoreDialogOpen(true)}>
-                        <div className="flex items-center">
-                          <SaveAll className="mr-2 h-4 w-4" />
-                          <span>Restore Backup</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            <div className="flex items-center">
+              <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
             </div>
-            
-            {/* No stats cards - info already in sidebar */}
           </div>
           
           {/* Content display area */}
