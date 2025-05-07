@@ -936,42 +936,90 @@ const AIKnowledgeManagement: React.FC = () => {
           </div>
           
           {/* Content display area */}
-          <div className="h-[calc(100vh-14rem)]">
-            {selectedItem || isRuleSelected ? (
-              <ContentDisplay item={selectedItem} />
-            ) : isLoading ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          <div className="flex flex-col h-[calc(100vh-14rem)]">
+            <div className="flex-1 overflow-auto">
+              {selectedItem || isRuleSelected ? (
+                <ContentDisplay item={selectedItem} />
+              ) : isLoading ? (
+                <div className="flex justify-center items-center h-full">
+                  <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              ) : isError ? (
+                <div className="p-6">
+                  <Alert variant="destructive" className="dark:bg-red-900 dark:border-red-800 dark:text-white">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>Failed to fetch knowledge content. Please try again later.</AlertDescription>
+                  </Alert>
+                </div>
+              ) : knowledgeContent?.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="max-w-md">
+                    <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">No knowledge content yet</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Add your first content item to start building your AI knowledge base.
+                    </p>
+                    <Button
+                      onClick={() => {
+                        form.reset();
+                        setIsAddDialogOpen(true);
+                      }}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add New Content
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <ContentDisplay item={null} />
+              )}
+            </div>
+            
+            {/* AI Chat input at bottom */}
+            <div className="p-4 border-t dark:border-gray-700 bg-background">
+              <div className="flex gap-2 items-center">
+                <Input
+                  placeholder="Ask AI about bamboo architecture or content management..."
+                  className="flex-1 dark:bg-gray-800 dark:border-gray-700"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      setAiChatOpen(true);
+                    }
+                  }}
+                  onClick={() => setAiChatOpen(true)}
+                />
+                <Button
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
+                  onClick={() => setAiChatOpen(true)}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
               </div>
-            ) : isError ? (
-              <div className="p-6">
-                <Alert variant="destructive" className="dark:bg-red-900 dark:border-red-800 dark:text-white">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>Failed to fetch knowledge content. Please try again later.</AlertDescription>
-                </Alert>
-              </div>
-            ) : knowledgeContent?.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="max-w-md">
-                  <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-medium mb-2">No knowledge content yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Add your first content item to start building your AI knowledge base.
-                  </p>
-                  <Button
-                    onClick={() => {
-                      form.reset();
-                      setIsAddDialogOpen(true);
-                    }}
+              <div className="mt-2 flex justify-between">
+                <div className="text-xs text-muted-foreground dark:text-gray-400">
+                  Press Enter to open AI Training Chat
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 px-2 text-xs hover:bg-accent dark:text-gray-400"
+                    onClick={() => setAiChatOpen(true)}
                   >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add New Content
+                    Add knowledge content
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 px-2 text-xs hover:bg-accent dark:text-gray-400"
+                    onClick={() => setAiChatOpen(true)}
+                  >
+                    Train AI responses
                   </Button>
                 </div>
               </div>
-            ) : (
-              <ContentDisplay item={null} />
-            )}
+            </div>
           </div>
         </div>
       </div>
