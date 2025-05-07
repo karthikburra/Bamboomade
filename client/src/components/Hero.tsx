@@ -168,35 +168,7 @@ const Hero: React.FC = () => {
                 <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5" />
               </Button>
             </Link>
-            <Link href="/contact" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto text-sm sm:text-base md:text-lg h-10 sm:h-11 md:h-12 lg:h-14 px-4 sm:px-5 md:px-6 lg:px-8 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-              >
-                <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center mr-2">
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className="w-2.5 h-2.5 text-green-100"
-                  >
-                    <path d="M21 12.5c0 .3-.1.6-.2.9"></path>
-                    <path d="M14 19.5c-.4 0-.8-.1-1.2-.3"></path>
-                    <path d="M3 13l0-.3c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8"></path>
-                    <path d="M13 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path>
-                    <path d="M18 22a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
-                    <path d="m16.5 19 3-3"></path>
-                    <path d="M7 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
-                  </svg>
-                </div>
-                Contact Us
-              </Button>
-            </Link>
+
           </div>
         </div>
       </div>
