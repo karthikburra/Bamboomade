@@ -80,12 +80,14 @@ const Navbar: React.FC = () => {
                     : "text-green-400"
                 }`}
               >
-                {link.label}
-                {link.label === "Project Guidance" && (
-                  <Badge className="ml-1 sm:ml-2 bg-amber-500 hover:bg-amber-500 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">
-                    Popular
-                  </Badge>
-                )}
+                <span className="relative">
+                  {link.label}
+                  {link.label === "Project Guidance" && (
+                    <Badge className="absolute -top-2 -right-5 sm:-right-6 bg-green-600 hover:bg-green-600 text-white text-[8px] sm:text-[9px] px-0.5 sm:px-1 py-0">
+                      New
+                    </Badge>
+                  )}
+                </span>
               </ScrollLink>
             ))}
           </nav>
@@ -153,12 +155,14 @@ const Navbar: React.FC = () => {
                           : "text-green-400"
                       }`}
                     >
-                      {link.label}
-                      {link.label === "Project Guidance" && (
-                        <Badge className="ml-1 sm:ml-2 bg-amber-500 hover:bg-amber-500 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">
-                          Popular
-                        </Badge>
-                      )}
+                      <span className="relative">
+                        {link.label}
+                        {link.label === "Project Guidance" && (
+                          <Badge className="absolute -top-2 -right-5 bg-green-600 hover:bg-green-600 text-white text-[8px] px-0.5 py-0">
+                            New
+                          </Badge>
+                        )}
+                      </span>
                     </ScrollLink>
                   ))}
                   
