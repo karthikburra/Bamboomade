@@ -102,8 +102,6 @@ interface Session {
 }
 
 export default function AdminDashboard() {
-  const { toast } = useToast();
-  
   // Session management state
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [meetLink, setMeetLink] = useState("");
@@ -180,6 +178,7 @@ export default function AdminDashboard() {
   const startDateRef = useRef<HTMLDivElement>(null);
   const endDateRef = useRef<HTMLDivElement>(null);
   
+  const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
 
@@ -826,15 +825,32 @@ export default function AdminDashboard() {
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
                                       {session.googleMeetLink ? (
-                                        <Button 
-                                          size="sm"
-                                          className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                          onClick={() => window.open(session.googleMeetLink, '_blank')}
-                                        >
-                                          <Video className="w-3.5 h-3.5 mr-1.5" /> 
-                                          <span className="hidden sm:inline">Open Meet</span>
-                                          <span className="sm:hidden">Meet</span>
-                                        </Button>
+                                        <div className="flex gap-2">
+                                          <Button 
+                                            size="sm"
+                                            className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                            onClick={() => window.open(session.googleMeetLink, '_blank')}
+                                          >
+                                            <Video className="w-3.5 h-3.5 mr-1.5" /> 
+                                            <span className="hidden sm:inline">Open Meet</span>
+                                            <span className="sm:hidden">Meet</span>
+                                          </Button>
+                                          <Button 
+                                            size="sm"
+                                            className="whitespace-nowrap bg-gray-600 hover:bg-gray-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(session.googleMeetLink || "");
+                                              toast({
+                                                title: "Link copied",
+                                                description: "Google Meet link copied to clipboard"
+                                              });
+                                            }}
+                                          >
+                                            <Copy className="w-3.5 h-3.5 mr-1.5" /> 
+                                            <span className="hidden sm:inline">Copy Link</span>
+                                            <span className="sm:hidden">Copy</span>
+                                          </Button>
+                                        </div>
                                       ) : (
                                         <Button 
                                           size="sm"
