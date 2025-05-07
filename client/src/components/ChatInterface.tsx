@@ -40,10 +40,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Number of free questions before showing login prompt
   const FREE_QUESTION_LIMIT = 5;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Check if user is admin - this determines if admin commands are available
+  const { data: adminData } = useQuery({
+    queryKey: ["/api/auth/admin-check"],
+    enabled: true
+  });
+  
+  // Set admin status whenever the admin data changes
+  useEffect(() => {
+    if (adminData && (adminData as any).isAdmin) {
+      setIsAdmin(true);
+    }
+  }, [adminData]);
 
   const { data: chatHistory } = useQuery({
     queryKey: ["/api/chat/history"],
@@ -105,8 +119,29 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;
     
-    // Check if this is a command to add knowledge content
+    // Check if this is a command to add knowledge content (admin only)
     if (input.trim().startsWith("/add-source")) {
+      // Only admins are allowed to use this command
+      if (!isAdmin) {
+        // Show error for non-admins
+        const userMessage: Message = {
+          id: `user-${Date.now()}`,
+          role: "user",
+          content: input.trim(),
+        };
+        
+        const errorMessage: Message = {
+          id: `error-${Date.now()}`,
+          role: "assistant",
+          content: "This command is only available to administrators. Please log in as an admin to use this feature."
+        };
+        
+        setMessages(prev => [...prev, userMessage, errorMessage]);
+        setInput("");
+        return;
+      }
+      
+      // Process command for admins
       handleAddSource(input.trim());
       return;
     }
@@ -359,40 +394,43 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
             </Badge>
           </div>
           <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                  title="Chat commands help"
-                >
-                  <Info size={16} />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-4 bg-zinc-900 border-zinc-700 text-zinc-200">
-                <div className="space-y-2">
-                  <h3 className="font-medium text-green-400 flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Chat Commands
-                  </h3>
-                  <p className="text-xs text-zinc-400">
-                    You can use special commands in the chat to perform additional actions:
-                  </p>
-                  <div className="space-y-3 mt-2">
-                    <div className="bg-zinc-800 p-2 rounded border border-zinc-700">
-                      <code className="text-xs text-green-400 font-mono">/add-source title: Your Title | content: Your Content | source: URL</code>
-                      <p className="text-xs mt-1 text-zinc-300">
-                        Add new knowledge content to the AI database directly from chat. The content will be available for the AI to use in future conversations.
-                      </p>
+            {/* Only show admin commands help button to admins */}
+            {isAdmin && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                    title="Admin commands help"
+                  >
+                    <Info size={16} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4 bg-zinc-900 border-zinc-700 text-zinc-200">
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-green-400 flex items-center">
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Admin Commands
+                    </h3>
+                    <p className="text-xs text-zinc-400">
+                      As an admin, you can use special commands in the chat:
+                    </p>
+                    <div className="space-y-3 mt-2">
+                      <div className="bg-zinc-800 p-2 rounded border border-zinc-700">
+                        <code className="text-xs text-green-400 font-mono">/add-source title: Your Title | content: Your Content | source: URL</code>
+                        <p className="text-xs mt-1 text-zinc-300">
+                          Add new knowledge content to the AI database directly from chat. The content will be available for the AI to use in future conversations.
+                        </p>
+                      </div>
                     </div>
+                    <p className="text-xs text-zinc-400 mt-2">
+                      All added content can be managed from the AI Knowledge Management section in the admin dashboard.
+                    </p>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-2">
-                    All added content can be managed from the AI Knowledge Management section in the admin dashboard.
-                  </p>
-                </div>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
