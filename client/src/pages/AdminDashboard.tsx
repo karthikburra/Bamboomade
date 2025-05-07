@@ -34,7 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/dialog";
-import { TabsContent } from "../components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import AdminTabs from "../components/AdminTabs";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
@@ -592,84 +592,94 @@ export default function AdminDashboard() {
           </Card>
         </div>
         
-        <Tabs 
-          defaultValue={tabParam && ["pending", "upcoming", "completed", "cancelled", "all", "availability", "users"].includes(tabParam) 
+        <AdminTabs 
+          defaultTab={tabParam && ["sessions", "knowledge", "users", "summary"].includes(tabParam) 
             ? tabParam 
-            : "pending"} 
-          className="space-y-4"
-          onValueChange={(value) => {
+            : "sessions"}
+          onTabChange={(value) => {
             // Update URL when tab changes without full page reload
             const newSearchParams = new URLSearchParams(search);
             newSearchParams.set("tab", value);
             setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
           }}
         >
-          <div className="relative overflow-x-auto pb-1">
-            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Pending ({pendingSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Upcoming ({upcomingSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Completed ({completedSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Cancelled ({cancelledSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                All Sessions
-              </TabsTrigger>
-              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
-                Availability
-              </TabsTrigger>
-              <TabsTrigger value="users" className="data-[state=active]:bg-purple-600 text-xs sm:text-sm whitespace-nowrap">
-                User Management
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          
-          {/* Session management tabs */}
-          {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
-            let displaySessions;
-            let emptyMessage = "";
-            
-            switch (tab) {
-              case "pending":
-                displaySessions = pendingSessions;
-                emptyMessage = "No pending sessions requiring Google Meet links.";
-                break;
-              case "upcoming":
-                displaySessions = upcomingSessions;
-                emptyMessage = "No upcoming sessions with Google Meet links set.";
-                break;
-              case "completed":
-                displaySessions = completedSessions;
-                emptyMessage = "No completed sessions.";
-                break;
-              case "cancelled":
-                displaySessions = cancelledSessions;
-                emptyMessage = "No cancelled sessions.";
-                break;
-              default:
-                displaySessions = sessions;
-                emptyMessage = "No sessions found.";
-            }
-            
-            return (
-              <TabsContent key={tab} value={tab} className="space-y-4">
-                <Card className="bg-gray-900 border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="capitalize">{tab} Sessions</CardTitle>
-                    <CardDescription>
-                      {tab === "pending" ? "Sessions requiring Google Meet links" : 
-                       tab === "upcoming" ? "Sessions with Google Meet links set" :
-                       `All ${tab} sessions`}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {isSessionsLoading ? (
+          {/* Sessions Tab - Contains session management */}
+          <TabsContent value="sessions" className="space-y-4">
+            <Tabs 
+              defaultValue={tabParam && ["pending", "upcoming", "completed", "cancelled", "all", "availability"].includes(tabParam) 
+                ? tabParam 
+                : "pending"} 
+              className="space-y-4"
+              onValueChange={(value: string) => {
+                // Update URL when inner tab changes without full page reload
+                const newSearchParams = new URLSearchParams(search);
+                newSearchParams.set("tab", value);
+                setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
+              }}
+            >
+              <div className="relative overflow-x-auto pb-1">
+                <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+                  <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                    Pending ({pendingSessions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                    Upcoming ({upcomingSessions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                    Completed ({completedSessions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                    Cancelled ({cancelledSessions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                    All Sessions
+                  </TabsTrigger>
+                  <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
+                    Availability
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              
+              {/* Session management tabs */}
+              {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
+                let displaySessions;
+                let emptyMessage = "";
+                
+                switch (tab) {
+                  case "pending":
+                    displaySessions = pendingSessions;
+                    emptyMessage = "No pending sessions requiring Google Meet links.";
+                    break;
+                  case "upcoming":
+                    displaySessions = upcomingSessions;
+                    emptyMessage = "No upcoming sessions with Google Meet links set.";
+                    break;
+                  case "completed":
+                    displaySessions = completedSessions;
+                    emptyMessage = "No completed sessions.";
+                    break;
+                  case "cancelled":
+                    displaySessions = cancelledSessions;
+                    emptyMessage = "No cancelled sessions.";
+                    break;
+                  default:
+                    displaySessions = sessions;
+                    emptyMessage = "No sessions found.";
+                }
+                
+                return (
+                  <TabsContent key={tab} value={tab} className="space-y-4">
+                    <Card className="bg-gray-900 border-gray-800">
+                      <CardHeader>
+                        <CardTitle className="capitalize">{tab} Sessions</CardTitle>
+                        <CardDescription>
+                          {tab === "pending" ? "Sessions requiring Google Meet links" : 
+                           tab === "upcoming" ? "Sessions with Google Meet links set" :
+                           `All ${tab} sessions`}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {isSessionsLoading ? (
                       <div className="flex justify-center items-center py-12">
                         <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full"></div>
                       </div>
@@ -1110,7 +1120,9 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+          </TabsContent>
+        </AdminTabs>
         
         {/* Meet Link Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
