@@ -1866,6 +1866,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to process chat", error: (error as Error).message });
     }
   });
+  
+  // AI Training Chat for Admins (Knowledge Management)
+  app.post("/api/chat/ai-training", async (req, res) => {
+    try {
+      // Check if user is admin
+      const isAdmin = req.session.adminUser === true;
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Only admins can access this feature" });
+      }
+      
+      const { message, previousMessages } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ message: "Valid message is required" });
+      }
+      
+      // Initialize OpenAI
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      // Prepare conversation history
+      const conversationHistory = [
+        {
+          role: "system", 
+          content: `You are an AI training assistant for BambooMade, an organization focused on bamboo architecture and sustainable design.
+          
+Your primary tasks are:
+1. Help admins add knowledge content to the AI knowledge base
+2. Guide admins on how to train you to respond to specific types of questions
+
+When an admin asks you to add information to the knowledge base:
+- Extract a clear title, content, and potential source (if provided)
+- Organize the information logically and comprehensively
+- Suggest a content type from: document, event, webpage, or manual
+- Format this as structured content ready to be added
+
+Example request: "Add information about bamboo joinery techniques"
+Example response: I'll help you add this to the knowledge base.
+
+Title: Bamboo Joinery Techniques
+Content: [Comprehensive content about bamboo joinery]
+Content Type: document
+Source: (if provided or null)
+
+When an admin asks you how to respond to certain questions:
+- Provide clear guidance on appropriate responses
+- Explain what information should be included
+- Note any special considerations for that topic
+
+You can access and modify the knowledge base. Be thorough, accurate, and helpful.`
+        }
+      ];
+      
+      // Add previous conversation messages
+      if (previousMessages && Array.isArray(previousMessages)) {
+        conversationHistory.push(...previousMessages);
+      }
+      
+      // Add current user message
+      conversationHistory.push({ role: "user", content: message });
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo", // Using 3.5 for cost efficiency
+        messages: conversationHistory as any,
+        temperature: 0.7,
+        max_tokens: 1000,
+      });
+      
+      // Extract AI response
+      const aiResponse = completion.choices[0].message.content || "I couldn't generate a response.";
+      
+      // Check if we need to add content to the knowledge base
+      let addedContent = null;
+      
+      // Look for patterns that indicate content should be added
+      if (
+        message.toLowerCase().includes("add") || 
+        message.toLowerCase().includes("create") ||
+        message.toLowerCase().includes("new content")
+      ) {
+        // Extract title, content, and content type from AI response using regex
+        const titleMatch = aiResponse.match(/Title:\s*([^\n]+)/i);
+        const contentMatch = aiResponse.match(/Content:\s*([^]*)(?=(Content Type|Source|$))/i);
+        const contentTypeMatch = aiResponse.match(/Content Type:\s*([^\n]+)/i);
+        const sourceMatch = aiResponse.match(/Source:\s*([^\n]+)/i);
+        
+        if (titleMatch && contentMatch) {
+          const title = titleMatch[1].trim();
+          let content = contentMatch[1].trim();
+          const contentType = contentTypeMatch ? contentTypeMatch[1].trim().toLowerCase() : "document";
+          const source = sourceMatch ? sourceMatch[1].trim() : null;
+          
+          // Only add if we have meaningful content
+          if (title.length > 5 && content.length > 20) {
+            // Create knowledge content
+            addedContent = await storage.createAiKnowledgeContent({
+              title,
+              content,
+              contentType: contentType === "document" || contentType === "event" || contentType === "webpage" || contentType === "manual" 
+                ? contentType 
+                : "document",
+              source: source === "null" ? null : source,
+              status: "active",
+              createdBy: req.session.userId || 1 // Default to admin user if not logged in
+            });
+            
+            console.log(`Added new AI knowledge content: ${title}`);
+          }
+        }
+      }
+      
+      res.status(200).json({
+        message: aiResponse,
+        addedContent
+      });
+    } catch (error) {
+      console.error("AI Training Chat error:", error);
+      res.status(500).json({ message: "Failed to process training chat", error: (error as Error).message });
+    }
+  });
 
   app.get("/api/chat/history", async (req, res) => {
     try {

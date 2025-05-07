@@ -463,8 +463,111 @@ const AIKnowledgeManagement: React.FC = () => {
     return acc;
   }, {} as Record<string, number>) || {};
   
+  // Fix variant type error
+  const fixedVariant = (variant: string): "default" | "destructive" | null | undefined => {
+    if (variant === "warning") return "default";
+    return variant as "default" | "destructive" | null | undefined;
+  };
+
   return (
     <div className="w-full px-[24px] py-6 md:py-8 bg-background text-foreground min-h-screen">
+      {/* AI Training Chat Dialog */}
+      <Dialog open={aiChatOpen} onOpenChange={setAiChatOpen}>
+        <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0 dark:bg-gray-900 dark:border-gray-700">
+          <DialogHeader className="px-6 py-4 border-b dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-green-500" />
+              <DialogTitle className="text-xl">AI Knowledge Training Chat</DialogTitle>
+            </div>
+            <DialogDescription className="dark:text-gray-300">
+              Use this chat interface to train the AI on new content and add sources to the knowledge base.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-800">
+            {chatMessages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full">
+                <Brain className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
+                <h3 className="text-xl font-medium text-gray-500 dark:text-gray-400">Start a new conversation</h3>
+                <p className="text-center text-gray-400 dark:text-gray-500 max-w-md mt-2">
+                  Ask the AI to add content to the knowledge base or train it on how to respond to questions about bamboo architecture.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-6 w-full max-w-2xl px-4">
+                  {[
+                    "Add information about bamboo joinery techniques",
+                    "Create a source about bamboo's environmental benefits",
+                    "Add details about bamboo preservation methods",
+                    "How should you respond to questions about bamboo workshops?"
+                  ].map((suggestion, i) => (
+                    <Button 
+                      key={i} 
+                      variant="outline" 
+                      className="text-sm text-left justify-start h-auto py-3 px-4 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                      onClick={() => {
+                        setChatInput(suggestion);
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">{suggestion}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              chatMessages.map((msg, index) => (
+                <div 
+                  key={index} 
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`rounded-lg p-4 max-w-[80%] ${
+                      msg.role === 'user' 
+                        ? 'bg-primary text-primary-foreground ml-4' 
+                        : 'bg-gray-200 dark:bg-gray-700 dark:text-gray-100 mr-4'
+                    }`}
+                  >
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <div className="p-4 border-t dark:border-gray-700 flex flex-col">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              <span className="font-medium">Tips:</span> Ask the AI to add content to the knowledge base 
+              or explain how it should respond to specific types of questions.
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Type your message here..."
+                className="flex-1 dark:bg-gray-800 dark:border-gray-700"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendChat();
+                  }
+                }}
+                disabled={isProcessingChat}
+              />
+              <Button 
+                onClick={handleSendChat} 
+                disabled={isProcessingChat || !chatInput.trim()}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isProcessingChat ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center">
           <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
