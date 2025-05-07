@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { useLocation } from 'wouter';
+import { Helmet } from 'react-helmet';
 
 // UI Components
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +35,9 @@ import {
   Globe, Settings, Book, FileCheck, BookOpen as BookIcon,
   X, Loader2, LayoutGrid, Edit
 } from 'lucide-react';
+
+// Import Admin Components
+import AdminTabs from '@/components/AdminTabs';
 
 // Import AI Training Chat
 import AITrainingChat from '@/components/AITrainingChat';
@@ -918,41 +923,67 @@ const AIKnowledgeManagement: React.FC = () => {
     );
   };
 
+  const [_, navigate] = useLocation();
+  const [adminTab, setAdminTab] = useState("knowledge");
+  
+  const handleTabChange = (tab: string) => {
+    setAdminTab(tab);
+  };
+  
   return (
-    <div className="w-full bg-background text-foreground min-h-screen">
-      {/* AI Training Chat Component */}
-      <AITrainingChat 
-        open={aiChatOpen} 
-        onClose={() => setAiChatOpen(false)} 
-        onContentAdded={handleContentAdded} 
-      />
+    <>
+      <Helmet>
+        <title>AI Knowledge Management | BambooMade</title>
+        <meta name="description" content="Manage AI knowledge base for BambooMade platform" />
+      </Helmet>
       
-      {/* Mobile menu button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed bottom-4 right-4 z-50 md:hidden bg-primary text-primary-foreground shadow-lg rounded-full h-12 w-12"
-        onClick={() => setMobileSidebarOpen(true)}
-      >
-        <Menu className="h-6 w-6" />
-      </Button>
-      
-      {/* Mobile sidebar */}
-      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-[280px]">
-          <Sidebar />
-        </SheetContent>
-      </Sheet>
-      
-      {/* Main layout with sidebar and content */}
-      <div className="flex h-[calc(100vh-2rem)]">
-        {/* Desktop sidebar - hidden on mobile */}
-        <div className="hidden md:block h-full">
-          <Sidebar />
-        </div>
-        
-        {/* Main content area */}
-        <div className="flex-1 overflow-auto">
+      <div className="bg-background min-h-screen py-8">
+        <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              AI Knowledge Management
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              Manage the content used to train the AI assistant for bamboo architecture queries.
+            </p>
+          </div>
+          
+          <AdminTabs defaultTab="knowledge" onTabChange={handleTabChange}>
+            <TabsContent value="knowledge" className="p-0 border-0">
+              <div className="w-full bg-background text-foreground">
+                {/* AI Training Chat Component */}
+                <AITrainingChat 
+                  open={aiChatOpen} 
+                  onClose={() => setAiChatOpen(false)} 
+                  onContentAdded={handleContentAdded} 
+                />
+                
+                {/* Mobile menu button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="fixed bottom-4 right-4 z-50 md:hidden bg-primary text-primary-foreground shadow-lg rounded-full h-12 w-12"
+                  onClick={() => setMobileSidebarOpen(true)}
+                >
+                  <Menu className="h-6 w-6" />
+                </Button>
+                
+                {/* Mobile sidebar */}
+                <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+                  <SheetContent side="left" className="p-0 w-[280px]">
+                    <Sidebar />
+                  </SheetContent>
+                </Sheet>
+                
+                {/* Main layout with sidebar and content */}
+                <div className="flex h-[calc(100vh-12rem)]">
+                  {/* Desktop sidebar - hidden on mobile */}
+                  <div className="hidden md:block h-full">
+                    <Sidebar />
+                  </div>
+                  
+                  {/* Main content area */}
+                  <div className="flex-1 overflow-auto">
           {/* Header with action buttons */}
           <div className="p-6 border-b dark:border-gray-700">
             <div className="flex items-center">
@@ -1618,7 +1649,12 @@ const AIKnowledgeManagement: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+              </div>
+            </TabsContent>
+          </AdminTabs>
+        </div>
+      </div>
+    </>
   );
 };
 
