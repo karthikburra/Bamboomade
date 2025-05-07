@@ -50,7 +50,7 @@ import {
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
   SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
-  Info, Database
+  Info, Database, Copy
 } from "lucide-react";
 import {
   Select,
@@ -1057,7 +1057,7 @@ export default function AdminDashboard() {
                     }}
                     disabled={!meetLink}
                   >
-                    Copy
+                    <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
                   </Button>
                 </div>
                 {selectedSession?.googleMeetLink && (
@@ -1081,7 +1081,7 @@ export default function AdminDashboard() {
                           });
                         }}
                       >
-                        Copy
+                        <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
                       </Button>
                     </div>
                   </div>
