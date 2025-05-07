@@ -22,7 +22,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 // Icons
-import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon, Database, Code, Search, Sparkles, Send, MessageSquare, Brain } from 'lucide-react';
+import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon, Database, Code, Search, Sparkles, Send, MessageSquare, Brain, Lightbulb } from 'lucide-react';
+
+// Import AI Training Chat
+import AITrainingChat from '@/components/AITrainingChat';
 
 // Schema validation for AI knowledge content form
 const aiKnowledgeFormSchema = z.object({
@@ -1294,7 +1297,7 @@ const AIKnowledgeManagement: React.FC = () => {
               </p>
             </div>
             
-            <Alert variant="warning" className="dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-100">
+            <Alert variant={fixedVariant("warning")} className="dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-100">
               <AlertTitle className="flex items-center">
                 <Info className="h-4 w-4 mr-2" />
                 Warning
