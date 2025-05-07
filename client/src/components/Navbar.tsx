@@ -81,6 +81,11 @@ const Navbar: React.FC = () => {
                 }`}
               >
                 {link.label}
+                {link.label === "Project Guidance" && (
+                  <Badge className="ml-1 sm:ml-2 bg-amber-500 hover:bg-amber-500 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">
+                    Popular
+                  </Badge>
+                )}
               </ScrollLink>
             ))}
           </nav>
@@ -149,6 +154,11 @@ const Navbar: React.FC = () => {
                       }`}
                     >
                       {link.label}
+                      {link.label === "Project Guidance" && (
+                        <Badge className="ml-1 sm:ml-2 bg-amber-500 hover:bg-amber-500 text-white text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0">
+                          Popular
+                        </Badge>
+                      )}
                     </ScrollLink>
                   ))}
                   
