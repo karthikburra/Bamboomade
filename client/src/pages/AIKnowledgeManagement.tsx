@@ -522,6 +522,10 @@ const AIKnowledgeManagement: React.FC = () => {
   // Handle when content is added through AI Training
   const handleContentAdded = (content: any) => {
     queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+    toast({
+      title: "Content Added",
+      description: "New content has been added to the knowledge base.",
+    });
   };
 
   const filteredContent = knowledgeContent?.filter(item => {
@@ -1649,13 +1653,13 @@ const AIKnowledgeManagement: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-              </div>
-            </TabsContent>
-          </AdminTabs>
-        </div>
+            </div>
+          </TabsContent>
+        </AdminTabs>
       </div>
-    </>
-  );
+    </div>
+  </>
+);
 };
 
 export default AIKnowledgeManagement;
