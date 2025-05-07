@@ -943,17 +943,17 @@ const AIKnowledgeManagement: React.FC = () => {
       
       <div className="bg-background min-h-screen py-8">
         <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              AI Knowledge Management
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              Manage the content used to train the AI assistant for bamboo architecture queries.
-            </p>
-          </div>
-          
+          {/* AdminTabs moved above the header */}
           <AdminTabs defaultTab="knowledge" onTabChange={handleTabChange}>
             <TabsContent value="knowledge" className="p-0 border-0">
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  AI Knowledge Management
+                </h1>
+                <p className="mt-2 text-muted-foreground">
+                  Manage the content used to train the AI assistant for bamboo architecture queries.
+                </p>
+              </div>
               <div className="w-full bg-background text-foreground">
                 {/* AI Training Chat Component */}
                 <AITrainingChat 
