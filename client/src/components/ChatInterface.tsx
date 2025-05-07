@@ -232,12 +232,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
 
   return (
     <div className="flex flex-col h-[70vh]">
-      <Card className="flex-grow flex flex-col overflow-hidden border-primary-200">
-        <div className="flex justify-between items-center p-3 bg-primary-50 border-b border-primary-200">
+      <Card className="flex-grow flex flex-col overflow-hidden border-zinc-800 bg-zinc-950">
+        <div className="flex justify-between items-center p-3 bg-zinc-900 border-b border-zinc-800">
           <div className="flex items-center">
-            <Sparkles className="h-5 w-5 text-primary-600 mr-2" />
-            <span className="font-medium text-primary-700">BambooMade Assistant</span>
-            <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 hover:bg-green-100 border-green-200">
+            <Sparkles className="h-5 w-5 text-green-500 mr-2" />
+            <span className="font-medium text-zinc-200">BambooMade Assistant</span>
+            <Badge variant="outline" className="ml-2 bg-green-900/40 text-green-400 hover:bg-green-900/40 border-green-700">
               BETA
             </Badge>
           </div>
@@ -245,7 +245,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-8 w-8 text-primary-600 hover:text-primary-900 hover:bg-primary-100"
+              className="h-8 w-8 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
               onClick={clearChat}
               title="Clear conversation"
             >
@@ -254,7 +254,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
           </div>
         </div>
         
-        <ScrollArea className="flex-grow p-4 bg-gradient-to-b from-primary-50/30 to-transparent">
+        <ScrollArea className="flex-grow p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
           <div className="space-y-4 relative">
             {messages.map((message) => (
               <div
@@ -264,10 +264,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-3 shadow-sm group relative ${
+                  className={`max-w-[80%] rounded-lg px-4 py-3 shadow-md group relative ${
                     message.role === "user"
-                      ? "bg-primary-600 text-primary-50"
-                      : "bg-white border border-primary-100 text-foreground"
+                      ? "bg-green-700 text-zinc-100"
+                      : "bg-zinc-800 border border-zinc-700 text-zinc-200"
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
@@ -277,7 +277,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-white/70 hover:bg-white text-primary-600"
+                      className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-700/70 hover:bg-zinc-700 text-green-400"
                       onClick={() => copyToClipboard(message.content, message.id)}
                     >
                       {copiedMessageId === message.id ? <CheckCircle size={14} /> : <Copy size={14} />}
@@ -288,10 +288,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
             ))}
             {isProcessing && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg px-4 py-3 bg-white border border-primary-100 text-foreground">
+                <div className="max-w-[80%] rounded-lg px-4 py-3 bg-zinc-800 border border-zinc-700 text-zinc-200">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary-600" />
-                    <span className="text-sm text-muted-foreground">Generating response...</span>
+                    <Loader2 className="h-5 w-5 animate-spin text-green-500" />
+                    <span className="text-sm text-zinc-400">Generating response...</span>
                   </div>
                 </div>
               </div>
@@ -302,7 +302,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
               <Button
                 size="icon"
                 variant="secondary"
-                className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-md bg-primary-600 text-white hover:bg-primary-700"
+                className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-md bg-green-600 text-zinc-100 hover:bg-green-700"
                 onClick={() => {
                   setShouldAutoScroll(true);
                 }}
@@ -316,9 +316,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
         </ScrollArea>
         {/* Sample questions section - only shown when there's 0 or 1 message (just welcome) */}
         {messages.length <= 1 && (
-          <div className="p-4 border-t border-primary-100 bg-primary-50/30">
-            <h4 className="text-sm font-medium text-primary-700 mb-2 flex items-center">
-              <Sparkles className="h-4 w-4 mr-1 text-primary-600" />
+          <div className="p-4 border-t border-zinc-800 bg-zinc-900">
+            <h4 className="text-sm font-medium text-zinc-200 mb-2 flex items-center">
+              <Sparkles className="h-4 w-4 mr-1 text-green-500" />
               Sample Questions
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -327,7 +327,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                   key={index}
                   variant="outline"
                   size="sm"
-                  className="text-xs text-left border-primary-200 text-primary-700 hover:text-primary-900 hover:bg-primary-100/50 truncate max-w-full"
+                  className="text-xs text-left border-zinc-700 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 truncate max-w-full"
                   onClick={() => useSampleQuestion(question)}
                 >
                   {question}
@@ -337,7 +337,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
           </div>
         )}
         
-        <CardContent className="p-4 border-t bg-white">
+        <CardContent className="p-4 border-t border-zinc-800 bg-zinc-900">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -351,13 +351,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about bamboo architecture, sustainability, or our workshops..."
-                className="flex-grow resize-none min-h-[60px] pr-12 border-primary-200 focus-visible:ring-primary-400"
+                className="flex-grow resize-none min-h-[60px] pr-12 bg-zinc-800 border-zinc-700 text-zinc-200 focus-visible:ring-green-500 placeholder:text-zinc-500"
                 disabled={isProcessing}
               />
               <Button
                 type="submit"
                 size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 bg-primary-600 hover:bg-primary-700 text-white rounded-full"
+                className="absolute right-2 bottom-2 h-8 w-8 bg-green-600 hover:bg-green-700 text-zinc-100 rounded-full"
                 disabled={!input.trim() || isProcessing}
               >
                 <Send size={16} />
@@ -368,13 +368,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
           {/* Login prompt alert - shown when user reaches question limit */}
           {showLoginPrompt && questionCount >= FREE_QUESTION_LIMIT && (
             <div className="mt-4">
-              <Alert className="bg-primary-50 border-primary-200">
-                <AlertTriangle className="h-4 w-4 text-primary-600" />
-                <AlertDescription className="text-sm text-primary-900">
+              <Alert className="bg-zinc-800 border-zinc-700">
+                <AlertTriangle className="h-4 w-4 text-green-500" />
+                <AlertDescription className="text-sm text-zinc-300">
                   <div className="flex flex-col space-y-2">
                     <span className="font-semibold">You've used all {FREE_QUESTION_LIMIT} free questions!</span>
                     <p className="text-sm">Create a free account to continue learning about bamboo architecture and access:</p>
-                    <ul className="list-disc pl-5 text-xs space-y-1">
+                    <ul className="list-disc pl-5 text-xs space-y-1 text-zinc-400">
                       <li>Unlimited AI-guided bamboo architecture advice</li>
                       <li>Personal chat history saved for future reference</li>
                       <li>Advanced project guidance and design recommendations</li>
@@ -382,10 +382,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                     </ul>
                     <div className="flex gap-2 mt-2">
                       <Link href="/login">
-                        <Button size="sm" variant="default" className="w-full">Login</Button>
+                        <Button size="sm" variant="default" className="w-full bg-green-600 hover:bg-green-700 text-zinc-100">Login</Button>
                       </Link>
                       <Link href="/register">
-                        <Button size="sm" variant="outline" className="w-full">Register Free Account</Button>
+                        <Button size="sm" variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800">Register Free Account</Button>
                       </Link>
                     </div>
                   </div>
