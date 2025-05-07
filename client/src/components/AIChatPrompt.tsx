@@ -25,7 +25,7 @@ const AIChatPrompt: React.FC = () => {
         <div className="relative z-10">
         <div className="flex flex-col md:flex-row md:items-center md:gap-4">
           <div className="flex items-center mb-2 md:mb-0 md:w-auto">
-            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-2">
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center mr-2.5">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 viewBox="0 0 24 24" 
@@ -34,7 +34,7 @@ const AIChatPrompt: React.FC = () => {
                 strokeWidth="2" 
                 strokeLinecap="round" 
                 strokeLinejoin="round" 
-                className="w-3 h-3 text-primary-foreground"
+                className="w-3.5 h-3.5 text-primary-foreground"
               >
                 <path d="M21 12.5c0 .3-.1.6-.2.9"></path>
                 <path d="M14 19.5c-.4 0-.8-.1-1.2-.3"></path>
