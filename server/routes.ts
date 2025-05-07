@@ -2,7 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
-import { processMessage, convertWhatsAppToTrainingData } from "./openai-service.js";
+import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
+import OpenAI from "openai";
 // PhonePe service removed
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 
@@ -2068,6 +2069,53 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     } catch (error) {
       console.error("Error fetching AI knowledge content:", error);
       res.status(500).json({ message: "Failed to fetch AI knowledge content" });
+    }
+  });
+  
+  // Analyze content and suggest categorization
+  app.post("/api/ai-knowledge/analyze", isAdmin, async (req, res) => {
+    try {
+      const { content } = req.body;
+      
+      if (!content || typeof content !== 'string' || content.trim().length < 10) {
+        return res.status(400).json({ error: 'Valid content is required for analysis (min 10 characters)' });
+      }
+      
+      // Get OpenAI instance
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI API is not configured' });
+      }
+      
+      // Analyze content using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are an AI trained to analyze and categorize content about bamboo architecture, construction, and design. Based on the content, determine the most appropriate category and suggest a concise, descriptive title."
+          },
+          { 
+            role: "user", 
+            content: `Analyze this content and respond with a JSON object containing a suggested title and content type (one of: 'document', 'event', 'webpage', or 'manual'). Content: ${content}`
+          }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.2,
+      });
+      
+      // Parse the response
+      const result = JSON.parse(response.choices[0].message.content);
+      
+      // Return the analysis results
+      return res.json({
+        title: result.title || 'Untitled Content',
+        contentType: result.contentType || 'document'
+      });
+      
+    } catch (error) {
+      console.error('Error analyzing content:', error);
+      res.status(500).json({ error: 'Failed to analyze content' });
     }
   });
 

@@ -15,7 +15,7 @@ const TRAINING_DATA_FILE = path.join(DATA_DIR, 'training-data.json');
 // Initialize OpenAI getter function to use current environment variable
 let openai: OpenAI | null = null;
 
-function getOpenAI(): OpenAI | null {
+export function getOpenAI(): OpenAI | null {
   // Check if OpenAI API key is provided - check every time to pick up new env vars
   const apiKey = process.env.OPENAI_API_KEY;
   
