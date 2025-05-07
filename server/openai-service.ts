@@ -52,6 +52,13 @@ Your knowledge areas include:
 - Sustainability benefits of bamboo in construction
 - Bamboo in architectural projects
 - Career guidance for students interested in bamboo architecture
+- BambooMade's upcoming events, workshops, and schedules
+
+IMPORTANT RESPONSE FORMATTING:
+1. When answering about events, workshops, or schedules, always include specific dates, times, locations, and registration details.
+2. Format event information in a structured, easy-to-read way.
+3. Present event dates in DD-MM-YYYY format, and times in 24-hour format with IST timezone explicitly mentioned.
+4. Always mention if registration is required and how to register for events.
 
 Always be informative, professional, and supportive in your responses. If a question falls outside your expertise,
 politely guide the user back to bamboo-related topics.`;
@@ -142,11 +149,23 @@ export async function processMessage(
     // This is a basic implementation; could use embedding-based search in the future
     const lowerCaseMessage = message.toLowerCase();
     
-    // Extract keywords from the message (words over 3 chars, excluding common words)
+    // Extract keywords from the message (words over 2 chars, excluding common words)
+    // Allow shorter words to match important terms like "AI" or "event"
     const messageKeywords = lowerCaseMessage
       .split(/\s+/)
-      .filter(word => word.length > 3)
+      .filter(word => word.length > 2)
       .filter(word => !['this', 'that', 'what', 'when', 'where', 'which', 'with', 'would', 'could', 'should', 'there', 'their', 'about'].includes(word));
+    
+    // Add special keywords for specific queries
+    // When asking about events or future, add these terms to improve matching
+    if (lowerCaseMessage.includes('event') || 
+        lowerCaseMessage.includes('events') || 
+        lowerCaseMessage.includes('workshop') || 
+        lowerCaseMessage.includes('upcoming') || 
+        lowerCaseMessage.includes('future') ||
+        lowerCaseMessage.includes('schedule')) {
+      messageKeywords.push('event', 'workshop', 'future', 'upcoming', 'schedule');
+    }
     
     // Score each knowledge content item based on keyword matches
     const scoredContent = knowledgeContent
@@ -161,6 +180,24 @@ export async function processMessage(
         // Check for exact phrase matches (highest relevance)
         if (titleLower.includes(lowerCaseMessage) || contentLower.includes(lowerCaseMessage)) {
           score += 10;
+        }
+        
+        // Special boosting for event-related content when asking about events
+        if ((lowerCaseMessage.includes('event') || 
+             lowerCaseMessage.includes('events') || 
+             lowerCaseMessage.includes('upcoming') || 
+             lowerCaseMessage.includes('future') ||
+             lowerCaseMessage.includes('schedule') ||
+             lowerCaseMessage.includes('workshop')) && 
+            (titleLower.includes('event') || 
+             titleLower.includes('events') || 
+             titleLower.includes('workshop') ||
+             titleLower.includes('schedule') ||  
+             contentLower.includes('event date') ||
+             contentLower.includes('workshop date'))) {
+          // High priority boost for event content
+          score += 15;
+          console.log(`Event content match found: "${item.title}" - boosted score`);
         }
         
         // Check for keyword matches
@@ -197,12 +234,23 @@ export async function processMessage(
     
     const relevantKnowledge = scoredContent;
     
-    // Build knowledge context
+    // Check if any of the knowledge items are event-related
+    const hasEventContent = relevantKnowledge.some(item => 
+      item.title.toLowerCase().includes('event') || 
+      item.title.toLowerCase().includes('workshop') ||
+      item.contentType.toLowerCase().includes('event')
+    );
+    
+    // Build knowledge context with special instructions for events
     const knowledgeContext = relevantKnowledge.length > 0
       ? `Here is some specific information from the BambooMade knowledge base that may be relevant to the user's question:\n\n${
           relevantKnowledge.map(item => 
             `TITLE: ${item.title}\nTYPE: ${item.contentType}\nCONTENT: ${item.content.substring(0, 1000)}${item.content.length > 1000 ? '...' : ''}`
           ).join('\n\n')
+        }\n\n${
+          hasEventContent 
+            ? 'IMPORTANT: When providing information about events, workshops, or schedules, always include ALL specific details like exact dates, times, locations, and registration information. Format event information in a clear, structured way that is easy to read.' 
+            : ''
         }\n\nUse this information to provide accurate and specific answers to the user. If a source is cited, mention it.`
       : '';
 
@@ -232,7 +280,8 @@ export async function processMessage(
         { role: "user", content: message }
       ],
       temperature: 0.7,
-      max_tokens: 400 // Slightly increased for better responses
+      // Use more tokens for event-related queries to ensure complete answers
+      max_tokens: hasEventContent ? 800 : 400
     });
 
     // Extract response and token usage
