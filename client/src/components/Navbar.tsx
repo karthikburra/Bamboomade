@@ -47,12 +47,17 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const navLinks = [
+  type NavLink = {
+    href: string;
+    label: string;
+    isNew?: boolean;
+  };
+
+  const navLinks: NavLink[] = [
     { href: "/", label: "Home" },
     { href: "/our-works", label: "Our Experience" }, 
-    { href: "/project-guidance", label: "Project Guidance", isNew: true },
+    { href: "/project-guidance", label: "Project Guidance & AI Chat", isNew: true },
     { href: "/contact", label: "Contact" },
-    { href: "/ai-chat", label: "AI Chat", isNew: true },
   ];
 
   const isActive = (path: string) => location === path;
