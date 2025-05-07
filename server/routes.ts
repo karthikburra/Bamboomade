@@ -1868,6 +1868,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+
+  
   // AI Training Chat for Admins (Knowledge Management)
   app.post("/api/chat/ai-training", async (req, res) => {
     try {
@@ -1884,7 +1886,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Initialize OpenAI
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ message: "OpenAI service not available" });
+      }
       
       // Prepare conversation history
       const conversationHistory = [
