@@ -20,9 +20,18 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 // Icons
-import { Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, Upload as UploadIcon, Database, Code, Search, Sparkles, Send, MessageSquare, Brain, Lightbulb } from 'lucide-react';
+import { 
+  Trash2, Pencil, Plus, Upload, RefreshCcw, Archive, PlusCircle, 
+  FileText, Link as LinkIcon, Calendar, Info, Download, SaveAll, 
+  Upload as UploadIcon, Database, Code, Search, Sparkles, Send, 
+  MessageSquare, Brain, Lightbulb, Menu, BookOpen, GraduationCap,
+  Globe, Settings, Book, FileCheck, BookOpen as BookIcon 
+} from 'lucide-react';
 
 // Import AI Training Chat
 import AITrainingChat from '@/components/AITrainingChat';
@@ -81,6 +90,11 @@ const AIKnowledgeManagement: React.FC = () => {
   
   // AI Training Chat Interface
   const [aiChatOpen, setAiChatOpen] = useState(false);
+  
+  // Navigation state
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<AiKnowledgeContent | null>(null);
   
   // Form setup
   const form = useForm<z.infer<typeof aiKnowledgeFormSchema>>({
@@ -415,14 +429,224 @@ const AIKnowledgeManagement: React.FC = () => {
     return acc;
   }, {} as Record<string, number>) || {};
   
+  // Group content by category and subcategory for the sidebar
+  const categorizedContent = React.useMemo(() => {
+    if (!knowledgeContent) return {};
+    
+    // Create a map to organize items by content type
+    const result: Record<string, AiKnowledgeContent[]> = {};
+    
+    knowledgeContent.forEach(item => {
+      if (!result[item.contentType]) {
+        result[item.contentType] = [];
+      }
+      result[item.contentType].push(item);
+    });
+    
+    return result;
+  }, [knowledgeContent]);
+  
+  // Format title of content for display in sidebar
+  const formatSidebarTitle = (title: string, index: number) => {
+    return `${title.length > 25 ? title.substring(0, 22) + '...' : title}`;
+  };
+  
+  // Handle selection of an item from the sidebar
+  const handleItemSelect = (item: AiKnowledgeContent) => {
+    setSelectedItem(item);
+    setSelectedCategory(item.contentType);
+  };
+  
   // Fix variant type error
   const fixedVariant = (variant: string): "default" | "destructive" | null | undefined => {
     if (variant === "warning") return "default";
     return variant as "default" | "destructive" | null | undefined;
   };
 
+  // Sidebar navigation component
+  const Sidebar = () => {
+    const categoryIcons: Record<string, React.ReactNode> = {
+      document: <FileText className="h-4 w-4 mr-2" />,
+      event: <Calendar className="h-4 w-4 mr-2" />,
+      webpage: <Globe className="h-4 w-4 mr-2" />,
+      manual: <Book className="h-4 w-4 mr-2" />,
+    };
+    
+    return (
+      <div className="w-64 h-full border-r dark:border-gray-700 dark:bg-gray-900 flex flex-col">
+        <div className="p-4 border-b dark:border-gray-700 flex items-center">
+          <Brain className="h-5 w-5 text-primary mr-2" />
+          <h3 className="font-semibold text-lg">Knowledge Base</h3>
+        </div>
+        
+        <ScrollArea className="flex-1">
+          <div className="px-3 py-2">
+            <div className="mb-4">
+              <Button
+                variant="ghost"
+                className="w-full justify-start font-normal text-sm px-2 py-1.5 h-auto"
+                onClick={() => setAiChatOpen(true)}
+              >
+                <Sparkles className="h-4 w-4 mr-2 text-primary" />
+                AI Training Chat
+              </Button>
+            </div>
+            
+            <Separator className="my-2" />
+            
+            {Object.entries(categorizedContent).map(([category, items]) => (
+              <div key={category} className="mb-4">
+                <div 
+                  className={cn(
+                    "flex items-center py-1.5 px-2 rounded text-sm font-medium cursor-pointer",
+                    selectedCategory === category ? "bg-accent" : "hover:bg-accent/50"
+                  )}
+                  onClick={() => setSelectedCategory(prev => prev === category ? null : category)}
+                >
+                  {categoryIcons[category] || <FileText className="h-4 w-4 mr-2" />}
+                  <span className="capitalize">{category}s</span>
+                  <span className="ml-auto text-xs text-muted-foreground dark:text-gray-400">{items.length}</span>
+                </div>
+                
+                {selectedCategory === category && items.length > 0 && (
+                  <div className="mt-1 ml-6 space-y-1 text-sm">
+                    {items.map((item, idx) => (
+                      <div 
+                        key={item.id} 
+                        className={cn(
+                          "flex items-center py-1.5 px-2 rounded cursor-pointer",
+                          selectedItem?.id === item.id ? "bg-accent/80 text-accent-foreground" : "hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
+                        )}
+                        onClick={() => handleItemSelect(item)}
+                      >
+                        {category === 'document' && <FileText className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                        {category === 'event' && <Calendar className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                        {category === 'webpage' && <Globe className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                        {category === 'manual' && <Book className="h-3.5 w-3.5 mr-2 flex-shrink-0" />}
+                        <span className="truncate">{formatSidebarTitle(item.title, idx + 1)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <Separator className="my-4" />
+            
+            <div className="mb-4">
+              <div 
+                className={cn(
+                  "flex items-center py-1.5 px-2 rounded text-sm font-medium cursor-pointer",
+                  selectedCategory === 'rules' ? "bg-accent" : "hover:bg-accent/50"
+                )}
+                onClick={() => setSelectedCategory(prev => prev === 'rules' ? null : 'rules')}
+              >
+                <GraduationCap className="h-4 w-4 mr-2" />
+                <span>Rules & Training</span>
+              </div>
+              
+              {selectedCategory === 'rules' && (
+                <div className="mt-1 ml-6 space-y-1 text-sm">
+                  <div 
+                    className="flex items-center py-1.5 px-2 rounded cursor-pointer hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
+                    onClick={() => {/* Add rule handler */}}
+                  >
+                    <FileCheck className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
+                    <span className="truncate">Response Guidelines</span>
+                  </div>
+                  <div 
+                    className="flex items-center py-1.5 px-2 rounded cursor-pointer hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
+                    onClick={() => {/* Add rule handler */}}
+                  >
+                    <Settings className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
+                    <span className="truncate">Default Behavior</span>
+                  </div>
+                  <div 
+                    className="flex items-center py-1.5 px-2 rounded cursor-pointer hover:bg-accent/50 text-muted-foreground dark:text-gray-400"
+                    onClick={() => {/* Add rule handler */}}
+                  >
+                    <BookIcon className="h-3.5 w-3.5 mr-2 flex-shrink-0" />
+                    <span className="truncate">Training Examples</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  };
+  
+  // Content display component when an item is selected
+  const ContentDisplay = ({ item }: { item: AiKnowledgeContent | null }) => {
+    if (!item) return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="text-center max-w-md">
+          <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-xl font-medium mb-2">Select content from sidebar</h3>
+          <p className="text-muted-foreground">
+            Choose an item from the sidebar to view its details or use the AI Training Chat to add new knowledge.
+          </p>
+        </div>
+      </div>
+    );
+    
+    return (
+      <div className="p-6 h-full overflow-auto">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">{item.title}</h2>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Badge variant="outline" className="capitalize">
+                {item.contentType === 'document' && <FileText className="h-3 w-3 mr-1" />}
+                {item.contentType === 'webpage' && <Globe className="h-3 w-3 mr-1" />}
+                {item.contentType === 'event' && <Calendar className="h-3 w-3 mr-1" />}
+                {item.contentType === 'manual' && <Book className="h-3 w-3 mr-1" />}
+                {item.contentType}
+              </Badge>
+              <span>•</span>
+              <span>Status: {item.status}</span>
+              <span>•</span>
+              <span>Updated: {new Date(item.updatedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleEditClick(item)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+            <Button variant="destructive" size="sm" onClick={() => handleDelete(item.id)}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </div>
+        </div>
+        
+        {item.source && (
+          <div className="mb-4 p-3 bg-accent/30 rounded flex items-center">
+            <LinkIcon className="h-4 w-4 mr-2 text-blue-500" />
+            <a 
+              href={item.source} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-blue-500 hover:underline break-all"
+            >
+              {item.source}
+            </a>
+          </div>
+        )}
+        
+        <div className="mt-6 prose dark:prose-invert max-w-none">
+          {item.content.split('\n').map((paragraph, idx) => (
+            <p key={idx}>{paragraph}</p>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="w-full px-[24px] py-6 md:py-8 bg-background text-foreground min-h-screen">
+    <div className="w-full bg-background text-foreground min-h-screen">
       {/* AI Training Chat Component */}
       <AITrainingChat 
         open={aiChatOpen} 
@@ -430,407 +654,315 @@ const AIKnowledgeManagement: React.FC = () => {
         onContentAdded={handleContentAdded} 
       />
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div className="flex items-center">
-          <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
+      {/* Mobile menu button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed bottom-4 right-4 z-50 md:hidden bg-primary text-primary-foreground shadow-lg rounded-full h-12 w-12"
+        onClick={() => setMobileSidebarOpen(true)}
+      >
+        <Menu className="h-6 w-6" />
+      </Button>
+      
+      {/* Mobile sidebar */}
+      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-[280px]">
+          <Sidebar />
+        </SheetContent>
+      </Sheet>
+      
+      {/* Main layout with sidebar and content */}
+      <div className="flex h-[calc(100vh-2rem)]">
+        {/* Desktop sidebar - hidden on mobile */}
+        <div className="hidden md:block h-full">
+          <Sidebar />
         </div>
-        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-          <Button
-            onClick={() => setAiChatOpen(true)}
-            className="flex-1 md:flex-none bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
-          >
-            <Sparkles className="mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">AI Training Chat</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-            onClick={() => {
-              setIsImportDialogOpen(true);
-            }}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">Import from Drive</span>
-          </Button>
-          <Button 
-            className="flex-1 md:flex-none dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-            onClick={() => {
-              form.reset();
-              setIsAddDialogOpen(true);
-            }}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">Add New Content</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-            onClick={() => setIsSqlDialogOpen(true)}
-          >
-            <Database className="mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">SQL Query</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-            onClick={handleExportBackup}
-            disabled={isExporting || knowledgeContent?.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">
-              {isExporting ? "Exporting..." : "Export Backup"}
-            </span>
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
-            onClick={() => setIsRestoreDialogOpen(true)}
-          >
-            <SaveAll className="mr-2 h-4 w-4" />
-            <span className="whitespace-nowrap">Restore Backup</span>
-          </Button>
+        
+        {/* Main content area */}
+        <div className="flex-1 overflow-auto">
+          {/* Header with action buttons */}
+          <div className="p-6 border-b dark:border-gray-700">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="flex items-center">
+                <h1 className="text-2xl md:text-3xl font-bold">AI Knowledge Management</h1>
+              </div>
+              <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                <Button
+                  onClick={() => setAiChatOpen(true)}
+                  className="flex-1 md:flex-none bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">AI Training Chat</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+                  onClick={() => {
+                    setIsImportDialogOpen(true);
+                  }}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Import from Drive</span>
+                </Button>
+                <Button 
+                  className="flex-1 md:flex-none dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+                  onClick={() => {
+                    form.reset();
+                    setIsAddDialogOpen(true);
+                  }}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Add New Content</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+                  onClick={() => setIsSqlDialogOpen(true)}
+                >
+                  <Database className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">SQL Query</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+                  onClick={handleExportBackup}
+                  disabled={isExporting || knowledgeContent?.length === 0}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">
+                    {isExporting ? "Exporting..." : "Export Backup"}
+                  </span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 md:flex-none dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100 dark:border-gray-700"
+                  onClick={() => setIsRestoreDialogOpen(true)}
+                >
+                  <SaveAll className="mr-2 h-4 w-4" />
+                  <span className="whitespace-nowrap">Restore Backup</span>
+                </Button>
+              </div>
+            </div>
+            
+            {/* Stats cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mt-6">
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
+                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Total Content</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
+                  <p className="text-xl md:text-2xl font-bold dark:text-white">{knowledgeContent?.length || 0}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
+                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Documents</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
+                  <p className="text-xl md:text-2xl font-bold dark:text-white">{contentTypeCount['document'] || 0}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
+                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Events</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
+                  <p className="text-xl md:text-2xl font-bold dark:text-white">{contentTypeCount['event'] || 0}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardHeader className="pb-2 px-3 py-3 md:px-4 md:py-3">
+                  <CardTitle className="text-sm md:text-base dark:text-gray-100">Websites</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
+                  <p className="text-xl md:text-2xl font-bold dark:text-white">{contentTypeCount['webpage'] || 0}</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          
+          {/* Content display area */}
+          <div className="h-[calc(100vh-14rem)]">
+            {selectedItem ? (
+              <ContentDisplay item={selectedItem} />
+            ) : isLoading ? (
+              <div className="flex justify-center items-center h-full">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : isError ? (
+              <div className="p-6">
+                <Alert variant="destructive" className="dark:bg-red-900 dark:border-red-800 dark:text-white">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>Failed to fetch knowledge content. Please try again later.</AlertDescription>
+                </Alert>
+              </div>
+            ) : knowledgeContent?.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="max-w-md">
+                  <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-medium mb-2">No knowledge content yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Add your first content item to start building your AI knowledge base.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      form.reset();
+                      setIsAddDialogOpen(true);
+                    }}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add New Content
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <ContentDisplay item={null} />
+            )}
+          </div>
         </div>
       </div>
-      
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
-            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Total Content</CardTitle>
-          </CardHeader>
-          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
-            <p className="text-xl md:text-3xl font-bold dark:text-white">{knowledgeContent?.length || 0}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
-            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Documents</CardTitle>
-          </CardHeader>
-          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
-            <p className="text-xl md:text-3xl font-bold dark:text-white">{contentTypeCount['document'] || 0}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
-            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Events</CardTitle>
-          </CardHeader>
-          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
-            <p className="text-xl md:text-3xl font-bold dark:text-white">{contentTypeCount['event'] || 0}</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="pb-2 px-3 py-3 md:px-6 md:py-4">
-            <CardTitle className="text-sm md:text-lg dark:text-gray-100">Websites</CardTitle>
-          </CardHeader>
-          <CardContent className="px-3 pb-3 md:px-6 md:pb-6">
-            <p className="text-xl md:text-3xl font-bold dark:text-white">{contentTypeCount['webpage'] || 0}</p>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-4 w-full flex overflow-x-auto no-scrollbar justify-start md:justify-center dark:bg-gray-800 dark:text-gray-200">
-          <TabsTrigger value="all" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">All</TabsTrigger>
-          <TabsTrigger value="document" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Documents</TabsTrigger>
-          <TabsTrigger value="event" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Events</TabsTrigger>
-          <TabsTrigger value="webpage" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Websites</TabsTrigger>
-          <TabsTrigger value="manual" className="dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white">Manual</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value={activeTab}>
-          {isLoading ? (
-            <div className="flex justify-center my-8">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
-          ) : isError ? (
-            <Alert variant="destructive" className="dark:bg-red-900 dark:border-red-800 dark:text-white">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>Failed to fetch knowledge content. Please try again later.</AlertDescription>
-            </Alert>
-          ) : filteredContent && filteredContent.length > 0 ? (
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardContent className="p-0 overflow-x-auto">
-                <div className="hidden md:block"> {/* Table for medium and larger screens */}
-                  <Table className="dark:text-gray-200">
-                    <TableHeader className="dark:bg-gray-900">
-                      <TableRow className="dark:border-gray-700 dark:hover:bg-gray-700/50">
-                        <TableHead className="dark:text-gray-300">Title</TableHead>
-                        <TableHead className="dark:text-gray-300">Type</TableHead>
-                        <TableHead className="dark:text-gray-300">Source</TableHead>
-                        <TableHead className="dark:text-gray-300">Status</TableHead>
-                        <TableHead className="text-right dark:text-gray-300">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredContent.map((item) => (
-                        <TableRow key={item.id} className="dark:border-gray-700 dark:hover:bg-gray-700/50">
-                          <TableCell className="font-medium dark:text-white">{item.title}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                              {item.contentType === 'document' && <FileText className="h-3 w-3 mr-1" />}
-                              {item.contentType === 'webpage' && <LinkIcon className="h-3 w-3 mr-1" />}
-                              {item.contentType === 'event' && <Calendar className="h-3 w-3 mr-1" />}
-                              {item.contentType === 'manual' && <Info className="h-3 w-3 mr-1" />}
-                              {item.contentType}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate">
-                            {item.source ? (
-                              <a href={item.source} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 hover:underline flex items-center">
-                                <LinkIcon className="h-3 w-3 mr-1" />
-                                {item.source}
-                              </a>
-                            ) : (
-                              <span className="text-gray-500 dark:text-gray-400">None</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={item.status === 'active' ? 'default' : 'secondary'}
-                              className={item.status === 'active' 
-                                ? "dark:bg-green-700 dark:text-white" 
-                                : "dark:bg-gray-600 dark:text-gray-200"}
-                            >
-                              {item.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(item)} className="dark:hover:bg-gray-700 dark:text-gray-200">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="dark:hover:bg-gray-700 dark:text-gray-200">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-                
-                {/* Mobile card layout for small screens */}
-                <div className="md:hidden">
-                  {filteredContent.map((item) => (
-                    <div key={item.id} className="p-4 border-b dark:border-gray-700">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium text-lg dark:text-white">{item.title}</h3>
-                        <div className="flex space-x-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleEditClick(item)} className="h-8 w-8 p-0 dark:hover:bg-gray-700 dark:text-gray-200">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)} className="h-8 w-8 p-0 dark:hover:bg-gray-700 dark:text-gray-200">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Type:</span>
-                          <Badge variant="outline" className="ml-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                            {item.contentType === 'document' && <FileText className="h-3 w-3 mr-1" />}
-                            {item.contentType === 'webpage' && <LinkIcon className="h-3 w-3 mr-1" />}
-                            {item.contentType === 'event' && <Calendar className="h-3 w-3 mr-1" />}
-                            {item.contentType === 'manual' && <Info className="h-3 w-3 mr-1" />}
-                            {item.contentType}
-                          </Badge>
-                        </div>
-                        
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Status:</span>
-                          <Badge 
-                            variant={item.status === 'active' ? 'default' : 'secondary'}
-                            className={`ml-2 ${item.status === 'active' 
-                              ? "dark:bg-green-700 dark:text-white" 
-                              : "dark:bg-gray-600 dark:text-gray-200"}`}
-                          >
-                            {item.status}
-                          </Badge>
-                        </div>
-                        
-                        <div className="col-span-2 mt-1">
-                          <span className="text-gray-500 dark:text-gray-400">Source:</span>
-                          {item.source ? (
-                            <a href={item.source} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 dark:text-blue-400 hover:underline break-all">
-                              {item.source}
-                            </a>
-                          ) : (
-                            <span className="ml-2 text-gray-500 dark:text-gray-400">None</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="text-center py-12">
-              <Info className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-4 text-lg font-medium dark:text-white">No content found</h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {activeTab === "all" 
-                  ? "Add some knowledge content to get started." 
-                  : `No content of type "${activeTab}" found.`}
-              </p>
-              <Button 
-                onClick={() => {
-                  form.reset();
-                  setIsAddDialogOpen(true);
-                }}
-                className="mt-4 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Content
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
       
       {/* Add Content Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold dark:text-white">
-              <div className="flex items-center">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Add Knowledge Content
-              </div>
-            </DialogTitle>
-            <DialogDescription className="dark:text-gray-300">
-              Add new content to the AI knowledge base.
+            <DialogTitle>Add New Knowledge Content</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Add content to the AI knowledge base. This will be used to train the AI assistant.
             </DialogDescription>
           </DialogHeader>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="dark:text-gray-200">Title</FormLabel>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a descriptive title" {...field} className="dark:bg-gray-700 dark:border-gray-600" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="contentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value} 
+                      value={field.value}
+                    >
                       <FormControl>
-                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                          <SelectValue placeholder="Select content type" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="contentType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
-                            <SelectValue placeholder="Select content type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="document" className="dark:text-gray-100 dark:focus:bg-gray-700">Document</SelectItem>
-                          <SelectItem value="webpage" className="dark:text-gray-100 dark:focus:bg-gray-700">Webpage</SelectItem>
-                          <SelectItem value="event" className="dark:text-gray-100 dark:focus:bg-gray-700">Event</SelectItem>
-                          <SelectItem value="manual" className="dark:text-gray-100 dark:focus:bg-gray-700">Manual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-gray-200">Status</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="active" className="dark:text-gray-100 dark:focus:bg-gray-700">Active</SelectItem>
-                          <SelectItem value="inactive" className="dark:text-gray-100 dark:focus:bg-gray-700">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="source"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="dark:text-gray-200">Source URL (optional)</FormLabel>
+                      <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
+                        <SelectItem value="document">Document</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="webpage">Website</SelectItem>
+                        <SelectItem value="manual">Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription className="dark:text-gray-400">
+                      Categorize the content to make it easier to find and use.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Source URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/source-link" 
+                        {...field} 
+                        className="dark:bg-gray-700 dark:border-gray-600" 
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormDescription className="dark:text-gray-400">
+                      Optional link to the source of this content
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter the knowledge content here..." 
+                        className="min-h-[200px] dark:bg-gray-700 dark:border-gray-600" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value} 
+                      value={field.value}
+                    >
                       <FormControl>
-                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="dark:text-gray-200">Content</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          {...field} 
-                          className="min-h-[200px] dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                      <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription className="dark:text-gray-400">
+                      Only active content will be used to train the AI.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
+                <Button 
+                  type="button" 
+                  variant="outline" 
                   onClick={() => setIsAddDialogOpen(false)}
-                  className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
+                  className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit"
-                  disabled={addMutation.isPending}
-                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                >
-                  {addMutation.isPending ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Add Content
-                    </>
-                  )}
+                <Button type="submit" disabled={addMutation.isPending}>
+                  {addMutation.isPending ? "Adding..." : "Add Content"}
                 </Button>
               </DialogFooter>
             </form>
@@ -840,147 +972,133 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Edit Content Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold dark:text-white">
-              <div className="flex items-center">
-                <Pencil className="mr-2 h-5 w-5" />
-                Edit Knowledge Content
-              </div>
-            </DialogTitle>
-            <DialogDescription className="dark:text-gray-300">
-              Update the content details.
+            <DialogTitle>Edit Knowledge Content</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Edit existing content in the AI knowledge base.
             </DialogDescription>
           </DialogHeader>
           
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onUpdate)} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="dark:text-gray-200">Title</FormLabel>
+            <form onSubmit={form.handleSubmit(onUpdate)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter a descriptive title" {...field} className="dark:bg-gray-700 dark:border-gray-600" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="contentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value} 
+                      value={field.value}
+                    >
                       <FormControl>
-                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                          <SelectValue placeholder="Select content type" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="contentType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
-                            <SelectValue placeholder="Select content type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="document" className="dark:text-gray-100 dark:focus:bg-gray-700">Document</SelectItem>
-                          <SelectItem value="webpage" className="dark:text-gray-100 dark:focus:bg-gray-700">Webpage</SelectItem>
-                          <SelectItem value="event" className="dark:text-gray-100 dark:focus:bg-gray-700">Event</SelectItem>
-                          <SelectItem value="manual" className="dark:text-gray-100 dark:focus:bg-gray-700">Manual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-gray-200">Status</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="active" className="dark:text-gray-100 dark:focus:bg-gray-700">Active</SelectItem>
-                          <SelectItem value="inactive" className="dark:text-gray-100 dark:focus:bg-gray-700">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="source"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="dark:text-gray-200">Source URL (optional)</FormLabel>
+                      <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
+                        <SelectItem value="document">Document</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="webpage">Website</SelectItem>
+                        <SelectItem value="manual">Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Source URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/source-link" 
+                        {...field} 
+                        className="dark:bg-gray-700 dark:border-gray-600"
+                        value={field.value || ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter the knowledge content here..." 
+                        className="min-h-[200px] dark:bg-gray-700 dark:border-gray-600" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value} 
+                      value={field.value}
+                    >
                       <FormControl>
-                        <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel className="dark:text-gray-200">Content</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          {...field} 
-                          className="min-h-[200px] dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                      <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
+                <Button 
+                  type="button" 
+                  variant="outline" 
                   onClick={() => setIsEditDialogOpen(false)}
-                  className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
+                  className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit"
-                  disabled={updateMutation.isPending}
-                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                >
-                  {updateMutation.isPending ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Update Content
-                    </>
-                  )}
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? "Updating..." : "Update Content"}
                 </Button>
               </DialogFooter>
             </form>
@@ -990,36 +1108,31 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Import from Google Drive Dialog */}
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <DialogContent className="sm:max-w-[600px] dark:bg-gray-800 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold dark:text-white">
-              <div className="flex items-center">
-                <Upload className="mr-2 h-5 w-5" />
-                Import from Google Drive
-              </div>
-            </DialogTitle>
-            <DialogDescription className="dark:text-gray-300">
-              Extract content from a Google Drive file. Currently supports Google Docs and shared text documents.
+            <DialogTitle>Import from Google Drive</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Import content from a Google Drive document or spreadsheet.
             </DialogDescription>
           </DialogHeader>
           
           <Form {...importForm}>
-            <form onSubmit={importForm.handleSubmit(onImport)} className="space-y-4">
+            <form onSubmit={importForm.handleSubmit(onImport)} className="space-y-6">
               <FormField
                 control={importForm.control}
                 name="url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="dark:text-gray-200">Google Drive URL</FormLabel>
+                    <FormLabel>Google Drive URL</FormLabel>
                     <FormControl>
                       <Input 
+                        placeholder="https://docs.google.com/document/d/..." 
                         {...field} 
-                        placeholder="https://drive.google.com/file/d/..."
-                        className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" 
+                        className="dark:bg-gray-700 dark:border-gray-600"
                       />
                     </FormControl>
-                    <FormDescription className="text-xs dark:text-gray-400">
-                      Paste the shareable Google Drive link. Must be publicly accessible.
+                    <FormDescription className="dark:text-gray-400">
+                      Paste the link to a Google Drive document or spreadsheet
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -1031,94 +1144,57 @@ const AIKnowledgeManagement: React.FC = () => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="dark:text-gray-200">Title</FormLabel>
+                    <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100" />
+                      <Input 
+                        placeholder="Enter a descriptive title" 
+                        {...field} 
+                        className="dark:bg-gray-700 dark:border-gray-600"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={importForm.control}
-                  name="contentType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-gray-200">Content Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
-                            <SelectValue placeholder="Select content type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="document" className="dark:text-gray-100 dark:focus:bg-gray-700">Document</SelectItem>
-                          <SelectItem value="webpage" className="dark:text-gray-100 dark:focus:bg-gray-700">Webpage</SelectItem>
-                          <SelectItem value="event" className="dark:text-gray-100 dark:focus:bg-gray-700">Event</SelectItem>
-                          <SelectItem value="manual" className="dark:text-gray-100 dark:focus:bg-gray-700">Manual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={importForm.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-gray-200">Status</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="active" className="dark:text-gray-100 dark:focus:bg-gray-700">Active</SelectItem>
-                          <SelectItem value="inactive" className="dark:text-gray-100 dark:focus:bg-gray-700">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={importForm.control}
+                name="contentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="dark:bg-gray-700 dark:border-gray-600">
+                          <SelectValue placeholder="Select content type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="dark:bg-gray-700 dark:border-gray-600">
+                        <SelectItem value="document">Document</SelectItem>
+                        <SelectItem value="event">Event</SelectItem>
+                        <SelectItem value="webpage">Website</SelectItem>
+                        <SelectItem value="manual">Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
+                <Button 
+                  type="button" 
+                  variant="outline" 
                   onClick={() => setIsImportDialogOpen(false)}
-                  className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
+                  className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit"
-                  disabled={extractMutation.isPending}
-                  className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                >
-                  {extractMutation.isPending ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                      Extracting...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCcw className="mr-2 h-4 w-4" />
-                      Extract Content
-                    </>
-                  )}
+                <Button type="submit" disabled={extractMutation.isPending}>
+                  {extractMutation.isPending ? "Importing..." : "Import"}
                 </Button>
               </DialogFooter>
             </form>
@@ -1128,207 +1204,93 @@ const AIKnowledgeManagement: React.FC = () => {
       
       {/* Restore Backup Dialog */}
       <Dialog open={isRestoreDialogOpen} onOpenChange={setIsRestoreDialogOpen}>
-        <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <DialogContent className="sm:max-w-[600px] dark:bg-gray-800 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold dark:text-white">
-              <div className="flex items-center">
-                <SaveAll className="mr-2 h-5 w-5" />
-                Restore Knowledge Backup
-              </div>
-            </DialogTitle>
-            <DialogDescription className="dark:text-gray-300">
-              Upload a previously exported AI knowledge backup file.
+            <DialogTitle>Restore Backup</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Restore AI knowledge content from a backup file.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="grid gap-4">
-              <Label htmlFor="backup-file" className="text-sm font-medium dark:text-gray-200">Backup File</Label>
-              <Input
-                id="backup-file"
-                type="file"
-                accept=".json"
-                onChange={handleFileChange}
-                className="dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="backup-file">Backup File</Label>
+              <Input 
+                id="backup-file" 
+                type="file" 
+                accept=".json" 
+                onChange={handleFileChange} 
+                className="dark:bg-gray-700 dark:border-gray-600"
               />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Select a backup file (.json) that was previously exported from this system.
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
+                Select a JSON backup file exported from this system.
               </p>
             </div>
             
-            <Alert variant={fixedVariant("warning")} className="dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-100">
-              <AlertTitle className="flex items-center">
-                <Info className="h-4 w-4 mr-2" />
-                Warning
-              </AlertTitle>
-              <AlertDescription className="dark:text-amber-200">
-                Restoring a backup will attempt to import all content from the file. Existing content with the same IDs may be updated or skipped.
-              </AlertDescription>
-            </Alert>
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsRestoreDialogOpen(false)}
+                className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleImportBackup} disabled={isImportingBackup || !backupFile}>
+                {isImportingBackup ? "Restoring..." : "Restore Backup"}
+              </Button>
+            </DialogFooter>
           </div>
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsRestoreDialogOpen(false)}
-              className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleImportBackup}
-              disabled={!backupFile || isImportingBackup || importBackupMutation.isPending}
-              className="dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-            >
-              {isImportingBackup || importBackupMutation.isPending ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                  Importing...
-                </>
-              ) : (
-                <>
-                  <SaveAll className="mr-2 h-4 w-4" />
-                  Restore Backup
-                </>
-              )}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      
       {/* SQL Query Dialog */}
       <Dialog open={isSqlDialogOpen} onOpenChange={setIsSqlDialogOpen}>
-        <DialogContent className="max-w-3xl dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto dark:bg-gray-800 dark:text-gray-100">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold dark:text-white">
-              <div className="flex items-center">
-                <Database className="mr-2 h-5 w-5" />
-                SQL-Like Knowledge Query
-              </div>
-            </DialogTitle>
-            <DialogDescription className="dark:text-gray-300">
-              Query the AI knowledge database using SQL-like syntax. 
-              Example: <code className="bg-gray-700 text-white px-1 rounded">SELECT * FROM content WHERE contentType = 'document' ORDER BY createdAt DESC LIMIT 10</code>
+            <DialogTitle>SQL Query</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Execute SQL queries to view or modify the AI knowledge content database.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="grid gap-4">
-              <Label htmlFor="sql-query" className="text-sm font-medium dark:text-gray-200">SQL Query</Label>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="sql-query">SQL Query</Label>
               <Textarea 
-                id="sql-query"
-                value={sqlQuery}
-                onChange={(e) => setSqlQuery(e.target.value)}
-                placeholder="SELECT * FROM content WHERE contentType = 'document' ORDER BY createdAt DESC LIMIT 10"
-                className="min-h-[100px] font-mono text-sm dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
+                id="sql-query" 
+                value={sqlQuery} 
+                onChange={(e) => setSqlQuery(e.target.value)} 
+                placeholder="SELECT * FROM content" 
+                className="min-h-[100px] font-mono dark:bg-gray-700 dark:border-gray-600" 
               />
-              <div className="flex justify-between">
-                <div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Supported fields: id, title, content, source, contentType, status, createdAt, updatedAt, createdBy
-                  </span>
-                </div>
-                <Button 
-                  onClick={executeSqlQuery} 
-                  disabled={isExecutingSql}
-                  className="ml-auto dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-                >
-                  {isExecutingSql ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                      Executing...
-                    </>
-                  ) : (
-                    <>
-                      <Code className="mr-2 h-4 w-4" />
-                      Execute Query
-                    </>
-                  )}
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground dark:text-gray-400">
+                Enter a SQL query to execute against the AI knowledge content database.
+              </p>
             </div>
             
-            {/* Query Results */}
+            <div className="flex justify-end">
+              <Button onClick={executeSqlQuery} disabled={isExecutingSql}>
+                {isExecutingSql ? "Executing..." : "Execute Query"}
+              </Button>
+            </div>
+            
             {sqlResult && (
-              <div className="mt-4 space-y-2">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium dark:text-white">Results ({sqlResult.result.count})</h3>
-                  <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200">
-                    Query took {sqlResult.result.executionTime || "N/A"} ms
+                  <h3 className="text-lg font-medium dark:text-white">Results</h3>
+                  <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+                    {sqlResult.result.count} records in {sqlResult.result.executionTime}ms
                   </Badge>
                 </div>
                 
-                <ScrollArea className="h-[400px] w-full rounded border dark:border-gray-700">
-                  {sqlResult.result.count > 0 ? (
-                    <Table className="dark:text-gray-200">
-                      <TableHeader className="dark:bg-gray-900">
-                        <TableRow className="dark:border-gray-700">
-                          <TableHead className="dark:text-gray-300">Title</TableHead>
-                          <TableHead className="dark:text-gray-300">Type</TableHead>
-                          <TableHead className="dark:text-gray-300">Status</TableHead>
-                          <TableHead className="dark:text-gray-300">Created At</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sqlResult.result.data.map((item: any) => (
-                          <TableRow key={item.id} className="dark:border-gray-700 dark:hover:bg-gray-700/50">
-                            <TableCell className="font-medium truncate max-w-[200px]" title={item.title}>
-                              {item.title}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
-                                {item.contentType}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={item.status === 'active' ? 'default' : 'secondary'}
-                                className={item.status === 'active' 
-                                  ? "dark:bg-green-700 dark:text-white" 
-                                  : "dark:bg-gray-600 dark:text-gray-200"}
-                              >
-                                {item.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-sm">
-                              {new Date(item.createdAt).toLocaleString()}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  ) : (
-                    <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                      No results found for this query.
-                    </div>
-                  )}
+                <ScrollArea className="h-[300px] border rounded-md p-4 dark:border-gray-700 dark:bg-gray-900">
+                  <pre className="text-sm font-mono whitespace-pre-wrap dark:text-gray-300">
+                    {JSON.stringify(sqlResult.result.rows, null, 2)}
+                  </pre>
                 </ScrollArea>
-                
-                <div className="border p-4 rounded dark:border-gray-700 dark:bg-gray-900">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium dark:text-gray-200">Raw Query:</span>
-                    <code className="text-xs bg-gray-800 text-white px-2 py-1 rounded">
-                      {sqlResult.result.query}
-                    </code>
-                  </div>
-                  
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    <strong>Fields:</strong> {sqlResult.result.fields === '*' ? 'All fields selected' : sqlResult.result.fields?.join(', ')}
-                  </div>
-                </div>
               </div>
             )}
           </div>
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsSqlDialogOpen(false)}
-              className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:border-gray-600"
-            >
-              Close
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
