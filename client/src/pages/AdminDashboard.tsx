@@ -118,9 +118,9 @@ export default function AdminDashboard() {
   const [meetLink, setMeetLink] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  // Active tab state
+  // Active tab state - Dashboard Summary tab removed
   const [activeTab, setActiveTab] = useState(
-    tabParam && ["sessions", "knowledge", "users", "summary"].includes(tabParam) 
+    tabParam && ["sessions", "knowledge", "users"].includes(tabParam) 
       ? tabParam 
       : "sessions"
   );
@@ -1184,47 +1184,7 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
           
-          {/* Summary Tab */}
-          <TabsContent value="summary" className="space-y-4">
-            <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle>Dashboard Summary</CardTitle>
-                <CardDescription>
-                  Overview of sessions and AI statistics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Session Statistics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-gray-800 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-400 mb-1">Pending Sessions</h3>
-                    <p className="text-2xl font-bold">{pendingSessions.length}</p>
-                  </div>
-                  <div className="bg-gray-800 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-400 mb-1">Upcoming Sessions</h3>
-                    <p className="text-2xl font-bold">{upcomingSessions.length}</p>
-                  </div>
-                  <div className="bg-gray-800 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-400 mb-1">Total Completed</h3>
-                    <p className="text-2xl font-bold">{completedSessions.length}</p>
-                  </div>
-                  <div className="bg-gray-800 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-400 mb-1">Total Cancelled</h3>
-                    <p className="text-2xl font-bold">{cancelledSessions.length}</p>
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <Button 
-                    onClick={() => setLocation("/admin-home")}
-                    className="bg-green-700 hover:bg-green-800"
-                  >
-                    <ChevronDown className="w-4 h-4 mr-2" /> View Detailed Analytics
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Summary Tab has been completely removed */}
         </AdminTabs>
         
         {/* Meet Link Dialog */}
