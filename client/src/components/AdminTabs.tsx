@@ -59,10 +59,7 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
     >
       <div className="relative overflow-x-auto pb-1">
         <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-          <TabsTrigger value="summary" className="data-[state=active]:bg-green-700 text-sm whitespace-nowrap">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Dashboard Summary
-          </TabsTrigger>
+          {/* Dashboard Summary tab removed */}
           <TabsTrigger value="sessions" className="data-[state=active]:bg-green-700 text-sm whitespace-nowrap">
             <Calendar className="w-4 h-4 mr-2" />
             Session Management
