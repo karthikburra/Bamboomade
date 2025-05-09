@@ -84,37 +84,68 @@ const SocialMediaCarousel: React.FC = () => {
     }
   }, [activeTab, instagramApi, youtubeApi]);
 
-  // Autoplay functionality
+  // Autoplay functionality with pause on hover
+  const [isPaused, setIsPaused] = useState(false);
+  
   useEffect(() => {
-    // Start autoplay
-    const interval = setInterval(() => {
-      scrollNext();
-    }, 5000); // Change slide every 5 seconds
+    // Only start autoplay if not paused and if we have content
+    if (!isPaused && ((activeTab === 'instagram' && instagramContent.length > 0) || 
+                      (activeTab === 'youtube' && youtubeContent.length > 0))) {
+      const interval = setInterval(() => {
+        scrollNext();
+      }, 4000); // Change slide every 4 seconds for a bit faster rotation
+      
+      // Cleanup on component unmount or when tab changes
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [activeTab, scrollNext, isPaused, instagramContent.length, youtubeContent.length]);
+  
+  // Helper functions to pause/resume autoplay on hover
+  const handleMouseEnter = useCallback(() => {
+    setIsPaused(true);
+  }, []);
+  
+  const handleMouseLeave = useCallback(() => {
+    setIsPaused(false);
+  }, []);
 
-    // Cleanup on component unmount or when tab changes
-    return () => {
-      clearInterval(interval);
-    };
-  }, [activeTab, scrollNext]); // Removed autoplayInterval from dependency array
-
-  // Loading placeholders
+  // Loading placeholders with animation
   const renderSkeletons = () => (
-    <div className="flex gap-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="min-w-[280px] flex-shrink-0">
-          <Card className="overflow-hidden border-zinc-800 bg-zinc-900">
-            <div className={cn(
-              "w-full bg-zinc-800 animate-pulse",
-              activeTab === 'instagram' ? "aspect-square" : "aspect-video"
-            )} />
-            <CardContent className="p-3 sm:p-4">
-              <Skeleton className="h-4 w-3/4 bg-zinc-800 mb-2" />
-              <Skeleton className="h-3 w-full bg-zinc-800 mb-1" />
-              <Skeleton className="h-3 w-2/3 bg-zinc-800" />
-            </CardContent>
-          </Card>
+    <div>
+      <div className="flex gap-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="min-w-[280px] flex-shrink-0">
+            <Card className="overflow-hidden border-zinc-800 bg-zinc-900">
+              <div className={cn(
+                "w-full bg-zinc-800 animate-pulse",
+                activeTab === 'instagram' ? "aspect-square" : "aspect-video"
+              )}>
+                {/* Pulsating loading indicator */}
+                <div className="flex items-center justify-center h-full">
+                  {activeTab === 'instagram' ? (
+                    <Instagram className="h-10 w-10 text-pink-500/20 animate-pulse" />
+                  ) : (
+                    <Youtube className="h-10 w-10 text-red-500/20 animate-pulse" />
+                  )}
+                </div>
+              </div>
+              <CardContent className="p-3 sm:p-4">
+                <Skeleton className="h-4 w-3/4 bg-zinc-800 mb-2" />
+                <Skeleton className="h-3 w-full bg-zinc-800 mb-1" />
+                <Skeleton className="h-3 w-2/3 bg-zinc-800" />
+              </CardContent>
+            </Card>
+          </div>
+        ))}
+      </div>
+      <div className="text-center mt-4 text-zinc-500 text-sm">
+        <div className="inline-flex items-center">
+          <Loader className="h-3 w-3 mr-2 animate-spin" />
+          Loading {activeTab === 'instagram' ? 'Instagram' : 'YouTube'} content...
         </div>
-      ))}
+      </div>
     </div>
   );
 
@@ -127,7 +158,7 @@ const SocialMediaCarousel: React.FC = () => {
     }
 
     return (
-      <div className="overflow-hidden" ref={youtubeRef}>
+      <div className="overflow-hidden" ref={youtubeRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <div className="flex">
           {youtubeContent.map((item: SocialMediaContent) => (
             <div key={item.id} className="min-w-[280px] mr-4 flex-shrink-0">
@@ -190,7 +221,7 @@ const SocialMediaCarousel: React.FC = () => {
     }
 
     return (
-      <div className="overflow-hidden" ref={instagramRef}>
+      <div className="overflow-hidden" ref={instagramRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
         <div className="flex">
           {instagramContent.map((item: SocialMediaContent) => (
             <div key={item.id} className="min-w-[280px] mr-4 flex-shrink-0">
@@ -294,7 +325,7 @@ const SocialMediaCarousel: React.FC = () => {
         )}
         
         <div className="flex justify-between items-center mt-4">
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
             <Button 
               variant="outline" 
               size="icon" 
@@ -313,6 +344,19 @@ const SocialMediaCarousel: React.FC = () => {
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
+            
+            {/* Auto-scroll indicator */}
+            <span 
+              className={cn(
+                "text-xs px-2 py-1 rounded-full transition-colors",
+                isPaused 
+                  ? "bg-zinc-800 text-zinc-400" 
+                  : "bg-zinc-700 text-amber-300"
+              )}
+              title={isPaused ? "Auto-scroll paused (hover to pause)" : "Auto-scrolling active"}
+            >
+              {isPaused ? "Paused" : "Auto"}
+            </span>
           </div>
           
           <a 
