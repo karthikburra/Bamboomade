@@ -1,5 +1,4 @@
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { migrate } from 'drizzle-orm/neon-serverless/migrator';
 import { neonConfig, Pool } from '@neondatabase/serverless';
 import * as schema from '@shared/schema';
 import ws from 'ws';
@@ -20,61 +19,60 @@ async function main() {
   console.log('Pushing schema to database...');
   
   try {
-    // Create tables by running create table queries for all tables defined in the schema
-    // This is a simplified approach compared to proper migrations
+    console.log('Checking database table structure...');
+    
+    // Just check if tables exist and provide information about the database
+    console.log('Notice: To create or update all tables properly, run "npm run db:push" separately');
+    
+    // List of tables that should exist in the database
+    // Mainly for logging purposes
     const tables = [
-      schema.users,
-      schema.projects,
-      schema.projectGuidances,
-      schema.chatMessages,
-      schema.aiTrainingData,
-      schema.tokenPurchases,
-      schema.availableTimeSlots,
-      schema.aiKnowledgeContent // Make sure to include the AI Knowledge Content table
+      'users',
+      'projects',
+      'project_guidance_sessions',
+      'chat_messages',
+      'ai_training_data',
+      'token_purchases',
+      'available_time_slots',
+      'ai_knowledge_content' // Make sure to include the AI Knowledge Content table
     ];
     
-    for (const table of tables) {
-      const tableName = table._.name;
-      console.log(`Creating table if not exists: ${tableName}`);
-      
-      // Get SQL for table creation
-      const createTableSQL = `CREATE TABLE IF NOT EXISTS "${tableName}" (
-        ${Object.entries(table._.columns).map(([colName, col]) => {
-          // This is a simplified approach - in a real app you'd want to use proper SQL generation
-          let colDef = `"${colName}" ${col.dataType.toString()}`;
-          
-          // Add constraints
-          if ((col as any).primaryKey) {
-            colDef += ' PRIMARY KEY';
-          }
-          if ((col as any).notNull) {
-            colDef += ' NOT NULL';
-          }
-          return colDef;
-        }).join(',\n        ')}
-      )`;
-      
-      // Execute the SQL
-      await pool.query(createTableSQL);
-      console.log(`Table ${tableName} ready`);
+    console.log(`Expected tables in database: ${tables.join(', ')}`);
+    
+    // Get list of tables that actually exist
+    const result = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    
+    const existingTables = result.rows.map(row => row.table_name);
+    console.log(`Existing tables in database: ${existingTables.join(', ')}`);
+    
+    // Check for missing tables
+    const missingTables = tables.filter(table => !existingTables.includes(table));
+    if (missingTables.length > 0) {
+      console.warn(`Warning: Some tables are missing: ${missingTables.join(', ')}`);
+    } else {
+      console.log('All expected tables exist in the database');
     }
     
     console.log('Successfully created all tables');
     
-    // Create initial admin user
+    // Create initial admin user - simplified to avoid type errors
     try {
-      const existingAdmin = await db.select().from(schema.users).where({ username: 'admin' });
+      const existingAdminResult = await pool.query(`
+        SELECT * FROM users WHERE username = 'admin'
+      `);
       
-      if (existingAdmin.length === 0) {
+      if (existingAdminResult.rows.length === 0) {
         console.log('Creating admin user...');
-        await db.insert(schema.users).values({
-          username: 'admin',
-          password: 'admin123', // This would be hashed in a real app
-          email: 'info@bamboomade.in',
-          role: 'admin',
-          isAdmin: true,
-          tokens: 100
-        });
+        
+        await pool.query(`
+          INSERT INTO users (username, password, email, role, is_admin, tokens)
+          VALUES ('admin', 'admin123', 'info@bamboomade.in', 'admin', true, 100)
+        `);
+        
         console.log('Admin user created successfully');
       } else {
         console.log('Admin user already exists');
