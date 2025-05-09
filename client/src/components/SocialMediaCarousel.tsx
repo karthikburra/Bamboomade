@@ -30,7 +30,6 @@ interface SocialMediaData {
 }
 
 const SocialMediaCarousel: React.FC = () => {
-  const [autoplayInterval, setAutoplayInterval] = useState<NodeJS.Timeout | null>(null);
   const [activeTab, setActiveTab] = useState<'instagram' | 'youtube'>('instagram');
   
   // Embla carousel hooks
@@ -60,9 +59,9 @@ const SocialMediaCarousel: React.FC = () => {
       });
   };
 
-  // Extract Instagram and YouTube content
-  const instagramContent = filterContentByPlatform('instagram');
-  const youtubeContent = filterContentByPlatform('youtube');
+  // Extract Instagram and YouTube content - using useMemo to prevent recomputing on every render
+  const instagramContent = React.useMemo(() => filterContentByPlatform('instagram'), [socialMediaData]);
+  const youtubeContent = React.useMemo(() => filterContentByPlatform('youtube'), [socialMediaData]);
 
   // Get social links
   const instagramLink = socialMediaData?.links?.instagram || 'https://www.instagram.com/bamboomadein/';
@@ -87,25 +86,16 @@ const SocialMediaCarousel: React.FC = () => {
 
   // Autoplay functionality
   useEffect(() => {
-    // Clear any existing interval when component unmounts or tab changes
-    if (autoplayInterval) {
-      clearInterval(autoplayInterval);
-    }
-
     // Start autoplay
     const interval = setInterval(() => {
       scrollNext();
     }, 5000); // Change slide every 5 seconds
-    
-    setAutoplayInterval(interval);
 
     // Cleanup on component unmount or when tab changes
     return () => {
-      if (autoplayInterval) {
-        clearInterval(autoplayInterval);
-      }
+      clearInterval(interval);
     };
-  }, [activeTab, scrollNext, autoplayInterval]);
+  }, [activeTab, scrollNext]); // Removed autoplayInterval from dependency array
 
   // Loading placeholders
   const renderSkeletons = () => (
