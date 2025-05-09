@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Info, Calendar, Book, Users, PanelRight, Lightbulb, Award, Brain, Loader2 } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import ChatInterface from "@/components/ChatInterface";
 import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
-import RecentUpdates from "@/components/RecentUpdates";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
@@ -101,9 +100,9 @@ const AIChat: React.FC = () => {
               <span className="ml-3 text-zinc-400">Loading information dashboard...</span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 mb-12 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 mb-12 md:grid-cols-2">
               {/* Bamboo Facts Card */}
-              <div className="md:col-span-1">
+              <div>
                 <BambooFact 
                   factData={dashboardData?.fact || null} 
                   onFactClick={handleTopicClick}
@@ -111,18 +110,10 @@ const AIChat: React.FC = () => {
               </div>
               
               {/* Upcoming Events Card */}
-              <div className="md:col-span-1">
+              <div>
                 <BambooEvents 
                   events={dashboardData?.events || null} 
                   onEventClick={handleTopicClick}
-                />
-              </div>
-              
-              {/* Recent Updates Card */}
-              <div className="md:col-span-2 lg:col-span-1">
-                <RecentUpdates 
-                  updates={dashboardData?.updates || []} 
-                  onUpdateClick={handleTopicClick}
                 />
               </div>
             </div>
