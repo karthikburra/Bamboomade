@@ -8,7 +8,7 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, ArrowRight, CalendarDays } from 'lucide-react';
+import { ExternalLink, FileText, ArrowRight, CalendarDays, Globe } from 'lucide-react';
 import { format } from 'date-fns';
 
 export interface RecentArticle {
@@ -31,10 +31,31 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
 
   const getSourceDomain = (url: string) => {
     try {
-      return new URL(url).hostname.replace('www.', '');
+      // Extract just the domain name for display
+      const domain = new URL(url).hostname.replace('www.', '');
+      
+      // Special case for common article platforms
+      if (domain.includes('medium.com')) return 'Medium';
+      if (domain.includes('wordpress.com')) return 'WordPress';
+      if (domain.includes('blogger.com')) return 'Blogger';
+      if (domain.includes('substack.com')) return 'Substack';
+      
+      return domain;
     } catch {
       return url;
     }
+  };
+  
+  const getPlatformIcon = (url: string) => {
+    if (!url) return <Globe className="h-3 w-3 mr-1" />;
+    
+    const domain = url.toLowerCase();
+    if (domain.includes('medium.com')) return <i className="ri-medium-fill mr-1 text-xs" />;
+    if (domain.includes('wordpress')) return <i className="ri-wordpress-fill mr-1 text-xs" />;
+    if (domain.includes('blogger')) return <i className="ri-blogger-fill mr-1 text-xs" />;
+    
+    // Default for other sources
+    return <Globe className="h-3 w-3 mr-1" />;
   };
 
   if (articles.length === 0) {
@@ -43,12 +64,13 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
             <FileText className="h-5 w-5 mr-2 text-green-500" />
-            Recent Articles
+            Recent Articles & Resources
           </CardTitle>
         </CardHeader>
         <CardContent>
           <CardDescription className="text-zinc-400">
-            New information from our sources will appear here. Check back later for updates.
+            External articles and resources from our trusted sources will appear here. 
+            These rotate daily, so check back often for new content.
           </CardDescription>
         </CardContent>
       </Card>
@@ -99,6 +121,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
                       }
                     }}
                   >
+                    {article.source.startsWith('http') && getPlatformIcon(article.source)}
                     {article.source.startsWith('http') 
                       ? getSourceDomain(article.source)
                       : article.source}

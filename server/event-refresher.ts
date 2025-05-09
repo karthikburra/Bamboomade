@@ -347,24 +347,32 @@ export async function getRecentUpdates(): Promise<Array<{
     const externalArticles = allContent.filter(item => 
       new Date(item.createdAt) >= thirtyDaysAgo &&
       item.status === "active" &&
-      item.contentType !== "events_summary" && // Skip the summary, as we'll show it separately
-      item.contentType !== "event" && // Skip events, as they'll be shown in the events section
+      // Skip certain content types
+      item.contentType !== "events_summary" && 
+      item.contentType !== "event" &&
+      item.contentType !== "webpage" &&
+      item.contentType !== "document" &&
+      
+      // Must be from external websites with http source
+      (item.source && item.source.startsWith('http')) &&
       (
-        // Must be from external websites with http source
-        (item.source && item.source.startsWith('http')) &&
-        (
-          // Must be an article type content
-          item.contentType === 'article' || 
-          item.contentType === 'blog_post' ||
-          // Or from a known article platform
-          (item.source && (
-            item.source.includes('medium.com') ||
-            item.source.includes('wordpress') ||
-            item.source.includes('blogger') ||
-            item.source.includes('substack') ||
-            /\/blog\/|\/article\/|\/post\/|\/news\//.test(item.source)
-          ))
-        )
+        // Must be one of the article-specific content types
+        item.contentType === 'article' || 
+        item.contentType === 'blog_post' ||
+        item.contentType === 'medium_article' ||
+        
+        // Or specific social media content that's article-like
+        (item.contentType === 'social_media' && item.source && (
+          item.source.includes('medium.com') ||
+          item.source.includes('wordpress') ||
+          item.source.includes('blogger') ||
+          item.source.includes('substack')
+        )) ||
+        
+        // Or from a URL that clearly indicates it's an article
+        (item.source && (
+          /\/blog\/|\/article\/|\/post\/|\/news\//.test(item.source)
+        ))
       )
     );
     
