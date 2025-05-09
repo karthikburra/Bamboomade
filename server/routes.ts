@@ -3739,9 +3739,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             ${duplicationCheckPrompt}
             
             New content:
-            Title: "${formattedResult.title}"
-            Type: ${formattedResult.contentType}
-            Content: "${formattedResult.content.substring(0, 300)}..."`
+            Title: "${formattedResult.title || 'Untitled'}"
+            Type: ${formattedResult.contentType || 'document'}
+            Content: "${typeof formattedResult.content === 'string' ? formattedResult.content.substring(0, 300) : JSON.stringify(formattedResult.content).substring(0, 300)}..."`
           }
         ],
         response_format: { type: "json_object" }
@@ -3777,12 +3777,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
                   content: `Merge these entries and provide a json response with the combined information:
                   
                   Existing entry:
-                  Title: "${mergeTarget.title}"
-                  Content: "${mergeTarget.content}"
+                  Title: "${mergeTarget.title || 'Untitled'}"
+                  Content: "${typeof mergeTarget.content === 'string' ? mergeTarget.content : JSON.stringify(mergeTarget.content)}"
                   
                   New information to incorporate:
-                  Title: "${formattedResult.title}"
-                  Content: "${formattedResult.content}"`
+                  Title: "${formattedResult.title || 'Untitled'}"
+                  Content: "${typeof formattedResult.content === 'string' ? formattedResult.content : JSON.stringify(formattedResult.content)}"`
                 }
               ],
               response_format: { type: "json_object" }
