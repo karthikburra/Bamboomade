@@ -3567,16 +3567,34 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         messages: [
           {
             role: "system", 
-            content: `You're an AI assistant for a bamboo architecture educational platform that manages a knowledge base. 
-            Your job is to analyze the user's message and extract structured information worth adding to the knowledge base.
+            content: `You're a warm, friendly AI assistant named Knowledge Companion for a bamboo architecture educational platform. 
+            You manage a knowledge base and have engaging conversations with users.
+            
+            Your personality is:
+            - Friendly, warm, and personable - like talking to a knowledgeable friend
+            - Patient and understanding, especially with complex topics
+            - Insightful about bamboo architecture and sustainable design
+            - Genuinely interested in what users want to share
+            
+            Your job is to analyze the user's message, understand their intent, and extract structured information worth adding to the knowledge base.
             This could be facts about bamboo, event details, technical information, or other educational content.
-            Thoroughly analyze the content, classify it, and determine if it contains new information.
-            Respond with a JSON object containing an analysis of the content.`
+            
+            Thoroughly analyze the content, classify it, and determine if it contains useful information.
+            Consider the context of previous messages to better understand what the user means.
+            
+            For each message, determine if it's:
+            1. A greeting or casual conversation (respond in kind, don't add to knowledge base)
+            2. A question about the platform (answer directly, don't add to knowledge base)
+            3. Information about bamboo (categorize and prepare for knowledge base)
+            4. Event details (extract date, time, location, description)
+            5. Technical knowledge (identify key concepts and relationships)
+            
+            Respond with a JSON object containing an analysis of the content and the appropriate tone to use in your response.`
           },
           ...chatHistory,
           {
             role: "user",
-            content: `Analyze this message and provide a json response: ${message}`
+            content: `Analyze this message, understand my intent, and provide a json response with your analysis: ${message}`
           }
         ],
         response_format: { type: "json_object" }
@@ -3590,15 +3608,29 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       let response = "";
       let isDuplicate = false;
       
+      // Check if this is a casual conversation or greeting that doesn't need to be added to knowledge base
+      if (analysisResult.messageType && ['greeting', 'conversation', 'question'].includes(analysisResult.messageType.toLowerCase())) {
+        // For casual conversation, just respond naturally without adding to knowledge base
+        shouldAddToKnowledge = false;
+        response = analysisResult.suggestedResponse || `Thanks for chatting with me! I'm here to help with anything related to bamboo architecture. What would you like to talk about today?`;
+        
+        return res.json({
+          response,
+          shouldAddToKnowledge,
+          suggestion: null,
+          isDuplicate: false
+        });
+      }
+      
       // Determine content details with improved formatting
       const formatResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system", 
-            content: `You're an AI knowledge assistant for a bamboo architecture platform. Format the following content for the knowledge base.
+            content: `You're a friendly, conversational AI knowledge assistant for a bamboo architecture platform. Format the following content for the knowledge base.
             Create a structured entry with:
-            1. A clear, descriptive title
+            1. A clear, descriptive title (friendly and conversational)
             2. Appropriate content type: 'document' (for facts/information), 'event' (for workshops, exhibitions, etc.), or 'webpage' (for website content)
             3. Well-formatted content with proper sections, bullet points where appropriate
             4. Extract any source references or links
@@ -3669,8 +3701,10 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
               messages: [
                 {
                   role: "system", 
-                  content: `You need to merge two knowledge base entries to avoid duplication while preserving all valuable information. 
-                  Create a single comprehensive entry that combines them effectively.
+                  content: `You are a friendly, conversational AI knowledge companion for a bamboo architecture platform.
+                  You need to merge two knowledge base entries to avoid duplication while preserving all valuable information.
+                  Create a single comprehensive entry that combines them effectively with a natural, friendly writing style.
+                  Make sure the merged content flows well and sounds like it was written by a knowledgeable friend.
                   Return your merged content as a JSON object with fields: title and content.`
                 },
                 {
@@ -3700,15 +3734,23 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
               status: mergeTarget.status
             });
             
-            response = `I've merged this information with the existing entry "${mergeTarget.title}" to avoid duplication while preserving all valuable details. The knowledge base now has the most comprehensive information on this topic.`;
+            // More friendly and conversational response for merging content
+            const contentType = mergeTarget.contentType?.toLowerCase() || "document";
+            if (contentType === "event") {
+              response = `I've updated our information about "${mergeTarget.title}" with these new details you shared. It's great to have the most complete information about this event! Is there anything else you'd like to tell me about it?`;
+            } else if (contentType === "webpage") {
+              response = `Thanks for these additional insights! I've combined them with what we already knew about "${mergeTarget.title}". Our bamboo knowledge is getting better all the time thanks to your contributions! Anything else on your mind?`;
+            } else {
+              response = `Thanks for sharing more about "${mergeTarget.title}"! I've updated our knowledge base by combining your new information with what we already knew. It's like putting together puzzle pieces to get a clearer picture. Is there anything else you'd like to talk about?`;
+            }
           } else {
             // Fallback if merge target not found
             shouldAddToKnowledge = true;
             isDuplicate = false;
           }
         } else {
-          // Skip - completely redundant
-          response = `This information is already in our knowledge base, so I won't add it again. Is there anything else you'd like to share?`;
+          // Skip - completely redundant, but with a friendly response
+          response = `I actually recognize this information! It's already in our knowledge base. Thank you for sharing though - it shows we're on the same page about what's important! Is there anything else about bamboo architecture you'd like to chat about?`;
         }
       }
       
@@ -3721,7 +3763,18 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           source: formattedResult.source || null
         };
         
-        response = `I've added "${formattedResult.title}" to the knowledge base. This information about ${formattedResult.contentType === 'event' ? 'the upcoming event' : 'bamboo'} will be available for future reference. Is there anything else you'd like to add?`;
+        // More conversational and friendly responses based on content type
+        const contentType = formattedResult.contentType?.toLowerCase() || "document";
+        
+        if (contentType === "event") {
+          response = `That's exciting! I've added "${formattedResult.title}" to our knowledge base. Thanks for sharing details about this event - I'm sure others will find it helpful! Is there anything else about this or other events you'd like to tell me about?`;
+        } else if (contentType === "webpage") {
+          response = `Thanks for sharing that link! I've extracted the key information from "${formattedResult.title}" and added it to our knowledge base. This will be super helpful for everyone interested in bamboo architecture. Anything else on your mind?`;
+        } else if (contentType === "social_media") {
+          response = `Got it! I've saved that social media post about "${formattedResult.title}" to our knowledge base. It's great to keep up with what's happening in the bamboo community. Anything else you'd like to chat about?`;
+        } else {
+          response = `Thanks for sharing that insight about "${formattedResult.title}"! I've added it to our bamboo knowledge base. I love learning new things about bamboo architecture - do you have any other interesting facts or information to share?`;
+        }
       }
       
       return res.json({
