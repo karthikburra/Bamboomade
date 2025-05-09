@@ -2445,10 +2445,13 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
 
+  // Support both PUT and PATCH methods for updating AI knowledge content
   app.put("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { title, content, source, contentType, status } = req.body;
+      const { title, content, source, contentType, status, mediaUrl } = req.body;
+      
+      console.log("PUT update with content type:", contentType);
       
       // Check if content exists
       const existingContent = await storage.getAiKnowledgeContentById(id);
@@ -2462,8 +2465,33 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         content,
         source,
         contentType,
-        status
+        status,
+        mediaUrl
       });
+      
+      res.json(updatedContent);
+    } catch (error) {
+      console.error("Error updating AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to update AI knowledge content" });
+    }
+  });
+  
+  // Adding PATCH endpoint as well to handle either method
+  app.patch("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      console.log("PATCH update with content type:", updates.contentType);
+      
+      // Check if content exists
+      const existingContent = await storage.getAiKnowledgeContentById(id);
+      if (!existingContent) {
+        return res.status(404).json({ message: "AI knowledge content not found" });
+      }
+      
+      // Update the content
+      const updatedContent = await storage.updateAiKnowledgeContent(id, updates);
       
       res.json(updatedContent);
     } catch (error) {

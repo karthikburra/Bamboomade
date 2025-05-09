@@ -130,7 +130,10 @@ export default function AIKnowledgeDatabase() {
   };
 
   const handleEditContent = (content: AiKnowledgeContent) => {
-    setSelectedContent(content);
+    // Create a deep copy to ensure we're not editing the reference directly
+    const contentCopy = JSON.parse(JSON.stringify(content));
+    console.log("Opening edit dialog for content type:", contentCopy.contentType);
+    setSelectedContent(contentCopy);
     setIsEditDialogOpen(true);
   };
 
@@ -593,8 +596,12 @@ export default function AIKnowledgeDatabase() {
                 <div className="col-span-1 sm:col-span-2 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
                   <label className="text-sm font-medium text-amber-400 block mb-2">Content Type</label>
                   <Select 
+                    defaultValue={selectedContent.contentType}
                     value={selectedContent.contentType}
-                    onValueChange={(value) => setSelectedContent({...selectedContent, contentType: value})}
+                    onValueChange={(value) => {
+                      console.log("Content type changed to:", value);
+                      setSelectedContent({...selectedContent, contentType: value});
+                    }}
                   >
                     <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-200 w-full hover:border-zinc-600 focus:ring-amber-500 focus:border-amber-500">
                       <SelectValue placeholder="Select a content type" />
@@ -644,8 +651,9 @@ export default function AIKnowledgeDatabase() {
                   className="flex-grow sm:flex-grow-0 bg-amber-600 hover:bg-amber-700 text-white"
                   onClick={async () => {
                     try {
+                      console.log("Updating content with type:", selectedContent.contentType);
                       const response = await fetch(`/api/ai-knowledge/${selectedContent.id}`, {
-                        method: "PATCH",
+                        method: "PUT", // Changed from PATCH to PUT to match server endpoint
                         headers: {
                           "Content-Type": "application/json",
                         },
