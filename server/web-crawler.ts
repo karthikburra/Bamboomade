@@ -364,8 +364,75 @@ export async function analyzeWebsite(url: string): Promise<{
     // Extract structured information
     const extractionResult = await extractStructuredInformation(crawledPages);
     
-    // Format content for knowledge base
+    // Detect content type
+    const detectedType = detectContentTypeFromUrl(url);
+    
+    // Format content for knowledge base based on content type
     let formattedContent = `# ${extractionResult.title}\n\n`;
+    
+    // For articles, format in a special way
+    if (detectedType === 'article') {
+      // Add article metadata if available
+      formattedContent += `**Article Type**: ${detectedType}\n`;
+      formattedContent += `**Source**: ${url}\n`;
+      
+      // Check if we have an author
+      if (extractionResult.author) {
+        formattedContent += `**Author**: ${extractionResult.author}\n`;
+      }
+      
+      // Check if we have a published date
+      if (extractionResult.publishedDate) {
+        formattedContent += `**Published**: ${extractionResult.publishedDate}\n`;
+      }
+      
+      formattedContent += `\n## Article Content\n\n`;
+      formattedContent += extractionResult.mainContent + '\n\n';
+      
+      formattedContent += `\n## Article Source\nOriginal URL: ${url}\n`;
+      formattedContent += `Last crawled: ${new Date().toISOString()}\n`;
+      
+      return {
+        title: extractionResult.title,
+        contentType: 'article',
+        content: formattedContent,
+      };
+    }
+    
+    // For social media content
+    if (detectedType === 'social-media') {
+      formattedContent += `**Content Type**: Social Media Post\n`;
+      formattedContent += `**Platform**: ${getPlatformFromUrl(url)}\n`;
+      formattedContent += `**Source**: ${url}\n\n`;
+      formattedContent += extractionResult.mainContent + '\n\n';
+      
+      return {
+        title: extractionResult.title,
+        contentType: 'social-media',
+        content: formattedContent,
+      };
+    }
+    
+    // For video content
+    if (detectedType === 'video') {
+      formattedContent += `**Content Type**: Video\n`;
+      formattedContent += `**Platform**: ${getPlatformFromUrl(url)}\n`;
+      formattedContent += `**Source**: ${url}\n\n`;
+      
+      if (extractionResult.videoDescription) {
+        formattedContent += `## Video Description\n${extractionResult.videoDescription}\n\n`;
+      }
+      
+      formattedContent += extractionResult.mainContent + '\n\n';
+      
+      return {
+        title: extractionResult.title,
+        contentType: 'video',
+        content: formattedContent,
+      };
+    }
+    
+    // Default webpage format
     formattedContent += extractionResult.mainContent + '\n\n';
     
     // Add company info if available
@@ -423,7 +490,7 @@ export async function analyzeWebsite(url: string): Promise<{
     
     return {
       title: extractionResult.title,
-      contentType: 'webpage',
+      contentType: detectedType,
       content: formattedContent,
     };
   } catch (error) {
@@ -447,10 +514,62 @@ export function isValidUrl(text: string): boolean {
 /**
  * Detect if content is likely a document that should be processed differently
  */
-export function detectContentType(content: string): 'url' | 'document' | 'event' {
+export function detectContentType(content: string): 'url' | 'document' | 'event' | 'article' | 'social-media' | 'video' {
   // Check if it's a URL
   if (isValidUrl(content.trim())) {
+    const url = content.trim();
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const path = parsedUrl.pathname.toLowerCase();
+    
+    // Check for article platforms
+    if (
+      hostname.includes('medium.com') || 
+      hostname.includes('wordpress.com') ||
+      hostname.includes('blogger.com') ||
+      path.includes('/blog/') ||
+      path.includes('/article/') ||
+      path.includes('/post/') ||
+      path.includes('/news/')
+    ) {
+      return 'article';
+    }
+    
+    // Check for social media platforms
+    if (
+      hostname.includes('instagram.com') ||
+      hostname.includes('facebook.com') ||
+      hostname.includes('twitter.com') ||
+      hostname.includes('linkedin.com') ||
+      hostname.includes('x.com')
+    ) {
+      return 'social-media';
+    }
+    
+    // Check for video platforms
+    if (
+      hostname.includes('youtube.com') ||
+      hostname.includes('youtu.be') ||
+      hostname.includes('vimeo.com')
+    ) {
+      return 'video';
+    }
+    
     return 'url';
+  }
+  
+  // Check for article indicators
+  const articleKeywords = [
+    'published', 'author', 'article', 'opinion', 'editorial', 
+    'column', 'blog post', 'feature', 'story', 'interview'
+  ];
+  
+  const hasArticleKeywords = articleKeywords.some(keyword => 
+    new RegExp(`\\b${keyword}\\b`, 'i').test(content)
+  );
+  
+  if (hasArticleKeywords && content.length > 500) {
+    return 'article';
   }
   
   // Check for event indicators
