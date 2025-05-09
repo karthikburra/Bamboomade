@@ -141,9 +141,19 @@ export async function updateLatestEventsSummary(): Promise<boolean> {
           - Date and time
           - Location (if available)
           - Brief description (1-2 sentences)
+          - Registration link (if available)
+          
+          IMPORTANT: If there's a URL or registration link for the event, make it a clickable markdown link like this: 
+          [Register Here](https://example.com)
           
           Include ONLY real events with specific dates. Do not generate placeholder or example events.
-          If no upcoming events are found, clearly state that no upcoming events are currently scheduled.`
+          If no upcoming events are found, clearly state that no upcoming events are currently scheduled.
+          
+          Example format for an event with a registration link:
+          - **Workshop Title** - June 15, 2025, 10:00 AM
+          - Location: City, Country
+          - Brief description of the workshop focusing on bamboo techniques.
+          - [Register Here](https://registration-link.com)`
         },
         {
           role: "user",

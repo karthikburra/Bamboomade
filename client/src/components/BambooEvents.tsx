@@ -43,7 +43,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick }) => 
           </Badge>
         </div>
         <CardDescription className="text-xs text-zinc-400">
-          Click on any event to ask our AI for more details
+          Click on any event to ask our AI for details or use the registration links
         </CardDescription>
       </CardHeader>
       <CardContent className="text-sm">
@@ -55,18 +55,24 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick }) => 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-green-400 hover:text-green-300 inline-flex items-center"
+                onClick={(e) => e.stopPropagation()} // Prevent the link click from triggering the list item click
               >
                 {props.children}
                 <ExternalLink className="h-3 w-3 ml-1" />
               </a>
             ),
-            li: ({ node, ...props }) => (
-              <li 
-                {...props} 
-                className="mb-3 last:mb-0 cursor-pointer hover:text-green-300 transition-colors"
-                onClick={() => onEventClick && onEventClick(String(props.children))}
-              />
-            )
+            li: ({ node, ...props }) => {
+              // Check if the content contains a link
+              const hasLink = String(props.children).includes('[') && String(props.children).includes('](');
+              
+              return (
+                <li 
+                  {...props} 
+                  className={`mb-3 last:mb-0 ${hasLink ? '' : 'cursor-pointer hover:text-green-300'} transition-colors`}
+                  onClick={hasLink ? undefined : () => onEventClick && onEventClick(String(props.children))}
+                />
+              );
+            }
           }}>
             {events}
           </ReactMarkdown>
