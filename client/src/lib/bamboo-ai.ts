@@ -37,11 +37,24 @@ export interface ProjectGuidance {
 }
 
 /**
+ * Citation interface for source references
+ */
+export interface Citation {
+  source: string;
+  url?: string;
+}
+
+/**
  * Processes a chat message with the BambooMade AI
  * @param message The user's message to process
- * @returns The AI response and tokens used
+ * @returns The AI response, tokens used, and citation information
  */
-export async function processAiChat(message: string): Promise<{ response: string; tokensUsed: number; remainingTokens?: number }> {
+export async function processAiChat(message: string): Promise<{ 
+  response: string; 
+  tokensUsed: number; 
+  remainingTokens?: number;
+  citations?: Citation[]
+}> {
   try {
     // Send the message to our backend which will process it with OpenAI
     const response = await apiRequest("POST", "/api/chat", { message });
@@ -51,13 +64,32 @@ export async function processAiChat(message: string): Promise<{ response: string
       throw new Error(data.message || "Failed to process message");
     }
     
+    // Track this interaction in Google Analytics if available
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'ai_message_processed', {
+        'event_category': 'AI_Chat',
+        'event_label': message.substring(0, 50), // First 50 chars of message
+        'non_interaction': false
+      });
+    }
+    
     return {
       response: data.response,
       tokensUsed: data.tokensUsed,
       // No remainingTokens since we're not tracking tokens per user anymore
-      remainingTokens: undefined
+      remainingTokens: undefined,
+      citations: data.citations || [] // Include citation information
     };
   } catch (error) {
+    // Track errors in Google Analytics if available
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'ai_error', {
+        'event_category': 'AI_Chat',
+        'event_label': String(error).substring(0, 100),
+        'non_interaction': true
+      });
+    }
+    
     console.error("Error processing AI chat:", error);
     throw new Error("Failed to process chat message. Please try again later.");
   }

@@ -16,10 +16,17 @@ import { Link } from "wouter";
 import TokenCounter from "./TokenCounter";
 import { toast } from "@/hooks/use-toast";
 
+// Citation interface for source references
+interface Citation {
+  source: string;
+  url?: string;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  citations?: Citation[]; // Optional array of citation sources
 }
 
 interface ChatInterfaceProps {
@@ -432,6 +439,43 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
                   }`}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
+                  
+                  {/* Display citations if available */}
+                  {message.role === "assistant" && message.citations && message.citations.length > 0 && (
+                    <div className="mt-3 pt-2 border-t border-zinc-700/50 text-xs text-zinc-400">
+                      <p className="font-medium mb-1 flex items-center">
+                        <Info size={12} className="mr-1" /> Sources:
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {message.citations.map((citation, index) => (
+                          <li key={index}>
+                            {citation.url ? (
+                              <a 
+                                href={citation.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-green-400 hover:underline"
+                                onClick={() => {
+                                  // Track source clicks in Google Analytics
+                                  if (typeof window !== 'undefined' && (window as any).gtag) {
+                                    (window as any).gtag('event', 'citation_click', {
+                                      'event_category': 'AI_Chat',
+                                      'event_label': citation.source,
+                                      'value': 1
+                                    });
+                                  }
+                                }}
+                              >
+                                {citation.source}
+                              </a>
+                            ) : (
+                              <span>{citation.source}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   
                   {/* Copy button - only for assistant messages */}
                   {message.role === "assistant" && (
