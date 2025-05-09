@@ -6,7 +6,7 @@ import { eq, and, asc, desc } from "drizzle-orm";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import OpenAI from "openai";
-import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts } from "./event-refresher";
+import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
 // PhonePe service removed
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 
@@ -1929,7 +1929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get dashboard data for AI Chat screen (events, updates, facts)
   app.get("/api/dashboard-data", async (req, res) => {
-    try {
+    try {      
       // Run all queries in parallel for better performance
       const [eventsSummary, upcomingEvents, recentUpdates, bambooFact, bamboofacts] = await Promise.all([
         getLatestEventsSummary(),
