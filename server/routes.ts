@@ -3570,12 +3570,13 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             content: `You're an AI assistant for a bamboo architecture educational platform that manages a knowledge base. 
             Your job is to analyze the user's message and extract structured information worth adding to the knowledge base.
             This could be facts about bamboo, event details, technical information, or other educational content.
-            Thoroughly analyze the content, classify it, and determine if it contains new information.`
+            Thoroughly analyze the content, classify it, and determine if it contains new information.
+            Respond with a JSON object containing an analysis of the content.`
           },
           ...chatHistory,
           {
             role: "user",
-            content: message
+            content: `Analyze this message and provide a json response: ${message}`
           }
         ],
         response_format: { type: "json_object" }
@@ -3606,7 +3607,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           },
           {
             role: "user",
-            content: message
+            content: `Format this content and provide the result as json: ${message}`
           }
         ],
         response_format: { type: "json_object" }
@@ -3630,11 +3631,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             2. Merged with an existing entry (significant overlap)
             3. Skipped (completely redundant)
             
-            If it should be merged, specify which existing entry ID to update.`
+            If it should be merged, specify which existing entry ID to update.
+            Return your analysis as a JSON object with fields: action ('add', 'merge', 'skip'), mergeWithId (ID to merge with, if applicable), and reason.`
           },
           {
             role: "user",
-            content: `Existing entries:
+            content: `Analyze for duplicates and provide a json response with your decision:
+            
+            Existing entries:
             ${duplicationCheckPrompt}
             
             New content:
@@ -3666,11 +3670,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
                 {
                   role: "system", 
                   content: `You need to merge two knowledge base entries to avoid duplication while preserving all valuable information. 
-                  Create a single comprehensive entry that combines them effectively.`
+                  Create a single comprehensive entry that combines them effectively.
+                  Return your merged content as a JSON object with fields: title and content.`
                 },
                 {
                   role: "user",
-                  content: `Existing entry:
+                  content: `Merge these entries and provide a json response with the combined information:
+                  
+                  Existing entry:
                   Title: "${mergeTarget.title}"
                   Content: "${mergeTarget.content}"
                   
