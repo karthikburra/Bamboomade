@@ -7,6 +7,7 @@ import ChatInterface from "@/components/ChatInterface";
 import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
 import RecentArticles from "@/components/RecentArticles";
+import SocialMediaCarousel from "@/components/SocialMediaCarousel";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
@@ -124,11 +125,16 @@ const AIChat: React.FC = () => {
               </div>
               
               {/* Second Row - Recent Articles */}
-              <div className="mb-6 sm:mb-8 md:mb-12">
+              <div className="mb-6 sm:mb-8">
                 <RecentArticles 
                   articles={dashboardData?.updates || []} 
                   onArticleClick={handleTopicClick}
                 />
+              </div>
+
+              {/* Third Row - Social Media Carousel */}
+              <div className="mb-6 sm:mb-8 md:mb-12">
+                <SocialMediaCarousel />
               </div>
             </>
           )}
