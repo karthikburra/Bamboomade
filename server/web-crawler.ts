@@ -319,7 +319,7 @@ export async function extractStructuredInformation(
       response_format: { type: "json_object" }
     });
 
-    const extractedData = JSON.parse(response.choices[0].message.content);
+    const extractedData = JSON.parse(response.choices[0].message.content || '{}');
     
     // Ensure contentType is always set
     extractedData.contentType = 'webpage';

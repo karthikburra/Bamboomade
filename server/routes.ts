@@ -2088,15 +2088,44 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(400).json({ error: 'Valid content is required for analysis (min 10 characters)' });
       }
       
-      // Get OpenAI instance
+      // Detect if the content is a URL
+      const contentType = detectContentType(content.trim());
+      
+      // If it's a URL, process it with the web crawler
+      if (contentType === 'url') {
+        console.log('Detected URL, processing with web crawler:', content.trim());
+        try {
+          const websiteData = await analyzeWebsite(content.trim());
+          
+          // Return the analysis results from the website crawler
+          return res.json({
+            title: websiteData.title || "Untitled Website",
+            contentType: websiteData.contentType || "webpage",
+            content: websiteData.content,
+            isWebsite: true,
+            sourceUrl: content.trim()
+          });
+        } catch (error) {
+          console.error('Web crawler error:', error);
+          return res.status(500).json({ 
+            error: `Failed to analyze website: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            hint: "If this is not a website URL, please paste the content directly instead."
+          });
+        }
+      }
+      
+      // Get OpenAI instance for standard content analysis
       const openai = getOpenAI();
       if (!openai) {
         return res.status(500).json({ error: 'OpenAI API is not configured' });
       }
       
+      // For non-URL content, use the content type detection result
+      const detectedType = contentType; // Will be 'document' or 'event'
+      
       // Analyze content using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o", // Using the latest model for better analysis
         messages: [
           { 
             role: "system", 
@@ -2104,7 +2133,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           },
           { 
             role: "user", 
-            content: `Analyze this content and respond with a JSON object containing a suggested title and content type (one of: 'document', 'event', 'webpage', or 'manual'). Content: ${content}`
+            content: `Analyze this content and respond with a JSON object containing a suggested title and content type. The content seems to be a ${detectedType}. Please verify and correct if needed.
+            
+            Respond with one of these content types: 'document', 'event', 'webpage', or 'manual'.
+            
+            Content: ${content}`
           }
         ],
         response_format: { type: "json_object" },
@@ -2117,7 +2150,8 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Return the analysis results
       return res.json({
         title: result.title || 'Untitled Content',
-        contentType: result.contentType || 'document'
+        contentType: result.contentType || detectedType,
+        isWebsite: false
       });
       
     } catch (error) {

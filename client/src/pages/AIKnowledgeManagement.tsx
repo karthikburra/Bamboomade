@@ -112,6 +112,9 @@ const AIKnowledgeManagement: React.FC = () => {
   const [aiAnalysisResult, setAiAnalysisResult] = useState<{
     title: string;
     contentType: string;
+    content?: string;
+    isWebsite?: boolean;
+    sourceUrl?: string;
   } | null>(null);
   
   // Function to analyze content directly in the input
@@ -120,24 +123,59 @@ const AIKnowledgeManagement: React.FC = () => {
     
     setIsAnalyzing(true);
     try {
+      // Check if this might be a URL
+      const isUrl = aiAnalysisText.trim().startsWith('http');
+      
+      if (isUrl) {
+        toast({
+          title: "Processing Website",
+          description: "Crawling and analyzing website content. This may take a moment...",
+        });
+      }
+      
       const response = await apiRequest('POST', '/api/ai-knowledge/analyze', {
         content: aiAnalysisText
       });
       
       if (!response.ok) {
-        throw new Error('Failed to analyze content');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze content');
       }
       
       const data = await response.json();
+      
       setAiAnalysisResult({
         title: data.title || 'Untitled Content',
-        contentType: data.contentType || 'document'
+        contentType: data.contentType || 'document',
+        content: data.content,
+        isWebsite: data.isWebsite,
+        sourceUrl: data.sourceUrl
       });
       
-      toast({
-        title: "Content Analyzed",
-        description: "AI has analyzed your content and suggested categorization.",
-      });
+      if (data.isWebsite) {
+        toast({
+          title: "Website Analyzed",
+          description: "Successfully crawled and analyzed website content. Ready to add to knowledge base.",
+        });
+      } else {
+        toast({
+          title: "Content Analyzed",
+          description: "AI has analyzed your content and suggested categorization.",
+        });
+      }
+      
+      // If website data was returned, open the form with pre-filled data
+      if (data.isWebsite && data.content) {
+        form.reset({
+          title: data.title,
+          content: data.content,
+          contentType: data.contentType,
+          source: data.sourceUrl,
+          status: "active"
+        });
+        setIsAddDialogOpen(true);
+      }
+      
     } catch (error) {
       toast({
         title: "Analysis Failed",
@@ -150,7 +188,7 @@ const AIKnowledgeManagement: React.FC = () => {
   };
   
   // Function to save analyzed content directly
-  const handleDirectSave = async (title: string, contentType: string, content: string) => {
+  const handleDirectSave = async (title: string, contentType: string, content: string, source?: string) => {
     if (!title || !contentType || !content) {
       toast({
         title: "Missing Information",
@@ -164,6 +202,7 @@ const AIKnowledgeManagement: React.FC = () => {
       title,
       contentType,
       content,
+      source: source || null,
       status: 'active',
     });
     
@@ -1133,7 +1172,7 @@ const AIKnowledgeManagement: React.FC = () => {
                   
                   <div className="p-3 relative border-t dark:border-gray-700">
                     <Textarea
-                      placeholder="Type your content here... (examples: workshop details, bamboo species information, construction techniques)"
+                      placeholder="Type your content here or paste a website URL (e.g., https://example.com) to automatically crawl and extract all information"
                       className="min-h-[80px] pr-12 resize-none dark:bg-gray-800 dark:border-gray-700 rounded-md"
                       value={aiAnalysisText}
                       onChange={(e) => setAiAnalysisText(e.target.value)}
@@ -1185,10 +1224,10 @@ const AIKnowledgeManagement: React.FC = () => {
                   <Badge 
                     variant="outline"
                     className="cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={() => setAiAnalysisText("The International Bamboo Architecture Biennale website showcases innovative bamboo structures from around the world. Visit www.bamboobiennale.org to explore the gallery of award-winning designs, access research papers on sustainable bamboo construction, and learn about upcoming exhibitions.")}
+                    onClick={() => setAiAnalysisText("https://bamboomade.in")}
                   >
                     <Globe className="h-3 w-3 mr-1.5" />
-                    Website sample
+                    Website crawl
                   </Badge>
                 </div>
               </div>
