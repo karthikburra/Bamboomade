@@ -219,6 +219,127 @@ export async function getLatestEventsSummary(): Promise<string | null> {
 }
 
 /**
+ * Get recent updates from the knowledge base (last 15-30 days)
+ * @returns Array of recent updates with their content and source citations
+ */
+export async function getRecentUpdates(): Promise<Array<{
+  id: number;
+  title: string;
+  content: string;
+  createdAt: Date;
+  source: string | null;
+}>> {
+  try {
+    // Get all content from the knowledge base
+    const allContent = await storage.getAllAiKnowledgeContent();
+    
+    // Calculate date 30 days ago
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    // Filter for recent content
+    const recentContent = allContent.filter(item => 
+      new Date(item.createdAt) >= thirtyDaysAgo &&
+      item.status === "active" &&
+      item.contentType !== "events_summary" // Skip the summary, as we'll show it separately
+    );
+    
+    // Sort by date (newest first)
+    recentContent.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    
+    // Take the top 5 most recent items
+    return recentContent.slice(0, 5).map(item => ({
+      id: item.id,
+      title: item.title,
+      content: item.content.length > 200 
+        ? item.content.substring(0, 200) + '...' 
+        : item.content,
+      createdAt: new Date(item.createdAt),
+      source: item.source
+    }));
+  } catch (error) {
+    console.error('Error getting recent updates:', error);
+    return [];
+  }
+}
+
+/**
+ * Get an interesting fact about bamboo from the knowledge base
+ * Uses a rotation mechanism based on time to change every 15 days
+ * @returns An interesting fact with its source for citation
+ */
+export async function getInterestingBambooFact(): Promise<{
+  id: number;
+  fact: string;
+  source: string | null;
+} | null> {
+  try {
+    // Get all content from the knowledge base
+    const allContent = await storage.getAllAiKnowledgeContent();
+    
+    // Get content that might contain interesting facts
+    // Look for content with bamboo in the text
+    const bambooContent = allContent.filter(item => 
+      item.status === "active" &&
+      item.content &&
+      item.content.toLowerCase().includes('bamboo')
+    );
+    
+    if (bambooContent.length === 0) {
+      return null;
+    }
+    
+    // Use the current date to select a fact that changes every 15 days
+    // This is a simple rotation mechanism
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    const factIndex = Math.floor(dayOfYear / 15) % bambooContent.length;
+    
+    const selectedFact = bambooContent[factIndex];
+    
+    // Use OpenAI to extract an interesting fact from the content
+    const openai = getOpenAI();
+    if (!openai) {
+      console.error('OpenAI not available');
+      return null;
+    }
+    
+    const factResponse = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful assistant that extracts one interesting fact about bamboo from the given content.
+          The fact should be concise, engaging, and educational - something that would surprise or fascinate someone learning about bamboo.
+          Return ONLY the interesting fact, nothing else. Keep it under 120 words and make it sound natural and engaging.`
+        },
+        {
+          role: "user",
+          content: `Extract one interesting fact about bamboo from this content:\n\n${selectedFact.content}`
+        }
+      ]
+    });
+    
+    const extractedFact = factResponse.choices[0].message.content?.trim();
+    
+    if (!extractedFact) {
+      return null;
+    }
+    
+    return {
+      id: selectedFact.id,
+      fact: extractedFact,
+      source: selectedFact.source
+    };
+  } catch (error) {
+    console.error('Error getting interesting bamboo fact:', error);
+    return null;
+  }
+}
+
+/**
  * Initialize scheduled refresh of website content
  * This runs once every 15 days to keep event information fresh
  */
