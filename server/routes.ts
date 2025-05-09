@@ -1928,17 +1928,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get dashboard data for AI Chat screen (events, updates, facts)
   app.get("/api/dashboard-data", async (req, res) => {
     try {
-      // Run all three queries in parallel for better performance
-      const [eventsSummary, recentUpdates, bambooFact] = await Promise.all([
+      // Run all queries in parallel for better performance
+      const [eventsSummary, recentUpdates, bambooFact, bamboofacts] = await Promise.all([
         getLatestEventsSummary(),
         getRecentUpdates(),
-        getInterestingBambooFact()
+        getInterestingBambooFact(), // Keep for backward compatibility
+        getMultipleBambooFacts(3)   // Get 3 interesting facts from different sources
       ]);
       
       res.json({
         events: eventsSummary,
         updates: recentUpdates,
-        fact: bambooFact
+        fact: bambooFact,    // Keep for backward compatibility
+        facts: bamboofacts   // New array of facts from different sources
       });
     } catch (error) {
       console.error("Error getting dashboard data:", error);
