@@ -233,7 +233,7 @@ export default function AIKnowledgeDatabase() {
                   placeholder="Search by title, content, or source..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-gray-900 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  className="pl-9 bg-zinc-900 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
                 {searchTerm && (
                   <button
@@ -248,39 +248,39 @@ export default function AIKnowledgeDatabase() {
               <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
                 <div className="flex-1 sm:flex-none min-w-[140px]">
                   <Select value={filter} onValueChange={setFilter}>
-                    <SelectTrigger className="bg-gray-900 border-gray-700 text-white w-full hover:border-gray-600">
+                    <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200 w-full hover:border-zinc-600 focus:ring-amber-500 focus:border-amber-500">
                       <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         <SelectValue placeholder="Filter by status" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                      <SelectItem value="all" className="hover:bg-gray-800 text-gray-300">All Statuses</SelectItem>
-                      <SelectItem value="active" className="hover:bg-gray-800 text-green-400">Active</SelectItem>
-                      <SelectItem value="inactive" className="hover:bg-gray-800 text-red-400">Inactive</SelectItem>
-                      <SelectItem value="pending" className="hover:bg-gray-800 text-yellow-400">Pending</SelectItem>
+                    <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200">
+                      <SelectItem value="all" className="hover:bg-zinc-800 focus:bg-zinc-800 text-gray-300">All Statuses</SelectItem>
+                      <SelectItem value="active" className="hover:bg-zinc-800 focus:bg-zinc-800 text-green-400">Active</SelectItem>
+                      <SelectItem value="inactive" className="hover:bg-zinc-800 focus:bg-zinc-800 text-red-400">Inactive</SelectItem>
+                      <SelectItem value="pending" className="hover:bg-zinc-800 focus:bg-zinc-800 text-yellow-400">Pending</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="flex-1 sm:flex-none min-w-[140px]">
                   <Select value={contentTypeFilter} onValueChange={setContentTypeFilter}>
-                    <SelectTrigger className="bg-gray-900 border-gray-700 text-white w-full hover:border-gray-600">
+                    <SelectTrigger className="bg-zinc-900 border-zinc-700 text-zinc-200 w-full hover:border-zinc-600 focus:ring-amber-500 focus:border-amber-500">
                       <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         <SelectValue placeholder="Filter by content type" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                      <SelectItem value="all" className="hover:bg-gray-800 text-gray-300">All Types</SelectItem>
-                      <SelectItem value="webpage" className="hover:bg-gray-800 text-blue-400">Web Pages</SelectItem>
-                      <SelectItem value="article" className="hover:bg-gray-800 text-purple-400">Articles</SelectItem>
-                      <SelectItem value="social" className="hover:bg-gray-800 text-pink-400">Social Media</SelectItem>
-                      <SelectItem value="fact" className="hover:bg-gray-800 text-green-400">Bamboo Facts</SelectItem>
-                      <SelectItem value="event" className="hover:bg-gray-800 text-amber-400">Events</SelectItem>
-                      <SelectItem value="youtube" className="hover:bg-gray-800 text-red-400">YouTube</SelectItem>
-                      <SelectItem value="training" className="hover:bg-gray-800 text-cyan-400">Training</SelectItem>
-                      <SelectItem value="custom" className="hover:bg-gray-800 text-gray-400">Custom</SelectItem>
+                    <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200">
+                      <SelectItem value="all" className="hover:bg-zinc-800 focus:bg-zinc-800 text-gray-300">All Types</SelectItem>
+                      <SelectItem value="webpage" className="hover:bg-zinc-800 focus:bg-zinc-800 text-blue-400">Web Pages</SelectItem>
+                      <SelectItem value="article" className="hover:bg-zinc-800 focus:bg-zinc-800 text-purple-400">Articles</SelectItem>
+                      <SelectItem value="social" className="hover:bg-zinc-800 focus:bg-zinc-800 text-pink-400">Social Media</SelectItem>
+                      <SelectItem value="fact" className="hover:bg-zinc-800 focus:bg-zinc-800 text-green-400">Bamboo Facts</SelectItem>
+                      <SelectItem value="event" className="hover:bg-zinc-800 focus:bg-zinc-800 text-amber-400">Events</SelectItem>
+                      <SelectItem value="youtube" className="hover:bg-zinc-800 focus:bg-zinc-800 text-red-400">YouTube</SelectItem>
+                      <SelectItem value="training" className="hover:bg-zinc-800 focus:bg-zinc-800 text-cyan-400">Training</SelectItem>
+                      <SelectItem value="custom" className="hover:bg-zinc-800 focus:bg-zinc-800 text-gray-400">Custom</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -289,7 +289,7 @@ export default function AIKnowledgeDatabase() {
                   variant="outline" 
                   size="icon"
                   onClick={() => refetch()}
-                  className="bg-gray-900 border-gray-700 hover:bg-gray-800 hover:border-amber-500 text-white"
+                  className="bg-zinc-900 border-zinc-700 hover:bg-zinc-800 hover:border-amber-500 text-zinc-200"
                 >
                   <RefreshCcw className="h-4 w-4" />
                 </Button>
