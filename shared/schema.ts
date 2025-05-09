@@ -194,3 +194,34 @@ export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeCont
 
 export type AiKnowledgeContent = typeof aiKnowledgeContent.$inferSelect;
 export type InsertAiKnowledgeContent = z.infer<typeof insertAiKnowledgeContentSchema>;
+
+// Social Media Content
+export const socialMediaContent = pgTable("social_media_content", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  platformType: text("platform_type").notNull(), // 'instagram' or 'youtube'
+  url: text("url").notNull(), // Original post URL
+  thumbnailUrl: text("thumbnail_url"), // Image URL for the post
+  description: text("description"), // Post description or caption
+  publishedAt: timestamp("published_at").notNull().defaultNow(),
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdBy: integer("created_by").notNull(),
+  rotationGroup: integer("rotation_group").notNull().default(1), // Group 1-4 for weekly rotation
+});
+
+export const insertSocialMediaContentSchema = createInsertSchema(socialMediaContent).pick({
+  title: true,
+  platformType: true,
+  url: true,
+  thumbnailUrl: true,
+  description: true,
+  publishedAt: true,
+  featured: true,
+  createdBy: true,
+  rotationGroup: true,
+});
+
+export type SocialMediaContent = typeof socialMediaContent.$inferSelect;
+export type InsertSocialMediaContent = z.infer<typeof insertSocialMediaContentSchema>;
