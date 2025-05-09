@@ -129,81 +129,9 @@ const AIChat: React.FC = () => {
           )}
           
           {/* Chat Interface Section */}
-          <div id="chat-interface" className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-            <div className="lg:col-span-3">
+          <div id="chat-interface" className="grid grid-cols-1">
+            <div>
               <ChatInterface onTokensUsed={handleTokensUsed} initialQuestion={chatQuestion} />
-            </div>
-            
-            <div className="space-y-6">
-              <Card className="border-zinc-800 bg-zinc-900 overflow-hidden">
-                <CardHeader className="bg-zinc-900 border-b border-zinc-800 pb-4">
-                  <CardTitle className="text-zinc-200 flex items-center">
-                    <Info className="h-5 w-5 mr-2 text-green-500" />
-                    How Can I Help?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <ul className="space-y-3 text-sm text-zinc-300">
-                    <li className="flex">
-                      <Book className="h-5 w-5 mr-2 text-green-500 flex-shrink-0" />
-                      <span>Get information about bamboo species, properties, and applications</span>
-                    </li>
-                    <li className="flex">
-                      <Lightbulb className="h-5 w-5 mr-2 text-green-500 flex-shrink-0" />
-                      <span>Learn sustainable design techniques with bamboo</span>
-                    </li>
-                    <li className="flex">
-                      <PanelRight className="h-5 w-5 mr-2 text-green-500 flex-shrink-0" />
-                      <span>Understand joinery and connection methods</span>
-                    </li>
-                    <li className="flex">
-                      <Brain className="h-5 w-5 mr-2 text-green-500 flex-shrink-0" />
-                      <span>Get project-specific advice and recommendations</span>
-                    </li>
-                    <li className="flex">
-                      <Calendar className="h-5 w-5 mr-2 text-green-500 flex-shrink-0" />
-                      <span>Find out about upcoming workshops and events</span>
-                    </li>
-                    <li className="flex">
-                      <Award className="h-5 w-5 mr-2 text-green-500 flex-shrink-0" />
-                      <span>Learn about BambooMade's previous projects</span>
-                    </li>
-                  </ul>
-                </CardContent>
-                <CardFooter className="bg-zinc-900/70 border-t border-zinc-800 flex flex-col items-stretch pt-4">
-                  <p className="text-xs text-zinc-500 mb-3">
-                    Need more personalized guidance for your bamboo architecture project?
-                  </p>
-                  <Link href="/project-guidance">
-                    <Button className="w-full bg-green-600 hover:bg-green-700 text-zinc-100" variant="default">
-                      <Users className="h-4 w-4 mr-2" />
-                      Book Project Guidance
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-              
-              <Card className="border-zinc-800 bg-zinc-900">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-zinc-200">
-                    <span className="flex items-center">
-                      <Sparkles className="h-4 w-4 mr-2 text-green-500" />
-                      How Our AI Works
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-xs space-y-1 text-zinc-400">
-                    <p>Our AI is trained on bamboo architecture knowledge and is constantly updated with:</p>
-                    <ul className="list-disc list-inside pl-2 space-y-1">
-                      <li>Expert knowledge from bamboo architects</li>
-                      <li>Latest bamboo construction techniques</li>
-                      <li>Sustainable design principles</li>
-                      <li>Real-time workshop and event information</li>
-                    </ul>
-                  </CardDescription>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>
