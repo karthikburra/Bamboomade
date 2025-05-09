@@ -22,6 +22,47 @@ import admin from "firebase-admin";
 import bcrypt from "bcrypt";
 
 /**
+ * Calculate string similarity using Levenshtein distance
+ * Returns a value between 0 and 1, where 1 means identical strings
+ */
+function calculateStringSimilarity(a: string, b: string): number {
+  if (a.length === 0) return b.length === 0 ? 1 : 0;
+  if (b.length === 0) return 0;
+  
+  // Simple case: exact match
+  if (a === b) return 1;
+  
+  // Calculate Levenshtein distance
+  const matrix: number[][] = [];
+  
+  // Initialize matrix
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  // Fill matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,      // deletion
+        matrix[i][j - 1] + 1,      // insertion
+        matrix[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+  
+  // Calculate similarity as 1 - normalized distance
+  const maxLength = Math.max(a.length, b.length);
+  const distance = matrix[b.length][a.length];
+  return 1 - distance / maxLength;
+}
+
+/**
  * Parses a SQL-like query string into a structured object
  * Example: "SELECT * FROM content WHERE contentType = 'webpage' ORDER BY createdAt DESC LIMIT 10"
  */
@@ -3386,21 +3427,100 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(500).json({ error: 'OpenAI service not available' });
       }
       
+      // Check if it's a URL first
+      const isUrl = message.trim().startsWith('http');
+      
+      if (isUrl) {
+        // Process it directly through the web crawler
+        try {
+          const extractedData = await analyzeWebsite(message.trim());
+          
+          // Before adding, check for potential duplicates
+          const existingContent = await storage.getAllAiKnowledgeContent();
+          
+          // Check for similar titles or content
+          const possibleDuplicate = existingContent.find(item => {
+            // Same URL source
+            if (item.source === message.trim()) {
+              return true;
+            }
+            
+            // Similar title (80% match)
+            const titleSimilarity = calculateStringSimilarity(
+              item.title.toLowerCase(), 
+              extractedData.title.toLowerCase()
+            );
+            
+            if (titleSimilarity > 0.8) {
+              return true;
+            }
+            
+            return false;
+          });
+          
+          if (possibleDuplicate) {
+            // Update existing content instead of creating a duplicate
+            const updatedContent = await storage.updateAiKnowledgeContent(
+              possibleDuplicate.id, 
+              {
+                title: extractedData.title,
+                content: extractedData.content,
+                contentType: 'webpage',
+                source: message.trim(),
+                status: possibleDuplicate.status
+              }
+            );
+            
+            return res.json({
+              response: `I've updated the existing entry "${extractedData.title}" with the latest information from this website. This prevents duplicate content in the knowledge base.`,
+              shouldAddToKnowledge: false,
+              isDuplicate: true,
+              updatedContent: updatedContent,
+              id: possibleDuplicate.id,
+              websiteUrl: message.trim()
+            });
+          }
+          
+          // Not a duplicate, create new entry
+          return res.json({
+            response: `I've added "${extractedData.title}" to the knowledge base. This website contains information about the company, projects, and any upcoming events.`,
+            shouldAddToKnowledge: true,
+            suggestion: {
+              title: extractedData.title,
+              content: extractedData.content,
+              contentType: 'webpage',
+              source: message.trim()
+            },
+            websiteUrl: message.trim()
+          });
+        } catch (error) {
+          console.error('Web crawler error in companion:', error);
+          return res.json({
+            response: `I had trouble processing that website. Could you please share what information from the site you'd like to add to the knowledge base?`,
+            shouldAddToKnowledge: false,
+            error: `Failed to analyze website: ${error instanceof Error ? error.message : 'Unknown error'}`
+          });
+        }
+      }
+      
       // Convert message history to OpenAI format if provided
       const chatHistory = history && Array.isArray(history) 
         ? history.map(msg => ({ role: msg.role, content: msg.content }))
         : [];
       
-      // First, analyze if this content should be added to the knowledge base
+      // Get all existing knowledge content to check for duplicates
+      const existingContent = await storage.getAllAiKnowledgeContent();
+      
+      // First, analyze the message in depth
       const analysis = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system", 
             content: `You're an AI assistant for a bamboo architecture educational platform that manages a knowledge base. 
-            Your job is to determine if the user's message contains information worth adding to the knowledge base.
+            Your job is to analyze the user's message and extract structured information worth adding to the knowledge base.
             This could be facts about bamboo, event details, technical information, or other educational content.
-            If it should be added, categorize it and structure it appropriately.`
+            Thoroughly analyze the content, classify it, and determine if it contains new information.`
           },
           ...chatHistory,
           {
@@ -3414,18 +3534,25 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       const analysisResult = JSON.parse(analysis.choices[0].message.content);
       
       // Now prepare the response
-      let shouldAddToKnowledge = true; // Always add to knowledge base
+      let shouldAddToKnowledge = true; // Default to adding
       let suggestion = null;
       let response = "";
+      let isDuplicate = false;
       
-      // Determine content details
+      // Determine content details with improved formatting
       const formatResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system", 
-            content: `You're an AI knowledge assistant. Format the following content for a knowledge base about bamboo architecture.
-            Create a structured entry with appropriate title, content type (document, event, or webpage), and well-formatted content.`
+            content: `You're an AI knowledge assistant for a bamboo architecture platform. Format the following content for the knowledge base.
+            Create a structured entry with:
+            1. A clear, descriptive title
+            2. Appropriate content type: 'document' (for facts/information), 'event' (for workshops, exhibitions, etc.), or 'webpage' (for website content)
+            3. Well-formatted content with proper sections, bullet points where appropriate
+            4. Extract any source references or links
+            
+            Return as a JSON object with fields: title, contentType, content, source (if available)`
           },
           {
             role: "user",
@@ -3437,19 +3564,114 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       
       const formattedResult = JSON.parse(formatResponse.choices[0].message.content);
       
-      suggestion = {
-        title: formattedResult.title || "Untitled Content",
-        contentType: formattedResult.contentType?.toLowerCase() || "document",
-        content: formattedResult.content || message,
-        source: formattedResult.source || null
-      };
+      // Check for duplicates using AI
+      const duplicationCheckPrompt = existingContent.map(item => 
+        `ID: ${item.id}, Title: "${item.title}", Type: ${item.contentType}, ContentPreview: "${item.content.substring(0, 100)}..."`
+      ).join('\n');
       
-      response = `I've added "${formattedResult.title}" to the knowledge base. This information about ${formattedResult.contentType === 'event' ? 'the upcoming event' : 'bamboo'} will be available for future reference. Is there anything else you'd like to add?`;
+      const duplicationCheck = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system", 
+            content: `You need to check if new content would be a duplicate or significant overlap with existing knowledge base entries.
+            Compare the new content against these existing entries and determine if it should be:
+            1. Added as a new entry (no significant overlap)
+            2. Merged with an existing entry (significant overlap)
+            3. Skipped (completely redundant)
+            
+            If it should be merged, specify which existing entry ID to update.`
+          },
+          {
+            role: "user",
+            content: `Existing entries:
+            ${duplicationCheckPrompt}
+            
+            New content:
+            Title: "${formattedResult.title}"
+            Type: ${formattedResult.contentType}
+            Content: "${formattedResult.content.substring(0, 300)}..."`
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+      
+      const dupeResult = JSON.parse(duplicationCheck.choices[0].message.content);
+      
+      // Process based on duplication analysis
+      if (dupeResult.action === 'skip' || dupeResult.action === 'merge') {
+        isDuplicate = true;
+        shouldAddToKnowledge = false;
+        
+        if (dupeResult.action === 'merge' && dupeResult.mergeWithId) {
+          // Find the item to merge with
+          const mergeTargetId = parseInt(dupeResult.mergeWithId);
+          const mergeTarget = existingContent.find(item => item.id === mergeTargetId);
+          
+          if (mergeTarget) {
+            // Merge content
+            const mergedContent = await openai.chat.completions.create({
+              model: "gpt-4o",
+              messages: [
+                {
+                  role: "system", 
+                  content: `You need to merge two knowledge base entries to avoid duplication while preserving all valuable information. 
+                  Create a single comprehensive entry that combines them effectively.`
+                },
+                {
+                  role: "user",
+                  content: `Existing entry:
+                  Title: "${mergeTarget.title}"
+                  Content: "${mergeTarget.content}"
+                  
+                  New information to incorporate:
+                  Title: "${formattedResult.title}"
+                  Content: "${formattedResult.content}"`
+                }
+              ],
+              response_format: { type: "json_object" }
+            });
+            
+            const mergeResult = JSON.parse(mergedContent.choices[0].message.content);
+            
+            // Update the existing entry with merged content
+            await storage.updateAiKnowledgeContent(mergeTargetId, {
+              title: mergeResult.title || mergeTarget.title,
+              content: mergeResult.content,
+              contentType: mergeTarget.contentType,
+              source: mergeTarget.source,
+              status: mergeTarget.status
+            });
+            
+            response = `I've merged this information with the existing entry "${mergeTarget.title}" to avoid duplication while preserving all valuable details. The knowledge base now has the most comprehensive information on this topic.`;
+          } else {
+            // Fallback if merge target not found
+            shouldAddToKnowledge = true;
+            isDuplicate = false;
+          }
+        } else {
+          // Skip - completely redundant
+          response = `This information is already in our knowledge base, so I won't add it again. Is there anything else you'd like to share?`;
+        }
+      }
+      
+      // If not a duplicate, prepare to add it
+      if (!isDuplicate) {
+        suggestion = {
+          title: formattedResult.title || "Untitled Content",
+          contentType: formattedResult.contentType?.toLowerCase() || "document",
+          content: formattedResult.content || message,
+          source: formattedResult.source || null
+        };
+        
+        response = `I've added "${formattedResult.title}" to the knowledge base. This information about ${formattedResult.contentType === 'event' ? 'the upcoming event' : 'bamboo'} will be available for future reference. Is there anything else you'd like to add?`;
+      }
       
       return res.json({
         response,
         shouldAddToKnowledge,
-        suggestion
+        suggestion,
+        isDuplicate
       });
       
     } catch (error: any) {
