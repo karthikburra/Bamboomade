@@ -1,7 +1,9 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, asc, desc } from "drizzle-orm";
+import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts } from "./event-refresher";
@@ -1956,6 +1958,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting recent updates:", error);
       res.status(500).json({ message: "Failed to retrieve recent updates" });
+    }
+  });
+  
+  // Social media content endpoint with weekly rotation
+  app.get("/api/social-media-content", async (req, res) => {
+    try {
+      // Determine current rotation group (1-4) based on the week of the year
+      const today = new Date();
+      const weekNumber = Math.floor((today.getDate() - 1) / 7) + 1; // Week 1-5 of the month
+      const rotationGroup = (weekNumber % 4) + 1; // Ensure it's between 1-4
+      
+      // Get featured content regardless of rotation group
+      const featuredItems = await db
+        .select()
+        .from(socialMediaContent)
+        .where(eq(socialMediaContent.featured, true))
+        .orderBy(desc(socialMediaContent.publishedAt))
+        .limit(6);
+        
+      // Get rotation-specific content
+      const rotationItems = await db
+        .select()
+        .from(socialMediaContent)
+        .where(
+          and(
+            eq(socialMediaContent.rotationGroup, rotationGroup),
+            eq(socialMediaContent.featured, false)
+          )
+        )
+        .orderBy(desc(socialMediaContent.publishedAt))
+        .limit(10);
+        
+      // Combine and sort the results, prioritizing featured items
+      const allItems = [...featuredItems, ...rotationItems];
+      
+      // Social media links
+      const links = {
+        instagram: "https://www.instagram.com/bamboomadein/",
+        youtube: "https://www.youtube.com/@bamboomade_in",
+        facebook: "https://www.facebook.com/bamboomadein",
+      };
+      
+      res.status(200).json({ 
+        content: allItems,
+        links,
+        rotationInfo: {
+          group: rotationGroup,
+          nextRotation: new Date(today.setDate(today.getDate() + (7 - today.getDay()))),
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching social media content:", error);
+      res.status(500).json({ error: "Failed to fetch social media content" });
     }
   });
   

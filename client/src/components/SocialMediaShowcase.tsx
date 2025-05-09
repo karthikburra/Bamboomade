@@ -25,10 +25,7 @@ const SocialMediaShowcase: React.FC = () => {
   const { data: socialMediaData, isLoading } = useQuery({
     queryKey: ['/api/social-media-content'],
     retry: 1,
-    refetchOnWindowFocus: false,
-    // If the API returns an error, we'll just show a fallback UI
-    // so we don't want to show error messages to the user
-    useErrorBoundary: false
+    refetchOnWindowFocus: false
   });
 
   // Function to filter content based on platform type
