@@ -202,7 +202,7 @@ const AIKnowledgeManagement: React.FC = () => {
       title,
       contentType,
       content,
-      source: source || null,
+      source: source || "",
       status: 'active',
     });
     
