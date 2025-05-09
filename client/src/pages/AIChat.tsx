@@ -1,19 +1,69 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Info, Calendar, Book, Users, PanelRight, Lightbulb, Award, Brain } from "lucide-react";
+import { Sparkles, Info, Calendar, Book, Users, PanelRight, Lightbulb, Award, Brain, Loader2 } from "lucide-react";
 import ChatInterface from "@/components/ChatInterface";
+import BambooEvents from "@/components/BambooEvents";
+import BambooFact from "@/components/BambooFact";
+import RecentUpdates from "@/components/RecentUpdates";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
+import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
+import { useToast } from "@/hooks/use-toast";
 
 const AIChat: React.FC = () => {
   // Ensure page scrolls to top when component mounts
   useScrollTop();
   
+  const { toast } = useToast();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [chatQuestion, setChatQuestion] = useState<string | null>(null);
+  
   // Simple no-op handler since we're not tracking tokens anymore
   const handleTokensUsed = (usedTokens: number) => {
     // No-op, we don't track tokens anymore
+  };
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchDashboardData();
+        setDashboardData(data);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        toast({
+          title: "Couldn't load all dashboard data",
+          description: "Some sections may not display correctly. You can still use the chat normally.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [toast]);
+
+  // Handle clicks on dashboard items to set AI chat questions
+  const handleTopicClick = (topic: string) => {
+    setChatQuestion(topic);
+    
+    // Track in Google Analytics
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'dashboard_topic_click', {
+        'event_category': 'AI_Chat',
+        'event_label': topic
+      });
+    }
+    
+    // Scroll to chat interface
+    const chatElement = document.getElementById('chat-interface');
+    if (chatElement) {
+      chatElement.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -44,9 +94,44 @@ const AIChat: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          {/* Dashboard Information Section */}
+          {isLoading ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+              <span className="ml-3 text-zinc-400">Loading information dashboard...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 mb-12 md:grid-cols-2 lg:grid-cols-3">
+              {/* Bamboo Facts Card */}
+              <div className="md:col-span-1">
+                <BambooFact 
+                  factData={dashboardData?.fact || null} 
+                  onFactClick={handleTopicClick}
+                />
+              </div>
+              
+              {/* Upcoming Events Card */}
+              <div className="md:col-span-1">
+                <BambooEvents 
+                  events={dashboardData?.events || null} 
+                  onEventClick={handleTopicClick}
+                />
+              </div>
+              
+              {/* Recent Updates Card */}
+              <div className="md:col-span-2 lg:col-span-1">
+                <RecentUpdates 
+                  updates={dashboardData?.updates || []} 
+                  onUpdateClick={handleTopicClick}
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Chat Interface Section */}
+          <div id="chat-interface" className="grid grid-cols-1 gap-8 lg:grid-cols-4">
             <div className="lg:col-span-3">
-              <ChatInterface onTokensUsed={handleTokensUsed} />
+              <ChatInterface onTokensUsed={handleTokensUsed} initialQuestion={chatQuestion} />
             </div>
             
             <div className="space-y-6">

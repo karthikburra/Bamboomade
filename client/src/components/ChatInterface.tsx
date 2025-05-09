@@ -31,9 +31,10 @@ interface Message {
 
 interface ChatInterfaceProps {
   onTokensUsed: (tokens: number) => void;
+  initialQuestion?: string | null;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQuestion: propInitialQuestion }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -41,9 +42,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       content: "Hello! I'm BambooMade AI, your expert on bamboo architecture and sustainable design. How can I assist you today?",
     },
   ]);
-  // Check if we have an initial question from the home page
-  const initialQuestion = typeof window !== 'undefined' ? sessionStorage.getItem("initialQuestion") || "" : "";
-  const [input, setInput] = useState(initialQuestion);
+  
+  // Get the initial question from props first, then from sessionStorage as fallback
+  const storedQuestion = typeof window !== 'undefined' ? sessionStorage.getItem("initialQuestion") || "" : "";
+  const effectiveInitialQuestion = propInitialQuestion || storedQuestion || "";
+  const [input, setInput] = useState(effectiveInitialQuestion);
   const [isProcessing, setIsProcessing] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
@@ -104,11 +107,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     }
   }, [messages, shouldAutoScroll]);
   
-  // Submit initial question from homepage if available
+  // Submit initial question (either from prop or from session storage)
   useEffect(() => {
-    const initialQuestion = sessionStorage.getItem("initialQuestion");
-    if (initialQuestion && messages.length === 1 && !isProcessing) {
-      setInput(initialQuestion);
+    // The initial question can come from either the prop or session storage
+    const questionToSubmit = propInitialQuestion || sessionStorage.getItem("initialQuestion");
+    
+    if (questionToSubmit && messages.length === 1 && !isProcessing) {
+      setInput(questionToSubmit);
       // Use setTimeout to ensure the input is set before submitting
       const timer = setTimeout(() => {
         if (!isProcessing) {
@@ -121,7 +126,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
       
       return () => clearTimeout(timer);
     }
-  }, [messages.length, isProcessing]);
+  }, [messages.length, isProcessing, propInitialQuestion]);
 
   const handleSendMessage = async () => {
     if (!input.trim() || isProcessing) return;
