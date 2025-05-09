@@ -89,37 +89,12 @@ const AIKnowledgeManagement: React.FC = () => {
   // State hooks
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
-  const [isSqlDialogOpen, setIsSqlDialogOpen] = useState(false);
   const [currentContent, setCurrentContent] = useState<AiKnowledgeContent | null>(null);
   const [activeTab, setActiveTab] = useState("all");
-  const [importedContent, setImportedContent] = useState<string>("");
-  const [backupFile, setBackupFile] = useState<File | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isImportingBackup, setIsImportingBackup] = useState(false);
-  const [sqlQuery, setSqlQuery] = useState<string>("SELECT * FROM content");
-  const [sqlResult, setSqlResult] = useState<any>(null);
-  const [isExecutingSql, setIsExecutingSql] = useState(false);
   
-  // AI Training Chat Interface
-  const [aiChatOpen, setAiChatOpen] = useState(false);
-  
-  // Knowledge Companion Interface
-  const [companionOpen, setCompanionOpen] = useState(false);
-  
-  // Direct AI Analysis feature
-  const [aiAnalysisText, setAiAnalysisText] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<{
-    title: string;
-    contentType: string;
-    content?: string;
-    isWebsite?: boolean;
-    sourceUrl?: string;
-  } | null>(null);
+  // Knowledge Companion Interface - This is now the ONLY way to add content
+  const [companionOpen, setCompanionOpen] = useState(true);
   
   // Function to analyze content directly in the input
   const handleAnalyzeContent = async () => {

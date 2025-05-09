@@ -1,446 +1,298 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { Lightbulb, MessageSquare, SendHorizontal, Plus, HelpCircle, Copy, RefreshCw, Globe } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import ReactMarkdown from 'react-markdown';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+import { Send, RefreshCcw, Plus } from 'lucide-react';
 
 interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
-  metadata?: {
-    addedToKnowledge?: boolean;
-    websiteUrl?: string;
-    title?: string;
-    id?: number;
-  };
 }
 
 interface KnowledgeCompanionProps {
-  open: boolean;
-  onClose: () => void;
+  initialMessage?: string;
 }
 
-const KnowledgeCompanion: React.FC<KnowledgeCompanionProps> = ({ open, onClose }) => {
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanionProps) {
+  const [message, setMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     {
-      role: 'system',
-      content: 'I\'m your Knowledge Companion. Share anything with me - websites, events, documents, or just your thoughts about bamboo. I\'ll help you add it to the knowledge base automatically.'
+      role: 'assistant',
+      content: initialMessage || 'Hi! I\'m your Knowledge Companion. Share any information you\'d like to add to the knowledge base, or paste a website URL to automatically extract and add its content.'
     }
   ]);
-  const [chatInput, setChatInput] = useState('');
-  const [isProcessingChat, setIsProcessingChat] = useState(false);
-  const [showHelpDialog, setShowHelpDialog] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatHistory]);
 
-  const examplePrompts = [
-    "Check this website: https://bamboomade.in",
-    "I just learned about a new bamboo joinery technique called 'fish mouth' that allows for clean diagonal connections",
-    "There's an upcoming bamboo workshop on June 15 in Delhi",
-    "Dendrocalamus asper is a bamboo species I recently worked with - it's great for construction"
-  ];
-
-  // Add to knowledge base mutation
-  const addToKnowledgeBase = useMutation({
-    mutationFn: async (data: {
-      title: string;
-      content: string;
-      contentType: string;
-      source?: string;
-      status: string;
-    }) => {
+  // Add content to knowledge base
+  const addMutation = useMutation({
+    mutationFn: async (data: any) => {
       const response = await apiRequest('POST', '/api/ai-knowledge', data);
-      return response.json();
-    },
-    onSuccess: (data, variables) => {
-      toast({
-        title: "Added to Knowledge Base",
-        description: `"${variables.title}" has been added successfully.`,
-      });
-      
-      // Update chat messages to show that content was added
-      setChatMessages(prevMessages => {
-        return prevMessages.map((msg, index) => {
-          if (index === prevMessages.length - 2 && msg.role === 'user') {
-            return {
-              ...msg,
-              metadata: {
-                ...msg.metadata,
-                addedToKnowledge: true,
-              }
-            };
-          }
-          return msg;
-        });
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: `Failed to add to knowledge base: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Refresh website mutation
-  const refreshWebsite = useMutation({
-    mutationFn: async (data: { id: number, url: string }) => {
-      const response = await apiRequest('POST', '/api/ai-knowledge/refresh-website', data);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Website Refreshed",
-        description: "Successfully updated with the latest content.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Refresh Failed",
-        description: `Failed to refresh website: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Create chat mutation
-  const sendChatMessage = useMutation({
-    mutationFn: async (message: string) => {
-      // Check if it's a URL
-      const isUrl = message.trim().startsWith('http');
-
-      if (isUrl) {
-        // Process as URL
-        const response = await apiRequest('POST', '/api/ai-knowledge/analyze', {
-          content: message.trim()
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to analyze URL');
-        }
-        
-        const data = await response.json();
-        
-        // If it's a website, automatically add to knowledge base
-        if (data.isWebsite && data.content) {
-          await addToKnowledgeBase.mutateAsync({
-            title: data.title,
-            content: data.content,
-            contentType: data.contentType,
-            source: data.sourceUrl,
-            status: "active"
-          });
-          
-          return {
-            result: "website_added",
-            title: data.title,
-            id: data.id,
-            url: message.trim(),
-            message: `I've added "${data.title}" to your knowledge base from the website. It contains comprehensive information about the company, their projects, and any upcoming events mentioned on the site.`
-          };
-        }
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add content');
       }
-      
-      // Process with AI to determine content type and suggestion
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+    }
+  });
+
+  // Chat with the companion
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+    
+    const userMessage = message;
+    setMessage('');
+    setIsProcessing(true);
+    
+    // Add user message to chat
+    setChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+    
+    try {
+      // Call the companion chat API
       const response = await apiRequest('POST', '/api/ai-knowledge/companion-chat', {
-        message,
-        history: chatMessages
-          .filter(msg => msg.role !== 'system')
-          .slice(-5)
-          .map(msg => ({ role: msg.role, content: msg.content }))
+        message: userMessage,
+        history: chatHistory
       });
       
       if (!response.ok) {
-        throw new Error('Failed to process message');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to process message');
       }
       
       const data = await response.json();
       
-      // If the AI suggests adding to knowledge base
+      // Add assistant response to chat
+      setChatHistory(prev => [...prev, { role: 'assistant', content: data.response }]);
+      
+      // If the message should be added to the knowledge base
       if (data.shouldAddToKnowledge && data.suggestion) {
-        await addToKnowledgeBase.mutateAsync({
-          title: data.suggestion.title,
-          content: data.suggestion.content,
-          contentType: data.suggestion.contentType,
-          source: data.suggestion.source || "",
-          status: "active"
+        const suggestion = data.suggestion;
+        
+        // Automatically add to knowledge base without confirmation
+        addMutation.mutate({
+          title: suggestion.title,
+          content: suggestion.content,
+          contentType: suggestion.contentType,
+          source: suggestion.source,
+          status: 'active'
         });
         
-        return {
-          result: "content_added",
-          title: data.suggestion.title,
-          message: data.response,
-          id: data.id
-        };
+        toast({
+          title: 'Added to Knowledge Base',
+          description: `"${suggestion.title}" has been added to the knowledge base.`,
+        });
+      } else if (data.isDuplicate) {
+        // Content was identified as a duplicate
+        toast({
+          title: 'Duplicate Content Detected',
+          description: 'Similar information already exists in the knowledge base. Content was merged or skipped to prevent duplication.',
+        });
       }
       
-      return {
-        result: "chat_only",
-        message: data.response
-      };
-    },
-    onSuccess: (data, variables) => {
-      // Add assistant response
-      setChatMessages(prev => [
-        ...prev, 
-        { 
-          role: 'assistant', 
-          content: data.message,
-          metadata: data.result !== 'chat_only' ? {
-            addedToKnowledge: true,
-            title: data.title,
-            id: data.id,
-            websiteUrl: data.url
-          } : undefined
-        }
-      ]);
-    },
-    onError: (error: any) => {
-      setChatMessages(prev => [
-        ...prev, 
-        { 
-          role: 'assistant', 
-          content: `I'm sorry, I encountered an error processing your request: ${error.message}. Please try again.` 
-        }
-      ]);
-    },
-    onSettled: () => {
-      setIsProcessingChat(false);
-    }
-  });
-
-  // Handle refresh of website content
-  const handleRefreshWebsite = (id: number, url: string) => {
-    refreshWebsite.mutate({ id, url });
-    setChatMessages(prev => [
-      ...prev, 
-      { 
-        role: 'system', 
-        content: `Refreshing website content from ${url}...` 
+      // Handle website URL for refresh
+      if (data.websiteUrl) {
+        toast({
+          title: 'Website Content Added',
+          description: 'The content from this website has been successfully extracted and added to the knowledge base.',
+        });
       }
-    ]);
-  };
-
-  // Scroll to bottom of chat on new messages
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+      
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to process message',
+        variant: 'destructive',
+      });
+      
+      // Add error message to chat
+      setChatHistory(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error while processing your message. Please try again.' 
+      }]);
+    } finally {
+      setIsProcessing(false);
     }
-  }, [chatMessages]);
-
-  // Handle sending a chat message
-  const handleSendMessage = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    
-    if (!chatInput.trim() || isProcessingChat) return;
-    
-    // Add user message to chat
-    setChatMessages(prev => [...prev, { role: 'user', content: chatInput }]);
-    
-    // Start processing
-    setIsProcessingChat(true);
-    
-    // Reset input
-    setChatInput('');
-    
-    // Send to AI
-    sendChatMessage.mutate(chatInput);
+  };
+  
+  // Refresh website content
+  const refreshWebsite = async (id: number, url: string) => {
+    try {
+      setIsProcessing(true);
+      
+      const response = await apiRequest('POST', '/api/ai-knowledge/refresh-website', {
+        id,
+        url
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to refresh website');
+      }
+      
+      const data = await response.json();
+      
+      // Add success message to chat
+      setChatHistory(prev => [...prev, { 
+        role: 'assistant', 
+        content: `I've refreshed the content for "${data.content.title}". The knowledge base now has the latest information from this website.` 
+      }]);
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+      
+      toast({
+        title: 'Website Refreshed',
+        description: 'The content has been updated with the latest information from the website.',
+      });
+    } catch (error) {
+      console.error('Refresh error:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to refresh website',
+        variant: 'destructive',
+      });
+      
+      // Add error message to chat
+      setChatHistory(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error while refreshing the website. Please try again.' 
+      }]);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  // Show example message in input
-  const handleExampleClick = (example: string) => {
-    setChatInput(example);
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendMessage();
   };
 
-  if (!open) return null;
+  // Render chat message
+  const renderMessage = (msg: ChatMessage, index: number) => {
+    return (
+      <div 
+        key={index} 
+        className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
+      >
+        <div 
+          className={`inline-block p-3 rounded-lg ${
+            msg.role === 'user' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-muted text-muted-foreground'
+          }`}
+        >
+          {msg.content}
+          
+          {/* Show refresh button for website URLs in assistant messages */}
+          {msg.role === 'assistant' && msg.content.includes('website') && msg.content.includes('http') && (
+            <div className="mt-2 flex justify-end">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        const urlMatch = msg.content.match(/(https?:\/\/[^\s]+)/);
+                        if (urlMatch) {
+                          // Extract ID from message if available
+                          const idMatch = msg.content.match(/ID:\s*(\d+)/i);
+                          const id = idMatch ? parseInt(idMatch[1]) : 0;
+                          refreshWebsite(id, urlMatch[0]);
+                        }
+                      }}
+                    >
+                      <RefreshCcw className="h-4 w-4 mr-1" />
+                      Refresh Website
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Update with the latest content from this website
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 dark:bg-gray-900">
-        <DialogHeader className="px-6 py-4 border-b dark:border-gray-800 mb-0 pb-4">
-          <div className="flex justify-between items-center">
-            <DialogTitle className="flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2 text-primary" />
-              Knowledge Companion
-              <Badge variant="outline" className="ml-2 bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400">
-                <Lightbulb className="h-3 w-3 mr-1" />
-                AI
-              </Badge>
-            </DialogTitle>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => setShowHelpDialog(true)}
-                  className="h-8 w-8"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Help & Tips</TooltipContent>
-            </Tooltip>
-          </div>
-          <DialogDescription className="text-sm">
-            Share anything about bamboo and I'll help add it to the knowledge base.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {chatMessages.map((message, index) => (
-                <div key={index} className="flex flex-col">
-                  {message.role === 'system' ? (
-                    <div className="bg-muted/50 dark:bg-gray-800/50 rounded-md p-3 text-center text-sm text-muted-foreground">
-                      {message.content}
-                    </div>
-                  ) : (
-                    <Card 
-                      className={`${message.role === 'assistant' 
-                        ? 'bg-primary/10 border-primary/20 dark:bg-primary/5' 
-                        : 'bg-background'} max-w-[85%] ${message.role === 'assistant' ? 'ml-auto' : 'mr-auto'}`}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="text-sm prose dark:prose-invert max-w-none">
-                            <ReactMarkdown>{message.content}</ReactMarkdown>
-                          </div>
-                        </div>
-                        
-                        {message.metadata?.addedToKnowledge && (
-                          <div className="mt-2 text-xs flex items-center justify-end gap-2">
-                            <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30 dark:text-green-400">
-                              <Plus className="h-3 w-3 mr-1" />
-                              Added to Knowledge Base
-                            </Badge>
-                            
-                            {message.metadata?.websiteUrl && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => handleRefreshWebsite(message.metadata?.id || 0, message.metadata?.websiteUrl || '')}
-                                disabled={refreshWebsite.isPending}
-                              >
-                                <RefreshCw className="h-3 w-3 mr-1" />
-                                Refresh
-                              </Button>
-                            )}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-              ))}
-              <div ref={bottomRef} />
-            </div>
-          </ScrollArea>
-          
-          <div className="p-4 border-t dark:border-gray-800">
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <Input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Share a URL, event details, or any bamboo knowledge..."
-                className="flex-1"
-                disabled={isProcessingChat}
-              />
-              <Button 
-                type="submit" 
-                size="icon"
-                disabled={isProcessingChat || !chatInput.trim()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {isProcessingChat ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                ) : (
-                  <SendHorizontal className="h-4 w-4" />
-                )}
-              </Button>
-            </form>
-            
-            {/* Example prompts */}
-            <div className="mt-2 flex flex-wrap gap-2">
-              {examplePrompts.map((example, index) => (
-                <Badge 
-                  key={index}
-                  variant="outline"
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
-                  onClick={() => handleExampleClick(example)}
-                >
-                  {example.startsWith('http') ? (
-                    <Globe className="h-3 w-3 mr-1.5" />
-                  ) : (
-                    <Lightbulb className="h-3 w-3 mr-1.5" />
-                  )}
-                  {example.length > 40 ? example.substring(0, 37) + '...' : example}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
-      </DialogContent>
+    <Card className="w-full h-full flex flex-col">
+      <CardHeader>
+        <CardTitle>Knowledge Companion</CardTitle>
+        <CardDescription>
+          Chat to add content to the knowledge base - all information is automatically processed and added
+        </CardDescription>
+      </CardHeader>
       
-      {/* Help Dialog */}
-      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
-        <DialogContent className="sm:max-w-[600px] dark:bg-gray-800">
-          <DialogHeader>
-            <DialogTitle>Knowledge Companion Help</DialogTitle>
-            <DialogDescription>
-              How to use this feature effectively
-            </DialogDescription>
-          </DialogHeader>
+      <CardContent className="flex-1 overflow-y-auto">
+        <div className="space-y-4">
+          {chatHistory.map(renderMessage)}
+          <div ref={messagesEndRef} />
+        </div>
+      </CardContent>
+      
+      <CardFooter>
+        <form onSubmit={handleSubmit} className="w-full flex gap-2">
+          {isProcessing ? (
+            <Textarea
+              placeholder="Processing your message..."
+              disabled
+              className="resize-none"
+            />
+          ) : (
+            <Textarea
+              placeholder="Share information or paste a website URL..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="resize-none"
+            />
+          )}
           
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium mb-1">Adding Website Content</h3>
-              <p className="text-sm text-muted-foreground">
-                Just paste any URL and I'll crawl and extract all the information for your knowledge base automatically, including company info, events, and projects.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-1">Adding Events</h3>
-              <p className="text-sm text-muted-foreground">
-                Describe an event with details like date, location, and topic. I'll structure it properly in the knowledge base.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-1">Adding Technical Knowledge</h3>
-              <p className="text-sm text-muted-foreground">
-                Share facts, techniques, or materials related to bamboo. I'll organize and categorize this information.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-medium mb-1">Refreshing Website Content</h3>
-              <p className="text-sm text-muted-foreground">
-                Use the "Refresh" button on any previously added website to get the latest updates, events, and project details.
-              </p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </Dialog>
+          <Button type="submit" disabled={isProcessing || !message.trim()}>
+            <Send className="h-5 w-5" />
+            <span className="sr-only">Send</span>
+          </Button>
+        </form>
+      </CardFooter>
+    </Card>
   );
-};
-
-export default KnowledgeCompanion;
+}

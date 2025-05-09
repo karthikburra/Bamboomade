@@ -89,13 +89,13 @@ interface WhatsAppTrainingData {
  * @param message User's message
  * @param trainingData Additional context from admin-provided training data
  * @param knowledgeContent Content from the AI Knowledge Base to enhance responses
- * @returns The AI response and number of tokens used
+ * @returns The AI response, number of tokens used, and citation information
  */
 export async function processMessage(
   message: string, 
   trainingData: TrainingData[] = [],
   knowledgeContent: AiKnowledgeContent[] = []
-): Promise<{ response: string; tokensUsed: number }> {
+): Promise<{ response: string; tokensUsed: number; citations?: {source: string, url?: string}[] }> {
   try {
     // Get current OpenAI instance with the latest API key
     openai = getOpenAI();
@@ -161,7 +161,17 @@ Note: Participants are encouraged to use public transportation and avoid bringin
         
         return { 
           response: formattedResponse, 
-          tokensUsed: 200 // Estimated token count
+          tokensUsed: 200, // Estimated token count
+          citations: [
+            {
+              source: eventItem.title,
+              url: eventItem.source || "https://bamboomade.in/events"
+            },
+            {
+              source: "BambooMade Events Calendar",
+              url: "https://bamboomade.in/events"
+            }
+          ]
         };
       }
     }
@@ -193,7 +203,16 @@ Note: Participants are encouraged to use public transportation and avoid bringin
       // Calculate tokens (simulated)
       const tokensUsed = Math.max(1, Math.ceil(message.length / 10));
       
-      return { response, tokensUsed };
+      return { 
+        response, 
+        tokensUsed,
+        citations: [
+          {
+            source: "BambooMade Knowledge Base",
+            url: "https://bamboomade.in/knowledge"
+          }
+        ]
+      };
     }
     
     // Create a context from relevant training data (simplified relevance matching)
@@ -348,8 +367,34 @@ Note: Participants are encouraged to use public transportation and avoid bringin
     // Extract response and token usage
     const response = chatCompletion.choices[0].message.content || "I'm sorry, I couldn't process your request.";
     const tokensUsed = chatCompletion.usage?.total_tokens || 0;
+    
+    // Generate citations from the knowledge content that was used
+    const citations = relevantKnowledge.map(item => ({
+      source: item.title,
+      url: item.source && item.source.startsWith('http') 
+        ? item.source 
+        : item.id 
+          ? `https://bamboomade.in/knowledge/${item.id}` 
+          : 'https://bamboomade.in/knowledge'
+    }));
+    
+    // Add a BambooMade citation by default
+    if (citations.length === 0) {
+      citations.push({
+        source: "BambooMade Knowledge Base",
+        url: "https://bamboomade.in/knowledge"
+      });
+    }
+    
+    // Special case for events
+    if (isEventQuery && hasEventContent) {
+      citations.push({
+        source: "BambooMade Events Calendar",
+        url: "https://bamboomade.in/events"
+      });
+    }
 
-    return { response, tokensUsed };
+    return { response, tokensUsed, citations };
   } catch (error) {
     // Log error with better details for debugging
     console.error("OpenAI API error:", error);
@@ -374,7 +419,13 @@ Note: Participants are encouraged to use public transportation and avoid bringin
     // Fallback to a more informative response if the API fails
     return { 
       response: `${errorMessage} The AI service will be available soon. For immediate assistance with your bamboo architecture questions, please contact us via WhatsApp at 8971690163 or email at Info@bamboomade.in.`, 
-      tokensUsed: 1 
+      tokensUsed: 1,
+      citations: [
+        {
+          source: "BambooMade Support",
+          url: "https://bamboomade.in/contact"
+        }
+      ]
     };
   }
 }
