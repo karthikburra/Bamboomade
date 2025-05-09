@@ -220,7 +220,7 @@ export default function AIKnowledgeDatabase() {
   }, {});
 
   return (
-    <div className="container pb-16 pt-8 max-w-7xl dark">
+    <div className="container pb-16 pt-8 max-w-7xl dark min-h-screen bg-gray-950">
       <h1 className="text-2xl font-bold mb-6 text-amber-400">AI Knowledge Database</h1>
       
       <AdminTabs value="database">
@@ -255,10 +255,10 @@ export default function AIKnowledgeDatabase() {
                       </div>
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="all" className="hover:bg-gray-800 text-gray-300">All Statuses</SelectItem>
+                      <SelectItem value="active" className="hover:bg-gray-800 text-green-400">Active</SelectItem>
+                      <SelectItem value="inactive" className="hover:bg-gray-800 text-red-400">Inactive</SelectItem>
+                      <SelectItem value="pending" className="hover:bg-gray-800 text-yellow-400">Pending</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -272,15 +272,15 @@ export default function AIKnowledgeDatabase() {
                       </div>
                     </SelectTrigger>
                     <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="webpage">Web Pages</SelectItem>
-                      <SelectItem value="article">Articles</SelectItem>
-                      <SelectItem value="social">Social Media</SelectItem>
-                      <SelectItem value="fact">Bamboo Facts</SelectItem>
-                      <SelectItem value="event">Events</SelectItem>
-                      <SelectItem value="youtube">YouTube</SelectItem>
-                      <SelectItem value="training">Training</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
+                      <SelectItem value="all" className="hover:bg-gray-800 text-gray-300">All Types</SelectItem>
+                      <SelectItem value="webpage" className="hover:bg-gray-800 text-blue-400">Web Pages</SelectItem>
+                      <SelectItem value="article" className="hover:bg-gray-800 text-purple-400">Articles</SelectItem>
+                      <SelectItem value="social" className="hover:bg-gray-800 text-pink-400">Social Media</SelectItem>
+                      <SelectItem value="fact" className="hover:bg-gray-800 text-green-400">Bamboo Facts</SelectItem>
+                      <SelectItem value="event" className="hover:bg-gray-800 text-amber-400">Events</SelectItem>
+                      <SelectItem value="youtube" className="hover:bg-gray-800 text-red-400">YouTube</SelectItem>
+                      <SelectItem value="training" className="hover:bg-gray-800 text-cyan-400">Training</SelectItem>
+                      <SelectItem value="custom" className="hover:bg-gray-800 text-gray-400">Custom</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

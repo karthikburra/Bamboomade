@@ -264,8 +264,8 @@ const SocialMediaCarousel: React.FC = () => {
             </CardTitle>
             <CardDescription className="text-zinc-400">
               {activeTab === 'instagram' 
-                ? 'Latest posts from our Instagram account' 
-                : 'Latest videos from our YouTube channel'}
+                ? 'Latest bamboo-related posts from Instagram' 
+                : 'Latest bamboo architecture videos from YouTube'}
             </CardDescription>
           </div>
           <div className="flex space-x-2">
@@ -341,7 +341,7 @@ const SocialMediaCarousel: React.FC = () => {
                   : "hover:bg-red-900/20 hover:text-red-300"
               )}
             >
-              {activeTab === 'instagram' ? 'Follow us on Instagram' : 'Subscribe on YouTube'}
+              {activeTab === 'instagram' ? 'View more on Instagram' : 'View more on YouTube'}
               <ArrowRight className="h-3 w-3 ml-1" />
             </Button>
           </a>
