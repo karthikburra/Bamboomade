@@ -6,6 +6,7 @@ import { Sparkles, Loader2 } from "lucide-react";
 import ChatInterface from "@/components/ChatInterface";
 import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
+import RecentArticles from "@/components/RecentArticles";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
@@ -100,24 +101,35 @@ const AIChat: React.FC = () => {
               <span className="ml-3 text-zinc-400">Loading information dashboard...</span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 mb-12 md:grid-cols-2">
-              {/* Bamboo Facts Card */}
-              <div>
-                <BambooFact 
-                  factData={dashboardData?.fact || null}
-                  factsData={dashboardData?.facts || []}
-                  onFactClick={handleTopicClick}
-                />
+            <>
+              {/* Top Row - Facts and Events */}
+              <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+                {/* Bamboo Facts Card */}
+                <div>
+                  <BambooFact 
+                    factData={dashboardData?.fact || null}
+                    factsData={dashboardData?.facts || []}
+                    onFactClick={handleTopicClick}
+                  />
+                </div>
+                
+                {/* Upcoming Events Card */}
+                <div>
+                  <BambooEvents 
+                    events={dashboardData?.events || null} 
+                    onEventClick={handleTopicClick}
+                  />
+                </div>
               </div>
               
-              {/* Upcoming Events Card */}
-              <div>
-                <BambooEvents 
-                  events={dashboardData?.events || null} 
-                  onEventClick={handleTopicClick}
+              {/* Second Row - Recent Articles */}
+              <div className="mb-12">
+                <RecentArticles 
+                  articles={dashboardData?.updates || []} 
+                  onArticleClick={handleTopicClick}
                 />
               </div>
-            </div>
+            </>
           )}
           
           {/* Chat Interface Section */}
