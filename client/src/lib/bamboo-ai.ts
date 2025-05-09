@@ -131,3 +131,65 @@ export async function fetchAllSessions(): Promise<ProjectGuidance[]> {
   const response = await apiRequest("GET", "/api/project-guidance");
   return response.json();
 }
+
+/**
+ * Interface for bamboo fact with citation source
+ */
+export interface BambooFact {
+  id: number;
+  fact: string;
+  source: string | null;
+}
+
+/**
+ * Interface for recent knowledge updates
+ */
+export interface RecentUpdate {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: Date;
+  source: string | null;
+}
+
+/**
+ * Interface for dashboard data containing events, recent updates, and bamboo facts
+ */
+export interface DashboardData {
+  events: string | null;
+  updates: RecentUpdate[];
+  fact: BambooFact | null;
+}
+
+/**
+ * Fetches dashboard data for the AI Chat screen including events, recent updates and interesting facts
+ * @returns Dashboard data from the knowledge base
+ */
+export async function fetchDashboardData(): Promise<DashboardData> {
+  try {
+    const response = await apiRequest("GET", "/api/dashboard-data");
+    if (!response.ok) {
+      throw new Error("Failed to fetch dashboard data");
+    }
+    
+    const data = await response.json();
+    
+    // Track in Google Analytics
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'dashboard_data_loaded', {
+        'event_category': 'AI_Chat',
+        'non_interaction': true
+      });
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error);
+    // Return empty data as fallback
+    return {
+      events: null,
+      updates: [],
+      fact: null
+    };
+  }
+}

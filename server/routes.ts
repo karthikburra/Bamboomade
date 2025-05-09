@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import OpenAI from "openai";
+import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact } from "./event-refresher";
 // PhonePe service removed
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 
@@ -1921,6 +1922,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Payment verification failed",
         error: (error as Error).message
       });
+    }
+  });
+
+  // Get dashboard data for AI Chat screen (events, updates, facts)
+  app.get("/api/dashboard-data", async (req, res) => {
+    try {
+      // Run all three queries in parallel for better performance
+      const [eventsSummary, recentUpdates, bambooFact] = await Promise.all([
+        getLatestEventsSummary(),
+        getRecentUpdates(),
+        getInterestingBambooFact()
+      ]);
+      
+      res.json({
+        events: eventsSummary,
+        updates: recentUpdates,
+        fact: bambooFact
+      });
+    } catch (error) {
+      console.error("Error getting dashboard data:", error);
+      res.status(500).json({ message: "Failed to retrieve dashboard data" });
+    }
+  });
+  
+  // Get recent updates from the knowledge base (last 30 days)
+  app.get("/api/recent-updates", async (req, res) => {
+    try {
+      const updates = await getRecentUpdates();
+      res.json({ updates });
+    } catch (error) {
+      console.error("Error getting recent updates:", error);
+      res.status(500).json({ message: "Failed to retrieve recent updates" });
+    }
+  });
+  
+  // Get interesting bamboo fact that rotates every 15 days
+  app.get("/api/bamboo-fact", async (req, res) => {
+    try {
+      const factData = await getInterestingBambooFact();
+      res.json({ fact: factData });
+    } catch (error) {
+      console.error("Error getting bamboo fact:", error);
+      res.status(500).json({ message: "Failed to retrieve bamboo fact" });
+    }
+  });
+  
+  // Get upcoming events summary from the knowledge base
+  app.get("/api/events-summary", async (req, res) => {
+    try {
+      const summary = await getLatestEventsSummary();
+      res.json({ summary });
+    } catch (error) {
+      console.error("Error getting events summary:", error);
+      res.status(500).json({ message: "Failed to retrieve events summary" });
     }
   });
 
