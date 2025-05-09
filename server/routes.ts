@@ -1946,6 +1946,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         getMultipleBambooFacts(3)   // Get 3 interesting facts from different sources
       ]);
       
+      // Debug logging for bamboo facts
+      console.log("Bamboo facts retrieved:", 
+        bamboofacts.map(fact => ({
+          id: fact.id,
+          contentType: fact.contentType,
+          source: fact.source?.substring(0, 30) + (fact.source && fact.source.length > 30 ? '...' : ''),
+          factPreview: fact.fact.substring(0, 30) + (fact.fact.length > 30 ? '...' : '')
+        }))
+      );
+      
       // If we have upcoming events from the knowledge base but no general events summary,
       // create a simple events list to display
       let eventsToShow = eventsSummary;
