@@ -8,7 +8,21 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, FileText, ArrowRight, CalendarDays, Globe } from 'lucide-react';
+import { 
+  ExternalLink, 
+  FileText, 
+  ArrowRight, 
+  CalendarDays, 
+  Globe, 
+  Newspaper,
+  MessageSquare,
+  BookOpen,
+  Twitter,
+  Facebook,
+  Instagram,
+  Youtube,
+  Music
+} from 'lucide-react';
 import { format } from 'date-fns';
 
 export interface RecentArticle {
@@ -50,9 +64,33 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
     if (!url) return <Globe className="h-3 w-3 mr-1" />;
     
     const domain = url.toLowerCase();
-    if (domain.includes('medium.com')) return <i className="ri-medium-fill mr-1 text-xs" />;
-    if (domain.includes('wordpress')) return <i className="ri-wordpress-fill mr-1 text-xs" />;
-    if (domain.includes('blogger')) return <i className="ri-blogger-fill mr-1 text-xs" />;
+    
+    // Article platforms
+    if (domain.includes('medium.com')) return <Newspaper className="h-3 w-3 mr-1" />;
+    if (domain.includes('wordpress.com') || domain.includes('wp.com')) return <BookOpen className="h-3 w-3 mr-1" />;
+    if (domain.includes('blogger.com') || domain.includes('blogspot.com')) return <MessageSquare className="h-3 w-3 mr-1" />;
+    if (domain.includes('substack.com')) return <Newspaper className="h-3 w-3 mr-1" />;
+    
+    // Social media platforms
+    if (domain.includes('twitter.com') || domain.includes('x.com')) return <Twitter className="h-3 w-3 mr-1" />;
+    if (domain.includes('facebook.com') || domain.includes('fb.com')) return <Facebook className="h-3 w-3 mr-1" />;
+    if (domain.includes('instagram.com')) return <Instagram className="h-3 w-3 mr-1" />;
+    if (domain.includes('linkedin.com')) return <BookOpen className="h-3 w-3 mr-1" />;
+    
+    // Video platforms
+    if (domain.includes('youtube.com') || domain.includes('youtu.be')) return <Youtube className="h-3 w-3 mr-1" />;
+    if (domain.includes('vimeo.com')) return <Music className="h-3 w-3 mr-1" />;
+    
+    // Check for common article indicators in URL path
+    const path = new URL(url).pathname.toLowerCase();
+    if (
+      path.includes('/blog/') || 
+      path.includes('/article/') || 
+      path.includes('/post/') || 
+      path.includes('/news/')
+    ) {
+      return <Newspaper className="h-3 w-3 mr-1" />;
+    }
     
     // Default for other sources
     return <Globe className="h-3 w-3 mr-1" />;

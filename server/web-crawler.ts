@@ -531,42 +531,96 @@ export function detectContentTypeFromUrl(url: string): string {
   const hostname = parsedUrl.hostname.toLowerCase();
   const path = parsedUrl.pathname.toLowerCase();
   
-  // Check for common article platforms
+  // More specific article platforms detection with platform-specific types
+  if (hostname.includes('medium.com')) {
+    return 'medium_article';
+  }
+  
+  if (hostname.includes('substack.com')) {
+    return 'substack_article';
+  }
+  
+  // Other common blog platforms
   if (
-    hostname.includes('medium.com') || 
     hostname.includes('wordpress.com') ||
     hostname.includes('blogger.com') ||
+    hostname.includes('blogspot.com') ||
+    hostname.includes('tumblr.com') ||
+    hostname.includes('wixsite.com/blog')
+  ) {
+    return 'blog_post';
+  }
+  
+  // Generic article indicators in URL path
+  if (
     path.includes('/blog/') ||
     path.includes('/article/') ||
     path.includes('/post/') ||
-    path.includes('/news/')
+    path.includes('/news/') ||
+    path.includes('/stories/') ||
+    path.includes('/publications/')
   ) {
     return 'article';
   }
   
-  // Check for social media platforms
-  if (
-    hostname.includes('instagram.com') ||
-    hostname.includes('facebook.com') ||
-    hostname.includes('twitter.com') ||
-    hostname.includes('linkedin.com') ||
-    hostname.includes('x.com')
-  ) {
-    return 'social-media';
+  // Social media platforms with more specific categorization
+  if (hostname.includes('instagram.com')) {
+    return 'social_media';
   }
   
-  // Check for video platforms
+  if (hostname.includes('facebook.com')) {
+    return 'social_media';
+  }
+  
+  if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
+    return 'social_media';
+  }
+  
+  if (hostname.includes('linkedin.com')) {
+    return 'social_media';
+  }
+  
+  // Video platforms with specific categorization
+  if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+    return 'youtube_video';
+  }
+  
+  if (hostname.includes('vimeo.com')) {
+    return 'vimeo_video';
+  }
+  
+  // Other video platforms
   if (
-    hostname.includes('youtube.com') ||
-    hostname.includes('youtu.be') ||
-    hostname.includes('vimeo.com')
+    hostname.includes('dailymotion.com') ||
+    hostname.includes('tiktok.com') ||
+    hostname.includes('instagram.com/reels') ||
+    hostname.includes('fb.watch') ||
+    path.includes('/watch/') ||
+    path.includes('/video/')
   ) {
     return 'video';
   }
   
-  // Check for document links
-  if (path.endsWith('.pdf') || path.endsWith('.doc') || path.endsWith('.docx')) {
-    return 'document';
+  // Document links
+  if (path.endsWith('.pdf')) {
+    return 'pdf_document';
+  }
+  
+  if (path.endsWith('.doc') || path.endsWith('.docx')) {
+    return 'word_document';
+  }
+  
+  // Check for event-specific websites
+  if (
+    hostname.includes('eventbrite.com') ||
+    hostname.includes('meetup.com') ||
+    hostname.includes('evite.com') ||
+    path.includes('/events/') ||
+    path.includes('/workshops/') ||
+    path.includes('/conference/') ||
+    path.includes('/webinar/')
+  ) {
+    return 'event';
   }
   
   // Default to general webpage
@@ -680,83 +734,142 @@ export function getHandleFromUrl(url: string, platform: string): string | null {
 /**
  * Detect if content is likely a document that should be processed differently
  */
-export function detectContentType(content: string): 'url' | 'document' | 'event' | 'article' | 'social-media' | 'video' {
+export function detectContentType(content: string): 'url' | 'document' | 'event' | 'article' | 'social-media' | 'video' | 'medium_article' | 'substack_article' | 'blog_post' {
   // Check if it's a URL
   if (isValidUrl(content.trim())) {
     const url = content.trim();
-    const parsedUrl = new URL(url);
-    const hostname = parsedUrl.hostname.toLowerCase();
-    const path = parsedUrl.pathname.toLowerCase();
+    // Use our enhanced detection for URLs
+    const specificType = detectContentTypeFromUrl(url);
     
-    // Check for article platforms
-    if (
-      hostname.includes('medium.com') || 
-      hostname.includes('wordpress.com') ||
-      hostname.includes('blogger.com') ||
-      path.includes('/blog/') ||
-      path.includes('/article/') ||
-      path.includes('/post/') ||
-      path.includes('/news/')
-    ) {
+    // Map specific types to our return types
+    if (specificType === 'medium_article' || specificType === 'substack_article' || specificType === 'blog_post') {
+      return specificType as any; // We're extending the return type here
+    }
+    
+    if (specificType.includes('article') || specificType === 'blog_post') {
       return 'article';
     }
     
-    // Check for social media platforms
-    if (
-      hostname.includes('instagram.com') ||
-      hostname.includes('facebook.com') ||
-      hostname.includes('twitter.com') ||
-      hostname.includes('linkedin.com') ||
-      hostname.includes('x.com')
-    ) {
+    if (specificType.includes('social_media') || specificType.includes('instagram') || 
+        specificType.includes('facebook') || specificType.includes('twitter')) {
       return 'social-media';
     }
     
-    // Check for video platforms
-    if (
-      hostname.includes('youtube.com') ||
-      hostname.includes('youtu.be') ||
-      hostname.includes('vimeo.com')
-    ) {
+    if (specificType.includes('video') || specificType.includes('youtube') || 
+        specificType.includes('vimeo')) {
       return 'video';
+    }
+    
+    if (specificType.includes('event')) {
+      return 'event';
+    }
+    
+    if (specificType.includes('document')) {
+      return 'document';
     }
     
     return 'url';
   }
   
-  // Check for article indicators
+  // Check for article indicators with enhanced keywords
   const articleKeywords = [
     'published', 'author', 'article', 'opinion', 'editorial', 
-    'column', 'blog post', 'feature', 'story', 'interview'
+    'column', 'blog post', 'feature', 'story', 'interview',
+    'journal', 'publication', 'review', 'analysis', 'report',
+    'case study', 'whitepaper', 'research'
   ];
   
   const hasArticleKeywords = articleKeywords.some(keyword => 
     new RegExp(`\\b${keyword}\\b`, 'i').test(content)
   );
   
+  // Detect specific article platforms in text
+  const hasMediumReference = content.toLowerCase().includes('medium.com') || 
+                            content.toLowerCase().includes('published on medium');
+  const hasSubstackReference = content.toLowerCase().includes('substack.com') || 
+                              content.toLowerCase().includes('published on substack');
+  const hasBlogReference = content.toLowerCase().includes('blog post') || 
+                          content.toLowerCase().includes('on my blog') ||
+                          content.toLowerCase().includes('on our blog');
+  
+  if (hasMediumReference) {
+    return 'medium_article';
+  }
+  
+  if (hasSubstackReference) {
+    return 'substack_article';
+  }
+  
+  if (hasBlogReference) {
+    return 'blog_post';
+  }
+  
   if (hasArticleKeywords && content.length > 500) {
     return 'article';
   }
   
-  // Check for event indicators
+  // Enhanced event indicators
   const eventKeywords = [
     'workshop', 'seminar', 'conference', 'event', 'webinar',
-    'schedule', 'registration', 'session', 'ticket'
+    'schedule', 'registration', 'session', 'ticket', 'symposium', 
+    'exhibition', 'expo', 'fair', 'meetup', 'gathering',
+    'training', 'course', 'class', 'lecture', 'presentation'
   ];
+  
+  // More comprehensive date patterns
   const datePatterns = [
     /\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}/,  // MM/DD/YYYY
     /\d{4}[\/-]\d{1,2}[\/-]\d{1,2}/,    // YYYY/MM/DD
     /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2}(st|nd|rd|th)?, \d{4}\b/i,
-    /\b\d{1,2}(st|nd|rd|th)? (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{4}\b/i
+    /\b\d{1,2}(st|nd|rd|th)? (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{4}\b/i,
+    /\b(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}(st|nd|rd|th)?, \d{4}\b/i,
+    /\b\d{1,2}(st|nd|rd|th)? (January|February|March|April|May|June|July|August|September|October|November|December) \d{4}\b/i
+  ];
+  
+  // Time patterns
+  const timePatterns = [
+    /\b\d{1,2}:\d{2}\s*(am|pm|AM|PM)\b/,
+    /\b\d{1,2}\s*(am|pm|AM|PM)\b/,
+    /\b\d{1,2}:\d{2}\b/  // 24-hour format
   ];
   
   const hasEventKeywords = eventKeywords.some(keyword => 
     new RegExp(`\\b${keyword}\\b`, 'i').test(content)
   );
   const hasDatePattern = datePatterns.some(pattern => pattern.test(content));
+  const hasTimePattern = timePatterns.some(pattern => pattern.test(content));
   
-  if (hasEventKeywords && hasDatePattern) {
+  if (hasEventKeywords && (hasDatePattern || hasTimePattern)) {
     return 'event';
+  }
+  
+  // Check for social media content indicators
+  const socialMediaKeywords = [
+    'instagram', 'facebook', 'twitter', 'x.com', 'linkedin',
+    'post', 'tweet', 'status', 'social media', 'reels', 
+    'stories', 'profile', 'followers', 'follow us', 'like'
+  ];
+  
+  const hasSocialMediaKeywords = socialMediaKeywords.some(keyword => 
+    new RegExp(`\\b${keyword}\\b`, 'i').test(content)
+  );
+  
+  if (hasSocialMediaKeywords) {
+    return 'social-media';
+  }
+  
+  // Check for video content indicators
+  const videoKeywords = [
+    'youtube', 'vimeo', 'video', 'watch', 'stream', 'streaming',
+    'channel', 'playlist', 'subscribe', 'views', 'played'
+  ];
+  
+  const hasVideoKeywords = videoKeywords.some(keyword => 
+    new RegExp(`\\b${keyword}\\b`, 'i').test(content)
+  );
+  
+  if (hasVideoKeywords) {
+    return 'video';
   }
   
   // Default to document
