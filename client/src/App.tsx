@@ -56,6 +56,7 @@ function Router() {
       <Route path="/admin-home" component={AdminHome} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/ai-knowledge-management" component={AIKnowledgeManagement} />
+      <Route path="/ai-knowledge-database" component={AIKnowledgeDatabase} />
       <Route path="/dev-admin-login" component={DevAdminLogin} />
       <Route path="/login" component={Login} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
