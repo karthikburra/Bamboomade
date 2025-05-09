@@ -2,7 +2,6 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 
 // UI Components
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 
 // Import Admin Components
@@ -13,16 +12,18 @@ import KnowledgeCompanion from '@/components/KnowledgeCompanion';
 
 const AIKnowledgeManagement: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-gray-950 min-h-screen">
       <Helmet>
         <title>AI Knowledge Management | Bamboo Made</title>
       </Helmet>
 
       <AdminTabs value="knowledge">
         <TabsContent value="knowledge" className="mt-6">
-          <KnowledgeCompanion 
-            initialMessage="Welcome to the Knowledge Management interface. You can add content to the knowledge base by sharing information with me, or paste a website URL to automatically extract and add its content. What would you like to add today?"
-          />
+          <div className="max-w-4xl mx-auto">
+            <KnowledgeCompanion 
+              initialMessage="Welcome to the Knowledge Management interface. You can add content to the knowledge base by sharing information with me, or paste a website URL to automatically extract and add its content. What would you like to add today?"
+            />
+          </div>
         </TabsContent>
       </AdminTabs>
     </div>

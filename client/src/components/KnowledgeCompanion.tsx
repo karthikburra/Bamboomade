@@ -205,23 +205,26 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         className={`mb-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}
       >
         <div 
-          className={`inline-block p-3 rounded-lg ${
+          className={`inline-block p-3 sm:p-4 rounded-lg max-w-[85%] sm:max-w-[70%] ${
             msg.role === 'user' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'bg-muted text-muted-foreground'
+              ? 'bg-amber-700 text-white shadow-md' 
+              : 'bg-gray-800 text-gray-200 border border-gray-700 shadow-md'
           }`}
         >
-          {msg.content}
+          <div className="text-sm sm:text-base">
+            {msg.content}
+          </div>
           
           {/* Show refresh button for website URLs in assistant messages */}
           {msg.role === 'assistant' && msg.content.includes('website') && msg.content.includes('http') && (
-            <div className="mt-2 flex justify-end">
+            <div className="mt-3 flex justify-end">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 
                       variant="ghost" 
                       size="sm"
+                      className="bg-gray-700 hover:bg-gray-600 text-gray-200 h-8"
                       onClick={() => {
                         const urlMatch = msg.content.match(/(https?:\/\/[^\s]+)/);
                         if (urlMatch) {
@@ -232,11 +235,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         }
                       }}
                     >
-                      <RefreshCcw className="h-4 w-4 mr-1" />
-                      Refresh Website
+                      <RefreshCcw className="h-3 w-3 mr-1" />
+                      <span className="text-xs">Refresh Website</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="bg-gray-900 text-gray-200 border-gray-700">
                     Update with the latest content from this website
                   </TooltipContent>
                 </Tooltip>
@@ -244,52 +247,70 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             </div>
           )}
         </div>
+        
+        {/* Message timestamp (can be added later) */}
+        {/*<div className={`text-xs text-gray-500 mt-1 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+          {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+        </div>*/}
       </div>
     );
   };
 
   return (
-    <Card className="w-full h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Knowledge Companion</CardTitle>
-        <CardDescription>
+    <Card className="w-full h-full flex flex-col bg-gray-900 border-gray-800 shadow-lg">
+      <CardHeader className="border-b border-gray-800 bg-gray-950 rounded-t-lg">
+        <CardTitle className="text-white flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mr-2 text-amber-400">
+            <path d="M12 2a5 5 0 0 1 5 5c0 2.69-5 11-5 11s-5-8.31-5-11a5 5 0 0 1 5-5z"></path>
+            <path d="m14 16 6 6"></path>
+            <path d="M8 16v.8A4 4 0 0 0 12 20v0a4 4 0 0 0 4-3.2v-.8"></path>
+          </svg>
+          Knowledge Companion
+        </CardTitle>
+        <CardDescription className="text-gray-400">
           Chat to add content to the knowledge base - all information is automatically processed and added
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="flex-1 overflow-y-auto">
+      <CardContent className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 bg-gray-900 min-h-[300px] max-h-[60vh]">
         <div className="space-y-4">
           {chatHistory.map(renderMessage)}
           <div ref={messagesEndRef} />
         </div>
       </CardContent>
       
-      <CardFooter>
-        <form onSubmit={handleSubmit} className="w-full flex gap-2">
-          {isProcessing ? (
-            <Textarea
-              placeholder="Processing your message..."
-              disabled
-              className="resize-none"
-            />
-          ) : (
-            <Textarea
-              placeholder="Share information or paste a website URL..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              className="resize-none"
-            />
-          )}
+      <CardFooter className="border-t border-gray-800 p-3 sm:p-4 bg-gray-950 rounded-b-lg">
+        <form onSubmit={handleSubmit} className="w-full flex flex-col sm:flex-row gap-2">
+          <div className="flex-1">
+            {isProcessing ? (
+              <Textarea
+                placeholder="Processing your message..."
+                disabled
+                className="resize-none bg-gray-800 border-gray-700 text-gray-300 placeholder-gray-500 min-h-[80px]"
+              />
+            ) : (
+              <Textarea
+                placeholder="Share information or paste a website URL..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                className="resize-none bg-gray-800 border-gray-700 text-gray-300 placeholder-gray-500 min-h-[80px]"
+              />
+            )}
+          </div>
           
-          <Button type="submit" disabled={isProcessing || !message.trim()}>
+          <Button 
+            type="submit" 
+            disabled={isProcessing || !message.trim()} 
+            className="bg-amber-600 hover:bg-amber-700 text-white sm:self-end h-10 px-4 ml-0 sm:ml-2 mt-2 sm:mt-auto"
+          >
             <Send className="h-5 w-5" />
-            <span className="sr-only">Send</span>
+            <span className="ml-2 sm:sr-only">Send</span>
           </Button>
         </form>
       </CardFooter>
