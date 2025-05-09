@@ -247,11 +247,25 @@ export async function getRecentUpdates(): Promise<Array<{
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    // Filter for recent content
+    // Filter for recent articles from external sources (websites, Medium, etc.)
     const recentContent = allContent.filter(item => 
       new Date(item.createdAt) >= thirtyDaysAgo &&
       item.status === "active" &&
-      item.contentType !== "events_summary" // Skip the summary, as we'll show it separately
+      item.contentType !== "events_summary" && // Skip the summary, as we'll show it separately
+      (
+        // Include only content that comes from external websites
+        (item.source && (
+          item.source.startsWith('http') || 
+          item.source.includes('medium.com') ||
+          item.source.includes('wordpress') ||
+          item.source.includes('blogger') ||
+          item.source.includes('substack')
+        )) ||
+        // Or has a specific content type for articles
+        item.contentType === 'article' || 
+        item.contentType === 'blog_post' ||
+        item.contentType === 'webpage'
+      )
     );
     
     // Sort by date (newest first)

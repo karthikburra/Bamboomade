@@ -60,10 +60,10 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
           <FileText className="h-5 w-5 mr-2 text-green-500" />
-          Recent Articles
+          Recent Articles & Resources
         </CardTitle>
         <CardDescription className="text-zinc-400">
-          Latest information from our knowledge sources
+          Latest content from external websites, blogs, and publications
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

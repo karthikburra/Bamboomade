@@ -3689,9 +3689,16 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             content: `You're a friendly, conversational AI knowledge assistant for a bamboo architecture platform. Format the following content for the knowledge base.
             Create a structured entry with:
             1. A clear, descriptive title (friendly and conversational)
-            2. Appropriate content type: 'document' (for facts/information), 'event' (for workshops, exhibitions, etc.), or 'webpage' (for website content)
+            2. Appropriate content type from these options:
+               - 'document' (for general facts/information)
+               - 'event' (for workshops, exhibitions, etc.)
+               - 'webpage' (for general website content)
+               - 'article' (specifically for content from external websites, blogs, Medium, etc.)
+               - 'blog_post' (for longer-form external content like blog posts)
             3. Well-formatted content with proper sections, bullet points where appropriate
             4. Extract any source references or links
+            
+            IMPORTANT: Use 'article' or 'blog_post' content types for any content from external websites, Medium, blogs, or other publications. This helps our system display them properly in the "Recent Articles & Resources" section.
             
             Return as a JSON object with fields: title, contentType, content, source (if available)`
           },
@@ -3830,6 +3837,8 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           response = `Thanks for sharing that link! I've extracted the key information from "${formattedResult.title}" and added it to our knowledge base. This will be super helpful for everyone interested in bamboo architecture. Anything else on your mind?`;
         } else if (contentType === "social_media") {
           response = `Got it! I've saved that social media post about "${formattedResult.title}" to our knowledge base. It's great to keep up with what's happening in the bamboo community. Anything else you'd like to chat about?`;
+        } else if (contentType === "article" || contentType === "blog_post") {
+          response = `Thank you for sharing this article about "${formattedResult.title}"! I've added it to our Recent Articles & Resources section. It's a great addition to our knowledge base. Is there anything specific from the article you'd like to discuss?`;
         } else {
           response = `Thanks for sharing that insight about "${formattedResult.title}"! I've added it to our bamboo knowledge base. I love learning new things about bamboo architecture - do you have any other interesting facts or information to share?`;
         }
