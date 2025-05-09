@@ -399,19 +399,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
     });
   };
   
-  // Sample questions that users can ask
-  const sampleQuestions = [
-    "What are the best bamboo species for structural applications?",
-    "How can I treat bamboo to increase its durability?",
-    "Tell me about upcoming bamboo workshops",
-    "What are sustainable joinery techniques for bamboo?",
-    "How does bamboo compare to other sustainable building materials?"
-  ];
-  
-  // Function to set a sample question as input
-  const useSampleQuestion = (question: string) => {
-    setInput(question);
-  };
+  // Sample questions removed
 
   return (
     <div className="flex flex-col h-[70vh]">
@@ -524,28 +512,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
-        {/* Sample questions section - only shown when there's 0 or 1 message (just welcome) */}
-        {messages.length <= 1 && (
-          <div className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900">
-            <h4 className="text-xs sm:text-sm font-medium text-zinc-200 mb-2 flex items-center">
-              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-green-500" />
-              Sample Questions
-            </h4>
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-              {sampleQuestions.map((question, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="text-[10px] sm:text-xs text-left border-zinc-700 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 truncate max-w-full h-7 sm:h-8 px-2 sm:px-3"
-                  onClick={() => useSampleQuestion(question)}
-                >
-                  {question}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Sample questions section removed */}
         
         <CardContent className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900">
           <form
