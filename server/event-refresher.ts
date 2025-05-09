@@ -276,11 +276,102 @@ export async function getRecentUpdates(): Promise<Array<{
 }
 
 /**
+ * Get multiple interesting facts about bamboo from different sources
+ * @param count Number of facts to return
+ * @returns Array of bamboo facts with their sources
+ */
+export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
+  id: number;
+  fact: string;
+  source: string | null;
+}>> {
+  try {
+    // Get all content from the knowledge base
+    const allContent = await storage.getAllAiKnowledgeContent();
+    
+    // Get content that might contain interesting facts
+    // Look for content with bamboo in the text
+    const bambooContent = allContent.filter(item => 
+      item.status === "active" &&
+      item.content &&
+      item.content.toLowerCase().includes('bamboo')
+    );
+    
+    if (bambooContent.length === 0) {
+      return [];
+    }
+    
+    // Shuffle the array to get random content
+    const shuffled = [...bambooContent].sort(() => 0.5 - Math.random());
+    
+    // Take up to 'count' different content pieces, but no more than what's available
+    const selectedContent = shuffled.slice(0, Math.min(count, shuffled.length));
+    
+    // Get OpenAI instance
+    const openai = getOpenAI();
+    if (!openai) {
+      console.error('OpenAI not available');
+      return [];
+    }
+    
+    // Extract facts in parallel
+    const factPromises = selectedContent.map(async (content) => {
+      try {
+        const factResponse = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: `You are a helpful assistant that extracts one interesting fact about bamboo from the given content.
+              The fact should be concise, engaging, and educational - something that would surprise or fascinate someone learning about bamboo.
+              Return ONLY the interesting fact, nothing else. Keep it under 100 words and make it sound natural and engaging.`
+            },
+            {
+              role: "user",
+              content: `Extract one interesting fact about bamboo from this content:\n\n${content.content}`
+            }
+          ]
+        });
+        
+        const extractedFact = factResponse.choices[0].message.content?.trim();
+        
+        if (!extractedFact) {
+          return null;
+        }
+        
+        return {
+          id: content.id,
+          fact: extractedFact,
+          source: content.source
+        };
+      } catch (error) {
+        console.error('Error extracting fact:', error);
+        return null;
+      }
+    });
+    
+    // Wait for all facts to be extracted
+    const facts = await Promise.all(factPromises);
+    
+    // Filter out any null results
+    return facts.filter(fact => fact !== null) as Array<{
+      id: number;
+      fact: string;
+      source: string | null;
+    }>;
+  } catch (error) {
+    console.error('Error getting multiple bamboo facts:', error);
+    return [];
+  }
+}
+
+/**
  * Get an interesting fact about bamboo from the knowledge base
  * Uses a rotation mechanism based on time to change every 15 days
- * @returns An interesting fact with its source for citation
+ * @param count Number of facts to return (default: 1)
+ * @returns An interesting fact with its source for citation (legacy)
  */
-export async function getInterestingBambooFact(): Promise<{
+export async function getInterestingBambooFact(count: number = 1): Promise<{
   id: number;
   fact: string;
   source: string | null;

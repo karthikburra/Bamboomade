@@ -158,7 +158,8 @@ export interface RecentUpdate {
 export interface DashboardData {
   events: string | null;
   updates: RecentUpdate[];
-  fact: BambooFact | null;
+  fact: BambooFact | null; // Keep for backward compatibility
+  facts: BambooFact[]; // New array of facts
 }
 
 /**
@@ -189,7 +190,8 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     return {
       events: null,
       updates: [],
-      fact: null
+      fact: null,
+      facts: []
     };
   }
 }
