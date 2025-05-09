@@ -540,7 +540,7 @@ export default function AIKnowledgeDatabase() {
                   <Input 
                     value={selectedContent.title}
                     onChange={(e) => setSelectedContent({...selectedContent, title: e.target.value})}
-                    className="w-full bg-gray-800 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">The title will be used for identification in the AI Knowledge database</p>
                 </div>
@@ -552,7 +552,7 @@ export default function AIKnowledgeDatabase() {
                   <Input 
                     value={selectedContent.source || ''}
                     onChange={(e) => setSelectedContent({...selectedContent, source: e.target.value})}
-                    className="w-full bg-gray-800 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                     placeholder="https://example.com"
                   />
                   <p className="text-xs text-gray-500 mt-1">The original URL or source of this content</p>
@@ -565,7 +565,7 @@ export default function AIKnowledgeDatabase() {
                   <textarea 
                     value={selectedContent.content}
                     onChange={(e) => setSelectedContent({...selectedContent, content: e.target.value})}
-                    className="w-full min-h-[200px] bg-gray-800 border-gray-700 rounded-md p-3 text-white resize-y focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    className="w-full min-h-[200px] bg-zinc-800 border-zinc-700 rounded-md p-3 text-zinc-200 resize-y focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">The main content that will be used by the AI system to respond to queries</p>
                 </div>
@@ -578,13 +578,13 @@ export default function AIKnowledgeDatabase() {
                     value={selectedContent.status}
                     onValueChange={(value) => setSelectedContent({...selectedContent, status: value})}
                   >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white w-full hover:border-gray-600">
+                    <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-200 w-full hover:border-zinc-600 focus:ring-amber-500 focus:border-amber-500">
                       <SelectValue placeholder="Select a status" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                      <SelectItem value="active" className="text-green-400 hover:bg-gray-800">Active</SelectItem>
-                      <SelectItem value="inactive" className="text-red-400 hover:bg-gray-800">Inactive</SelectItem>
-                      <SelectItem value="pending" className="text-yellow-400 hover:bg-gray-800">Pending</SelectItem>
+                    <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200">
+                      <SelectItem value="active" className="text-green-400 hover:bg-zinc-800 focus:bg-zinc-800 focus:text-green-400">Active</SelectItem>
+                      <SelectItem value="inactive" className="text-red-400 hover:bg-zinc-800 focus:bg-zinc-800 focus:text-red-400">Inactive</SelectItem>
+                      <SelectItem value="pending" className="text-yellow-400 hover:bg-zinc-800 focus:bg-zinc-800 focus:text-yellow-400">Pending</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-gray-500 mt-1">Controls whether this content is used by the AI</p>
@@ -596,18 +596,18 @@ export default function AIKnowledgeDatabase() {
                     value={selectedContent.contentType}
                     onValueChange={(value) => setSelectedContent({...selectedContent, contentType: value})}
                   >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white w-full hover:border-gray-600">
+                    <SelectTrigger className="bg-zinc-800 border-zinc-700 text-zinc-200 w-full hover:border-zinc-600 focus:ring-amber-500 focus:border-amber-500">
                       <SelectValue placeholder="Select a content type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
-                      <SelectItem value="webpage" className="hover:bg-gray-800 text-blue-300">Web Page</SelectItem>
-                      <SelectItem value="article" className="hover:bg-gray-800 text-purple-300">Article</SelectItem>
-                      <SelectItem value="social" className="hover:bg-gray-800 text-pink-300">Social Media</SelectItem>
-                      <SelectItem value="fact" className="hover:bg-gray-800 text-green-300">Bamboo Fact</SelectItem>
-                      <SelectItem value="event" className="hover:bg-gray-800 text-amber-300">Event</SelectItem>
-                      <SelectItem value="youtube" className="hover:bg-gray-800 text-red-300">YouTube</SelectItem>
-                      <SelectItem value="training" className="hover:bg-gray-800 text-sky-300">Training</SelectItem>
-                      <SelectItem value="custom" className="hover:bg-gray-800 text-gray-300">Custom</SelectItem>
+                    <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200">
+                      <SelectItem value="webpage" className="hover:bg-zinc-800 text-blue-300 focus:bg-zinc-800 focus:text-blue-300">Web Page</SelectItem>
+                      <SelectItem value="article" className="hover:bg-zinc-800 text-purple-300 focus:bg-zinc-800 focus:text-purple-300">Article</SelectItem>
+                      <SelectItem value="social" className="hover:bg-zinc-800 text-pink-300 focus:bg-zinc-800 focus:text-pink-300">Social Media</SelectItem>
+                      <SelectItem value="fact" className="hover:bg-zinc-800 text-green-300 focus:bg-zinc-800 focus:text-green-300">Bamboo Fact</SelectItem>
+                      <SelectItem value="event" className="hover:bg-zinc-800 text-amber-300 focus:bg-zinc-800 focus:text-amber-300">Event</SelectItem>
+                      <SelectItem value="youtube" className="hover:bg-zinc-800 text-red-300 focus:bg-zinc-800 focus:text-red-300">YouTube</SelectItem>
+                      <SelectItem value="training" className="hover:bg-zinc-800 text-sky-300 focus:bg-zinc-800 focus:text-sky-300">Training</SelectItem>
+                      <SelectItem value="custom" className="hover:bg-zinc-800 text-gray-300 focus:bg-zinc-800 focus:text-gray-300">Custom</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-gray-500 mt-1">Categorizes the content for organization</p>
@@ -621,7 +621,7 @@ export default function AIKnowledgeDatabase() {
                     <Input 
                       value={selectedContent.mediaUrl}
                       onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
-                      className="w-full bg-gray-800 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                      className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">URL to associated media (image, video, etc.)</p>
                   </div>
