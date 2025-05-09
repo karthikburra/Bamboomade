@@ -39,8 +39,9 @@ import {
 // Import Admin Components
 import AdminTabs from '@/components/AdminTabs';
 
-// Import AI Training Chat
+// Import AI Components
 import AITrainingChat from '@/components/AITrainingChat';
+import KnowledgeCompanion from '@/components/KnowledgeCompanion';
 
 // Schema validation for AI knowledge content form
 const aiKnowledgeFormSchema = z.object({
@@ -106,6 +107,9 @@ const AIKnowledgeManagement: React.FC = () => {
   // AI Training Chat Interface
   const [aiChatOpen, setAiChatOpen] = useState(false);
   
+  // Knowledge Companion Interface
+  const [companionOpen, setCompanionOpen] = useState(false);
+  
   // Direct AI Analysis feature
   const [aiAnalysisText, setAiAnalysisText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -152,25 +156,33 @@ const AIKnowledgeManagement: React.FC = () => {
         sourceUrl: data.sourceUrl
       });
       
-      if (data.isWebsite) {
+      // If it's a website, automatically add it to the knowledge base
+      if (data.isWebsite && data.content) {
+        // Add directly to knowledge base
+        addMutation.mutate({
+          title: data.title,
+          content: data.content,
+          contentType: data.contentType,
+          source: data.sourceUrl,
+          status: "active"
+        });
+        
         toast({
-          title: "Website Analyzed",
-          description: "Successfully crawled and analyzed website content. Ready to add to knowledge base.",
+          title: "Website Added",
+          description: "Successfully crawled and added website content to knowledge base.",
         });
       } else {
         toast({
           title: "Content Analyzed",
           description: "AI has analyzed your content and suggested categorization.",
         });
-      }
-      
-      // If website data was returned, open the form with pre-filled data
-      if (data.isWebsite && data.content) {
+        
+        // For non-website content, open the form with pre-filled data
         form.reset({
-          title: data.title,
-          content: data.content,
-          contentType: data.contentType,
-          source: data.sourceUrl,
+          title: data.title || '',
+          content: data.content || aiAnalysisText,
+          contentType: data.contentType || 'document',
+          source: '',
           status: "active"
         });
         setIsAddDialogOpen(true);
@@ -184,6 +196,7 @@ const AIKnowledgeManagement: React.FC = () => {
       });
     } finally {
       setIsAnalyzing(false);
+      setAiAnalysisText(''); // Clear the input after processing
     }
   };
   
