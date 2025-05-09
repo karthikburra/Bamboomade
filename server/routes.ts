@@ -4051,10 +4051,10 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           response = `That's exciting! I've added "${formattedResult.title}" to our knowledge base. Thanks for sharing details about this event - I'm sure others will find it helpful! Is there anything else about this or other events you'd like to tell me about?`;
         } else if (contentType === "webpage") {
           response = `Thanks for sharing that link! I've extracted the key information from "${formattedResult.title}" and added it to our knowledge base. This will be super helpful for everyone interested in bamboo architecture. Anything else on your mind?`;
-        } else if (contentType === "social_media") {
-          response = `Got it! I've saved that social media post about "${formattedResult.title}" to our knowledge base. It's great to keep up with what's happening in the bamboo community. Anything else you'd like to chat about?`;
+        } else if (contentType === "social" || contentType === "social_media") {
+          response = `Got it! I've saved that social media post about "${formattedResult.title}" to our knowledge base as a social media post. It's great to keep up with what's happening in the bamboo community. Anything else you'd like to chat about?`;
         } else if (contentType === "article" || contentType === "blog_post") {
-          response = `Thank you for sharing this article about "${formattedResult.title}"! I've added it to our Recent Articles & Resources section. It's a great addition to our knowledge base. Is there anything specific from the article you'd like to discuss?`;
+          response = `Thank you for sharing this article about "${formattedResult.title}"! I've added it to our Recent Articles & Resources section as an article. It's a great addition to our knowledge base. Is there anything specific from the article you'd like to discuss?`;
         } else {
           response = `Thanks for sharing that insight about "${formattedResult.title}"! I've added it to our bamboo knowledge base. I love learning new things about bamboo architecture - do you have any other interesting facts or information to share?`;
         }
@@ -4144,10 +4144,10 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       const socialMediaContent = await storage.createAiKnowledgeContent({
         title: `${platform} Post - ${handle || "Unknown"}`,
         content,
-        contentType: "social_media",
+        contentType: "social",
         source: profileUrl,
         mediaUrl: mediaUrls?.[0] || null,
-        mediaType: "social_media",
+        mediaType: "social",
         socialMediaInfo: {
           platform,
           profileUrl,
@@ -4189,11 +4189,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Extract fresh content from website
       const extractedData = await analyzeWebsite(url);
       
+      // Get the appropriate content type based on URL
+      const detectedType = detectContentTypeFromUrl(url);
+      
       // Update the content in the database
       const updatedContent = await storage.updateAiKnowledgeContent(id, {
         title: extractedData.title,
         content: extractedData.content,
-        contentType: 'webpage',
+        contentType: detectedType, // Use the detected type for proper segregation
         source: url,
         status: existingContent.status
       });

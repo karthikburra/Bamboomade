@@ -821,16 +821,8 @@ export function detectContentType(content: string): 'url' | 'document' | 'event'
                           content.toLowerCase().includes('on my blog') ||
                           content.toLowerCase().includes('on our blog');
   
-  if (hasMediumReference) {
-    return 'medium_article';
-  }
-  
-  if (hasSubstackReference) {
-    return 'substack_article';
-  }
-  
-  if (hasBlogReference) {
-    return 'blog_post';
+  if (hasMediumReference || hasSubstackReference || hasBlogReference) {
+    return 'article';
   }
   
   if (hasArticleKeywords && content.length > 500) {
@@ -884,7 +876,7 @@ export function detectContentType(content: string): 'url' | 'document' | 'event'
   );
   
   if (hasSocialMediaKeywords) {
-    return 'social-media';
+    return 'social';
   }
   
   // Check for video content indicators
