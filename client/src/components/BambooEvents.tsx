@@ -157,17 +157,51 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
         {/* Display events as tiles/cards */}
         <div className="grid grid-cols-1 gap-3">
           {eventsToDisplay.map(event => {
-            const eventDate = extractDate(event.content);
+            // Get event date - extract from content or use createdAt if not found
+            let eventDate = extractDate(event.content);
+            if (!eventDate && event.createdAt) {
+              // Format createdAt date if extractDate didn't find a date
+              const date = new Date(event.createdAt);
+              // Only format if it's a valid date
+              if (!isNaN(date.getTime())) {
+                const options: Intl.DateTimeFormatOptions = { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                };
+                eventDate = date.toLocaleDateString('en-US', options);
+              }
+            }
+            
             const eventLocation = extractLocation(event.content);
             
             // Extract registration link if available
             let registrationLink = null;
-            const linkMatch = event.content.match(/\[([^\]]+)\]\(([^)]+)\)/);
-            if (linkMatch) {
+            
+            // First try markdown-style links
+            const markdownLinkMatch = event.content.match(/\[([^\]]+)\]\(([^)]+)\)/);
+            if (markdownLinkMatch) {
               registrationLink = {
-                text: linkMatch[1],
-                url: linkMatch[2]
+                text: markdownLinkMatch[1],
+                url: markdownLinkMatch[2]
               };
+            } 
+            // Also look for regular URLs in the content
+            else {
+              const urlMatch = event.content.match(/(https?:\/\/[^\s]+)/);
+              if (urlMatch) {
+                registrationLink = {
+                  text: "Register Now",
+                  url: urlMatch[1]
+                };
+              }
+              // Check if we have a source that could be a registration link
+              else if (event.source && event.source.startsWith('http')) {
+                registrationLink = {
+                  text: "More Information",
+                  url: event.source
+                };
+              }
             }
             
             // Truncate content for preview
@@ -176,16 +210,14 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
             return (
               <div 
                 key={event.id}
-                className="p-3 bg-zinc-800 rounded-md cursor-pointer hover:bg-zinc-750 transition-colors"
+                className="p-3 bg-zinc-800 rounded-md cursor-pointer hover:bg-zinc-750 transition-colors border border-transparent hover:border-green-800/50"
                 onClick={() => onEventClick && onEventClick(event.title)}
               >
                 <h3 className="font-medium text-green-400 mb-1">{event.title}</h3>
-                {eventDate && (
-                  <div className="flex items-center text-xs text-zinc-400 mb-1">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {eventDate}
-                  </div>
-                )}
+                <div className="flex items-center text-xs text-zinc-400 mb-1">
+                  <Clock className="h-3 w-3 mr-1" />
+                  {eventDate || "Coming Soon"}
+                </div>
                 {eventLocation && (
                   <div className="flex items-center text-xs text-zinc-400 mb-1">
                     <MapPin className="h-3 w-3 mr-1" />
