@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Instagram, Youtube, ArrowRight, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Instagram, Youtube, ArrowRight, ExternalLink, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -153,7 +153,18 @@ const SocialMediaCarousel: React.FC = () => {
   const renderYoutubeContent = () => {
     if (youtubeContent.length === 0) {
       return (
-        <p className="text-zinc-400 text-center py-4">No YouTube videos available at the moment.</p>
+        <div className="text-center py-8 px-4">
+          <Youtube className="h-10 w-10 text-red-500/40 mx-auto mb-3" />
+          <p className="text-zinc-400 mb-2">No YouTube videos available at the moment.</p>
+          <a 
+            href={youtubeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-red-400 hover:text-red-300 flex items-center justify-center"
+          >
+            Visit our YouTube channel <ExternalLink className="h-3 w-3 ml-1" />
+          </a>
+        </div>
       );
     }
 
@@ -216,7 +227,18 @@ const SocialMediaCarousel: React.FC = () => {
   const renderInstagramContent = () => {
     if (instagramContent.length === 0) {
       return (
-        <p className="text-zinc-400 text-center py-4">No Instagram posts available at the moment.</p>
+        <div className="text-center py-8 px-4">
+          <Instagram className="h-10 w-10 text-pink-500/40 mx-auto mb-3" />
+          <p className="text-zinc-400 mb-2">No Instagram posts available at the moment.</p>
+          <a 
+            href={instagramLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-pink-400 hover:text-pink-300 flex items-center justify-center"
+          >
+            Visit our Instagram page <ExternalLink className="h-3 w-3 ml-1" />
+          </a>
+        </div>
       );
     }
 
