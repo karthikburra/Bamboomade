@@ -164,8 +164,17 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   source: text("source"), // URL, Google Drive link, etc.
-  contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', etc.
+  contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', 'image', 'social_media', etc.
   status: text("status").notNull().default("active"), // 'active', 'archived'
+  mediaUrl: text("media_url"), // URL to image, document, or other media file
+  mediaType: text("media_type"), // 'image', 'document', 'pdf', 'video', etc.
+  socialMediaInfo: json("social_media_info").$type<{ 
+    platform?: string, 
+    postId?: string, 
+    profileUrl?: string, 
+    handle?: string,
+    mediaUrls?: string[]
+  }>(), // Information about social media posts
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdBy: integer("created_by").notNull(), // Admin ID who created this content
@@ -177,6 +186,9 @@ export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeCont
   source: true,
   contentType: true,
   status: true,
+  mediaUrl: true,
+  mediaType: true,
+  socialMediaInfo: true,
   createdBy: true,
 });
 

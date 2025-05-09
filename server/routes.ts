@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
@@ -20,6 +20,9 @@ import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 /**
  * Calculate string similarity using Levenshtein distance
@@ -404,7 +407,54 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+// Configure multer for file uploads
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+// Ensure uploads directory exists
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer storage
+const multerStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Create unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const extension = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
+  }
+});
+
+// Create multer upload middleware
+const upload = multer({ 
+  storage: multerStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+  },
+  fileFilter: function(req, file, cb) {
+    // Accept images, documents, PDFs
+    const allowedFileTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf',
+      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain'
+    ];
+    
+    if (allowedFileTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Unsupported file type. Please upload an image, document, or PDF.'));
+    }
+  }
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploaded files
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   // Email confirmations and Google Sheets integration have been removed as requested
   // Helper middleware for handling zod validation errors
   const validateRequest = (schema: any) => {
@@ -3677,6 +3727,103 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     } catch (error: any) {
       console.error('Knowledge companion chat error:', error);
       return res.status(500).json({ error: `Failed to process message: ${error.message}` });
+    }
+  });
+  
+  // File upload endpoint for the AI Knowledge Base
+  app.post("/api/ai-knowledge/upload-file", isAdmin, upload.single("file"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      const file = req.file;
+      const { title, description, contentType } = req.body;
+      
+      if (!title || !contentType) {
+        return res.status(400).json({ error: "Title and content type are required" });
+      }
+      
+      // Create a public URL for the file
+      const fileUrl = `/uploads/${file.filename}`;
+      
+      // Determine media type based on mimetype
+      let mediaType = "unknown";
+      if (file.mimetype.startsWith("image/")) {
+        mediaType = "image";
+      } else if (file.mimetype === "application/pdf") {
+        mediaType = "pdf";
+      } else if (file.mimetype.includes("spreadsheet") || file.mimetype.includes("excel")) {
+        mediaType = "spreadsheet";
+      } else if (file.mimetype.includes("document") || file.mimetype.includes("word")) {
+        mediaType = "document";
+      } else if (file.mimetype.includes("presentation") || file.mimetype.includes("powerpoint")) {
+        mediaType = "presentation";
+      }
+      
+      // Extract content from the file if possible (for documents, PDFs, etc.)
+      let extractedContent = description || "";
+      
+      // Add to AI knowledge base
+      const newContent = await storage.createAiKnowledgeContent({
+        title,
+        content: extractedContent,
+        contentType,
+        mediaUrl: fileUrl,
+        mediaType,
+        status: "active",
+        createdBy: req.session.adminUser.id
+      });
+      
+      return res.status(201).json({ 
+        message: "File uploaded and added to knowledge base", 
+        content: newContent,
+        fileUrl
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return res.status(500).json({
+        error: `Error uploading file: ${error.message}`
+      });
+    }
+  });
+  
+  // Process social media data endpoint
+  app.post("/api/ai-knowledge/social-media", isAdmin, async (req, res) => {
+    try {
+      const { platform, profileUrl, handle, content, mediaUrls } = req.body;
+      
+      if (!platform || !content) {
+        return res.status(400).json({ error: "Platform and content are required" });
+      }
+      
+      // Add to AI knowledge base
+      const socialMediaContent = await storage.createAiKnowledgeContent({
+        title: `${platform} Post - ${handle || "Unknown"}`,
+        content,
+        contentType: "social_media",
+        source: profileUrl,
+        mediaUrl: mediaUrls?.[0] || null,
+        mediaType: "social_media",
+        socialMediaInfo: {
+          platform,
+          profileUrl,
+          handle,
+          mediaUrls: mediaUrls || []
+        },
+        status: "active",
+        createdBy: req.session.adminUser.id
+      });
+      
+      return res.status(201).json({ 
+        message: "Social media data added to knowledge base", 
+        content: socialMediaContent
+      });
+    } catch (error) {
+      console.error("Error adding social media data:", error);
+      return res.status(500).json({
+        error: `Error adding social media data: ${error.message}`
+      });
     }
   });
   
