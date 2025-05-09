@@ -33,7 +33,7 @@ import {
   Upload as UploadIcon, Database, Code, Search, Sparkles, Send, 
   MessageSquare, Brain, Lightbulb, Menu, BookOpen, GraduationCap,
   Globe, Settings, Book, FileCheck, BookOpen as BookIcon,
-  X, Loader2, LayoutGrid, Edit
+  X, Loader2, LayoutGrid, Edit, SendHorizontal
 } from 'lucide-react';
 
 // Import Admin Components
@@ -1118,39 +1118,51 @@ const AIKnowledgeManagement: React.FC = () => {
                   </div>
                 )}
                 
-                {/* Text input area */}
-                <div className="relative">
-                  <Textarea
-                    placeholder="Enter content to analyze and add to the knowledge base..."
-                    className="min-h-[100px] pr-16 resize-none dark:bg-gray-800 dark:border-gray-700"
-                    value={aiAnalysisText}
-                    onChange={(e) => setAiAnalysisText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        handleAnalyzeContent();
-                      }
-                    }}
-                  />
-                  <Button
-                    className="absolute bottom-2 right-2 h-8 w-8 p-0 bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700"
-                    onClick={handleAnalyzeContent}
-                    disabled={isAnalyzing || aiAnalysisText.trim().length < 10}
-                    title="Analyze content (Ctrl+Enter)"
-                  >
-                    {isAnalyzing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                
-                <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
-                  <span>{isAnalyzing ? "Analyzing content..." : "Enter content and click the analyze button"}</span>
-                  <span className="text-right">
-                    Press <kbd className="px-1.5 py-0.5 bg-muted rounded border dark:bg-gray-700 dark:border-gray-600">Ctrl+Enter</kbd> to analyze
-                  </span>
+                {/* Conversational chat-like input area */}
+                <div className="rounded-lg border dark:border-gray-700 bg-gradient-to-b from-gray-900 to-gray-950 overflow-hidden">
+                  <div className="p-3 border-b dark:border-gray-700 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-green-500">AI Knowledge Assistant</span>
+                  </div>
+                  
+                  <div className="p-4 flex flex-col space-y-3">
+                    <div className="bg-gray-800 rounded-lg p-3 text-sm max-w-[80%] border-gray-700 border">
+                      Share any bamboo-related information you'd like me to learn. I'll analyze it and add it to my knowledge base so I can help users better.
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 relative border-t dark:border-gray-700">
+                    <Textarea
+                      placeholder="Type your content here... (examples: workshop details, bamboo species information, construction techniques)"
+                      className="min-h-[80px] pr-12 resize-none dark:bg-gray-800 dark:border-gray-700 rounded-md"
+                      value={aiAnalysisText}
+                      onChange={(e) => setAiAnalysisText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.ctrlKey) {
+                          e.preventDefault();
+                          handleAnalyzeContent();
+                        }
+                      }}
+                    />
+                    <Button
+                      className="absolute bottom-6 right-6 h-8 w-8 p-0 bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 rounded-full shadow-md"
+                      onClick={handleAnalyzeContent}
+                      disabled={isAnalyzing || aiAnalysisText.trim().length < 10}
+                      title="Send to analyze (Ctrl+Enter)"
+                    >
+                      {isAnalyzing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <SendHorizontal className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <div className="flex justify-between items-center text-xs text-gray-500 mt-2 px-1">
+                      <span>{isAnalyzing ? "Analyzing your content..." : "I'll analyze this and organize it for my knowledge base"}</span>
+                      <span className="text-right">
+                        Press <kbd className="px-1.5 py-0.5 bg-gray-800 rounded border border-gray-700">Ctrl+Enter</kbd> to send
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="flex flex-wrap gap-2 mt-2">
