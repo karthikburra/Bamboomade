@@ -73,37 +73,37 @@ const AIChat: React.FC = () => {
         <meta name="description" content="Chat with our specialized bamboo architecture AI assistant to get expert guidance on sustainable bamboo construction and design." />
       </Helmet>
       
-      <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 py-12">
-        <div className="container max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800">
-                <Sparkles className="h-4 w-4 mr-2 text-green-500" />
-                <span className="text-sm font-medium">AI-Powered Assistant</span>
+      <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 py-6 sm:py-8 md:py-12">
+        <div className="container max-w-screen-xl px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="mb-6 sm:mb-8 md:mb-10 text-center">
+            <div className="flex items-center justify-center mb-3 sm:mb-4">
+              <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-green-500" />
+                <span className="text-xs sm:text-sm font-medium">AI-Powered Assistant</span>
               </div>
             </div>
             
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-100 sm:text-4xl md:text-5xl">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-100">
               BambooMade AI
             </h1>
-            <p className="mt-4 text-lg text-zinc-400 max-w-2xl mx-auto">
+            <p className="mt-2 sm:mt-4 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
               <span className="text-green-400 font-medium">All Bamboo Data in one place.</span>
             </p>
-            <p className="mt-2 text-base text-green-500 font-medium">
+            <p className="mt-1 sm:mt-2 text-sm sm:text-base text-green-500 font-medium">
               Try it now - first 5 questions free, then login to continue!
             </p>
           </div>
           
           {/* Dashboard Information Section */}
           {isLoading ? (
-            <div className="flex justify-center items-center py-10">
-              <Loader2 className="h-8 w-8 animate-spin text-green-500" />
-              <span className="ml-3 text-zinc-400">Loading information dashboard...</span>
+            <div className="flex justify-center items-center py-6 sm:py-8 md:py-10">
+              <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-green-500" />
+              <span className="ml-2 sm:ml-3 text-sm sm:text-base text-zinc-400">Loading information dashboard...</span>
             </div>
           ) : (
             <>
               {/* Top Row - Facts and Events */}
-              <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6 md:grid-cols-2">
                 {/* Bamboo Facts Card */}
                 <div>
                   <BambooFact 
@@ -123,7 +123,7 @@ const AIChat: React.FC = () => {
               </div>
               
               {/* Second Row - Recent Articles */}
-              <div className="mb-12">
+              <div className="mb-6 sm:mb-8 md:mb-12">
                 <RecentArticles 
                   articles={dashboardData?.updates || []} 
                   onArticleClick={handleTopicClick}

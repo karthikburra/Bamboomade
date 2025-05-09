@@ -416,19 +416,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
   return (
     <div className="flex flex-col h-[70vh]">
       <Card className="flex-grow flex flex-col overflow-hidden border-zinc-800 bg-zinc-950">
-        <div className="flex justify-between items-center p-3 bg-zinc-900 border-b border-zinc-800">
+        <div className="flex justify-between items-center p-2 sm:p-3 bg-zinc-900 border-b border-zinc-800">
           <div className="flex items-center">
-            <Sparkles className="h-5 w-5 text-green-500 mr-2" />
-            <span className="font-medium text-zinc-200">BambooMade Assistant</span>
-            <Badge variant="outline" className="ml-2 bg-green-900/40 text-green-400 hover:bg-green-900/40 border-green-700">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-1 sm:mr-2" />
+            <span className="font-medium text-zinc-200 text-sm sm:text-base">BambooMade Assistant</span>
+            <Badge variant="outline" className="ml-1 sm:ml-2 bg-green-900/40 text-green-400 hover:bg-green-900/40 border-green-700 text-[10px] sm:text-xs">
               BETA
             </Badge>
           </div>
           {/* Removed info tooltip and refresh button */}
         </div>
         
-        <ScrollArea className="flex-grow p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
-          <div className="space-y-4 relative">
+        <ScrollArea className="flex-grow p-2 sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+          <div className="space-y-3 sm:space-y-4 relative">
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -437,19 +437,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-3 shadow-md group relative ${
+                  className={`max-w-[90%] sm:max-w-[85%] md:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 shadow-md group relative ${
                     message.role === "user"
                       ? "bg-green-700 text-zinc-100"
                       : "bg-zinc-800 border border-zinc-700 text-zinc-200"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className="whitespace-pre-wrap text-sm sm:text-base">{message.content}</p>
                   
                   {/* Display citations if available */}
                   {message.role === "assistant" && message.citations && message.citations.length > 0 && (
-                    <div className="mt-3 pt-2 border-t border-zinc-700/50 text-xs text-zinc-400">
+                    <div className="mt-2 sm:mt-3 pt-2 border-t border-zinc-700/50 text-[10px] sm:text-xs text-zinc-400">
                       <p className="font-medium mb-1 flex items-center">
-                        <Info size={12} className="mr-1" /> Sources:
+                        <Info size={10} className="mr-1" /> Sources:
                       </p>
                       <ul className="list-disc pl-4 space-y-1">
                         {message.citations.map((citation, index) => (
@@ -459,7 +459,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
                                 href={citation.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="text-green-400 hover:underline"
+                                className="text-green-400 hover:underline break-words"
                                 onClick={() => {
                                   // Track source clicks in Google Analytics
                                   if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -487,10 +487,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-700/70 hover:bg-zinc-700 text-green-400"
+                      className="absolute top-1 right-1 sm:top-2 sm:right-2 h-5 w-5 sm:h-6 sm:w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-700/70 hover:bg-zinc-700 text-green-400"
                       onClick={() => copyToClipboard(message.content, message.id)}
                     >
-                      {copiedMessageId === message.id ? <CheckCircle size={14} /> : <Copy size={14} />}
+                      {copiedMessageId === message.id ? <CheckCircle size={12} /> : <Copy size={12} />}
                     </Button>
                   )}
                 </div>
@@ -498,10 +498,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
             ))}
             {isProcessing && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg px-4 py-3 bg-zinc-800 border border-zinc-700 text-zinc-200">
+                <div className="max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 bg-zinc-800 border border-zinc-700 text-zinc-200">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-green-500" />
-                    <span className="text-sm text-zinc-400">Generating response...</span>
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-green-500" />
+                    <span className="text-xs sm:text-sm text-zinc-400">Generating response...</span>
                   </div>
                 </div>
               </div>
@@ -526,18 +526,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
         </ScrollArea>
         {/* Sample questions section - only shown when there's 0 or 1 message (just welcome) */}
         {messages.length <= 1 && (
-          <div className="p-4 border-t border-zinc-800 bg-zinc-900">
-            <h4 className="text-sm font-medium text-zinc-200 mb-2 flex items-center">
-              <Sparkles className="h-4 w-4 mr-1 text-green-500" />
+          <div className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900">
+            <h4 className="text-xs sm:text-sm font-medium text-zinc-200 mb-2 flex items-center">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-green-500" />
               Sample Questions
             </h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {sampleQuestions.map((question, index) => (
                 <Button
                   key={index}
                   variant="outline"
                   size="sm"
-                  className="text-xs text-left border-zinc-700 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 truncate max-w-full"
+                  className="text-[10px] sm:text-xs text-left border-zinc-700 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 truncate max-w-full h-7 sm:h-8 px-2 sm:px-3"
                   onClick={() => useSampleQuestion(question)}
                 >
                   {question}
@@ -547,7 +547,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
           </div>
         )}
         
-        <CardContent className="p-4 border-t border-zinc-800 bg-zinc-900">
+        <CardContent className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -560,42 +560,42 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about bamboo architecture, sustainability, or our workshops..."
-                className="flex-grow resize-none min-h-[60px] pr-12 bg-zinc-800 border-zinc-700 text-zinc-200 focus-visible:ring-green-500 placeholder:text-zinc-500"
+                placeholder="Ask about bamboo architecture..."
+                className="flex-grow resize-none min-h-[50px] sm:min-h-[60px] pr-10 sm:pr-12 bg-zinc-800 border-zinc-700 text-zinc-200 focus-visible:ring-green-500 placeholder:text-zinc-500 text-sm sm:text-base"
                 disabled={isProcessing}
               />
               <Button
                 type="submit"
                 size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 bg-green-600 hover:bg-green-700 text-zinc-100 rounded-full"
+                className="absolute right-2 bottom-2 h-7 w-7 sm:h-8 sm:w-8 bg-green-600 hover:bg-green-700 text-zinc-100 rounded-full"
                 disabled={!input.trim() || isProcessing}
               >
-                <Send size={16} />
+                <Send size={14} className="sm:h-4 sm:w-4" />
               </Button>
             </div>
           </form>
           
           {/* Login prompt alert - shown when user reaches question limit */}
           {showLoginPrompt && questionCount >= FREE_QUESTION_LIMIT && (
-            <div className="mt-4">
-              <Alert className="bg-zinc-800 border-zinc-700">
-                <AlertTriangle className="h-4 w-4 text-green-500" />
-                <AlertDescription className="text-sm text-zinc-300">
-                  <div className="flex flex-col space-y-2">
+            <div className="mt-3 sm:mt-4">
+              <Alert className="bg-zinc-800 border-zinc-700 p-3 sm:p-4">
+                <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                <AlertDescription className="text-xs sm:text-sm text-zinc-300">
+                  <div className="flex flex-col space-y-1.5 sm:space-y-2">
                     <span className="font-semibold">You've used all {FREE_QUESTION_LIMIT} free questions!</span>
-                    <p className="text-sm">Create a free account to continue learning about bamboo architecture and access:</p>
-                    <ul className="list-disc pl-5 text-xs space-y-1 text-zinc-400">
+                    <p className="text-xs sm:text-sm">Create a free account to continue learning about bamboo architecture and access:</p>
+                    <ul className="list-disc pl-4 sm:pl-5 text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 text-zinc-400">
                       <li>Unlimited AI-guided bamboo architecture advice</li>
                       <li>Personal chat history saved for future reference</li>
                       <li>Advanced project guidance and design recommendations</li>
                       <li>Early access to workshop information</li>
                     </ul>
-                    <div className="flex gap-2 mt-2">
-                      <Link href="/login">
-                        <Button size="sm" variant="default" className="w-full bg-green-600 hover:bg-green-700 text-zinc-100">Login</Button>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-1 sm:mt-2">
+                      <Link href="/login" className="w-full">
+                        <Button size="sm" variant="default" className="w-full bg-green-600 hover:bg-green-700 text-zinc-100 text-xs h-8">Login</Button>
                       </Link>
-                      <Link href="/register">
-                        <Button size="sm" variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800">Register Free Account</Button>
+                      <Link href="/register" className="w-full">
+                        <Button size="sm" variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs h-8">Register Free Account</Button>
                       </Link>
                     </div>
                   </div>
