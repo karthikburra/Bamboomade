@@ -92,49 +92,38 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
     }
   };
   
-  // Function to render source and content type information
+  // Function to render source information without content type badges
   const renderSourceInfo = (fact: BambooFactType) => {
+    if (!fact.source) return null;
+    
     return (
-      <div className="mt-1 text-xs flex flex-wrap items-center gap-2">
-        {/* Content Type Badge */}
-        {fact.contentType && (
-          <Badge variant="outline" className={`inline-flex items-center py-0 h-5 ${getContentTypeColor(fact.contentType)}`}>
-            {getContentTypeIcon(fact.contentType)}
-            {getContentTypeLabel(fact.contentType)}
-          </Badge>
-        )}
-        
-        {/* Source Link */}
-        {fact.source && (
-          <div className="text-zinc-500">
-            Source:{' '}
-            <a 
-              href={fact.source.startsWith('http') ? fact.source : '#'} 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-green-500 hover:text-green-400 inline-flex items-center"
-              onClick={(e) => {
-                if (!fact.source?.startsWith('http')) {
-                  e.preventDefault();
-                  handleFactClick(fact);
-                }
-                
-                // Track click in Google Analytics
-                if (typeof window !== 'undefined' && (window as any).gtag && fact.source && fact.source.startsWith('http')) {
-                  (window as any).gtag('event', 'citation_click', {
-                    'event_category': 'AI_Chat',
-                    'event_label': fact.source
-                  });
-                }
-              }}
-            >
-              {fact.source && fact.source.startsWith('http') 
-                ? new URL(fact.source).hostname.replace('www.', '') 
-                : fact.source || 'Source'}
-              {fact.source && fact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
-            </a>
-          </div>
-        )}
+      <div className="mt-1 text-xs flex flex-wrap items-center justify-end">
+        {/* Source Link only, no content type badge */}
+        <a 
+          href={fact.source.startsWith('http') ? fact.source : '#'} 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-green-500 hover:text-green-400 inline-flex items-center"
+          onClick={(e) => {
+            if (!fact.source?.startsWith('http')) {
+              e.preventDefault();
+              handleFactClick(fact);
+            }
+            
+            // Track click in Google Analytics
+            if (typeof window !== 'undefined' && (window as any).gtag && fact.source && fact.source.startsWith('http')) {
+              (window as any).gtag('event', 'citation_click', {
+                'event_category': 'AI_Chat',
+                'event_label': fact.source
+              });
+            }
+          }}
+        >
+          {fact.source && fact.source.startsWith('http') 
+            ? new URL(fact.source).hostname.replace('www.', '') 
+            : fact.source}
+          {fact.source && fact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
+        </a>
       </div>
     );
   };
@@ -203,24 +192,22 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
           Did You Know?
         </CardTitle>
         <CardDescription className="text-xs text-zinc-400">
-          Interesting bamboo facts from different sources
+          Interesting facts about bamboo architecture and design
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {facts.slice(0, 3).map((fact) => (
             <div 
               key={fact.id} 
-              className="border-b border-zinc-800 pb-2 last:border-0 last:pb-0"
+              className="border-b border-zinc-800 pb-3 last:border-0 last:pb-0"
             >
               <div 
                 className="text-sm text-zinc-300 cursor-pointer hover:text-zinc-100 transition-colors"
                 onClick={() => handleFactClick(fact)}
               >
-                {/* Truncate fact text if it's too long */}
-                {fact.fact.length > 100 
-                  ? `${fact.fact.substring(0, 100)}...` 
-                  : fact.fact}
+                {/* Show full fact text */}
+                {fact.fact}
               </div>
               {renderSourceInfo(fact)}
             </div>
