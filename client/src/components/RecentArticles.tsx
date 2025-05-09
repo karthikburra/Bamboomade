@@ -129,7 +129,10 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
       <CardContent className="space-y-3">
         {articles.slice(0, 3).map((article) => (
           <div key={article.id} className="border-b border-zinc-800 pb-3 last:border-0 last:pb-0">
-            <h3 className="text-sm font-medium text-zinc-300 mb-1">
+            <h3 
+              className="text-sm font-medium text-zinc-300 mb-1 cursor-pointer hover:text-green-400 transition-colors"
+              onClick={() => onArticleClick && onArticleClick(`Tell me about ${article.title}`)}
+            >
               {article.title}
             </h3>
             <p className="text-xs text-zinc-400 mb-2 line-clamp-2">{article.content}</p>
@@ -168,14 +171,6 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
                     )}
                   </a>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm" 
-                  className="h-5 px-1.5 text-xs text-green-500 hover:text-green-400 hover:bg-zinc-800"
-                  onClick={() => onArticleClick && onArticleClick(`Tell me about ${article.title}`)}
-                >
-                  Read More
-                </Button>
               </div>
             </div>
           </div>
