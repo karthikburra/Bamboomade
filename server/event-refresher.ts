@@ -229,6 +229,101 @@ export async function getLatestEventsSummary(): Promise<string | null> {
 }
 
 /**
+ * Get upcoming events from the knowledge base
+ * @returns Array of upcoming events with their details
+ */
+export async function getUpcomingEvents(): Promise<Array<{
+  id: number;
+  title: string;
+  content: string;
+  createdAt: Date;
+  source: string | null;
+}>> {
+  try {
+    // Get all content from the knowledge base
+    const allContent = await storage.getAllAiKnowledgeContent();
+    
+    // Current date for comparing event dates
+    const currentDate = new Date();
+    
+    // Filter for event content types and content containing future dates
+    const upcomingEvents = allContent.filter(item => {
+      // Check if it's specifically an event content type
+      const isEventType = item.contentType === 'event';
+      
+      // Check if it has event keywords in title or content
+      const hasEventKeywords = 
+        (item.title && (
+          item.title.toLowerCase().includes('workshop') ||
+          item.title.toLowerCase().includes('event') ||
+          item.title.toLowerCase().includes('seminar') ||
+          item.title.toLowerCase().includes('conference') ||
+          item.title.toLowerCase().includes('training')
+        )) ||
+        (item.content && (
+          item.content.toLowerCase().includes('workshop') ||
+          item.content.toLowerCase().includes('upcoming event') ||
+          item.content.toLowerCase().includes('seminar') ||
+          item.content.toLowerCase().includes('conference') ||
+          item.content.toLowerCase().includes('training')
+        ));
+      
+      // Look for future date patterns in content
+      // This is a simplified approach - dates are complex to parse reliably
+      const hasRelevantDateInfo = item.content && (
+        // Look for months in the future
+        (() => {
+          const currentMonth = currentDate.getMonth();
+          const currentYear = currentDate.getFullYear();
+          
+          // Check for current and future months this year
+          const monthNames = [
+            'january', 'february', 'march', 'april', 'may', 'june', 
+            'july', 'august', 'september', 'october', 'november', 'december'
+          ];
+          
+          // Check for months that are current or in the future
+          for (let i = currentMonth; i < monthNames.length; i++) {
+            if (item.content.toLowerCase().includes(monthNames[i])) {
+              return true;
+            }
+          }
+          
+          // Check for next year
+          if (item.content.toLowerCase().includes((currentYear + 1).toString())) {
+            return true;
+          }
+          
+          return false;
+        })() ||
+        // Check for "Bamboo Joiney workshop" specifically
+        (item.content.toLowerCase().includes('bamboo joiney') || 
+         item.title.toLowerCase().includes('bamboo joiney')) ||
+        // Look for specific date formats that might be in the future
+        // Note: This is a basic check - a full date parser would be more reliable
+        item.content.toLowerCase().includes('31st may') ||
+        item.content.toLowerCase().includes('31 may') ||
+        item.content.toLowerCase().includes('may 31') ||
+        // General patterns to catch more date formats
+        (item.content.toLowerCase().includes('may') && item.content.match(/\b\d{1,2}(st|nd|rd|th)?\b/)) ||
+        item.content.toLowerCase().includes('upcoming') ||
+        item.content.toLowerCase().includes('scheduled') ||
+        item.content.toLowerCase().includes('register now')
+      );
+      
+      return (isEventType || hasEventKeywords) && hasRelevantDateInfo && item.status === "active";
+    });
+    
+    return upcomingEvents.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  } catch (error) {
+    console.error('Error getting upcoming events:', error);
+    return [];
+  }
+}
+
+/**
  * Get recent updates from the knowledge base (last 30 days)
  * Rotates articles daily - showing max 3 different articles each day
  * @returns Array of recent updates with their content and source citations
@@ -253,6 +348,7 @@ export async function getRecentUpdates(): Promise<Array<{
       new Date(item.createdAt) >= thirtyDaysAgo &&
       item.status === "active" &&
       item.contentType !== "events_summary" && // Skip the summary, as we'll show it separately
+      item.contentType !== "event" && // Skip events, as they'll be shown in the events section
       (
         // Must be from external websites with http source
         (item.source && item.source.startsWith('http')) &&

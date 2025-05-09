@@ -1931,15 +1931,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard-data", async (req, res) => {
     try {
       // Run all queries in parallel for better performance
-      const [eventsSummary, recentUpdates, bambooFact, bamboofacts] = await Promise.all([
+      const [eventsSummary, upcomingEvents, recentUpdates, bambooFact, bamboofacts] = await Promise.all([
         getLatestEventsSummary(),
+        getUpcomingEvents(),
         getRecentUpdates(),
         getInterestingBambooFact(), // Keep for backward compatibility
         getMultipleBambooFacts(3)   // Get 3 interesting facts from different sources
       ]);
       
+      // If we have upcoming events from the knowledge base but no general events summary,
+      // create a simple events list to display
+      let eventsToShow = eventsSummary;
+      
+      if (!eventsSummary && upcomingEvents.length > 0) {
+        // Format upcoming events as a markdown list
+        const formattedEvents = upcomingEvents.map(event => {
+          // Extract a brief description from the content (first 100 chars)
+          const briefDescription = event.content.length > 100
+            ? event.content.substring(0, 100) + '...'
+            : event.content;
+          
+          return `- **${event.title}**\n  ${briefDescription}`;
+        }).join('\n\n');
+        
+        eventsToShow = `# Upcoming Bamboo Architecture Events\n\n${formattedEvents}\n\n*Last updated: ${new Date().toLocaleDateString('en-IN')}*`;
+      }
+      
       res.json({
-        events: eventsSummary,
+        events: eventsToShow,
+        upcomingEvents: upcomingEvents, // Add the raw upcoming events data
         updates: recentUpdates,
         fact: bambooFact,    // Keep for backward compatibility
         facts: bamboofacts   // New array of facts from different sources
