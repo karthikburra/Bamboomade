@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink } from "lucide-react";
+import { X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, AlertTriangle, Save } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -220,12 +220,12 @@ export default function AIKnowledgeDatabase() {
   }, {});
 
   return (
-    <div className="container pb-16 pt-8 max-w-7xl">
+    <div className="container pb-16 pt-8 max-w-7xl dark">
       <h1 className="text-2xl font-bold mb-6 text-amber-400">AI Knowledge Database</h1>
       
       <AdminTabs value="database">
         <TabsContent value="database" className="space-y-6">
-          <div className="space-y-4">
+          <div className="space-y-4 bg-gray-900 p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               <div className="relative flex-1 w-full max-w-md">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
@@ -233,28 +233,28 @@ export default function AIKnowledgeDatabase() {
                   placeholder="Search by title, content, or source..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-gray-800 border-gray-700"
+                  className="pl-9 bg-gray-900 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm("")}
-                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-white"
+                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-amber-400 transition-colors"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 )}
               </div>
               
-              <div className="flex gap-2 w-full sm:w-auto">
-                <div className="flex-1 sm:flex-none">
+              <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
+                <div className="flex-1 sm:flex-none min-w-[140px]">
                   <Select value={filter} onValueChange={setFilter}>
-                    <SelectTrigger className="bg-gray-800 border-gray-700 w-full">
+                    <SelectTrigger className="bg-gray-900 border-gray-700 text-white w-full hover:border-gray-600">
                       <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         <SelectValue placeholder="Filter by status" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
@@ -263,15 +263,15 @@ export default function AIKnowledgeDatabase() {
                   </Select>
                 </div>
                 
-                <div className="flex-1 sm:flex-none">
+                <div className="flex-1 sm:flex-none min-w-[140px]">
                   <Select value={contentTypeFilter} onValueChange={setContentTypeFilter}>
-                    <SelectTrigger className="bg-gray-800 border-gray-700 w-full">
+                    <SelectTrigger className="bg-gray-900 border-gray-700 text-white w-full hover:border-gray-600">
                       <div className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
                         <SelectValue placeholder="Filter by content type" />
                       </div>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
                       <SelectItem value="all">All Types</SelectItem>
                       <SelectItem value="webpage">Web Pages</SelectItem>
                       <SelectItem value="article">Articles</SelectItem>
@@ -289,16 +289,16 @@ export default function AIKnowledgeDatabase() {
                   variant="outline" 
                   size="icon"
                   onClick={() => refetch()}
-                  className="bg-gray-800 border-gray-700"
+                  className="bg-gray-900 border-gray-700 hover:bg-gray-800 hover:border-amber-500 text-white"
                 >
                   <RefreshCcw className="h-4 w-4" />
                 </Button>
               </div>
             </div>
             
-            <div className="text-sm text-gray-400 mb-2">
+            <div className="text-sm text-gray-400 mt-2 mb-4 px-1">
               {filteredContent ? (
-                <span>{filteredContent.length} items found</span>
+                <span><span className="text-amber-400 font-semibold">{filteredContent.length}</span> items found</span>
               ) : (
                 <span>Loading...</span>
               )}
@@ -328,16 +328,16 @@ export default function AIKnowledgeDatabase() {
                       <div key={contentType} className="space-y-4">
                         <h2 className="text-xl font-semibold text-white flex items-center">
                           <Badge className={`mr-2 ${getContentTypeColor(contentType)}`}>
-                            {contents.length}
+                            {(contents as AiKnowledgeContent[]).length}
                           </Badge>
                           {getContentTypeLabel(contentType)}
                         </h2>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {contents.map((content) => (
-                            <Card key={content.id} className="bg-gray-800 border-gray-700 hover:border-gray-600 transition-colors">
+                          {(contents as AiKnowledgeContent[]).map((content: AiKnowledgeContent) => (
+                            <Card key={content.id} className="group bg-gray-800 border-gray-700 hover:border-amber-500 transition-all shadow-lg hover:shadow-amber-700/20 overflow-hidden relative">
                               <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start mb-1">
+                                <div className="flex justify-between items-start mb-2">
                                   <Badge className={`${getContentTypeColor(content.contentType)}`}>
                                     {getContentTypeLabel(content.contentType)}
                                   </Badge>
@@ -345,12 +345,12 @@ export default function AIKnowledgeDatabase() {
                                     {content.status.charAt(0).toUpperCase() + content.status.slice(1)}
                                   </Badge>
                                 </div>
-                                <CardTitle className="text-base cursor-pointer hover:text-amber-400 transition-colors" 
+                                <CardTitle className="text-base cursor-pointer text-white group-hover:text-amber-400 transition-colors" 
                                   onClick={() => handleViewDetails(content)}>
                                   {truncateText(content.title, 60)}
                                 </CardTitle>
                                 {content.source && (
-                                  <CardDescription className="text-xs text-gray-400 flex items-center">
+                                  <CardDescription className="text-xs text-gray-400 flex items-center mt-1">
                                     <span className="mr-1">Source:</span>
                                     {getDomainFromUrl(content.source)}
                                   </CardDescription>
@@ -366,13 +366,13 @@ export default function AIKnowledgeDatabase() {
                                   {formatDate(content.createdAt)}
                                 </span>
                                 <div className="flex gap-1">
-                                  <Button variant="ghost" size="icon" onClick={() => handleViewDetails(content)} className="h-8 w-8">
+                                  <Button variant="ghost" size="icon" onClick={() => handleViewDetails(content)} className="h-8 w-8 text-gray-400 hover:text-amber-400 hover:bg-gray-700">
                                     <Copy className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handleEditContent(content)} className="h-8 w-8">
+                                  <Button variant="ghost" size="icon" onClick={() => handleEditContent(content)} className="h-8 w-8 text-gray-400 hover:text-blue-400 hover:bg-gray-700">
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(content)} className="h-8 w-8 text-red-400 hover:text-red-300">
+                                  <Button variant="ghost" size="icon" onClick={() => handleDeleteContent(content)} className="h-8 w-8 text-gray-400 hover:text-red-400 hover:bg-gray-700">
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
@@ -393,10 +393,10 @@ export default function AIKnowledgeDatabase() {
       {/* View Details Dialog */}
       {selectedContent && (
         <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-700">
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">{selectedContent.title}</DialogTitle>
-              <div className="flex gap-2 mt-2">
+              <DialogTitle className="text-xl font-bold text-amber-400">{selectedContent.title}</DialogTitle>
+              <div className="flex flex-wrap gap-2 mt-2">
                 <Badge className={`${getContentTypeColor(selectedContent.contentType)}`}>
                   {getContentTypeLabel(selectedContent.contentType)}
                 </Badge>
@@ -406,37 +406,37 @@ export default function AIKnowledgeDatabase() {
               </div>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="space-y-5 mt-2">
               {selectedContent.source && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400">Source:</h3>
-                  <div className="flex items-center mt-1">
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                  <h3 className="text-sm font-medium text-amber-400 mb-2">Source:</h3>
+                  <div className="flex items-center">
                     <a 
                       href={selectedContent.source} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 flex items-center"
+                      className="text-blue-400 hover:text-blue-300 flex items-center text-sm break-all"
                     >
                       {selectedContent.source}
-                      <ExternalLink className="ml-1 h-3 w-3" />
+                      <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
                     </a>
                   </div>
                 </div>
               )}
               
-              <div>
-                <h3 className="text-sm font-medium text-gray-400">Content:</h3>
-                <div className="mt-1 whitespace-pre-wrap text-gray-200 p-3 bg-gray-800 rounded-md border border-gray-700">
+              <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                <h3 className="text-sm font-medium text-amber-400 mb-2">Content:</h3>
+                <div className="whitespace-pre-wrap text-gray-200 p-3 bg-gray-800 rounded-md border border-gray-700 text-sm">
                   {selectedContent.content}
                 </div>
               </div>
               
               {selectedContent.mediaUrl && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400">Media:</h3>
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                  <h3 className="text-sm font-medium text-amber-400 mb-2">Media:</h3>
                   <div className="mt-1">
                     {selectedContent.mediaType?.includes('image') ? (
-                      <div className="border border-gray-700 rounded-md overflow-hidden max-w-md mx-auto">
+                      <div className="border border-gray-700 rounded-md overflow-hidden max-w-md mx-auto shadow-lg">
                         <img 
                           src={selectedContent.mediaUrl} 
                           alt={selectedContent.title} 
@@ -448,10 +448,10 @@ export default function AIKnowledgeDatabase() {
                         href={selectedContent.mediaUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 flex items-center"
+                        className="text-blue-400 hover:text-blue-300 flex items-center text-sm break-all"
                       >
                         {selectedContent.mediaUrl}
-                        <ExternalLink className="ml-1 h-3 w-3" />
+                        <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
                       </a>
                     )}
                   </div>
@@ -459,9 +459,9 @@ export default function AIKnowledgeDatabase() {
               )}
               
               {selectedContent.socialMediaInfo && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400">Social Media Info:</h3>
-                  <div className="mt-1 p-3 bg-gray-800 rounded-md border border-gray-700">
+                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                  <h3 className="text-sm font-medium text-amber-400 mb-2">Social Media Info:</h3>
+                  <div className="p-3 bg-gray-800 rounded-md border border-gray-700">
                     <pre className="text-xs text-gray-300 whitespace-pre-wrap">
                       {JSON.stringify(selectedContent.socialMediaInfo, null, 2)}
                     </pre>
@@ -469,16 +469,23 @@ export default function AIKnowledgeDatabase() {
                 </div>
               )}
 
-              <div className="flex justify-between text-sm text-gray-400">
-                <div>Created: {formatDate(selectedContent.createdAt)}</div>
-                <div>Updated: {formatDate(selectedContent.updatedAt)}</div>
+              <div className="flex flex-wrap justify-between text-sm text-gray-400 bg-gray-800/30 rounded-lg p-3 border border-gray-800">
+                <div className="flex items-center">
+                  <span className="text-gray-500 mr-1">Created:</span> 
+                  {formatDate(selectedContent.createdAt)}
+                </div>
+                <div className="flex items-center">
+                  <span className="text-gray-500 mr-1">Updated:</span> 
+                  {formatDate(selectedContent.updatedAt)}
+                </div>
               </div>
             </div>
             
-            <DialogFooter>
-              <div className="flex justify-between w-full">
+            <DialogFooter className="mt-6 border-t border-gray-800 pt-4">
+              <div className="flex flex-wrap gap-3 justify-between w-full">
                 <Button
                   variant="destructive"
+                  className="bg-red-600 hover:bg-red-700"
                   onClick={() => {
                     setIsViewDetailsDialogOpen(false);
                     handleDeleteContent(selectedContent);
@@ -491,6 +498,7 @@ export default function AIKnowledgeDatabase() {
                 <div className="space-x-2">
                   <Button
                     variant="outline"
+                    className="border-gray-600 text-white hover:bg-gray-800 hover:text-amber-400"
                     onClick={() => {
                       setIsViewDetailsDialogOpen(false);
                       handleEditContent(selectedContent);
@@ -500,7 +508,10 @@ export default function AIKnowledgeDatabase() {
                     Edit
                   </Button>
                   
-                  <Button onClick={() => setIsViewDetailsDialogOpen(false)}>
+                  <Button 
+                    className="bg-amber-600 hover:bg-amber-700"
+                    onClick={() => setIsViewDetailsDialogOpen(false)}
+                  >
                     Close
                   </Button>
                 </div>
@@ -513,137 +524,165 @@ export default function AIKnowledgeDatabase() {
       {/* Edit Dialog */}
       {selectedContent && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-700">
-            <DialogHeader>
-              <DialogTitle>Edit Content</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark">
+            <DialogHeader className="border-b border-gray-800 pb-4">
+              <DialogTitle className="text-xl font-bold text-amber-400">Edit Content</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 Make changes to the AI knowledge content below. 
                 These changes will affect how the AI responds to related queries.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label className="text-right text-sm font-medium text-gray-400">Title</label>
-                <Input 
-                  value={selectedContent.title}
-                  onChange={(e) => setSelectedContent({...selectedContent, title: e.target.value})}
-                  className="col-span-3 bg-gray-800 border-gray-700"
-                />
+            <div className="space-y-5 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Title</label>
+                <div className="col-span-1 sm:col-span-3">
+                  <Input 
+                    value={selectedContent.title}
+                    onChange={(e) => setSelectedContent({...selectedContent, title: e.target.value})}
+                    className="w-full bg-gray-800 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">The title will be used for identification in the AI Knowledge database</p>
+                </div>
               </div>
               
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label className="text-right text-sm font-medium text-gray-400">Source</label>
-                <Input 
-                  value={selectedContent.source || ''}
-                  onChange={(e) => setSelectedContent({...selectedContent, source: e.target.value})}
-                  className="col-span-3 bg-gray-800 border-gray-700"
-                  placeholder="https://example.com"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Source</label>
+                <div className="col-span-1 sm:col-span-3">
+                  <Input 
+                    value={selectedContent.source || ''}
+                    onChange={(e) => setSelectedContent({...selectedContent, source: e.target.value})}
+                    className="w-full bg-gray-800 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    placeholder="https://example.com"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">The original URL or source of this content</p>
+                </div>
               </div>
               
-              <div className="grid grid-cols-4 items-start gap-4">
-                <label className="text-right text-sm font-medium text-gray-400">Content</label>
-                <textarea 
-                  value={selectedContent.content}
-                  onChange={(e) => setSelectedContent({...selectedContent, content: e.target.value})}
-                  className="col-span-3 min-h-[150px] bg-gray-800 border-gray-700 rounded-md p-2 text-white resize-y"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Content</label>
+                <div className="col-span-1 sm:col-span-3">
+                  <textarea 
+                    value={selectedContent.content}
+                    onChange={(e) => setSelectedContent({...selectedContent, content: e.target.value})}
+                    className="w-full min-h-[200px] bg-gray-800 border-gray-700 rounded-md p-3 text-white resize-y focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">The main content that will be used by the AI system to respond to queries</p>
+                </div>
               </div>
               
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label className="text-right text-sm font-medium text-gray-400">Status</label>
-                <Select 
-                  value={selectedContent.status}
-                  onValueChange={(value) => setSelectedContent({...selectedContent, status: value})}
-                >
-                  <SelectTrigger className="col-span-3 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label className="text-right text-sm font-medium text-gray-400">Content Type</label>
-                <Select 
-                  value={selectedContent.contentType}
-                  onValueChange={(value) => setSelectedContent({...selectedContent, contentType: value})}
-                >
-                  <SelectTrigger className="col-span-3 bg-gray-800 border-gray-700">
-                    <SelectValue placeholder="Select a content type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="webpage">Web Page</SelectItem>
-                    <SelectItem value="article">Article</SelectItem>
-                    <SelectItem value="social">Social Media</SelectItem>
-                    <SelectItem value="fact">Bamboo Fact</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
-                    <SelectItem value="youtube">YouTube</SelectItem>
-                    <SelectItem value="training">Training</SelectItem>
-                    <SelectItem value="custom">Custom</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                <div className="col-span-1 sm:col-span-2 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                  <label className="text-sm font-medium text-amber-400 block mb-2">Status</label>
+                  <Select 
+                    value={selectedContent.status}
+                    onValueChange={(value) => setSelectedContent({...selectedContent, status: value})}
+                  >
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white w-full hover:border-gray-600">
+                      <SelectValue placeholder="Select a status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
+                      <SelectItem value="active" className="text-green-400 hover:bg-gray-800">Active</SelectItem>
+                      <SelectItem value="inactive" className="text-red-400 hover:bg-gray-800">Inactive</SelectItem>
+                      <SelectItem value="pending" className="text-yellow-400 hover:bg-gray-800">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">Controls whether this content is used by the AI</p>
+                </div>
+                
+                <div className="col-span-1 sm:col-span-2 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                  <label className="text-sm font-medium text-amber-400 block mb-2">Content Type</label>
+                  <Select 
+                    value={selectedContent.contentType}
+                    onValueChange={(value) => setSelectedContent({...selectedContent, contentType: value})}
+                  >
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white w-full hover:border-gray-600">
+                      <SelectValue placeholder="Select a content type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-gray-700 text-white">
+                      <SelectItem value="webpage" className="hover:bg-gray-800 text-blue-300">Web Page</SelectItem>
+                      <SelectItem value="article" className="hover:bg-gray-800 text-purple-300">Article</SelectItem>
+                      <SelectItem value="social" className="hover:bg-gray-800 text-pink-300">Social Media</SelectItem>
+                      <SelectItem value="fact" className="hover:bg-gray-800 text-green-300">Bamboo Fact</SelectItem>
+                      <SelectItem value="event" className="hover:bg-gray-800 text-amber-300">Event</SelectItem>
+                      <SelectItem value="youtube" className="hover:bg-gray-800 text-red-300">YouTube</SelectItem>
+                      <SelectItem value="training" className="hover:bg-gray-800 text-sky-300">Training</SelectItem>
+                      <SelectItem value="custom" className="hover:bg-gray-800 text-gray-300">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">Categorizes the content for organization</p>
+                </div>
               </div>
               
               {selectedContent.mediaUrl && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label className="text-right text-sm font-medium text-gray-400">Media URL</label>
-                  <Input 
-                    value={selectedContent.mediaUrl}
-                    onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
-                    className="col-span-3 bg-gray-800 border-gray-700"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                  <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Media URL</label>
+                  <div className="col-span-1 sm:col-span-3">
+                    <Input 
+                      value={selectedContent.mediaUrl}
+                      onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
+                      className="w-full bg-gray-800 border-gray-700 text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">URL to associated media (image, video, etc.)</p>
+                  </div>
                 </div>
               )}
             </div>
             
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" onClick={async () => {
-                try {
-                  const response = await fetch(`/api/ai-knowledge/${selectedContent.id}`, {
-                    method: "PATCH",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      title: selectedContent.title,
-                      content: selectedContent.content,
-                      source: selectedContent.source,
-                      status: selectedContent.status,
-                      contentType: selectedContent.contentType,
-                      mediaUrl: selectedContent.mediaUrl,
-                    }),
-                  });
-                  
-                  if (!response.ok) {
-                    throw new Error("Failed to update content");
-                  }
-                  
-                  toast({
-                    title: "Content updated",
-                    description: "The AI knowledge content has been updated successfully.",
-                  });
-                  
-                  refetch();
-                  setIsEditDialogOpen(false);
-                } catch (error) {
-                  toast({
-                    title: "Error",
-                    description: "Failed to update content. Please try again.",
-                    variant: "destructive",
-                  });
-                }
-              }}>
-                Save Changes
-              </Button>
+            <DialogFooter className="mt-2 border-t border-gray-800 pt-4">
+              <div className="flex flex-wrap gap-3 sm:gap-2 w-full justify-between sm:justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                  className="flex-grow sm:flex-grow-0 border-gray-600 text-white hover:bg-gray-800 hover:text-amber-400"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-grow sm:flex-grow-0 bg-amber-600 hover:bg-amber-700 text-white"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`/api/ai-knowledge/${selectedContent.id}`, {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          title: selectedContent.title,
+                          content: selectedContent.content,
+                          source: selectedContent.source,
+                          status: selectedContent.status,
+                          contentType: selectedContent.contentType,
+                          mediaUrl: selectedContent.mediaUrl,
+                        }),
+                      });
+                      
+                      if (!response.ok) {
+                        throw new Error("Failed to update content");
+                      }
+                      
+                      toast({
+                        title: "Content updated",
+                        description: "The AI knowledge content has been updated successfully.",
+                      });
+                      
+                      refetch();
+                      setIsEditDialogOpen(false);
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to update content. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -652,30 +691,55 @@ export default function AIKnowledgeDatabase() {
       {/* Delete Confirmation Dialog */}
       {selectedContent && (
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-700">
-            <DialogHeader>
-              <DialogTitle>Delete Content</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="bg-gray-900 border-gray-800 shadow-xl dark">
+            <DialogHeader className="border-b border-gray-800 pb-4">
+              <DialogTitle className="text-xl font-bold text-red-400">
+                <AlertTriangle className="h-5 w-5 inline-block mr-2 text-red-400" />
+                Delete Content
+              </DialogTitle>
+              <DialogDescription className="text-gray-400 mt-2">
                 Are you sure you want to delete this content from the AI knowledge base?
                 This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="bg-gray-800 border border-gray-700 rounded-md p-3 my-2">
-              <h3 className="font-medium text-white">{selectedContent.title}</h3>
-              <p className="text-sm text-gray-400 mt-1">{truncateText(selectedContent.content, 100)}</p>
-              {selectedContent.source && (
-                <p className="text-xs text-gray-500 mt-1">Source: {getDomainFromUrl(selectedContent.source)}</p>
-              )}
+            <div className="bg-gray-800/50 border border-red-900/30 rounded-md p-4 my-4 shadow-inner">
+              <h3 className="font-medium text-white flex items-center">
+                <span className={`inline-block w-2 h-2 rounded-full mr-2 ${getContentTypeColor(selectedContent.contentType).replace('bg-', '')}`}></span>
+                {selectedContent.title}
+              </h3>
+              <p className="text-sm text-gray-300 mt-2 bg-gray-800 p-2 rounded border border-gray-700">{truncateText(selectedContent.content, 100)}</p>
+              <div className="flex flex-wrap justify-between text-xs text-gray-500 mt-3">
+                {selectedContent.source && (
+                  <p>Source: {getDomainFromUrl(selectedContent.source)}</p>
+                )}
+                <p>
+                  <Badge className={selectedContent.status === 'active' ? 'bg-green-600' : selectedContent.status === 'inactive' ? 'bg-red-600' : 'bg-yellow-600'}>
+                    {selectedContent.status.charAt(0).toUpperCase() + selectedContent.status.slice(1)}
+                  </Badge>
+                </p>
+              </div>
             </div>
             
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Delete
-              </Button>
+            <DialogFooter className="mt-2 border-t border-gray-800 pt-4">
+              <div className="flex flex-wrap gap-3 sm:gap-2 w-full justify-between sm:justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                  className="flex-grow sm:flex-grow-0 border-gray-600 text-white hover:bg-gray-800 hover:text-amber-400"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={confirmDelete}
+                  className="flex-grow sm:flex-grow-0 bg-red-600 hover:bg-red-700"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Permanently Delete
+                </Button>
+              </div>
             </DialogFooter>
           </DialogContent>
         </Dialog>
