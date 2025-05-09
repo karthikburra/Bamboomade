@@ -15,7 +15,14 @@ import {
   sendVerificationCodeEmail
 } from "./email-service";
 // Web crawler and document analyzer
-import { analyzeWebsite, isValidUrl, detectContentType } from "./web-crawler";
+import { 
+  analyzeWebsite, 
+  isValidUrl, 
+  detectContentType,
+  detectContentTypeFromUrl,
+  getPlatformFromUrl,
+  getHandleFromUrl 
+} from "./web-crawler";
 // Google Sheets integration removed as requested
 import { format, formatInTimeZone } from "date-fns-tz";
 import { addMinutes } from "date-fns";
@@ -3616,7 +3623,64 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       if (isUrl) {
         // Process it directly through the web crawler
         try {
-          const extractedData = await analyzeWebsite(message.trim());
+          const url = message.trim();
+          
+          // Preliminary detection of URL type before crawling
+          const detectedUrlType = detectContentTypeFromUrl(url);
+          console.log(`Detected URL type for ${url}: ${detectedUrlType}`);
+          
+          const extractedData = await analyzeWebsite(url);
+          
+          // Enhance content type with more specific classification
+          let enhancedContentType = extractedData.contentType;
+          let socialMediaInfo = null;
+          
+          // Add specific social media metadata if it's a social media post
+          if (detectedUrlType === 'social-media') {
+            const platform = getPlatformFromUrl(url);
+            
+            // Extract post ID from URL
+            let postId = '';
+            if (url.includes('instagram.com/p/')) {
+              postId = url.split('/p/')[1].split('/')[0];
+            } else if (url.includes('facebook.com/')) {
+              if (url.includes('posts/')) {
+                postId = url.split('posts/')[1].split('/')[0];
+              } else if (url.includes('photos/')) {
+                postId = url.split('photos/')[1].split('/')[0];
+              }
+            } else if (url.includes('twitter.com/') || url.includes('x.com/')) {
+              if (url.includes('/status/')) {
+                postId = url.split('/status/')[1].split('/')[0];
+              }
+            } else if (url.includes('linkedin.com/posts/')) {
+              postId = url.split('linkedin.com/posts/')[1];
+            }
+            
+            socialMediaInfo = {
+              platform: platform,
+              postId: postId,
+              profileUrl: url.split('?')[0].split('/p/')[0],
+              handle: getHandleFromUrl(url, platform),
+              mediaUrls: [] // This would require more complex parsing to extract
+            };
+            
+            enhancedContentType = 'social_media';
+          } else if (detectedUrlType === 'video') {
+            // Enhance video metadata
+            enhancedContentType = 'video';
+            // Differentiate between YouTube and other platforms
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+              enhancedContentType = 'youtube_video';
+            }
+          } else if (detectedUrlType === 'article') {
+            enhancedContentType = 'blog_post';
+            
+            // Check for specific article platforms
+            if (url.includes('medium.com')) {
+              enhancedContentType = 'medium_article';
+            }
+          }
           
           // Before adding, check for potential duplicates
           const existingContent = await storage.getAllAiKnowledgeContent();
@@ -3624,7 +3688,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           // Check for similar titles or content
           const possibleDuplicate = existingContent.find(item => {
             // Same URL source
-            if (item.source === message.trim()) {
+            if (item.source === url) {
               return true;
             }
             
@@ -3642,39 +3706,69 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           });
           
           if (possibleDuplicate) {
-            // Update existing content instead of creating a duplicate
+            // Update existing content instead of creating a duplicate, but with the enhanced content type
+            const socialMediaInfoData = socialMediaInfo ? JSON.stringify(socialMediaInfo) : null;
+            
             const updatedContent = await storage.updateAiKnowledgeContent(
               possibleDuplicate.id, 
               {
                 title: extractedData.title,
                 content: extractedData.content,
-                contentType: 'webpage',
-                source: message.trim(),
-                status: possibleDuplicate.status
+                contentType: enhancedContentType,
+                source: url,
+                status: possibleDuplicate.status,
+                socialMediaInfo: socialMediaInfoData
               }
             );
             
+            // Create a more informative response based on the content type
+            let responseMessage = '';
+            if (enhancedContentType === 'social_media') {
+              responseMessage = `I've updated the ${socialMediaInfo?.platform || 'social media'} post "${extractedData.title}" with the latest information. This prevents duplicate content in the knowledge base.`;
+            } else if (enhancedContentType === 'youtube_video' || enhancedContentType === 'video') {
+              responseMessage = `I've updated the video "${extractedData.title}" with the latest information. This prevents duplicate content in the knowledge base.`;
+            } else if (enhancedContentType === 'medium_article' || enhancedContentType === 'blog_post') {
+              responseMessage = `I've updated the article "${extractedData.title}" with the latest information. This will appear in the Recent Articles section.`;
+            } else {
+              responseMessage = `I've updated the existing entry "${extractedData.title}" with the latest information from this website. This prevents duplicate content in the knowledge base.`;
+            }
+            
             return res.json({
-              response: `I've updated the existing entry "${extractedData.title}" with the latest information from this website. This prevents duplicate content in the knowledge base.`,
+              response: responseMessage,
               shouldAddToKnowledge: false,
               isDuplicate: true,
               updatedContent: updatedContent,
               id: possibleDuplicate.id,
-              websiteUrl: message.trim()
+              websiteUrl: url
             });
           }
           
-          // Not a duplicate, create new entry
+          // Not a duplicate, create new entry with enhanced content type
+          const socialMediaInfoData = socialMediaInfo ? JSON.stringify(socialMediaInfo) : null;
+          
+          // Prepare a more informative response based on content type
+          let responseMessage = '';
+          if (enhancedContentType === 'social_media') {
+            responseMessage = `I've added the ${socialMediaInfo?.platform || 'social media'} post "${extractedData.title}" to the knowledge base.`;
+          } else if (enhancedContentType === 'youtube_video' || enhancedContentType === 'video') {
+            responseMessage = `I've added the video "${extractedData.title}" to the knowledge base.`;
+          } else if (enhancedContentType === 'medium_article' || enhancedContentType === 'blog_post') {
+            responseMessage = `I've added the article "${extractedData.title}" to the knowledge base. This will appear in the Recent Articles section.`;
+          } else {
+            responseMessage = `I've added "${extractedData.title}" to the knowledge base. This website contains information about the company, projects, and any upcoming events.`;
+          }
+          
           return res.json({
-            response: `I've added "${extractedData.title}" to the knowledge base. This website contains information about the company, projects, and any upcoming events.`,
+            response: responseMessage,
             shouldAddToKnowledge: true,
             suggestion: {
               title: extractedData.title,
               content: extractedData.content,
-              contentType: 'webpage',
-              source: message.trim()
+              contentType: enhancedContentType,
+              source: url,
+              socialMediaInfo: socialMediaInfoData
             },
-            websiteUrl: message.trim()
+            websiteUrl: url
           });
         } catch (error) {
           console.error('Web crawler error in companion:', error);

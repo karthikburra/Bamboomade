@@ -602,6 +602,82 @@ export function getPlatformFromUrl(url: string): string {
 }
 
 /**
+ * Extract social media handle from a URL
+ * @param url The social media URL
+ * @param platform Platform name (Instagram, Twitter, etc.)
+ * @returns The extracted handle or null if cannot be determined
+ */
+export function getHandleFromUrl(url: string, platform: string): string | null {
+  if (!isValidUrl(url)) {
+    return null;
+  }
+  
+  try {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname;
+    
+    // Instagram - format: instagram.com/username or instagram.com/p/postId
+    if (platform === 'Instagram') {
+      // For post URLs, we need to find the account differently
+      if (pathname.includes('/p/')) {
+        return null; // We'd need to crawl the page to get the author
+      }
+      
+      // Direct profile URLs: instagram.com/username
+      const segments = pathname.split('/').filter(s => s);
+      if (segments.length > 0) {
+        return segments[0]; // First path segment is usually the handle
+      }
+    }
+    
+    // Twitter/X - format: twitter.com/username or twitter.com/username/status/id
+    if (platform === 'Twitter' || platform === 'X (Twitter)') {
+      const segments = pathname.split('/').filter(s => s);
+      if (segments.length > 0) {
+        return segments[0]; // First path segment is the handle
+      }
+    }
+    
+    // Facebook - harder to get consistent handles
+    if (platform === 'Facebook') {
+      // Facebook URLs come in many formats
+      const segments = pathname.split('/').filter(s => s);
+      
+      // facebook.com/username
+      if (segments.length === 1 && !['posts', 'photos', 'videos'].includes(segments[0])) {
+        return segments[0];
+      }
+      
+      // For pages, often the first segment is the handle
+      if (segments.length > 1 && ['pages'].includes(segments[0])) {
+        return segments[1];
+      }
+    }
+    
+    // LinkedIn - format: linkedin.com/in/username
+    if (platform === 'LinkedIn') {
+      const segments = pathname.split('/').filter(s => s);
+      if (segments.length > 1 && segments[0] === 'in') {
+        return segments[1];
+      }
+    }
+    
+    // YouTube - format: youtube.com/c/channelname or youtube.com/channel/id
+    if (platform === 'YouTube') {
+      const segments = pathname.split('/').filter(s => s);
+      if (segments.length > 1 && (segments[0] === 'c' || segments[0] === 'channel' || segments[0] === 'user')) {
+        return segments[1];
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting handle from URL:', error);
+    return null;
+  }
+}
+
+/**
  * Detect if content is likely a document that should be processed differently
  */
 export function detectContentType(content: string): 'url' | 'document' | 'event' | 'article' | 'social-media' | 'video' {
