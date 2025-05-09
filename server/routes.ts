@@ -11,6 +11,8 @@ import {
   generateGoogleCalendarLink,
   sendVerificationCodeEmail
 } from "./email-service";
+// Web crawler and document analyzer
+import { analyzeWebsite, isValidUrl, detectContentType } from "./web-crawler";
 // Google Sheets integration removed as requested
 import { format, formatInTimeZone } from "date-fns-tz";
 import { addMinutes } from "date-fns";
