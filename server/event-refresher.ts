@@ -437,13 +437,14 @@ export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
   id: number;
   fact: string;
   source: string | null;
+  contentType?: string; // Added content type field
 }>> {
   try {
     // Get all content from the knowledge base
     const allContent = await storage.getAllAiKnowledgeContent();
     
-    // Get content that might contain interesting facts
-    // Look for content with bamboo in the text
+    // Get content that might contain interesting facts about bamboo
+    // Look for content with bamboo in the text, regardless of content type
     const bambooContent = allContent.filter(item => 
       item.status === "active" &&
       item.content &&
@@ -454,11 +455,61 @@ export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
       return [];
     }
     
-    // Shuffle the array to get random content
-    const shuffled = [...bambooContent].sort(() => 0.5 - Math.random());
+    // Group content by type to ensure diversity in facts
+    const contentByType: Record<string, any[]> = {};
     
-    // Take up to 'count' different content pieces, but no more than what's available
-    const selectedContent = shuffled.slice(0, Math.min(count, shuffled.length));
+    bambooContent.forEach(item => {
+      const type = item.contentType || 'unknown';
+      if (!contentByType[type]) {
+        contentByType[type] = [];
+      }
+      contentByType[type].push(item);
+    });
+    
+    // Get list of available content types
+    const availableTypes = Object.keys(contentByType);
+    if (availableTypes.length === 0) {
+      return [];
+    }
+    
+    // Create a diverse collection of content by picking from different types
+    let selectedContent: any[] = [];
+    
+    // First try to get one item from each different content type
+    for (let i = 0; i < Math.min(count, availableTypes.length); i++) {
+      const type = availableTypes[i];
+      if (contentByType[type] && contentByType[type].length > 0) {
+        // Shuffle to get a random item of this type
+        const shuffledTypeContent = [...contentByType[type]].sort(() => 0.5 - Math.random());
+        selectedContent.push(shuffledTypeContent[0]);
+      }
+    }
+    
+    // If we still need more items to meet the requested count
+    if (selectedContent.length < count) {
+      // Create a pool of all remaining content items
+      let remainingContent: any[] = [];
+      availableTypes.forEach(type => {
+        const usedItemIds = selectedContent
+          .filter(item => item.contentType === type)
+          .map(item => item.id);
+        
+        const unusedItems = contentByType[type].filter(item => !usedItemIds.includes(item.id));
+        remainingContent = [...remainingContent, ...unusedItems];
+      });
+      
+      // Shuffle and select remaining items needed
+      const shuffledRemaining = remainingContent.sort(() => 0.5 - Math.random());
+      const additionalItems = shuffledRemaining.slice(0, count - selectedContent.length);
+      selectedContent = [...selectedContent, ...additionalItems];
+    }
+    
+    // If we still don't have enough content, just use whatever we have
+    if (selectedContent.length === 0) {
+      // Fallback to original random selection
+      const shuffled = [...bambooContent].sort(() => 0.5 - Math.random());
+      selectedContent = shuffled.slice(0, Math.min(count, shuffled.length));
+    }
     
     // Get OpenAI instance
     const openai = getOpenAI();
@@ -495,7 +546,8 @@ export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
         return {
           id: content.id,
           fact: extractedFact,
-          source: content.source
+          source: content.source,
+          contentType: content.contentType // Include the content type
         };
       } catch (error) {
         console.error('Error extracting fact:', error);
@@ -511,6 +563,7 @@ export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
       id: number;
       fact: string;
       source: string | null;
+      contentType?: string;
     }>;
   } catch (error) {
     console.error('Error getting multiple bamboo facts:', error);

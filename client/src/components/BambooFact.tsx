@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lightbulb, ExternalLink } from 'lucide-react';
+import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -8,6 +8,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from './ui/button';
+import { Badge } from "./ui/badge";
 import { BambooFact as BambooFactType } from '@/lib/bamboo-ai';
 
 interface BambooFactProps {
@@ -26,38 +27,114 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
     }
   };
   
-  // Function to render a source link for a fact
-  const renderSourceLink = (fact: BambooFactType) => {
-    if (!fact.source) return null;
-    
+  // Get content type icon based on the type
+  const getContentTypeIcon = (contentType?: string) => {
+    switch(contentType) {
+      case 'social':
+        return <Instagram className="h-3 w-3 mr-1" />;
+      case 'youtube':
+        return <Youtube className="h-3 w-3 mr-1" />;
+      case 'webpage':
+        return <Globe className="h-3 w-3 mr-1" />;
+      case 'article':
+        return <FileText className="h-3 w-3 mr-1" />;
+      case 'event':
+        return <Calendar className="h-3 w-3 mr-1" />;
+      case 'training':
+      case 'fact':
+        return <Lightbulb className="h-3 w-3 mr-1" />;
+      default:
+        return <MessageSquare className="h-3 w-3 mr-1" />;
+    }
+  };
+  
+  // Get content type label based on the type
+  const getContentTypeLabel = (contentType?: string) => {
+    switch(contentType) {
+      case 'social':
+        return 'Social Media';
+      case 'youtube':
+        return 'YouTube';
+      case 'webpage':
+        return 'Website';
+      case 'article':
+        return 'Article';
+      case 'event':
+        return 'Event';
+      case 'training':
+        return 'Training';
+      case 'fact':
+        return 'Fact';
+      default:
+        return contentType || 'Unknown';
+    }
+  };
+  
+  // Get content type color based on the type
+  const getContentTypeColor = (contentType?: string) => {
+    switch(contentType) {
+      case 'social':
+        return 'bg-pink-900 text-pink-400 border-pink-800';
+      case 'youtube':
+        return 'bg-red-900 text-red-400 border-red-800';
+      case 'webpage':
+        return 'bg-blue-900 text-blue-400 border-blue-800';
+      case 'article':
+        return 'bg-purple-900 text-purple-400 border-purple-800';
+      case 'event':
+        return 'bg-amber-900 text-amber-400 border-amber-800';
+      case 'training':
+        return 'bg-cyan-900 text-cyan-400 border-cyan-800';
+      case 'fact':
+        return 'bg-green-900 text-green-400 border-green-800';
+      default:
+        return 'bg-gray-800 text-gray-400 border-gray-700';
+    }
+  };
+  
+  // Function to render source and content type information
+  const renderSourceInfo = (fact: BambooFactType) => {
     return (
-      <div className="mt-1 text-xs text-zinc-500">
-        Source:{' '}
-        <a 
-          href={fact.source.startsWith('http') ? fact.source : '#'} 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-green-500 hover:text-green-400 inline-flex items-center"
-          onClick={(e) => {
-            if (!fact.source?.startsWith('http')) {
-              e.preventDefault();
-              handleFactClick(fact);
-            }
-            
-            // Track click in Google Analytics
-            if (typeof window !== 'undefined' && (window as any).gtag && fact.source && fact.source.startsWith('http')) {
-              (window as any).gtag('event', 'citation_click', {
-                'event_category': 'AI_Chat',
-                'event_label': fact.source
-              });
-            }
-          }}
-        >
-          {fact.source && fact.source.startsWith('http') 
-            ? new URL(fact.source).hostname.replace('www.', '') 
-            : fact.source || 'Source'}
-          {fact.source && fact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
-        </a>
+      <div className="mt-1 text-xs flex flex-wrap items-center gap-2">
+        {/* Content Type Badge */}
+        {fact.contentType && (
+          <Badge variant="outline" className={`inline-flex items-center py-0 h-5 ${getContentTypeColor(fact.contentType)}`}>
+            {getContentTypeIcon(fact.contentType)}
+            {getContentTypeLabel(fact.contentType)}
+          </Badge>
+        )}
+        
+        {/* Source Link */}
+        {fact.source && (
+          <div className="text-zinc-500">
+            Source:{' '}
+            <a 
+              href={fact.source.startsWith('http') ? fact.source : '#'} 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-500 hover:text-green-400 inline-flex items-center"
+              onClick={(e) => {
+                if (!fact.source?.startsWith('http')) {
+                  e.preventDefault();
+                  handleFactClick(fact);
+                }
+                
+                // Track click in Google Analytics
+                if (typeof window !== 'undefined' && (window as any).gtag && fact.source && fact.source.startsWith('http')) {
+                  (window as any).gtag('event', 'citation_click', {
+                    'event_category': 'AI_Chat',
+                    'event_label': fact.source
+                  });
+                }
+              }}
+            >
+              {fact.source && fact.source.startsWith('http') 
+                ? new URL(fact.source).hostname.replace('www.', '') 
+                : fact.source || 'Source'}
+              {fact.source && fact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
+            </a>
+          </div>
+        )}
       </div>
     );
   };
@@ -102,7 +179,7 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
             {fact.fact}
           </div>
           
-          {renderSourceLink(fact)}
+          {renderSourceInfo(fact)}
           
           <Button
             variant="outline"
@@ -145,7 +222,7 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
                   ? `${fact.fact.substring(0, 100)}...` 
                   : fact.fact}
               </div>
-              {renderSourceLink(fact)}
+              {renderSourceInfo(fact)}
             </div>
           ))}
         </div>

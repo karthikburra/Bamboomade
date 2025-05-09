@@ -133,12 +133,13 @@ export async function fetchAllSessions(): Promise<ProjectGuidance[]> {
 }
 
 /**
- * Interface for bamboo fact with citation source
+ * Interface for bamboo fact with citation source and content type
  */
 export interface BambooFact {
   id: number;
   fact: string;
   source: string | null;
+  contentType?: string; // Added to support facts from different content types
 }
 
 /**
