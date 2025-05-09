@@ -40,9 +40,6 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
     }
   }, [upcomingEvents, fetchedEvents]);
 
-  // Use provided upcomingEvents or the fetched ones
-  const eventsToDisplay = upcomingEvents.length > 0 ? upcomingEvents : fetchedEvents;
-  
   // Extract date from event content if available
   const extractDate = (content: string): string | null => {
     // Check for common date patterns in the content
@@ -61,6 +58,47 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
 
     return null;
   };
+  
+  // Filter events to only include actual events (not Medium articles or other content types)
+  const filterActualEvents = (events: Event[]) => {
+    return events.filter(event => {
+      // Check if it's explicitly an event content type
+      if (event.contentType === 'event') {
+        return true;
+      }
+      
+      // Check if title explicitly mentions it's an event
+      if (event.title.toLowerCase().includes('workshop') || 
+          event.title.toLowerCase().includes('event') ||
+          event.title.toLowerCase().includes('course') ||
+          event.title.toLowerCase().includes('webinar') ||
+          event.title.toLowerCase().includes('session')) {
+        return true;
+      }
+      
+      // If title contains "Medium" or similar publication names, it's not an event
+      if (event.title.includes('Medium') || 
+          event.title.includes('Blog') ||
+          event.title.includes('Article')) {
+        return false;
+      }
+      
+      // Check content for event indicators
+      const eventKeywords = ['register', 'rsvp', 'join us', 'workshop', 'webinar', 'session', 'training'];
+      for (const keyword of eventKeywords) {
+        if (event.content.toLowerCase().includes(keyword)) {
+          return true;
+        }
+      }
+      
+      // Check if content has date-like patterns (indicating an event)
+      const hasDate = extractDate(event.content) !== null;
+      return hasDate;
+    });
+  };
+  
+  // Use provided upcomingEvents or the fetched ones, but filter to actual events only
+  const eventsToDisplay = filterActualEvents(upcomingEvents.length > 0 ? upcomingEvents : fetchedEvents);
 
   // Extract location from event content if available
   const extractLocation = (content: string): string | null => {
