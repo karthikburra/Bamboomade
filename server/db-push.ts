@@ -29,7 +29,8 @@ async function main() {
       schema.chatMessages,
       schema.aiTrainingData,
       schema.tokenPurchases,
-      schema.availableTimeSlots
+      schema.availableTimeSlots,
+      schema.aiKnowledgeContent // Make sure to include the AI Knowledge Content table
     ];
     
     for (const table of tables) {
