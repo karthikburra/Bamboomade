@@ -3372,6 +3372,132 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
 
+  // Knowledge Companion Chat
+  app.post('/api/ai-knowledge/companion-chat', isAdmin, async (req, res) => {
+    const { message, history } = req.body;
+    
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    try {
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI service not available' });
+      }
+      
+      // Convert message history to OpenAI format if provided
+      const chatHistory = history && Array.isArray(history) 
+        ? history.map(msg => ({ role: msg.role, content: msg.content }))
+        : [];
+      
+      // First, analyze if this content should be added to the knowledge base
+      const analysis = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system", 
+            content: `You're an AI assistant for a bamboo architecture educational platform that manages a knowledge base. 
+            Your job is to determine if the user's message contains information worth adding to the knowledge base.
+            This could be facts about bamboo, event details, technical information, or other educational content.
+            If it should be added, categorize it and structure it appropriately.`
+          },
+          ...chatHistory,
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+      
+      const analysisResult = JSON.parse(analysis.choices[0].message.content);
+      
+      // Now prepare the response
+      let shouldAddToKnowledge = true; // Always add to knowledge base
+      let suggestion = null;
+      let response = "";
+      
+      // Determine content details
+      const formatResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system", 
+            content: `You're an AI knowledge assistant. Format the following content for a knowledge base about bamboo architecture.
+            Create a structured entry with appropriate title, content type (document, event, or webpage), and well-formatted content.`
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+      
+      const formattedResult = JSON.parse(formatResponse.choices[0].message.content);
+      
+      suggestion = {
+        title: formattedResult.title || "Untitled Content",
+        contentType: formattedResult.contentType?.toLowerCase() || "document",
+        content: formattedResult.content || message,
+        source: formattedResult.source || null
+      };
+      
+      response = `I've added "${formattedResult.title}" to the knowledge base. This information about ${formattedResult.contentType === 'event' ? 'the upcoming event' : 'bamboo'} will be available for future reference. Is there anything else you'd like to add?`;
+      
+      return res.json({
+        response,
+        shouldAddToKnowledge,
+        suggestion
+      });
+      
+    } catch (error: any) {
+      console.error('Knowledge companion chat error:', error);
+      return res.status(500).json({ error: `Failed to process message: ${error.message}` });
+    }
+  });
+  
+  // Refresh Website Content
+  app.post('/api/ai-knowledge/refresh-website', isAdmin, async (req, res) => {
+    const { id, url } = req.body;
+    
+    if (!id || !url) {
+      return res.status(400).json({ error: 'Both id and url are required' });
+    }
+    
+    try {
+      // First check if the content exists
+      const existingContent = await storage.getAiKnowledgeContentById(id);
+      
+      if (!existingContent) {
+        return res.status(404).json({ error: 'Content not found' });
+      }
+      
+      // Extract fresh content from website
+      const extractedData = await analyzeWebsite(url);
+      
+      // Update the content in the database
+      const updatedContent = await storage.updateAiKnowledgeContent(id, {
+        title: extractedData.title,
+        content: extractedData.content,
+        contentType: 'webpage',
+        source: url,
+        status: existingContent.status
+      });
+      
+      return res.json({
+        success: true,
+        message: 'Website content refreshed successfully',
+        content: updatedContent
+      });
+      
+    } catch (error: any) {
+      console.error('Refresh website error:', error);
+      return res.status(500).json({ error: `Failed to refresh website content: ${error.message}` });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
