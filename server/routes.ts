@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import OpenAI from "openai";
-import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact } from "./event-refresher";
+import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts } from "./event-refresher";
 // PhonePe service removed
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
 import { 

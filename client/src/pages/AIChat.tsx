@@ -104,7 +104,8 @@ const AIChat: React.FC = () => {
               {/* Bamboo Facts Card */}
               <div>
                 <BambooFact 
-                  factData={dashboardData?.fact || null} 
+                  factData={dashboardData?.fact || null}
+                  factsData={dashboardData?.facts || []}
                   onFactClick={handleTopicClick}
                 />
               </div>

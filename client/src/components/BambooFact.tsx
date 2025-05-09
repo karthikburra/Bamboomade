@@ -96,7 +96,7 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
                 }
                 
                 // Track click in Google Analytics
-                if (typeof window !== 'undefined' && (window as any).gtag && currentFact.source.startsWith('http')) {
+                if (typeof window !== 'undefined' && (window as any).gtag && currentFact.source && currentFact.source.startsWith('http')) {
                   (window as any).gtag('event', 'citation_click', {
                     'event_category': 'AI_Chat',
                     'event_label': currentFact.source
@@ -104,10 +104,10 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
                 }
               }}
             >
-              {currentFact.source.startsWith('http') 
+              {currentFact.source && currentFact.source.startsWith('http') 
                 ? new URL(currentFact.source).hostname.replace('www.', '') 
-                : currentFact.source}
-              {currentFact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
+                : currentFact.source || 'Source'}
+              {currentFact.source && currentFact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
             </a>
           </div>
         )}
