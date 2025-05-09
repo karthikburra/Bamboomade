@@ -37,6 +37,12 @@ interface WebsiteExtractionResult {
   title: string;
   contentType: string;
   mainContent: string;
+  // Author information for articles
+  author?: string;
+  publishedDate?: string;
+  // Video information
+  videoDescription?: string;
+  // Company information
   companyInfo?: {
     name: string;
     mission?: string;
@@ -509,6 +515,90 @@ export function isValidUrl(text: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * Determine the content type of a URL
+ * @param url The URL to analyze
+ * @returns The detected content type
+ */
+export function detectContentTypeFromUrl(url: string): string {
+  if (!isValidUrl(url)) {
+    return 'unknown';
+  }
+  
+  const parsedUrl = new URL(url);
+  const hostname = parsedUrl.hostname.toLowerCase();
+  const path = parsedUrl.pathname.toLowerCase();
+  
+  // Check for common article platforms
+  if (
+    hostname.includes('medium.com') || 
+    hostname.includes('wordpress.com') ||
+    hostname.includes('blogger.com') ||
+    path.includes('/blog/') ||
+    path.includes('/article/') ||
+    path.includes('/post/') ||
+    path.includes('/news/')
+  ) {
+    return 'article';
+  }
+  
+  // Check for social media platforms
+  if (
+    hostname.includes('instagram.com') ||
+    hostname.includes('facebook.com') ||
+    hostname.includes('twitter.com') ||
+    hostname.includes('linkedin.com') ||
+    hostname.includes('x.com')
+  ) {
+    return 'social-media';
+  }
+  
+  // Check for video platforms
+  if (
+    hostname.includes('youtube.com') ||
+    hostname.includes('youtu.be') ||
+    hostname.includes('vimeo.com')
+  ) {
+    return 'video';
+  }
+  
+  // Check for document links
+  if (path.endsWith('.pdf') || path.endsWith('.doc') || path.endsWith('.docx')) {
+    return 'document';
+  }
+  
+  // Default to general webpage
+  return 'webpage';
+}
+
+/**
+ * Get the platform name from a URL
+ * @param url The URL to analyze
+ * @returns The platform name
+ */
+export function getPlatformFromUrl(url: string): string {
+  if (!isValidUrl(url)) {
+    return 'Unknown';
+  }
+  
+  const parsedUrl = new URL(url);
+  const hostname = parsedUrl.hostname.toLowerCase();
+  
+  if (hostname.includes('instagram.com')) return 'Instagram';
+  if (hostname.includes('facebook.com')) return 'Facebook';
+  if (hostname.includes('twitter.com')) return 'Twitter';
+  if (hostname.includes('x.com')) return 'X (Twitter)';
+  if (hostname.includes('linkedin.com')) return 'LinkedIn';
+  if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return 'YouTube';
+  if (hostname.includes('vimeo.com')) return 'Vimeo';
+  if (hostname.includes('medium.com')) return 'Medium';
+  if (hostname.includes('wordpress.com')) return 'WordPress';
+  if (hostname.includes('blogger.com')) return 'Blogger';
+  
+  // Return the domain name if no specific platform is recognized
+  return hostname.replace('www.', '');
 }
 
 /**

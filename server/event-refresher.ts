@@ -229,7 +229,8 @@ export async function getLatestEventsSummary(): Promise<string | null> {
 }
 
 /**
- * Get recent updates from the knowledge base (last 15-30 days)
+ * Get recent updates from the knowledge base (last 30 days)
+ * Rotates articles daily - showing max 3 different articles each day
  * @returns Array of recent updates with their content and source citations
  */
 export async function getRecentUpdates(): Promise<Array<{
@@ -247,34 +248,68 @@ export async function getRecentUpdates(): Promise<Array<{
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    // Filter for recent articles from external sources (websites, Medium, etc.)
-    const recentContent = allContent.filter(item => 
+    // Filter for articles ONLY from external websites/sources
+    const externalArticles = allContent.filter(item => 
       new Date(item.createdAt) >= thirtyDaysAgo &&
       item.status === "active" &&
       item.contentType !== "events_summary" && // Skip the summary, as we'll show it separately
       (
-        // Include only content that comes from external websites
-        (item.source && (
-          item.source.startsWith('http') || 
-          item.source.includes('medium.com') ||
-          item.source.includes('wordpress') ||
-          item.source.includes('blogger') ||
-          item.source.includes('substack')
-        )) ||
-        // Or has a specific content type for articles
-        item.contentType === 'article' || 
-        item.contentType === 'blog_post' ||
-        item.contentType === 'webpage'
+        // Must be from external websites with http source
+        (item.source && item.source.startsWith('http')) &&
+        (
+          // Must be an article type content
+          item.contentType === 'article' || 
+          item.contentType === 'blog_post' ||
+          // Or from a known article platform
+          (item.source && (
+            item.source.includes('medium.com') ||
+            item.source.includes('wordpress') ||
+            item.source.includes('blogger') ||
+            item.source.includes('substack') ||
+            /\/blog\/|\/article\/|\/post\/|\/news\//.test(item.source)
+          ))
+        )
       )
     );
     
-    // Sort by date (newest first)
-    recentContent.sort((a, b) => 
+    if (externalArticles.length === 0) {
+      return [];
+    }
+    
+    // Implement daily rotation using the current date
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    
+    // Sort all articles by date (newest first)
+    externalArticles.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     
-    // Take the top 5 most recent items
-    return recentContent.slice(0, 5).map(item => ({
+    // If we have more than 3 articles, rotate them based on the day of the year
+    let selectedArticles = externalArticles;
+    if (externalArticles.length > 3) {
+      // Create groups of 3 articles
+      const totalGroups = Math.ceil(externalArticles.length / 3);
+      const groupIndex = dayOfYear % totalGroups;
+      const startIndex = groupIndex * 3;
+      
+      // Get current day's 3 articles, or fewer if we're at the end of the list
+      selectedArticles = externalArticles.slice(startIndex, startIndex + 3);
+      
+      // If we have fewer than 3 articles in this group and we're not at the beginning
+      if (selectedArticles.length < 3 && startIndex > 0) {
+        // Supplement with articles from the beginning to ensure we always have up to 3
+        const extraNeeded = 3 - selectedArticles.length;
+        const extraArticles = externalArticles.slice(0, extraNeeded);
+        selectedArticles = [...selectedArticles, ...extraArticles];
+      }
+    }
+    
+    // Limit to exactly 3 articles maximum
+    selectedArticles = selectedArticles.slice(0, 3);
+    
+    // Format the articles for display
+    return selectedArticles.map(item => ({
       id: item.id,
       title: item.title,
       content: item.content.length > 200 
