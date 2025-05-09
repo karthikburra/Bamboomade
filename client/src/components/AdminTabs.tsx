@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Calendar, Database, Users, HelpCircle } from "lucide-react";
+import { BarChart3, Calendar, Database, Users, HelpCircle, Server, BookOpen, FileText } from "lucide-react";
 
 interface AdminTabsProps {
   value?: string;
@@ -35,6 +35,9 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       case "knowledge":
         navigate("/ai-knowledge-management");
         break;
+      case "database":
+        navigate("/ai-knowledge-database");
+        break;
       case "users":
         navigate("/admin-dashboard?tab=users");
         break;
@@ -65,8 +68,12 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
             Session Management
           </TabsTrigger>
           <TabsTrigger value="knowledge" className="data-[state=active]:bg-blue-600 text-sm whitespace-nowrap">
+            <BookOpen className="w-4 h-4 mr-2" />
+            Add Knowledge
+          </TabsTrigger>
+          <TabsTrigger value="database" className="data-[state=active]:bg-amber-600 text-sm whitespace-nowrap">
             <Database className="w-4 h-4 mr-2" />
-            AI Knowledge Base
+            Knowledge Database
           </TabsTrigger>
           <TabsTrigger value="users" className="data-[state=active]:bg-purple-600 text-sm whitespace-nowrap">
             <Users className="w-4 h-4 mr-2" />

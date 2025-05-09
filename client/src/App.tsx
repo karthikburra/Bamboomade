@@ -19,6 +19,7 @@ import DevAdminLogin from "@/pages/DevAdminLogin";
 import AdminHome from "@/pages/AdminHome";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AIKnowledgeManagement from "@/pages/AIKnowledgeManagement";
+import AIKnowledgeDatabase from "@/pages/AIKnowledgeDatabase";
 import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
