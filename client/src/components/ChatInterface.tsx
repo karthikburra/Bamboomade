@@ -164,14 +164,33 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed }) => {
     setInput("");
     setIsProcessing(true);
     // Removed auto-scrolling completely
+    
+    // Track chat interaction in Google Analytics
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'chat_interaction', {
+        'event_category': 'AI_Chat',
+        'event_label': userMessage.content.substring(0, 50), // First 50 chars of message for categorization
+        'value': newQuestionCount // Track which question number this is
+      });
+    }
 
     try {
-      const { response, tokensUsed, remainingTokens } = await processAiChat(userMessage.content);
+      const { response, tokensUsed, remainingTokens, citations } = await processAiChat(userMessage.content);
+      
+      // Track successful AI response in Google Analytics
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'ai_response_received', {
+          'event_category': 'AI_Chat',
+          'event_label': 'Success',
+          'value': tokensUsed || 0 // Track token usage
+        });
+      }
       
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
         content: response,
+        citations: citations // Store citation information with the message
       };
 
       setMessages((prev) => [...prev, assistantMessage]);

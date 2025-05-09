@@ -1940,7 +1940,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const knowledgeContent = await storage.getActiveAiKnowledgeContent();
       
       // Process the message with OpenAI, including knowledge base content
-      const { response, tokensUsed } = await processMessage(message, trainingData, knowledgeContent);
+      const { response, tokensUsed, citations } = await processMessage(message, trainingData, knowledgeContent);
       
       // Log that we're using the knowledge base
       console.log(`AI chat using ${knowledgeContent.length} knowledge base items`);
@@ -1948,11 +1948,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // No need to check tokens or update user anymore
       // No need to store chat messages either
 
-      // Simply return the response without token tracking
+      // Return the response with citations included for transparency
       res.status(201).json({
         message,
         response,
         tokensUsed,
+        citations, // Include citations to display in the UI
         // No user-specific data
       });
     } catch (error) {
