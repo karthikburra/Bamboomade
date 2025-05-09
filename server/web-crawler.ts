@@ -522,7 +522,13 @@ export function isValidUrl(text: string): boolean {
  * @param url The URL to analyze
  * @returns The detected content type
  */
-export function detectContentTypeFromUrl(url: string): string {
+export /**
+ * Detects content type from URL, using standardized types that match the frontend display categories
+ * 
+ * @param url URL string to analyze
+ * @returns Standardized content type: 'article', 'social', 'video', 'webpage', 'event', 'document'
+ */
+function detectContentTypeFromUrl(url: string): string {
   if (!isValidUrl(url)) {
     return 'unknown';
   }
@@ -531,27 +537,65 @@ export function detectContentTypeFromUrl(url: string): string {
   const hostname = parsedUrl.hostname.toLowerCase();
   const path = parsedUrl.pathname.toLowerCase();
   
-  // More specific article platforms detection with platform-specific types
-  if (hostname.includes('medium.com')) {
-    return 'medium_article';
+  // Check for BambooMade's own website first
+  if (hostname.includes('bamboomade.in')) {
+    // For events on BambooMade's site
+    if (
+      path.includes('/events/') ||
+      path.includes('/workshops/') ||
+      path.includes('/webinar/')
+    ) {
+      return 'event';
+    }
+    // Always categorize BambooMade's own content as webpage
+    return 'webpage';
   }
   
-  if (hostname.includes('substack.com')) {
-    return 'substack_article';
-  }
-  
-  // Other common blog platforms
+  // SOCIAL MEDIA - all social media platforms get classified as 'social'
   if (
+    hostname.includes('instagram.com') ||
+    hostname.includes('facebook.com') ||
+    hostname.includes('twitter.com') ||
+    hostname.includes('x.com') ||
+    hostname.includes('linkedin.com') ||
+    hostname.includes('threads.net') ||
+    hostname.includes('pinterest.com')
+  ) {
+    return 'social';
+  }
+  
+  // VIDEO - all video platforms get classified as 'video'
+  if (
+    hostname.includes('youtube.com') ||
+    hostname.includes('youtu.be') ||
+    hostname.includes('vimeo.com') ||
+    hostname.includes('dailymotion.com') ||
+    hostname.includes('tiktok.com') ||
+    hostname.includes('instagram.com/reels') ||
+    hostname.includes('fb.watch') ||
+    path.includes('/watch/') ||
+    path.includes('/video/')
+  ) {
+    return 'video';
+  }
+  
+  // ARTICLES - all external articles get classified as 'article'
+  // Article platforms
+  if (
+    hostname.includes('medium.com') ||
+    hostname.includes('substack.com') ||
     hostname.includes('wordpress.com') ||
     hostname.includes('blogger.com') ||
     hostname.includes('blogspot.com') ||
     hostname.includes('tumblr.com') ||
-    hostname.includes('wixsite.com/blog')
+    hostname.includes('wixsite.com') ||
+    hostname.includes('wordpress.org') ||
+    hostname.includes('news')
   ) {
-    return 'blog_post';
+    return 'article';
   }
   
-  // Generic article indicators in URL path
+  // Article path indicators
   if (
     path.includes('/blog/') ||
     path.includes('/article/') ||
@@ -563,54 +607,29 @@ export function detectContentTypeFromUrl(url: string): string {
     return 'article';
   }
   
-  // Social media platforms with more specific categorization
-  if (hostname.includes('instagram.com')) {
-    return 'social_media';
-  }
-  
-  if (hostname.includes('facebook.com')) {
-    return 'social_media';
-  }
-  
-  if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
-    return 'social_media';
-  }
-  
-  if (hostname.includes('linkedin.com')) {
-    return 'social_media';
-  }
-  
-  // Video platforms with specific categorization
-  if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
-    return 'youtube_video';
-  }
-  
-  if (hostname.includes('vimeo.com')) {
-    return 'vimeo_video';
-  }
-  
-  // Other video platforms
+  // Architecture and design specific websites - treat as articles
   if (
-    hostname.includes('dailymotion.com') ||
-    hostname.includes('tiktok.com') ||
-    hostname.includes('instagram.com/reels') ||
-    hostname.includes('fb.watch') ||
-    path.includes('/watch/') ||
-    path.includes('/video/')
+    hostname.includes('archdaily.com') ||
+    hostname.includes('dezeen.com') ||
+    hostname.includes('architecturaldigest.com') ||
+    hostname.includes('archidust.com') ||
+    hostname.includes('architecture.com')
   ) {
-    return 'video';
+    return 'article';
   }
   
   // Document links
-  if (path.endsWith('.pdf')) {
-    return 'pdf_document';
+  if (
+    path.endsWith('.pdf') ||
+    path.endsWith('.doc') ||
+    path.endsWith('.docx') ||
+    path.endsWith('.ppt') ||
+    path.endsWith('.pptx')
+  ) {
+    return 'document';
   }
   
-  if (path.endsWith('.doc') || path.endsWith('.docx')) {
-    return 'word_document';
-  }
-  
-  // Check for event-specific websites
+  // EVENT - websites related to events
   if (
     hostname.includes('eventbrite.com') ||
     hostname.includes('meetup.com') ||
@@ -623,8 +642,9 @@ export function detectContentTypeFromUrl(url: string): string {
     return 'event';
   }
   
-  // Default to general webpage
-  return 'webpage';
+  // Default external websites as articles for better organization
+  // This ensures all external websites are treated as articles by default
+  return 'article';
 }
 
 /**
@@ -733,42 +753,51 @@ export function getHandleFromUrl(url: string, platform: string): string | null {
 
 /**
  * Detect if content is likely a document that should be processed differently
+ * Returns a standardized content type that matches the frontend display categories
  */
-export function detectContentType(content: string): 'url' | 'document' | 'event' | 'article' | 'social-media' | 'video' | 'medium_article' | 'substack_article' | 'blog_post' {
+export function detectContentType(content: string): 'url' | 'document' | 'event' | 'article' | 'social-media' | 'video' | 'webpage' {
   // Check if it's a URL
   if (isValidUrl(content.trim())) {
     const url = content.trim();
     // Use our enhanced detection for URLs
     const specificType = detectContentTypeFromUrl(url);
     
-    // Map specific types to our return types
-    if (specificType === 'medium_article' || specificType === 'substack_article' || specificType === 'blog_post') {
-      return specificType as any; // We're extending the return type here
+    // Map to standardized content types that match frontend display categories
+    switch (specificType) {
+      case 'article':
+      case 'medium_article':
+      case 'substack_article':
+      case 'blog_post':
+        return 'article';
+        
+      case 'social':
+        return 'social-media';
+        
+      case 'video':
+      case 'youtube_video':
+      case 'vimeo_video':
+        return 'video';
+        
+      case 'event':
+        return 'event';
+        
+      case 'document':
+      case 'pdf_document':
+      case 'word_document':
+        return 'document';
+        
+      case 'webpage':
+        // Only bamboomade.in content should be classified as webpage
+        if (url.includes('bamboomade.in')) {
+          return 'webpage';
+        }
+        // Default external websites as articles
+        return 'article';
+        
+      default:
+        // Unknown type defaults to article for better organization
+        return 'article';
     }
-    
-    if (specificType.includes('article') || specificType === 'blog_post') {
-      return 'article';
-    }
-    
-    if (specificType.includes('social_media') || specificType.includes('instagram') || 
-        specificType.includes('facebook') || specificType.includes('twitter')) {
-      return 'social-media';
-    }
-    
-    if (specificType.includes('video') || specificType.includes('youtube') || 
-        specificType.includes('vimeo')) {
-      return 'video';
-    }
-    
-    if (specificType.includes('event')) {
-      return 'event';
-    }
-    
-    if (specificType.includes('document')) {
-      return 'document';
-    }
-    
-    return 'url';
   }
   
   // Check for article indicators with enhanced keywords

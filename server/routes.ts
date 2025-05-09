@@ -3896,16 +3896,25 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             content: `You're a friendly, conversational AI knowledge assistant for a bamboo architecture platform. Format the following content for the knowledge base.
             Create a structured entry with:
             1. A clear, descriptive title (friendly and conversational)
-            2. Appropriate content type from these options:
-               - 'document' (for general facts/information)
-               - 'event' (for workshops, exhibitions, etc.)
-               - 'webpage' (for general website content)
-               - 'article' (specifically for content from external websites, blogs, Medium, etc.)
-               - 'blog_post' (for longer-form external content like blog posts)
+            2. Appropriate content type selected EXACTLY from these specific categories:
+               - 'document' (for general facts/information from the user)
+               - 'event' (ONLY for workshops, exhibitions, specific events with dates/times)
+               - 'webpage' (ONLY for content from BambooMade's own website)
+               - 'article' (ONLY for external articles, blogs, Medium posts, news sites)
+               - 'social' (ONLY for content from social media platforms - Instagram, Facebook, Twitter, LinkedIn, etc.)
+               - 'video' (ONLY for content from YouTube or other video platforms)
             3. Well-formatted content with proper sections, bullet points where appropriate
             4. Extract any source references or links
             
-            IMPORTANT: Use 'article' or 'blog_post' content types for any content from external websites, Medium, blogs, or other publications. This helps our system display them properly in the "Recent Articles & Resources" section.
+            IMPORTANT CATEGORIZATION RULES:
+            - Always use 'social' for ANY content from social media platforms (Instagram, Facebook, Twitter, LinkedIn)
+            - Always use 'article' for ANY content from external websites, Medium, blogs, or other publications
+            - Always use 'video' for ANY content from YouTube or other video hosting sites
+            - Always use 'webpage' ONLY for content from bamboomade.in website
+            - Use 'document' for user-provided information that doesn't fall into other categories
+            - Use 'event' ONLY for specific events with dates/locations
+            
+            This strict categorization is critical for our system to display content in the correct sections.
             
             Return as a JSON object with fields: title, contentType, content, source (if available)`
           },
