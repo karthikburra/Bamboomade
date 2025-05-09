@@ -117,6 +117,7 @@ const AIChat: React.FC = () => {
                 <div>
                   <BambooEvents 
                     events={dashboardData?.events || null} 
+                    upcomingEvents={dashboardData?.upcomingEvents || []}
                     onEventClick={handleTopicClick}
                   />
                 </div>

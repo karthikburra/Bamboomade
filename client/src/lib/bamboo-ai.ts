@@ -153,10 +153,28 @@ export interface RecentUpdate {
 }
 
 /**
+ * Interface for upcoming event data
+ */
+export interface UpcomingEvent {
+  id: number;
+  title: string;
+  content: string;
+  source: string | null;
+  contentType: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: number;
+  mediaUrl?: string | null;
+  mediaType?: string | null;
+}
+
+/**
  * Interface for dashboard data containing events, recent updates, and bamboo facts
  */
 export interface DashboardData {
   events: string | null;
+  upcomingEvents: UpcomingEvent[];
   updates: RecentUpdate[];
   fact: BambooFact | null; // Keep for backward compatibility
   facts: BambooFact[]; // New array of facts
@@ -189,6 +207,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     // Return empty data as fallback
     return {
       events: null,
+      upcomingEvents: [],
       updates: [],
       fact: null,
       facts: []
