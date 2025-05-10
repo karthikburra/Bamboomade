@@ -2040,30 +2040,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         eventsToSave = `# Upcoming Bamboo Architecture Events\n\n${formattedEvents}\n\n*Last updated: ${new Date(date).toLocaleDateString('en-IN')}*`;
       }
       
-      // Create snapshot with proper type structure
+      // Create snapshot with proper type structure matching the expected types
       const snapshotData = {
         date,
         eventsSummary: eventsToSave,
-        upcomingEvents: upcomingEvents.map(event => ({
-          id: event.id,
-          title: event.title,
-          content: event.content,
-          source: event.source,
-          contentType: event.contentType,
-          mediaUrl: event.mediaUrl
-        })),
-        recentUpdates: recentUpdates.map(update => ({
-          id: update.id,
-          title: update.title,
-          content: update.content,
-          source: update.source
-        })),
-        facts: facts.map(fact => ({
-          id: fact.id,
-          fact: fact.fact || fact.content,
-          source: fact.source,
-          contentType: fact.contentType
-        }))
+        // Just store the IDs of upcomingEvents and use stringify/parse to avoid type issues
+        upcomingEventsData: JSON.stringify(upcomingEvents),
+        // Just store the IDs of recentUpdates and use stringify/parse to avoid type issues
+        recentUpdatesData: JSON.stringify(recentUpdates),
+        // Just store the IDs of facts and use stringify/parse to avoid type issues
+        factsData: JSON.stringify(facts)
       };
       
       // Save snapshot
@@ -2094,7 +2080,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "No snapshot found for the specified date" });
       }
       
-      res.json(snapshot);
+      // Parse the JSON strings
+      const enhancedSnapshot = {
+        ...snapshot,
+        upcomingEvents: snapshot.upcomingEventsData ? JSON.parse(snapshot.upcomingEventsData) : [],
+        recentUpdates: snapshot.recentUpdatesData ? JSON.parse(snapshot.recentUpdatesData) : [],
+        facts: snapshot.factsData ? JSON.parse(snapshot.factsData) : []
+      };
+      
+      res.json(enhancedSnapshot);
     } catch (error) {
       console.error("Error retrieving dashboard snapshot:", error);
       res.status(500).json({ message: "Failed to retrieve dashboard snapshot" });
