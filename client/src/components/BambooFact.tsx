@@ -19,7 +19,9 @@ interface BambooFactProps {
 
 const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFactClick }) => {
   // Use factsData if available, otherwise use the single factData as a legacy option
-  const facts = factsData && factsData.length > 0 ? factsData : (factData ? [factData] : []);
+  // Filter out any facts with contentType of "book"
+  const facts = (factsData && factsData.length > 0 ? factsData : (factData ? [factData] : []))
+    .filter(fact => fact.contentType !== 'book');
   
   const handleFactClick = (fact: BambooFactType | null) => {
     if (onFactClick && fact) {
