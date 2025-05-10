@@ -403,6 +403,8 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
         {eventsToDisplay.length === 0 && events && (
           <div className="prose prose-sm prose-invert max-w-none prose-headings:text-zinc-200 prose-a:text-green-400">
             <ReactMarkdown components={{
+              // Remove the "Upcoming Bamboo Architectural event" header by filtering it out
+              h1: () => null, // Skip the h1 heading completely
               a: ({ node, ...props }) => (
                 <a
                   {...props}
