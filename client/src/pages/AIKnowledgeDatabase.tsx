@@ -834,16 +834,92 @@ export default function AIKnowledgeDatabase() {
                 </div>
               </div>
               
-              {/* Media URL field */}
+              {/* Media field - URL or Upload */}
               <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
-                <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Profile Photo URL</label>
+                <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Profile Photo</label>
                 <div className="col-span-1 sm:col-span-3">
-                  <Input 
-                    value={selectedContent.mediaUrl || ""}
-                    onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
-                    className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">URL to person's profile photo or headshot</p>
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-400">URL:</span>
+                      <Input 
+                        value={selectedContent.mediaUrl || ""}
+                        onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
+                        className="flex-1 bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <span className="text-sm text-gray-400 mr-2">Or upload:</span>
+                      <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-2 rounded-md border border-zinc-700 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                // Create a FormData object to send the file
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                
+                                // Make request to upload endpoint
+                                const uploadResponse = await fetch('/api/upload', {
+                                  method: 'POST',
+                                  body: formData,
+                                });
+                                
+                                if (!uploadResponse.ok) {
+                                  throw new Error('Failed to upload image');
+                                }
+                                
+                                const data = await uploadResponse.json();
+                                
+                                // Update the mediaUrl with the path to the uploaded file
+                                setSelectedContent({
+                                  ...selectedContent, 
+                                  mediaUrl: data.filePath
+                                });
+                                
+                                toast({
+                                  title: "Image uploaded",
+                                  description: "The image has been successfully uploaded.",
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Upload failed",
+                                  description: "Failed to upload the image. Please try again.",
+                                  variant: "destructive",
+                                });
+                              }
+                            }
+                          }}
+                        />
+                        <span className="flex items-center">
+                          <UploadCloud className="h-4 w-4 mr-2" />
+                          Choose File
+                        </span>
+                      </label>
+                    </div>
+                    
+                    {selectedContent.mediaUrl && (
+                      <div className="mt-2">
+                        <div className="relative w-24 h-24 overflow-hidden rounded-md border border-gray-700">
+                          <img 
+                            src={selectedContent.mediaUrl.startsWith('http') ? selectedContent.mediaUrl : selectedContent.mediaUrl} 
+                            alt="Preview" 
+                            className="object-cover w-full h-full"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://via.placeholder.com/150?text=No+Image';
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    <p className="text-xs text-gray-500">Provide a URL or upload a profile photo/headshot</p>
+                  </div>
                 </div>
               </div>
               

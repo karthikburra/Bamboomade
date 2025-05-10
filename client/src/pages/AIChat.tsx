@@ -202,12 +202,20 @@ const AIChat: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Second Row - Recent Articles */}
-                    <div className="mb-6 sm:mb-8">
-                      <RecentArticles 
-                        articles={dashboardData?.updates || []} 
-                        onArticleClick={handleTopicClick}
-                      />
+                    {/* Second Row - Today's Enthusiast and Recent Articles */}
+                    <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8 md:grid-cols-2">
+                      {/* Today's Bamboo Enthusiast */}
+                      <div>
+                        <TodaysEnthusiast />
+                      </div>
+                      
+                      {/* Recent Articles */}
+                      <div>
+                        <RecentArticles 
+                          articles={dashboardData?.updates || []} 
+                          onArticleClick={handleTopicClick}
+                        />
+                      </div>
                     </div>
 
                     {/* Third Row - Social Media Carousel */}
