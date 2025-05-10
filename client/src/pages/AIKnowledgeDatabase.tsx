@@ -103,6 +103,8 @@ export default function AIKnowledgeDatabase() {
         return "Web Page";
       case "article":
         return "Article";
+      case "book":
+        return "Book";
       case "social":
         return "Social Media";
       case "fact":
@@ -128,6 +130,8 @@ export default function AIKnowledgeDatabase() {
         return "bg-blue-600";
       case "article":
         return "bg-purple-600";
+      case "book":
+        return "bg-orange-600";
       case "social":
         return "bg-pink-600";
       case "fact":
@@ -314,6 +318,7 @@ export default function AIKnowledgeDatabase() {
                       <SelectItem value="all" className="hover:bg-zinc-800 focus:bg-zinc-800 text-gray-300">All Types</SelectItem>
                       <SelectItem value="webpage" className="hover:bg-zinc-800 focus:bg-zinc-800 text-blue-400">Web Pages</SelectItem>
                       <SelectItem value="article" className="hover:bg-zinc-800 focus:bg-zinc-800 text-purple-400">Articles</SelectItem>
+                      <SelectItem value="book" className="hover:bg-zinc-800 focus:bg-zinc-800 text-orange-400">Books</SelectItem>
                       <SelectItem value="social" className="hover:bg-zinc-800 focus:bg-zinc-800 text-pink-400">Social Media</SelectItem>
                       <SelectItem value="fact" className="hover:bg-zinc-800 focus:bg-zinc-800 text-green-400">Bamboo Facts</SelectItem>
                       <SelectItem value="event" className="hover:bg-zinc-800 focus:bg-zinc-800 text-amber-400">Events</SelectItem>
@@ -897,6 +902,7 @@ export default function AIKnowledgeDatabase() {
                     <SelectContent className="bg-zinc-900 border-zinc-700 text-zinc-200">
                       <SelectItem value="webpage" className="hover:bg-zinc-800 text-blue-300 focus:bg-zinc-800 focus:text-blue-300">Web Page</SelectItem>
                       <SelectItem value="article" className="hover:bg-zinc-800 text-purple-300 focus:bg-zinc-800 focus:text-purple-300">Article</SelectItem>
+                      <SelectItem value="book" className="hover:bg-zinc-800 text-orange-300 focus:bg-zinc-800 focus:text-orange-300">Book</SelectItem>
                       <SelectItem value="social" className="hover:bg-zinc-800 text-pink-300 focus:bg-zinc-800 focus:text-pink-300">Social Media</SelectItem>
                       <SelectItem value="fact" className="hover:bg-zinc-800 text-green-300 focus:bg-zinc-800 focus:text-green-300">Bamboo Fact</SelectItem>
                       <SelectItem value="event" className="hover:bg-zinc-800 text-amber-300 focus:bg-zinc-800 focus:text-amber-300">Event</SelectItem>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare } from 'lucide-react';
+import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -59,6 +59,8 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
         return 'Website';
       case 'article':
         return 'Article';
+      case 'book':
+        return 'Book';
       case 'event':
         return 'Event';
       case 'training':
@@ -81,6 +83,8 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
         return 'bg-blue-900 text-blue-400 border-blue-800';
       case 'article':
         return 'bg-purple-900 text-purple-400 border-purple-800';
+      case 'book':
+        return 'bg-orange-900 text-orange-400 border-orange-800';
       case 'event':
         return 'bg-amber-900 text-amber-400 border-amber-800';
       case 'training':
