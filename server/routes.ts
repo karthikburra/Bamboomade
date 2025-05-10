@@ -2009,6 +2009,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Save Dashboard Snapshot - captures the current dashboard state for a specific date
+  app.post("/api/dashboard-snapshots", isAdmin, async (req, res) => {
+    try {
+      const { date } = req.body;
+      
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD." });
+      }
+      
+      // Get current dashboard data for the specified date
+      const [eventsSummary, upcomingEvents, recentUpdates, facts] = await Promise.all([
+        getLatestEventsSummary(new Date(date)),
+        getUpcomingEvents(new Date(date)),
+        getRecentUpdates(new Date(date)),
+        getMultipleBambooFacts(3, new Date(date))
+      ]);
+      
+      // Format events summary if needed
+      let eventsToSave = eventsSummary;
+      if (!eventsSummary && upcomingEvents.length > 0) {
+        const formattedEvents = upcomingEvents.map(event => {
+          const briefDescription = event.content.length > 100
+            ? event.content.substring(0, 100) + '...'
+            : event.content;
+          
+          return `- **${event.title}**\n  ${briefDescription}`;
+        }).join('\n\n');
+        
+        eventsToSave = `# Upcoming Bamboo Architecture Events\n\n${formattedEvents}\n\n*Last updated: ${new Date(date).toLocaleDateString('en-IN')}*`;
+      }
+      
+      // Create snapshot with proper type structure
+      const snapshotData = {
+        date,
+        eventsSummary: eventsToSave,
+        upcomingEvents: upcomingEvents.map(event => ({
+          id: event.id,
+          title: event.title,
+          content: event.content,
+          source: event.source,
+          contentType: event.contentType,
+          mediaUrl: event.mediaUrl
+        })),
+        recentUpdates: recentUpdates.map(update => ({
+          id: update.id,
+          title: update.title,
+          content: update.content,
+          source: update.source
+        })),
+        facts: facts.map(fact => ({
+          id: fact.id,
+          fact: fact.fact || fact.content,
+          source: fact.source,
+          contentType: fact.contentType
+        }))
+      };
+      
+      // Save snapshot
+      const savedSnapshot = await storage.saveDashboardSnapshot(snapshotData);
+      
+      res.status(201).json({
+        message: "Dashboard snapshot saved successfully",
+        snapshot: savedSnapshot
+      });
+    } catch (error) {
+      console.error("Error saving dashboard snapshot:", error);
+      res.status(500).json({ message: "Failed to save dashboard snapshot" });
+    }
+  });
+  
+  // Get Dashboard Snapshot for a specific date
+  app.get("/api/dashboard-snapshots/:date", async (req, res) => {
+    try {
+      const dateParam = req.params.date;
+      
+      if (!dateParam || !/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+        return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD." });
+      }
+      
+      const snapshot = await storage.getDashboardSnapshotByDate(dateParam);
+      
+      if (!snapshot) {
+        return res.status(404).json({ message: "No snapshot found for the specified date" });
+      }
+      
+      res.json(snapshot);
+    } catch (error) {
+      console.error("Error retrieving dashboard snapshot:", error);
+      res.status(500).json({ message: "Failed to retrieve dashboard snapshot" });
+    }
+  });
+  
+  // Get all Dashboard Snapshots (with pagination)
+  app.get("/api/dashboard-snapshots", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const page = parseInt(req.query.page as string) || 1;
+      const offset = (page - 1) * limit;
+      
+      const snapshots = await storage.getAllDashboardSnapshots();
+      
+      // Apply pagination manually
+      const paginatedSnapshots = snapshots.slice(offset, offset + limit);
+      const totalCount = snapshots.length;
+      
+      res.json({
+        snapshots: paginatedSnapshots,
+        pagination: {
+          total: totalCount,
+          page,
+          limit,
+          pages: Math.ceil(totalCount / limit)
+        }
+      });
+    } catch (error) {
+      console.error("Error retrieving dashboard snapshots:", error);
+      res.status(500).json({ message: "Failed to retrieve dashboard snapshots" });
+    }
+  });
+  
   // Get recent updates from the knowledge base (last 30 days)
   app.get("/api/recent-updates", async (req, res) => {
     try {

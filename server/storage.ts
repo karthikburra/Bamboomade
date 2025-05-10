@@ -659,6 +659,55 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+  
+  // Dashboard Snapshots operations
+  async getDashboardSnapshotByDate(date: string): Promise<DashboardSnapshot | undefined> {
+    try {
+      const [snapshot] = await db.select()
+        .from(dashboardSnapshots)
+        .where(eq(dashboardSnapshots.date, date));
+      return snapshot;
+    } catch (error) {
+      console.error("Database error in getDashboardSnapshotByDate:", error);
+      return undefined;
+    }
+  }
+  
+  async getAllDashboardSnapshots(): Promise<DashboardSnapshot[]> {
+    try {
+      return await db.select()
+        .from(dashboardSnapshots)
+        .orderBy(desc(dashboardSnapshots.date));
+    } catch (error) {
+      console.error("Database error in getAllDashboardSnapshots:", error);
+      return [];
+    }
+  }
+  
+  async saveDashboardSnapshot(snapshot: InsertDashboardSnapshot): Promise<DashboardSnapshot> {
+    try {
+      // Check if a snapshot already exists for this date
+      const existingSnapshot = await this.getDashboardSnapshotByDate(snapshot.date);
+      
+      if (existingSnapshot) {
+        // Update existing snapshot
+        const [updatedSnapshot] = await db.update(dashboardSnapshots)
+          .set(snapshot)
+          .where(eq(dashboardSnapshots.date, snapshot.date))
+          .returning();
+        return updatedSnapshot;
+      } else {
+        // Create new snapshot
+        const [createdSnapshot] = await db.insert(dashboardSnapshots)
+          .values(snapshot)
+          .returning();
+        return createdSnapshot;
+      }
+    } catch (error) {
+      console.error("Database error in saveDashboardSnapshot:", error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
