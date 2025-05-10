@@ -2695,7 +2695,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         instagramUrl,
         twitterUrl,
         facebookUrl,
-        personalWebsite
+        personalWebsite,
+        // Event-specific fields
+        eventDate,
+        eventLocation,
+        registrationLink
       } = req.body;
       
       console.log("PUT update with content type:", contentType);
@@ -2726,6 +2730,15 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           twitterUrl,
           facebookUrl,
           personalWebsite
+        });
+      }
+      
+      // Add event-specific fields if content type is "event"
+      if (contentType === "event") {
+        Object.assign(updates, {
+          eventDate,
+          eventLocation,
+          registrationLink
         });
       }
       

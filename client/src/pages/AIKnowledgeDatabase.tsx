@@ -52,6 +52,10 @@ interface AiKnowledgeContent {
   twitterUrl?: string | null;
   facebookUrl?: string | null;
   personalWebsite?: string | null;
+  // Event-specific fields
+  eventDate?: string | null;
+  eventLocation?: string | null;
+  registrationLink?: string | null;
 }
 
 export default function AIKnowledgeDatabase() {
@@ -916,6 +920,58 @@ export default function AIKnowledgeDatabase() {
                 </div>
               </div>
               
+              {/* Event-specific fields */}
+              {selectedContent.contentType === "event" && (
+                <div className="mt-6 mb-4 border-t border-gray-800 pt-4">
+                  <h3 className="font-medium text-amber-400 text-base mb-3">Event Details</h3>
+                  
+                  {/* Event Date */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                    <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Event Date</label>
+                    <div className="col-span-1 sm:col-span-3">
+                      <Input 
+                        type="datetime-local"
+                        value={selectedContent.eventDate || ""}
+                        onChange={(e) => {
+                          const dateValue = e.target.value;
+                          setSelectedContent({...selectedContent, eventDate: dateValue});
+                        }}
+                        className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Set the date and time for this event</p>
+                    </div>
+                  </div>
+                  
+                  {/* Event Location */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                    <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Event Location</label>
+                    <div className="col-span-1 sm:col-span-3">
+                      <Input 
+                        value={selectedContent.eventLocation || ""}
+                        onChange={(e) => setSelectedContent({...selectedContent, eventLocation: e.target.value})}
+                        className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                        placeholder="Online or physical location"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Where the event will take place</p>
+                    </div>
+                  </div>
+                  
+                  {/* Registration Link */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                    <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Registration Link</label>
+                    <div className="col-span-1 sm:col-span-3">
+                      <Input 
+                        value={selectedContent.registrationLink || ""}
+                        onChange={(e) => setSelectedContent({...selectedContent, registrationLink: e.target.value})}
+                        className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                        placeholder="https://example.com/register"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">URL where users can register for the event</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* Media field - URL or Upload */}
               <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
                 <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Profile Photo</label>
@@ -1170,6 +1226,15 @@ export default function AIKnowledgeDatabase() {
                           twitterUrl: selectedContent.twitterUrl,
                           facebookUrl: selectedContent.facebookUrl,
                           personalWebsite: selectedContent.personalWebsite,
+                        });
+                      }
+                      
+                      // Add event-specific fields if relevant
+                      if (selectedContent.contentType === "event") {
+                        Object.assign(updateData, {
+                          eventDate: selectedContent.eventDate,
+                          eventLocation: selectedContent.eventLocation,
+                          registrationLink: selectedContent.registrationLink,
                         });
                       }
                       
