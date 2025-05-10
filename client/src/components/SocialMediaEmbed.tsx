@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Instagram, Linkedin, Youtube, ExternalLink } from 'lucide-react';
 
 interface SocialMediaEmbedProps {
@@ -7,25 +7,27 @@ interface SocialMediaEmbedProps {
   embedCode: string;
   title: string;
   link: string;
+  description?: string;
 }
 
 const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({ 
   platform, 
   embedCode, 
   title, 
-  link 
+  link,
+  description
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current || !embedCode) return;
 
+    // Clear any existing content
+    containerRef.current.innerHTML = '';
+
     // Create a wrapper and set its innerHTML to the embed code
     const embedWrapper = document.createElement('div');
     embedWrapper.innerHTML = embedCode;
-
-    // Clear any existing content and append the new embed
-    containerRef.current.innerHTML = '';
     containerRef.current.appendChild(embedWrapper);
 
     // Load Instagram embed script if needed
@@ -37,6 +39,13 @@ const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({
     if (platform === 'twitter' && (window as any).twttr) {
       (window as any).twttr.widgets.load();
     }
+
+    // Cleanup function 
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
   }, [embedCode, platform]);
 
   const renderIcon = () => {
@@ -58,22 +67,26 @@ const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({
     }
   };
 
+  // Generate platform-specific descriptions if none provided
+  const getDescription = () => {
+    if (description) return description;
+    
+    switch (platform) {
+      case 'instagram':
+        return "View this inspiring post about bamboo architecture on Instagram";
+      case 'youtube':
+        return "Watch this video about innovative bamboo design techniques";
+      case 'linkedin':
+        return "Read about the latest trends in sustainable bamboo construction";
+      case 'twitter':
+        return "Check out this discussion about bamboo architecture on X";
+      default:
+        return "Explore more bamboo-related content";
+    }
+  };
+
   return (
-    <Card className="overflow-hidden border-zinc-800 bg-zinc-900 h-full flex flex-col">
-      <div className="p-3 border-b border-zinc-800 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {renderIcon()}
-          <h3 className="font-medium text-sm text-zinc-200">{title}</h3>
-        </div>
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-zinc-400 hover:text-zinc-200"
-        >
-          <ExternalLink className="h-3.5 w-3.5" />
-        </a>
-      </div>
+    <Card className="overflow-hidden border-zinc-800 bg-zinc-900 h-full flex flex-col relative">
       <div 
         ref={containerRef} 
         className={`w-full flex-grow flex items-center justify-center bg-zinc-800/50 embed-container ${
@@ -83,13 +96,33 @@ const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({
         }`}
         style={{
           padding: platform === 'instagram' ? '8px' : '0',
-          minHeight: platform === 'youtube' ? '315px' : 
-                    platform === 'linkedin' ? '500px' : 
-                    platform === 'instagram' ? '450px' : '350px'
+          minHeight: platform === 'youtube' ? '230px' : 
+                    platform === 'linkedin' ? '300px' : 
+                    platform === 'instagram' ? '300px' : '250px',
+          maxHeight: '350px'
         }}
       >
         <div className="text-center text-zinc-500 text-sm">Loading embed...</div>
       </div>
+      
+      <div className="absolute top-2 right-2 z-10">
+        <a
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1 bg-black/50 rounded-full hover:bg-black/70 transition-colors"
+        >
+          <ExternalLink className="h-4 w-4 text-white" />
+        </a>
+      </div>
+      
+      <CardContent className="p-3 pb-1 bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0">
+        <div className="flex items-center gap-2 mb-1">
+          {renderIcon()}
+          <h3 className="font-semibold text-sm text-white">{title}</h3>
+        </div>
+        <p className="text-xs text-zinc-200 line-clamp-2">{getDescription()}</p>
+      </CardContent>
     </Card>
   );
 };
