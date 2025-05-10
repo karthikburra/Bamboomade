@@ -1936,14 +1936,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get dashboard data for AI Chat screen (events, updates, facts)
   app.get("/api/dashboard-data", async (req, res) => {
-    try {      
-      // Run all queries in parallel for better performance
+    try {
+      // Extract date parameter if provided (format: YYYY-MM-DD)
+      const dateParam = req.query.date as string | undefined;
+      let selectedDate: Date | undefined;
+      
+      // Validate date format
+      if (dateParam) {
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (dateRegex.test(dateParam)) {
+          selectedDate = new Date(dateParam);
+          
+          // Check if date is valid and not in the future
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          if (isNaN(selectedDate.getTime()) || selectedDate > today) {
+            return res.status(400).json({ message: "Invalid date parameter. Date must be valid and not in the future." });
+          }
+        } else {
+          return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD." });
+        }
+      }
+      
+      // Run all queries in parallel for better performance, passing the date parameter
       const [eventsSummary, upcomingEvents, recentUpdates, bambooFact, bamboofacts] = await Promise.all([
-        getLatestEventsSummary(),
-        getUpcomingEvents(),
-        getRecentUpdates(),
-        getInterestingBambooFact(), // Keep for backward compatibility
-        getMultipleBambooFacts(3)   // Get 3 interesting facts from different sources
+        getLatestEventsSummary(selectedDate),
+        getUpcomingEvents(selectedDate),
+        getRecentUpdates(selectedDate),
+        getInterestingBambooFact(1, selectedDate), // Keep for backward compatibility
+        getMultipleBambooFacts(3, selectedDate)   // Get 3 interesting facts from different sources
       ]);
       
       // Debug logging for bamboo facts

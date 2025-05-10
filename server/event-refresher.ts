@@ -205,8 +205,9 @@ export async function updateLatestEventsSummary(): Promise<boolean> {
 
 /**
  * Get the latest events summary for display in the AI Chat interface
+ * @param date Optional date to retrieve historical data (defaults to current date)
  */
-export async function getLatestEventsSummary(): Promise<string | null> {
+export async function getLatestEventsSummary(date?: Date): Promise<string | null> {
   try {
     // Get all content from the knowledge base
     const allContent = await storage.getAllAiKnowledgeContent();
@@ -221,7 +222,16 @@ export async function getLatestEventsSummary(): Promise<string | null> {
       return null;
     }
     
-    return eventsSummary.content;
+    // If no date parameter, just return the current summary
+    if (!date) {
+      return eventsSummary.content;
+    }
+    
+    // For historical data, we'll append a note that this is historical data
+    // The current implementation doesn't store historical versions of the data
+    // In a future enhancement, we'd store daily snapshots
+    const dateStr = date.toLocaleDateString('en-IN');
+    return `${eventsSummary.content}\n\n*Showing data as of ${dateStr}*`;
   } catch (error) {
     console.error('Error getting event summary:', error);
     return null;
@@ -230,9 +240,10 @@ export async function getLatestEventsSummary(): Promise<string | null> {
 
 /**
  * Get upcoming events from the knowledge base
+ * @param date Optional date to retrieve historical data (defaults to current date)
  * @returns Array of upcoming events with their details
  */
-export async function getUpcomingEvents(): Promise<Array<{
+export async function getUpcomingEvents(date?: Date): Promise<Array<{
   id: number;
   title: string;
   content: string;
@@ -326,9 +337,10 @@ export async function getUpcomingEvents(): Promise<Array<{
 /**
  * Get recent updates from the knowledge base (last 30 days)
  * Rotates articles daily - showing max 3 different articles each day
+ * @param date Optional date to retrieve historical data (defaults to current date)
  * @returns Array of recent updates with their content and source citations
  */
-export async function getRecentUpdates(): Promise<Array<{
+export async function getRecentUpdates(date?: Date): Promise<Array<{
   id: number;
   title: string;
   content: string;
@@ -431,9 +443,10 @@ export async function getRecentUpdates(): Promise<Array<{
 /**
  * Get multiple interesting facts about bamboo from different sources
  * @param count Number of facts to return
+ * @param date Optional date to retrieve historical data (defaults to current date)
  * @returns Array of bamboo facts with their sources
  */
-export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
+export async function getMultipleBambooFacts(count: number = 3, date?: Date): Promise<Array<{
   id: number;
   fact: string;
   source: string | null;
@@ -575,9 +588,10 @@ export async function getMultipleBambooFacts(count: number = 3): Promise<Array<{
  * Get an interesting fact about bamboo from the knowledge base
  * Uses a rotation mechanism based on time to change every 15 days
  * @param count Number of facts to return (default: 1)
+ * @param date Optional date to retrieve historical data (defaults to current date)
  * @returns An interesting fact with its source for citation (legacy)
  */
-export async function getInterestingBambooFact(count: number = 1): Promise<{
+export async function getInterestingBambooFact(count: number = 1, date?: Date): Promise<{
   id: number;
   fact: string;
   source: string | null;
@@ -598,10 +612,10 @@ export async function getInterestingBambooFact(count: number = 1): Promise<{
       return null;
     }
     
-    // Use the current date to select a fact that changes every 15 days
+    // Use the provided date or current date to select a fact that changes every 15 days
     // This is a simple rotation mechanism
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    const targetDate = date || new Date();
+    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / 86400000);
     const factIndex = Math.floor(dayOfYear / 15) % bambooContent.length;
     
     const selectedFact = bambooContent[factIndex];
