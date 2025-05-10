@@ -1,66 +1,71 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Instagram, Youtube, ArrowRight, ExternalLink, Loader } from 'lucide-react';
+import { Instagram, Youtube, ArrowRight, ExternalLink, Loader, Globe } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-// Define types for social media content
-interface SocialMediaContent {
+// Define types for AI knowledge content
+interface AIKnowledgeContent {
   id: number;
   title: string;
-  platformType: 'instagram' | 'youtube';
-  url: string;
-  thumbnailUrl: string | null;
-  description: string | null;
-  publishedAt: string;
-  featured: boolean;
-}
-
-interface SocialMediaLinks {
-  instagram?: string;
-  youtube?: string;
-}
-
-interface SocialMediaData {
-  content?: SocialMediaContent[];
-  links?: SocialMediaLinks;
+  content: string;
+  source: string;
+  contentType: string;
+  status: string;
+  mediaUrl: string | null;
+  mediaType: string | null;
+  socialMediaInfo: {
+    platform?: string;
+    postId?: string;
+    profileUrl?: string;
+    handle?: string;
+    mediaUrls?: string[];
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: number;
 }
 
 const SocialMediaCarousel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'instagram' | 'youtube'>('instagram');
   
-  // Query to fetch social media content
-  const { data: socialMediaData, isLoading } = useQuery<SocialMediaData>({
-    queryKey: ['/api/social-media-content'],
+  // Query to fetch knowledge base content
+  const { data: knowledgeData, isLoading } = useQuery<AIKnowledgeContent[]>({
+    queryKey: ['/api/ai-knowledge'],
     retry: 1,
     refetchOnWindowFocus: false
   });
 
-  // Function to filter content based on platform type
-  const filterContentByPlatform = (platform: 'instagram' | 'youtube') => {
-    if (!socialMediaData || !Array.isArray(socialMediaData.content)) {
+  // Function to filter content based on content type
+  const filterContentByType = (type: 'instagram' | 'youtube') => {
+    if (!knowledgeData || !Array.isArray(knowledgeData)) {
       return [];
     }
     
-    return socialMediaData.content
-      .filter((item: SocialMediaContent) => item.platformType === platform)
-      .sort((a: SocialMediaContent, b: SocialMediaContent) => {
-        // Sort by featured first, then by publishedAt (newest first)
-        if (a.featured && !b.featured) return -1;
-        if (!a.featured && b.featured) return 1;
-        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    // Filter social media content based on contentType or socialMediaInfo.platform
+    return knowledgeData
+      .filter((item: AIKnowledgeContent) => {
+        if (item.contentType !== 'social') return false;
+        
+        // Check if it's from the selected platform
+        const platform = item.socialMediaInfo?.platform?.toLowerCase() || '';
+        return platform.includes(type);
+      })
+      .sort((a: AIKnowledgeContent, b: AIKnowledgeContent) => {
+        // Sort by createdAt (newest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
   };
 
   // Extract Instagram and YouTube content - using useMemo to prevent recomputing on every render
-  const instagramContent = React.useMemo(() => filterContentByPlatform('instagram'), [socialMediaData]);
-  const youtubeContent = React.useMemo(() => filterContentByPlatform('youtube'), [socialMediaData]);
+  const instagramContent = React.useMemo(() => filterContentByType('instagram'), [knowledgeData]);
+  const youtubeContent = React.useMemo(() => filterContentByType('youtube'), [knowledgeData]);
 
-  // Get social links
-  const instagramLink = socialMediaData?.links?.instagram || 'https://www.instagram.com/bamboomadein/';
-  const youtubeLink = socialMediaData?.links?.youtube || 'https://www.youtube.com/@bamboomade_in';
+  // Social media links
+  const instagramLink = 'https://www.instagram.com/bamboomadein/';
+  const youtubeLink = 'https://www.youtube.com/@bamboomade_in';
 
   // Loading placeholders with animation
   const renderSkeletons = () => (
@@ -122,18 +127,18 @@ const SocialMediaCarousel: React.FC = () => {
     return (
       <div className="overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {youtubeContent.map((item: SocialMediaContent) => (
+          {youtubeContent.map((item: AIKnowledgeContent) => (
             <div key={item.id}>
               <Card className="overflow-hidden border-zinc-800 bg-zinc-900 h-full flex flex-col">
                 <a 
-                  href={item.url} 
+                  href={item.source || '#'} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block relative aspect-video"
                 >
-                  {item.thumbnailUrl ? (
+                  {item.mediaUrl ? (
                     <img 
-                      src={item.thumbnailUrl} 
+                      src={item.mediaUrl} 
                       alt={item.title} 
                       className="w-full h-full object-cover"
                     />
@@ -152,12 +157,12 @@ const SocialMediaCarousel: React.FC = () => {
                 </a>
                 <CardContent className="p-3 sm:p-4 flex-grow flex flex-col">
                   <h3 className="font-medium text-sm text-zinc-200 mb-1 line-clamp-2">{item.title}</h3>
-                  {item.description && (
-                    <p className="text-xs text-zinc-400 line-clamp-2 mb-2">{item.description}</p>
-                  )}
+                  <p className="text-xs text-zinc-400 line-clamp-2 mb-2">
+                    {item.content?.split('\n')[0]?.replace(/^#+ /, '') || 'Watch this bamboo-related video'}
+                  </p>
                   <div className="mt-auto">
                     <a 
-                      href={item.url} 
+                      href={item.source || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="text-xs text-red-400 flex items-center hover:underline mt-1"
@@ -196,18 +201,18 @@ const SocialMediaCarousel: React.FC = () => {
     return (
       <div className="overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {instagramContent.map((item: SocialMediaContent) => (
+          {instagramContent.map((item: AIKnowledgeContent) => (
             <div key={item.id}>
               <Card className="overflow-hidden border-zinc-800 bg-zinc-900 h-full flex flex-col">
                 <a 
-                  href={item.url} 
+                  href={item.source || '#'} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block relative aspect-square"
                 >
-                  {item.thumbnailUrl ? (
+                  {item.mediaUrl ? (
                     <img 
-                      src={item.thumbnailUrl} 
+                      src={item.mediaUrl} 
                       alt={item.title} 
                       className="w-full h-full object-cover"
                     />
@@ -218,7 +223,9 @@ const SocialMediaCarousel: React.FC = () => {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end opacity-0 hover:opacity-100 transition-opacity">
                     <div className="p-3 w-full">
-                      <div className="text-white text-xs line-clamp-2">{item.description || item.title}</div>
+                      <div className="text-white text-xs line-clamp-2">
+                        {item.content?.split('\n')[0]?.replace(/^#+ /, '') || item.title}
+                      </div>
                     </div>
                   </div>
                 </a>
@@ -226,7 +233,7 @@ const SocialMediaCarousel: React.FC = () => {
                   <h3 className="font-medium text-sm text-zinc-200 mb-1 line-clamp-1">{item.title}</h3>
                   <div className="mt-auto">
                     <a 
-                      href={item.url} 
+                      href={item.source || '#'} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="text-xs text-pink-400 flex items-center hover:underline mt-1"
