@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import ChatInterface from "@/components/ChatInterface";
-import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
 import RecentArticles from "@/components/RecentArticles";
 import SocialMediaCarousel from "@/components/SocialMediaCarousel";
@@ -181,23 +180,14 @@ const AIChat: React.FC = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Top Row - Facts and Events */}
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6 md:grid-cols-2">
+                    {/* Facts Section */}
+                    <div className="mb-4 sm:mb-6">
                       {/* Bamboo Facts Card */}
                       <div>
                         <BambooFact 
                           factData={dashboardData?.fact || null}
                           factsData={dashboardData?.facts || []}
                           onFactClick={handleTopicClick}
-                        />
-                      </div>
-                      
-                      {/* Upcoming Events Card */}
-                      <div>
-                        <BambooEvents 
-                          events={dashboardData?.events || null} 
-                          upcomingEvents={dashboardData?.upcomingEvents || []}
-                          onEventClick={handleTopicClick}
                         />
                       </div>
                     </div>
