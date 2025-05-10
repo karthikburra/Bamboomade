@@ -543,6 +543,58 @@ export default function AIKnowledgeDatabase() {
                                       </div>
                                     )}
                                   </div>
+                                ) : content.contentType === 'event' ? (
+                                  <div className="space-y-3">
+                                    <p className="text-sm text-gray-300 line-clamp-2">
+                                      {truncateText(content.content, 100)}
+                                    </p>
+                                    
+                                    {/* Event details */}
+                                    <div className="space-y-2 mt-1">
+                                      {content.eventDate && (
+                                        <div className="flex items-center text-xs text-amber-300">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 flex-shrink-0">
+                                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                                            <line x1="16" x2="16" y1="2" y2="6" />
+                                            <line x1="8" x2="8" y1="2" y2="6" />
+                                            <line x1="3" x2="21" y1="10" y2="10" />
+                                          </svg>
+                                          {content.eventDate && new Date(content.eventDate).toLocaleString('en-IN', {
+                                            weekday: 'short',
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </div>
+                                      )}
+                                      
+                                      {content.eventLocation && (
+                                        <div className="flex items-center text-xs text-amber-300">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 flex-shrink-0">
+                                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                            <circle cx="12" cy="10" r="3" />
+                                          </svg>
+                                          <span className="truncate">{content.eventLocation}</span>
+                                        </div>
+                                      )}
+                                      
+                                      {content.registrationLink && (
+                                        <div className="mt-2">
+                                          <a 
+                                            href={content.registrationLink}
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-xs px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded inline-flex items-center transition-colors"
+                                          >
+                                            Register
+                                            <ExternalLink className="ml-1 h-2.5 w-2.5" />
+                                          </a>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
                                 ) : (
                                   <p className="text-sm text-gray-300 line-clamp-3">
                                     {truncateText(content.content, 120)}
@@ -763,6 +815,60 @@ export default function AIKnowledgeDatabase() {
                             </a>
                           )}
                         </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Event specific information */}
+              {selectedContent.contentType === 'event' && (
+                <div className="bg-amber-900/20 rounded-lg p-4 border border-amber-800">
+                  <h3 className="text-sm font-medium text-amber-400 mb-3">Event Details</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Event Date and Location */}
+                    <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                      {selectedContent.eventDate && (
+                        <div className="flex items-start mb-3">
+                          <span className="text-xs text-gray-400 mr-2 mt-0.5">Date & Time:</span>
+                          <div className="text-white text-sm font-medium">
+                            {new Date(selectedContent.eventDate).toLocaleString('en-IN', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {selectedContent.eventLocation && (
+                        <div className="flex items-start">
+                          <span className="text-xs text-gray-400 mr-2 mt-0.5">Location:</span>
+                          <div className="text-white text-sm">
+                            {selectedContent.eventLocation}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Registration Link */}
+                    {selectedContent.registrationLink && (
+                      <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                        <h4 className="text-xs font-medium text-amber-400 mb-2">Registration:</h4>
+                        <a 
+                          href={selectedContent.registrationLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium inline-flex items-center transition-colors"
+                        >
+                          Register for Event
+                          <ExternalLink className="ml-2 h-4 w-4" />
+                        </a>
+                        <p className="text-xs text-gray-400 mt-2">Click the button above to register for this event</p>
                       </div>
                     )}
                   </div>

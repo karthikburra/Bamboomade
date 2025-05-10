@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ExternalLink, Clock } from "lucide-react";
+import { CalendarDays, ExternalLink, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { analyzeEventContent } from '@/utils/eventAnalyzer';
@@ -11,6 +11,10 @@ export interface Event {
   content: string;
   source?: string | null;
   createdAt: string | Date;
+  contentType?: string;
+  eventDate?: string | null;
+  eventLocation?: string | null;
+  registrationLink?: string | null;
 }
 
 interface UpcomingEventsListProps {
