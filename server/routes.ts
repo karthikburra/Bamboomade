@@ -2104,9 +2104,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const snapshots = await storage.getAllDashboardSnapshots();
       
+      // Parse JSON strings and enhance snapshots
+      const enhancedSnapshots = snapshots.map(snapshot => ({
+        ...snapshot,
+        upcomingEvents: snapshot.upcomingEventsData ? JSON.parse(snapshot.upcomingEventsData) : [],
+        recentUpdates: snapshot.recentUpdatesData ? JSON.parse(snapshot.recentUpdatesData) : [],
+        facts: snapshot.factsData ? JSON.parse(snapshot.factsData) : []
+      }));
+      
       // Apply pagination manually
-      const paginatedSnapshots = snapshots.slice(offset, offset + limit);
-      const totalCount = snapshots.length;
+      const paginatedSnapshots = enhancedSnapshots.slice(offset, offset + limit);
+      const totalCount = enhancedSnapshots.length;
       
       res.json({
         snapshots: paginatedSnapshots,

@@ -6,16 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Loader2, Send, AlertTriangle, ChevronDown,
-  Copy, CheckCircle, Sparkles, Share2, RotateCcw, Info,
-  Building2, MessageCircle, Calendar, BookOpen, Users
+  Copy, CheckCircle, Sparkles, Info
 } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
 import { Link } from "wouter";
-import TokenCounter from "./TokenCounter";
 import { toast } from "@/hooks/use-toast";
 
 // Citation interface for source references
@@ -37,9 +33,6 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQuestion: propInitialQuestion }) => {
-  // Add state for active tab 
-  const [activeTab, setActiveTab] = useState<string>("ai-assistant");
-  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -367,24 +360,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
     navigator.clipboard.writeText(text).then(
       () => {
         setCopiedMessageId(messageId);
-        toast({
-          title: "Copied to clipboard",
-          description: "The message has been copied to your clipboard.",
-          duration: 2000,
-        });
-        
-        // Reset the copied state after 2 seconds
-        setTimeout(() => {
-          setCopiedMessageId(null);
-        }, 2000);
+        setTimeout(() => setCopiedMessageId(null), 2000);
       },
       (err) => {
-        console.error('Could not copy text: ', err);
-        toast({
-          title: "Failed to copy",
-          description: "Could not copy text to clipboard.",
-          variant: "destructive",
-        });
+        console.error("Failed to copy:", err);
       }
     );
   };
@@ -403,266 +382,179 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
       description: "Your conversation history has been cleared.",
     });
   };
-  
-  // Sample questions removed
 
   return (
     <div className="flex flex-col h-[70vh]">
-      <Tabs 
-        defaultValue="ai-assistant" 
-        value={activeTab} 
-        onValueChange={setActiveTab}
-        className="flex-grow flex flex-col"
-      >
-        <Card className="flex-grow flex flex-col overflow-hidden border-zinc-800 bg-zinc-950">
-          <div className="flex justify-between items-center p-2 sm:p-3 bg-zinc-900 border-b border-zinc-800">
-            <TabsList className="bg-zinc-800 border border-zinc-700 p-1">
-              <TabsTrigger 
-                value="ai-assistant" 
-                className="flex items-center data-[state=active]:bg-green-800 data-[state=active]:text-zinc-100"
-              >
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                <span>AI Assistant</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="bamboomade-assistant" 
-                className="flex items-center data-[state=active]:bg-green-800 data-[state=active]:text-zinc-100"
-              >
-                <Building2 className="h-3.5 w-3.5 mr-1.5" />
-                <span>BambooMade</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <Badge variant="outline" className="ml-1 sm:ml-2 bg-green-900/40 text-green-400 hover:bg-green-900/40 border-green-700 text-[10px] sm:text-xs">
-              BETA
-            </Badge>
+      <Card className="flex-grow flex flex-col overflow-hidden border-zinc-800 bg-zinc-950">
+        <div className="flex justify-between items-center p-2 sm:p-3 bg-zinc-900 border-b border-zinc-800">
+          <div className="flex items-center">
+            <Sparkles className="h-3.5 w-3.5 mr-1.5 text-green-400" />
+            <span className="text-zinc-100">AI Assistant</span>
           </div>
           
-          <TabsContent value="ai-assistant" className="flex-grow flex flex-col overflow-hidden mt-0 p-0 border-none">
-            <ScrollArea className="flex-grow p-2 sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
-              <div className="space-y-3 sm:space-y-4 relative">
-                {messages.map((message) => (
+          <Badge variant="outline" className="ml-1 sm:ml-2 bg-green-900/40 text-green-400 hover:bg-green-900/40 border-green-700 text-[10px] sm:text-xs">
+            BETA
+          </Badge>
+        </div>
+        
+        <div className="flex-grow flex flex-col overflow-hidden mt-0 p-0 border-none">
+          <ScrollArea className="flex-grow p-2 sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+            <div className="space-y-3 sm:space-y-4 relative">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
-                    key={message.id}
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
+                    className={`max-w-[90%] sm:max-w-[85%] md:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 shadow-md group relative ${
+                      message.role === "user"
+                        ? "bg-green-700 text-zinc-100"
+                        : "bg-zinc-800 border border-zinc-700 text-zinc-200"
                     }`}
                   >
-                    <div
-                      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 shadow-md group relative ${
-                        message.role === "user"
-                          ? "bg-green-700 text-zinc-100"
-                          : "bg-zinc-800 border border-zinc-700 text-zinc-200"
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap text-sm sm:text-base">{message.content}</p>
-                      
-                      {/* Display citations if available */}
-                      {message.role === "assistant" && message.citations && message.citations.length > 0 && (
-                        <div className="mt-2 sm:mt-3 pt-2 border-t border-zinc-700/50 text-[10px] sm:text-xs text-zinc-400">
-                          <p className="font-medium mb-1 flex items-center">
-                            <Info size={10} className="mr-1" /> Sources:
-                          </p>
-                          <ul className="list-disc pl-4 space-y-1">
-                            {message.citations.map((citation, index) => (
-                              <li key={index}>
-                                {citation.url ? (
-                                  <a 
-                                    href={citation.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-green-400 hover:underline break-words"
-                                    onClick={() => {
-                                      // Track source clicks in Google Analytics
-                                      if (typeof window !== 'undefined' && (window as any).gtag) {
-                                        (window as any).gtag('event', 'citation_click', {
-                                          'event_category': 'AI_Chat',
-                                          'event_label': citation.source,
-                                          'value': 1
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    {citation.source}
-                                  </a>
-                                ) : (
-                                  <span>{citation.source}</span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {/* Copy button - only for assistant messages */}
-                      {message.role === "assistant" && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="absolute top-1 right-1 sm:top-2 sm:right-2 h-5 w-5 sm:h-6 sm:w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-700/70 hover:bg-zinc-700 text-green-400"
-                          onClick={() => copyToClipboard(message.content, message.id)}
-                        >
-                          {copiedMessageId === message.id ? <CheckCircle size={12} /> : <Copy size={12} />}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isProcessing && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 bg-zinc-800 border border-zinc-700 text-zinc-200">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-green-500" />
-                        <span className="text-xs sm:text-sm text-zinc-400">Generating response...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Manual scroll button with improved styling */}
-                {messages.length > 3 && (
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-md bg-green-600 text-zinc-100 hover:bg-green-700"
-                    onClick={() => {
-                      setShouldAutoScroll(true);
-                    }}
-                  >
-                    <ChevronDown size={16} />
-                  </Button>
-                )}
-                
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-            
-            <CardContent className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage();
-                }}
-                className="flex gap-2"
-              >
-                <div className="relative flex-grow">
-                  <Textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Ask about bamboo architecture..."
-                    className="flex-grow resize-none min-h-[50px] sm:min-h-[60px] pr-10 sm:pr-12 bg-zinc-800 border-zinc-700 text-zinc-200 focus-visible:ring-green-500 placeholder:text-zinc-500 text-sm sm:text-base"
-                    disabled={isProcessing}
-                  />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    className="absolute right-2 bottom-2 h-7 w-7 sm:h-8 sm:w-8 bg-green-600 hover:bg-green-700 text-zinc-100 rounded-full"
-                    disabled={!input.trim() || isProcessing}
-                  >
-                    <Send size={14} className="sm:h-4 sm:w-4" />
-                  </Button>
-                </div>
-              </form>
-              
-              {/* Login prompt alert - shown when user reaches question limit */}
-              {showLoginPrompt && questionCount >= FREE_QUESTION_LIMIT && (
-                <div className="mt-3 sm:mt-4">
-                  <Alert className="bg-zinc-800 border-zinc-700 p-3 sm:p-4">
-                    <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                    <AlertDescription className="text-xs sm:text-sm text-zinc-300">
-                      <div className="flex flex-col space-y-1.5 sm:space-y-2">
-                        <span className="font-semibold">You've used all {FREE_QUESTION_LIMIT} free questions!</span>
-                        <p className="text-xs sm:text-sm">Create a free account to continue learning about bamboo architecture and access:</p>
-                        <ul className="list-disc pl-4 sm:pl-5 text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 text-zinc-400">
-                          <li>Unlimited AI-guided bamboo architecture advice</li>
-                          <li>Personal chat history saved for future reference</li>
-                          <li>Advanced project guidance and design recommendations</li>
-                          <li>Early access to workshop information</li>
+                    <p className="whitespace-pre-wrap text-sm sm:text-base">{message.content}</p>
+                    
+                    {/* Display citations if available */}
+                    {message.role === "assistant" && message.citations && message.citations.length > 0 && (
+                      <div className="mt-2 sm:mt-3 pt-2 border-t border-zinc-700/50 text-[10px] sm:text-xs text-zinc-400">
+                        <p className="font-medium mb-1 flex items-center">
+                          <Info size={10} className="mr-1" /> Sources:
+                        </p>
+                        <ul className="list-disc pl-4 space-y-1">
+                          {message.citations.map((citation, index) => (
+                            <li key={index}>
+                              {citation.url ? (
+                                <a 
+                                  href={citation.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-green-400 hover:underline break-words"
+                                  onClick={() => {
+                                    // Track source clicks in Google Analytics
+                                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                                      (window as any).gtag('event', 'citation_click', {
+                                        'event_category': 'AI_Chat',
+                                        'event_label': citation.source,
+                                        'value': 1
+                                      });
+                                    }
+                                  }}
+                                >
+                                  {citation.source}
+                                </a>
+                              ) : (
+                                <span>{citation.source}</span>
+                              )}
+                            </li>
+                          ))}
                         </ul>
-                        <div className="flex flex-col sm:flex-row gap-2 mt-1 sm:mt-2">
-                          <Link href="/login" className="w-full">
-                            <Button size="sm" variant="default" className="w-full bg-green-600 hover:bg-green-700 text-zinc-100 text-xs h-8">Login</Button>
-                          </Link>
-                          <Link href="/register" className="w-full">
-                            <Button size="sm" variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs h-8">Register Free Account</Button>
-                          </Link>
-                        </div>
                       </div>
-                    </AlertDescription>
-                  </Alert>
+                    )}
+                    
+                    {/* Copy button - only for assistant messages */}
+                    {message.role === "assistant" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="absolute top-1 right-1 sm:top-2 sm:right-2 h-5 w-5 sm:h-6 sm:w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-700/70 hover:bg-zinc-700 text-green-400"
+                        onClick={() => copyToClipboard(message.content, message.id)}
+                      >
+                        {copiedMessageId === message.id ? <CheckCircle size={12} /> : <Copy size={12} />}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {isProcessing && (
+                <div className="flex justify-start">
+                  <div className="max-w-[85%] sm:max-w-[80%] rounded-lg px-3 py-2 sm:px-4 sm:py-3 bg-zinc-800 border border-zinc-700 text-zinc-200">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-green-500" />
+                      <span className="text-xs sm:text-sm text-zinc-400">Generating response...</span>
+                    </div>
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </TabsContent>
+              
+              {/* Manual scroll button with improved styling */}
+              {messages.length > 3 && (
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-md bg-green-600 text-zinc-100 hover:bg-green-700"
+                  onClick={() => {
+                    setShouldAutoScroll(true);
+                  }}
+                >
+                  <ChevronDown size={16} />
+                </Button>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
           
-          {/* BambooMade Assistant Tab Content */}
-          <TabsContent value="bamboomade-assistant" className="flex-grow flex flex-col overflow-hidden mt-0 p-0 border-none">
-            <ScrollArea className="flex-grow p-2 sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
-              <div className="space-y-4">
-                <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 shadow-md">
-                  <h3 className="text-lg font-medium text-green-400 mb-2 flex items-center">
-                    <Building2 className="mr-2 h-5 w-5" />
-                    Welcome to BambooMade Assistant
-                  </h3>
-                  <p className="text-zinc-300 text-sm mb-3">
-                    Get specialized help with our services, workshops, and project guidance. What would you like to explore today?
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
-                    <Button 
-                      variant="outline" 
-                      className="border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 justify-start"
-                      onClick={() => window.location.href = "/project-guidance"}
-                    >
-                      <Calendar className="mr-2 h-4 w-4 text-green-400" />
-                      <span>Book Project Guidance</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 justify-start"
-                      onClick={() => window.location.href = "/workshops"}
-                    >
-                      <Users className="mr-2 h-4 w-4 text-green-400" />
-                      <span>Upcoming Workshops</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 justify-start"
-                      onClick={() => window.location.href = "/our-works"}
-                    >
-                      <BookOpen className="mr-2 h-4 w-4 text-green-400" />
-                      <span>View Our Works</span>
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      className="border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 justify-start"
-                      onClick={() => window.location.href = "https://wa.me/919972610886"}
-                      >
-                      <MessageCircle className="mr-2 h-4 w-4 text-green-400" />
-                      <span>WhatsApp Support</span>
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 shadow-md">
-                  <h3 className="text-md font-medium text-green-400 mb-2">Contact Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <p className="text-zinc-300">
-                      <strong>Email:</strong> <a href="mailto:Info@bamboomade.in" className="text-green-400 hover:underline">Info@bamboomade.in</a>
-                    </p>
-                    <p className="text-zinc-300">
-                      <strong>Phone:</strong> +91 99726 10886
-                    </p>
-                    <p className="text-zinc-300">
-                      <strong>Address:</strong> Banjara Hills, Hyderabad
-                    </p>
-                  </div>
-                </div>
+          <CardContent className="p-3 sm:p-4 border-t border-zinc-800 bg-zinc-900">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex gap-2"
+            >
+              <div className="relative flex-grow">
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask about bamboo architecture..."
+                  className="flex-grow resize-none min-h-[50px] sm:min-h-[60px] pr-10 sm:pr-12 bg-zinc-800 border-zinc-700 text-zinc-200 focus-visible:ring-green-500 placeholder:text-zinc-500 text-sm sm:text-base"
+                  disabled={isProcessing}
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="absolute right-2 bottom-2 h-7 w-7 sm:h-8 sm:w-8 bg-green-600 hover:bg-green-700 text-zinc-100 rounded-full"
+                  disabled={!input.trim() || isProcessing}
+                >
+                  <Send size={14} className="sm:h-4 sm:w-4" />
+                </Button>
               </div>
-            </ScrollArea>
-          </TabsContent>
-        </Card>
-      </Tabs>
+            </form>
+            
+            {/* Login prompt alert - shown when user reaches question limit */}
+            {showLoginPrompt && questionCount >= FREE_QUESTION_LIMIT && (
+              <div className="mt-3 sm:mt-4">
+                <Alert className="bg-zinc-800 border-zinc-700 p-3 sm:p-4">
+                  <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                  <AlertDescription className="text-xs sm:text-sm text-zinc-300">
+                    <div className="flex flex-col space-y-1.5 sm:space-y-2">
+                      <span className="font-semibold">You've used all {FREE_QUESTION_LIMIT} free questions!</span>
+                      <p className="text-xs sm:text-sm">Create a free account to continue learning about bamboo architecture and access:</p>
+                      <ul className="list-disc pl-4 sm:pl-5 text-[10px] sm:text-xs space-y-0.5 sm:space-y-1 text-zinc-400">
+                        <li>Unlimited AI-guided bamboo architecture advice</li>
+                        <li>Personal chat history saved for future reference</li>
+                        <li>Advanced project guidance and design recommendations</li>
+                        <li>Early access to workshop information</li>
+                      </ul>
+                      <div className="flex flex-col sm:flex-row gap-2 mt-1 sm:mt-2">
+                        <Link href="/login" className="w-full">
+                          <Button size="sm" variant="default" className="w-full bg-green-600 hover:bg-green-700 text-zinc-100 text-xs h-8">Login</Button>
+                        </Link>
+                        <Link href="/register" className="w-full">
+                          <Button size="sm" variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs h-8">Register Free Account</Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+          </CardContent>
+        </div>
+      </Card>
     </div>
   );
 };
