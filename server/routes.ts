@@ -2037,7 +2037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allContent = await storage.getAllAiKnowledgeContent();
       const enthusiasts = allContent.filter(item => 
         item.contentType === 'enthusiast' && 
-        item.status === 'published'
+        (item.status === 'published' || item.status === 'active')
       );
       
       if (enthusiasts.length === 0) {

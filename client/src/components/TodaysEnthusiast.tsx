@@ -36,11 +36,15 @@ export function TodaysEnthusiast() {
   const fetchAllEnthusiasts = async () => {
     setIsLoading(true);
     try {
+      console.log('Fetching enthusiasts from API...');
       const response = await fetch('/api/todays-enthusiast?all=true');
       if (!response.ok) {
-        throw new Error('Failed to fetch bamboo enthusiasts');
+        const errorData = await response.json();
+        console.error('API error response:', errorData);
+        throw new Error(`Failed to fetch bamboo enthusiasts: ${errorData.error || response.statusText}`);
       }
       const data = await response.json();
+      console.log('Enthusiasts data received:', data);
       setAllEnthusiasts(data);
       
       // Show a random enthusiast from the list
@@ -191,7 +195,9 @@ export function TodaysEnthusiast() {
           <div className="ml-4">
             <h3 className="text-md font-medium text-zinc-200">{enthusiast.title}</h3>
             <p className="text-sm text-zinc-400">
-              Added {formatDistanceToNow(new Date(enthusiast.createdAt), { addSuffix: true })}
+              {enthusiast.createdAt ? (
+                `Added ${formatDistanceToNow(new Date(enthusiast.createdAt), { addSuffix: true })}`
+              ) : 'Recently added'}
             </p>
           </div>
         </div>
