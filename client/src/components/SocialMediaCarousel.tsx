@@ -29,13 +29,13 @@ const SocialMediaCarousel: React.FC = () => {
               Social Media
             </CardTitle>
             <CardDescription className="text-zinc-400 ml-2">
-              Latest content from our social media
+              Content from our social media platforms
             </CardDescription>
           </div>
           
           <div className="flex items-center">
             <span className="bg-amber-400/20 text-amber-300 text-xs px-2 py-0.5 rounded-full font-medium">
-              Latest Posts
+              Featured Posts
             </span>
           </div>
         </div>
@@ -46,7 +46,7 @@ const SocialMediaCarousel: React.FC = () => {
         
         {/* Intro text */}
         <p className="text-sm text-zinc-400 mb-4 max-w-3xl">
-          Explore the latest bamboo architecture innovations and sustainable design techniques from our community and partners.
+          Explore bamboo architecture innovations and sustainable design techniques from our community and partners. Content is refreshed periodically.
         </p>
         
         {/* Social media grid */}
