@@ -39,15 +39,15 @@ const SocialMediaCarousel: React.FC = () => {
             </span>
           </div>
         </div>
+        
+        {/* Intro text */}
+        <p className="text-sm text-zinc-400 mt-2 mb-0 max-w-3xl">
+          Explore bamboo architecture innovations and sustainable design techniques from our community and partners. Content is refreshed periodically.
+        </p>
       </CardHeader>
       
       <CardContent className="pt-4 px-4 pb-6">
         <InstagramScript />
-        
-        {/* Intro text */}
-        <p className="text-sm text-zinc-400 mb-4 max-w-3xl">
-          Explore bamboo architecture innovations and sustainable design techniques from our community and partners. Content is refreshed periodically.
-        </p>
         
         {/* Social media grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
