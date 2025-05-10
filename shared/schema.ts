@@ -164,7 +164,7 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   source: text("source"), // URL, Google Drive link, etc.
-  contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', 'image', 'social_media', etc.
+  contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', 'image', 'social_media', 'enthusiast' etc.
   status: text("status").notNull().default("active"), // 'active', 'archived'
   mediaUrl: text("media_url"), // URL to image, document, or other media file
   mediaType: text("media_type"), // 'image', 'document', 'pdf', 'video', etc.
@@ -175,6 +175,14 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
     handle?: string,
     mediaUrls?: string[]
   }>(), // Information about social media posts
+  // Bamboo Enthusiast specific fields
+  contactEmail: text("contact_email"), // Contact email for the enthusiast
+  contactPhone: text("contact_phone"), // Contact phone number
+  linkedinUrl: text("linkedin_url"), // LinkedIn profile URL
+  instagramUrl: text("instagram_url"), // Instagram profile URL
+  twitterUrl: text("twitter_url"), // Twitter/X profile URL
+  facebookUrl: text("facebook_url"), // Facebook profile URL
+  personalWebsite: text("personal_website"), // Personal website URL
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdBy: integer("created_by").notNull(), // Admin ID who created this content
@@ -189,6 +197,14 @@ export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeCont
   mediaUrl: true,
   mediaType: true,
   socialMediaInfo: true,
+  // Bamboo Enthusiast fields
+  contactEmail: true,
+  contactPhone: true,
+  linkedinUrl: true,
+  instagramUrl: true,
+  twitterUrl: true,
+  facebookUrl: true,
+  personalWebsite: true,
   createdBy: true,
 });
 

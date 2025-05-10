@@ -40,6 +40,14 @@ interface AiKnowledgeContent {
   mediaUrl: string | null;
   mediaType: string | null;
   socialMediaInfo: any | null;
+  // Enthusiast-specific fields
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  linkedinUrl?: string | null;
+  instagramUrl?: string | null;
+  twitterUrl?: string | null;
+  facebookUrl?: string | null;
+  personalWebsite?: string | null;
 }
 
 export default function AIKnowledgeDatabase() {
@@ -627,18 +635,121 @@ export default function AIKnowledgeDatabase() {
                 </div>
               </div>
               
-              {selectedContent.mediaUrl && (
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
-                  <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Media URL</label>
-                  <div className="col-span-1 sm:col-span-3">
-                    <Input 
-                      value={selectedContent.mediaUrl}
-                      onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
-                      className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">URL to associated media (image, video, etc.)</p>
-                  </div>
+              {/* Media URL field */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 bg-gray-800/30 p-3 rounded-lg border border-gray-800">
+                <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Profile Photo URL</label>
+                <div className="col-span-1 sm:col-span-3">
+                  <Input 
+                    value={selectedContent.mediaUrl || ""}
+                    onChange={(e) => setSelectedContent({...selectedContent, mediaUrl: e.target.value})}
+                    className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">URL to person's profile photo or headshot</p>
                 </div>
+              </div>
+              
+              {/* Bamboo Enthusiast specific fields */}
+              {selectedContent.contentType === "enthusiast" && (
+                <>
+                  <div className="mt-6 mb-4 border-t border-gray-800 pt-4">
+                    <h3 className="font-medium text-teal-400 text-base mb-3">Contact Information</h3>
+                    
+                    {/* Contact Email */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Email</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.contactEmail || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, contactEmail: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="example@email.com"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Contact Phone */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Phone</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.contactPhone || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, contactPhone: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="+91 9876543210"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Personal Website */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Website</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.personalWebsite || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, personalWebsite: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h3 className="font-medium text-teal-400 text-base mb-3">Social Media Links</h3>
+                    
+                    {/* LinkedIn */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">LinkedIn</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.linkedinUrl || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, linkedinUrl: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="https://linkedin.com/in/username"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Instagram */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Instagram</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.instagramUrl || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, instagramUrl: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="https://instagram.com/username"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Twitter */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4 mb-3">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Twitter</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.twitterUrl || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, twitterUrl: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="https://twitter.com/username"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Facebook */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                      <label className="sm:text-right text-sm font-medium text-amber-400 mt-2">Facebook</label>
+                      <div className="col-span-1 sm:col-span-3">
+                        <Input 
+                          value={selectedContent.facebookUrl || ""}
+                          onChange={(e) => setSelectedContent({...selectedContent, facebookUrl: e.target.value})}
+                          className="w-full bg-zinc-800 border-zinc-700 text-zinc-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                          placeholder="https://facebook.com/username"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
             
@@ -658,19 +769,35 @@ export default function AIKnowledgeDatabase() {
                   onClick={async () => {
                     try {
                       console.log("Updating content with type:", selectedContent.contentType);
+                      // Prepare data for API
+                      const updateData = {
+                        title: selectedContent.title,
+                        content: selectedContent.content,
+                        source: selectedContent.source,
+                        status: selectedContent.status,
+                        contentType: selectedContent.contentType,
+                        mediaUrl: selectedContent.mediaUrl,
+                      };
+                      
+                      // Add enthusiast-specific fields if relevant
+                      if (selectedContent.contentType === "enthusiast") {
+                        Object.assign(updateData, {
+                          contactEmail: selectedContent.contactEmail,
+                          contactPhone: selectedContent.contactPhone,
+                          linkedinUrl: selectedContent.linkedinUrl,
+                          instagramUrl: selectedContent.instagramUrl,
+                          twitterUrl: selectedContent.twitterUrl,
+                          facebookUrl: selectedContent.facebookUrl,
+                          personalWebsite: selectedContent.personalWebsite,
+                        });
+                      }
+                      
                       const response = await fetch(`/api/ai-knowledge/${selectedContent.id}`, {
                         method: "PUT", // Changed from PATCH to PUT to match server endpoint
                         headers: {
                           "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({
-                          title: selectedContent.title,
-                          content: selectedContent.content,
-                          source: selectedContent.source,
-                          status: selectedContent.status,
-                          contentType: selectedContent.contentType,
-                          mediaUrl: selectedContent.mediaUrl,
-                        }),
+                        body: JSON.stringify(updateData),
                       });
                       
                       if (!response.ok) {
