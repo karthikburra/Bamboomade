@@ -165,7 +165,7 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   content: text("content").notNull(),
   source: text("source"), // URL, Google Drive link, etc.
   contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', 'image', 'social_media', 'enthusiast' etc.
-  status: text("status").notNull().default("active"), // 'active', 'archived'
+  status: text("status").notNull().default("pending"), // 'active', 'pending', 'archived'
   mediaUrl: text("media_url"), // URL to image, document, or other media file
   mediaType: text("media_type"), // 'image', 'document', 'pdf', 'video', etc.
   socialMediaInfo: json("social_media_info").$type<{ 

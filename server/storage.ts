@@ -59,6 +59,7 @@ export interface IStorage {
   // AI Knowledge Content operations
   getAllAiKnowledgeContent(): Promise<AiKnowledgeContent[]>;
   getActiveAiKnowledgeContent(): Promise<AiKnowledgeContent[]>; // Get only active content for AI
+  getPendingAiKnowledgeContent(): Promise<AiKnowledgeContent[]>; // Get only pending content for admin approval
   getAiKnowledgeContentById(id: number): Promise<AiKnowledgeContent | undefined>;
   getAiKnowledgeContentByType(contentType: string): Promise<AiKnowledgeContent[]>;
   createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent>;
