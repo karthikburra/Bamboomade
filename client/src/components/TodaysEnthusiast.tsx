@@ -167,7 +167,7 @@ export function TodaysEnthusiast() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-4">
         <div className="flex items-start mb-4">
           <Avatar className="h-12 w-12 border border-zinc-700">
             {enthusiast.mediaUrl ? (
