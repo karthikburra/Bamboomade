@@ -31,7 +31,7 @@ interface AIKnowledgeContent {
 }
 
 const SocialMediaCarousel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'instagram' | 'youtube' | 'embedded'>('instagram');
+  const [activeTab, setActiveTab] = useState<'instagram' | 'youtube' | 'embedded'>('embedded');
   
   // Query to fetch knowledge base content
   const { data: knowledgeData, isLoading } = useQuery<AIKnowledgeContent[]>({
@@ -213,22 +213,22 @@ const SocialMediaCarousel: React.FC = () => {
     );
   };
 
+  // Process Instagram embeds when embedded tab is active
+  useEffect(() => {
+    if (activeTab === 'embedded') {
+      // Process with a slight delay to ensure embeds are in the DOM
+      const timer = setTimeout(() => {
+        if (window.instgrm) {
+          window.instgrm.Embeds.process();
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
+  
   // Render embedded social media content
   const renderEmbeddedContent = () => {
-    // Process Instagram embeds when this tab is active
-    useEffect(() => {
-      if (activeTab === 'embedded') {
-        // Process with a slight delay to ensure embeds are in the DOM
-        const timer = setTimeout(() => {
-          if (window.instgrm) {
-            window.instgrm.Embeds.process();
-          }
-        }, 500);
-        
-        return () => clearTimeout(timer);
-      }
-    }, [activeTab]);
-    
     if (embeddedContent.length === 0) {
       return (
         <div className="text-center py-8 px-4">
@@ -397,13 +397,16 @@ const SocialMediaCarousel: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        {isLoading ? renderSkeletons() : (
-          activeTab === 'instagram' 
-            ? renderInstagramContent() 
-            : activeTab === 'youtube' 
-            ? renderYoutubeContent()
-            : renderEmbeddedContent()
-        )}
+        {activeTab === 'embedded' 
+          ? renderEmbeddedContent() 
+          : isLoading 
+            ? renderSkeletons() 
+            : (
+                activeTab === 'instagram' 
+                  ? renderInstagramContent() 
+                  : renderYoutubeContent()
+              )
+        }
         
         {activeTab !== 'embedded' && (
           <div className="flex justify-end items-center mt-4">
