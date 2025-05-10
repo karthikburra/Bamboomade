@@ -172,7 +172,7 @@ export function TodaysEnthusiast() {
             onClick={handleRefresh}
             disabled={isRefreshing || allEnthusiasts.length <= 1}
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </CardHeader>

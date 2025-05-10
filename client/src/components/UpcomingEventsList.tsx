@@ -61,7 +61,7 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
             className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
             onClick={() => window.location.reload()}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4 text-secondary" />
           </Button>
         </div>
       </CardHeader>
