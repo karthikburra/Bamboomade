@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, ExternalLink, Clock, MapPin } from 'lucide-react';
+import { Calendar, ExternalLink, Clock, MapPin, User, Users, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
 import { Button } from './ui/button';
@@ -191,6 +191,74 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
 
     return null;
   };
+  
+  // Extract organizer information from event content if available
+  const extractOrganizer = (content: string): string | null => {
+    const organizerPatterns = [
+      /organized by\s+([^,.]+(?:,\s*[^,.]+)?)/i,
+      /organizer[s]?:\s*([^,.]+(?:,\s*[^,.]+)?)/i,
+      /hosted by\s+([^,.]+(?:,\s*[^,.]+)?)/i,
+      /presented by\s+([^,.]+(?:,\s*[^,.]+)?)/i,
+      /conducted by\s+([^,.]+(?:,\s*[^,.]+)?)/i,
+      /facilitated by\s+([^,.]+(?:,\s*[^,.]+)?)/i,
+    ];
+
+    for (const pattern of organizerPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+    
+    // Try to identify college or institution names
+    const institutionPatterns = [
+      /(College of [^,.]+)/i,
+      /(University of [^,.]+)/i,
+      /(Institute of [^,.]+)/i,
+      /([A-Z][a-z]+ College)/i,
+      /([A-Z][a-z]+ University)/i,
+      /([A-Z][a-z]+ Institute)/i,
+      /(School of [^,.]+)/i,
+      /([A-Z]{2,5})\s+(?:University|College|Institute)/i, // For abbreviated names like IIT, NIT
+    ];
+    
+    for (const pattern of institutionPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        return match[1].trim();
+      }
+    }
+
+    // Default to BambooMade if no other organizer found
+    if (content.toLowerCase().includes('bamboomade') || 
+        content.toLowerCase().includes('bamboo made')) {
+      return 'BambooMade';
+    }
+
+    return null;
+  };
+  
+  // Extract a brief summary of the workshop from the content
+  const extractBrief = (content: string): string => {
+    // Clean up any markdown or extra whitespace
+    const cleanContent = content.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                               .replace(/\s+/g, ' ')
+                               .trim();
+    
+    // Try to extract the first 2-3 sentences for the brief
+    const sentences = cleanContent.split(/[.!?]\s+/);
+    
+    if (sentences.length >= 2) {
+      // Get first 2 sentences if content is long enough
+      return sentences.slice(0, 2).join('. ') + '.';
+    } else if (cleanContent.length > 120) {
+      // If we couldn't split into sentences but content is long, truncate
+      return cleanContent.substring(0, 120) + '...';
+    }
+    
+    // Short content, just return as is
+    return cleanContent;
+  };
 
   // If no events are available, show a message
   if (eventsToDisplay.length === 0 && !events) {
@@ -228,8 +296,8 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
         </CardDescription>
       </CardHeader>
       <CardContent className="text-sm">
-        {/* Display events as tiles/cards */}
-        <div className="grid grid-cols-1 gap-3">
+        {/* Display events as tiles/cards - new grid-based tile UI */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {eventsToDisplay.map(event => {
             // Get event date - extract from content or use createdAt if not found
             let eventDate = extractDate(event.content);
@@ -248,6 +316,9 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
             }
             
             const eventLocation = extractLocation(event.content);
+            
+            // Extract organizer information from content if available
+            const organizerInfo = extractOrganizer(event.content);
             
             // Extract registration link if available
             let registrationLink = null;
@@ -278,39 +349,79 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
               }
             }
             
-            // Truncate content for preview
-            const contentPreview = event.content.substring(0, 120) + (event.content.length > 120 ? '...' : '');
+            // Extract workshop brief (first 2-3 sentences or 100 chars)
+            const brief = extractBrief(event.content);
             
             return (
               <div 
                 key={event.id}
-                className="p-3 bg-zinc-800 rounded-md cursor-pointer hover:bg-zinc-750 transition-colors border border-transparent hover:border-green-800/50"
-                onClick={() => onEventClick && onEventClick(event.title)}
+                className="bg-zinc-800 rounded-lg overflow-hidden hover:bg-zinc-750 transition-colors border border-zinc-700 hover:border-green-800 shadow-md flex flex-col"
               >
-                <h3 className="font-medium text-green-400 mb-1">{event.title}</h3>
-                <div className="flex items-center text-xs text-zinc-400 mb-1">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {eventDate || "Coming Soon"}
+                {/* Header with event title and date */}
+                <div className="bg-zinc-700 p-3 border-b border-zinc-600">
+                  <h3 className="font-medium text-green-400 truncate">{event.title}</h3>
                 </div>
-                {eventLocation && (
-                  <div className="flex items-center text-xs text-zinc-400 mb-1">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {eventLocation}
+                
+                {/* Event details section */}
+                <div className="p-4 flex-1 flex flex-col">
+                  {/* Date and Location section */}
+                  <div className="mb-3 space-y-2">
+                    <div className="flex items-center text-xs text-zinc-300">
+                      <Clock className="h-3 w-3 mr-2 text-green-400" />
+                      <span className="font-medium">Date:</span>
+                      <span className="ml-1">{eventDate || "Coming Soon"}</span>
+                    </div>
+                    
+                    {eventLocation && (
+                      <div className="flex items-center text-xs text-zinc-300">
+                        <MapPin className="h-3 w-3 mr-2 text-green-400" />
+                        <span className="font-medium">Location:</span>
+                        <span className="ml-1">{eventLocation}</span>
+                      </div>
+                    )}
+                    
+                    {organizerInfo && (
+                      <div className="flex items-center text-xs text-zinc-300">
+                        <User className="h-3 w-3 mr-2 text-green-400" />
+                        <span className="font-medium">Organizer:</span>
+                        <span className="ml-1">{organizerInfo}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                <p className="text-zinc-300 text-xs mb-2">{contentPreview}</p>
-                {registrationLink && (
-                  <a 
-                    href={registrationLink.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-green-400 hover:text-green-300 inline-flex items-center"
-                    onClick={(e) => e.stopPropagation()}
+                  
+                  {/* Workshop brief */}
+                  <div 
+                    className="text-zinc-300 text-xs mb-3 flex-1 cursor-pointer" 
+                    onClick={() => onEventClick && onEventClick(event.title)}
                   >
-                    {registrationLink.text}
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                )}
+                    <p>{brief}</p>
+                  </div>
+                </div>
+                
+                {/* Footer with registration button */}
+                <div className="bg-zinc-750 p-3 border-t border-zinc-700 flex justify-between items-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-8 border-zinc-600 hover:border-green-700 bg-zinc-800 hover:bg-zinc-700"
+                    onClick={() => onEventClick && onEventClick(event.title)}
+                  >
+                    Details
+                  </Button>
+                  
+                  {registrationLink && (
+                    <a 
+                      href={registrationLink.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs px-3 py-1.5 bg-green-800 hover:bg-green-700 text-white rounded-md inline-flex items-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {registrationLink.text}
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </a>
+                  )}
+                </div>
               </div>
             );
           })}
