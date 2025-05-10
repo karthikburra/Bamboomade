@@ -2035,10 +2035,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get all enthusiast profiles from the knowledge database
       const allContent = await storage.getAllAiKnowledgeContent();
+      
+      console.log("AI Knowledge content retrieved:", allContent.length, "items");
+      // Log the first few items to inspect their structure
+      if (allContent.length > 0) {
+        console.log("Sample item structure:", JSON.stringify(allContent[0], null, 2));
+      }
+      
+      // Debug all content types
+      const contentTypes = allContent.map(item => item.contentType || item.content_type);
+      console.log("Content types available:", [...new Set(contentTypes)]);
+      
+      // Use both camelCase and snake_case for compatibility
       const enthusiasts = allContent.filter(item => 
-        item.contentType === 'enthusiast' && 
+        (item.contentType === 'enthusiast' || item.content_type === 'enthusiast') && 
         (item.status === 'published' || item.status === 'active')
       );
+      
+      console.log("Filtered enthusiasts:", enthusiasts.length);
       
       if (enthusiasts.length === 0) {
         return res.status(404).json({ error: "No bamboo enthusiasts found" });
