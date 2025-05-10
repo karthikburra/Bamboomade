@@ -74,48 +74,52 @@ const AIChat: React.FC = () => {
       
       <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 py-6 sm:py-8 md:py-12">
         <div className="container max-w-screen-xl px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="mb-3 sm:mb-4 md:mb-6 text-left flex flex-wrap items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
+          <div className="mb-3 sm:mb-4 md:mb-6 text-left">
+            {/* Top Row - Title and Tabs */}
+            <div className="flex justify-between items-center mb-2 sm:mb-3">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">
+                BambooMade AI
+              </h1>
+              
+              {/* Tab Selection in Header */}
+              <div className="bg-zinc-800 border border-zinc-700 rounded-md px-1 py-1 flex space-x-1">
+                <button
+                  onClick={() => setActiveTab("dashboard")}
+                  className={`flex items-center px-3 py-1.5 text-xs font-medium rounded-sm ${
+                    activeTab === "dashboard" 
+                      ? "bg-green-800/80 text-zinc-100" 
+                      : "bg-transparent text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-300"
+                  }`}
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" />
+                  <span>Dashboard</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  className={`flex items-center px-3 py-1.5 text-xs font-medium rounded-sm ${
+                    activeTab === "chat" 
+                      ? "bg-green-800/80 text-zinc-100" 
+                      : "bg-transparent text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-300"
+                  }`}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                  <span>AI Chat</span>
+                </button>
+              </div>
+            </div>
+            
+            {/* Second Row - Chip and description */}
+            <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800">
                 <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-green-500" />
                 <span className="text-xs sm:text-sm font-medium">AI-Powered Assistant</span>
               </div>
               
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100 ml-1">
-                BambooMade AI
-              </h1>
-              
-              <p className="text-sm text-zinc-400 hidden sm:block">
+              <p className="text-sm text-zinc-400">
                 <span className="text-green-400 font-medium">All Bamboo Data in one place.</span>
                 <span className="mx-2 text-zinc-600">|</span>
                 <span className="text-green-500">First 5 questions free</span>
               </p>
-            </div>
-            
-            {/* Tab Selection in Header */}
-            <div className="bg-zinc-800 border border-zinc-700 rounded-md px-1 py-1 flex space-x-1">
-              <button
-                onClick={() => setActiveTab("dashboard")}
-                className={`flex items-center px-3 py-1.5 text-xs font-medium rounded-sm ${
-                  activeTab === "dashboard" 
-                    ? "bg-green-800/80 text-zinc-100" 
-                    : "bg-transparent text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-300"
-                }`}
-              >
-                <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" />
-                <span>Dashboard</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("chat")}
-                className={`flex items-center px-3 py-1.5 text-xs font-medium rounded-sm ${
-                  activeTab === "chat" 
-                    ? "bg-green-800/80 text-zinc-100" 
-                    : "bg-transparent text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-300"
-                }`}
-              >
-                <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-                <span>AI Chat</span>
-              </button>
             </div>
           </div>
           
