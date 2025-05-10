@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe } from 'lucide-react';
+import { Globe, Share2 } from 'lucide-react';
 import SocialMediaEmbed from './SocialMediaEmbed';
 import InstagramScript from './InstagramScript';
 
@@ -17,21 +17,40 @@ const SocialMediaCarousel: React.FC = () => {
   }, []);
 
   return (
-    <Card className="shadow-md border-zinc-800 bg-zinc-900">
-      <CardHeader className="pb-2">
-        <div className="flex items-center">
-          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-            <Globe className="h-5 w-5 mr-2 text-blue-500" />
-            Social Media
-          </CardTitle>
-          <CardDescription className="text-zinc-400 ml-2">
-            Latest content from our social media
-          </CardDescription>
+    <Card className="shadow-xl border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950 overflow-hidden">
+      <CardHeader className="pb-2 relative">
+        {/* Background pattern for header */}
+        <div className="absolute top-0 left-0 right-0 h-full opacity-10 bg-[radial-gradient(circle_at_30%_-20%,_#5b21b6_0%,_transparent_50%)]"></div>
+        
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center">
+            <CardTitle className="text-lg font-medium text-zinc-100 flex items-center">
+              <Globe className="h-5 w-5 mr-2 text-indigo-400" />
+              Social Media
+            </CardTitle>
+            <CardDescription className="text-zinc-400 ml-2">
+              Latest content from our social media
+            </CardDescription>
+          </div>
+          
+          <div className="flex items-center">
+            <span className="bg-amber-400/20 text-amber-300 text-xs px-2 py-0.5 rounded-full font-medium">
+              Latest Posts
+            </span>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
+      
+      <CardContent className="pt-4 px-4 pb-6">
         <InstagramScript />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        {/* Intro text */}
+        <p className="text-sm text-zinc-400 mb-4 max-w-3xl">
+          Explore the latest bamboo architecture innovations and sustainable design techniques from our community and partners.
+        </p>
+        
+        {/* Social media grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Instagram embed - Pablo Luna Studio */}
           <div className="h-full">
             <SocialMediaEmbed 
@@ -63,6 +82,23 @@ const SocialMediaCarousel: React.FC = () => {
               description="Professionals share their expertise on the latest advancements and applications of bamboo in modern architectural design."
               link="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7323319829271064579"
             />
+          </div>
+        </div>
+        
+        {/* Footer section */}
+        <div className="mt-6 flex justify-between items-center pt-4 border-t border-zinc-800/50">
+          <p className="text-xs text-zinc-500">
+            Follow us on social media for more updates and bamboo inspiration
+          </p>
+          <div className="flex items-center">
+            <a 
+              href="https://www.instagram.com/bamboomadein/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs text-zinc-400 hover:text-amber-300 transition-colors flex items-center gap-1"
+            >
+              <Share2 className="h-3 w-3" /> View all posts
+            </a>
           </div>
         </div>
       </CardContent>
