@@ -952,7 +952,15 @@ export default function AIKnowledgeDatabase() {
                                 });
                                 
                                 if (!uploadResponse.ok) {
-                                  throw new Error('Failed to upload image');
+                                  // Get error details from the response
+                                  const errorData = await uploadResponse.json();
+                                  
+                                  if (uploadResponse.status === 401) {
+                                    // Authentication error
+                                    throw new Error('Your admin session has expired. Please log in again.');
+                                  } else {
+                                    throw new Error(errorData.error || 'Failed to upload image');
+                                  }
                                 }
                                 
                                 const data = await uploadResponse.json();

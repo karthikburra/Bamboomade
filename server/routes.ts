@@ -4360,6 +4360,13 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Extract content from the file if possible (for documents, PDFs, etc.)
       let extractedContent = description || "";
       
+      // Check for admin user in session
+      if (!req.session.adminUser || !req.session.adminUser.id) {
+        return res.status(401).json({ 
+          error: "Admin authentication required. Please log in again." 
+        });
+      }
+      
       // Add to AI knowledge base
       const newContent = await storage.createAiKnowledgeContent({
         title,
@@ -4391,6 +4398,13 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       
       if (!platform || !content) {
         return res.status(400).json({ error: "Platform and content are required" });
+      }
+      
+      // Check for admin user in session
+      if (!req.session.adminUser || !req.session.adminUser.id) {
+        return res.status(401).json({ 
+          error: "Admin authentication required. Please log in again." 
+        });
       }
       
       // Add to AI knowledge base
