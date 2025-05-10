@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User, Mail, Phone, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { EnthusiastSocialLinks } from './EnthusiastSocialLinks';
+import EnthusiastSocialLinks from './EnthusiastSocialLinks';
 import { formatDistanceToNow } from 'date-fns';
 
 interface EnthusiastProfile {
@@ -14,7 +14,7 @@ interface EnthusiastProfile {
   contentType: string;
   mediaUrl: string | null;
   contactEmail: string | null;
-  phoneNumber: string | null;
+  contactPhone: string | null;
   instagramUrl: string | null;
   linkedinUrl: string | null;
   twitterUrl: string | null;
@@ -85,13 +85,25 @@ export function TodaysEnthusiast() {
     return (
       <Card className="border-zinc-800 bg-zinc-900">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-            <User className="h-5 w-5 mr-2 text-amber-500" />
-            Today's Bamboo Enthusiast
-          </CardTitle>
-          <CardDescription className="text-zinc-400">
-            Spotlighting innovators in sustainable bamboo design
-          </CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+                <User className="h-5 w-5 mr-2 text-amber-500" />
+                Today's Bamboo Enthusiast
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Spotlighting innovators in sustainable bamboo design
+              </CardDescription>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge 
+                variant="outline" 
+                className="text-xs bg-teal-950/30 text-teal-400 border-teal-800/50"
+              >
+                Enthusiast
+              </Badge>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="text-center py-6">
@@ -121,13 +133,21 @@ export function TodaysEnthusiast() {
               Spotlighting innovators in sustainable bamboo design
             </CardDescription>
           </div>
-          <Badge 
-            variant="outline" 
-            className="text-xs bg-amber-950/30 text-amber-400 border-amber-800/50"
-          >
-            <Sparkles className="h-3 w-3 mr-1" />
-            Featured
-          </Badge>
+          <div className="flex flex-wrap gap-2">
+            <Badge 
+              variant="outline" 
+              className="text-xs bg-amber-950/30 text-amber-400 border-amber-800/50"
+            >
+              <Sparkles className="h-3 w-3 mr-1" />
+              Featured
+            </Badge>
+            <Badge 
+              variant="outline" 
+              className="text-xs bg-teal-950/30 text-teal-400 border-teal-800/50"
+            >
+              Enthusiast
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -165,14 +185,14 @@ export function TodaysEnthusiast() {
             </div>
           )}
           
-          {enthusiast.phoneNumber && (
+          {enthusiast.contactPhone && (
             <div className="flex items-center text-zinc-400">
               <Phone className="h-3.5 w-3.5 mr-2 text-amber-500" />
               <a 
-                href={`tel:${enthusiast.phoneNumber}`}
+                href={`tel:${enthusiast.contactPhone}`}
                 className="hover:text-amber-400 transition-colors"
               >
-                {enthusiast.phoneNumber}
+                {enthusiast.contactPhone}
               </a>
             </div>
           )}
