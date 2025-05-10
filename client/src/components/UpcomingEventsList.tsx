@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ExternalLink, Clock, MapPin, User } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { analyzeEventContent } from '@/utils/eventAnalyzer';
@@ -114,15 +114,7 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
               day = eventDate.getDate().toString();
             }
             
-            // Format time (we'll use this for displaying event time but not with the badge)
-            let timeDisplay = "";
-            if (eventDate) {
-              timeDisplay = eventDate.toLocaleString('en-US', {
-                hour: 'numeric', 
-                minute: 'numeric',
-                hour12: true
-              });
-            }
+            // Time display has been removed as requested
             
             // Determine event category/type - default to "Event" if not specified
             const eventType = event.contentType === 'event' ? "Event" : "Workshop";
@@ -153,13 +145,7 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                     {event.title}
                   </h3>
                   
-                  {/* Time if available - moved below title */}
-                  {timeDisplay && (
-                    <div className="text-xs text-zinc-400 flex items-center mb-1">
-                      <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
-                      <span>{timeDisplay}</span>
-                    </div>
-                  )}
+                  {/* Time display removed as requested */}
                   
                   {/* Location if available */}
                   {eventLocation && (
