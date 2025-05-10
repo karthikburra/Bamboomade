@@ -326,6 +326,25 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
             const contentWords = event.content.split(/\s+/);
             const shortSummary = contentWords.slice(0, 7).join(' ') + (contentWords.length > 7 ? '...' : '');
             
+            // Extract organizer info if available
+            const extractOrganizerInfo = () => {
+              // Try to find contact person or organizer details
+              const contactMatch = event.content.match(/contact:?\s*([^,\.\n]+)/i) || 
+                                   event.content.match(/organized by:?\s*([^,\.\n]+)/i) ||
+                                   event.content.match(/coordinator:?\s*([^,\.\n]+)/i) ||
+                                   event.content.match(/point of contact:?\s*([^,\.\n]+)/i);
+              
+              let contactPerson = contactMatch ? contactMatch[1].trim() : null;
+              
+              // Look for phone number
+              const phoneMatch = event.content.match(/(\+?\d[\d\s-]{8,}\d)/);
+              const phoneNumber = phoneMatch ? phoneMatch[1].trim() : null;
+              
+              return { contactPerson, phoneNumber };
+            };
+            
+            const { contactPerson, phoneNumber } = extractOrganizerInfo();
+            
             return (
               <div 
                 key={event.id}
@@ -333,25 +352,26 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                 onClick={() => onEventClick && onEventClick(event.title)}
               >
                 {/* Left side: Date display */}
-                <div className="w-20 min-w-[5rem] bg-green-900/40 flex flex-col items-center justify-center p-2 border-r border-zinc-700">
+                <div className="w-20 min-w-[5rem] bg-green-900/40 flex flex-col items-center justify-center p-3 border-r border-zinc-700">
                   <Badge variant="outline" className="mb-1 text-xs bg-zinc-900/90 text-amber-400 border-amber-900/60 px-1.5 py-0">
                     {workshopType}
                   </Badge>
                   <div className="text-center">
                     {month && <div className="text-xs text-green-400 font-medium uppercase">{month}</div>}
-                    <div className="text-xl font-bold text-white">{day}</div>
+                    <div className="text-2xl font-bold text-white">{day}</div>
                     {year && <div className="text-xs text-zinc-400">{year}</div>}
                   </div>
                 </div>
                 
                 {/* Right side: Event details */}
                 <div className="flex-1 flex flex-col p-3">
-                  {/* Event title and location */}
+                  {/* Event title */}
                   <div className="mb-2">
                     <h3 className="font-semibold text-green-400 text-base group-hover:text-green-300 transition-colors">
                       {event.title}
                     </h3>
                     
+                    {/* Location info */}
                     {eventLocation && (
                       <div className="flex items-center text-xs text-zinc-400 mt-1">
                         <MapPin className="h-3 w-3 mr-1" />
@@ -360,11 +380,36 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                     )}
                   </div>
                   
+                  {/* Organizer info if available */}
+                  {(contactPerson || phoneNumber) && (
+                    <div className="mb-2 text-xs">
+                      {contactPerson && (
+                        <div className="text-amber-300 flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                          <span>Organizer: {contactPerson}</span>
+                        </div>
+                      )}
+                      {phoneNumber && (
+                        <div className="text-zinc-300 flex items-center mt-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                          </svg>
+                          <span>{phoneNumber}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
                   {/* Brief content preview */}
                   <p className="text-zinc-300 text-xs mb-3 flex-grow">{shortSummary}</p>
                   
                   {/* Action buttons */}
-                  <div className="flex justify-between items-center mt-auto">
+                  <div className="flex justify-between items-center gap-2 mt-auto">
                     {registrationLink ? (
                       <a 
                         href={registrationLink.url}
@@ -392,6 +437,21 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                         </svg>
                       </button>
                     )}
+                    
+                    <button 
+                      className="px-3 py-1.5 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-zinc-300 rounded-md text-xs font-medium inline-flex items-center border border-zinc-700 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick && onEventClick(`What are the workshop details for "${event.title}"?`);
+                      }}
+                    >
+                      Workshop Info
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1.5">
+                        <rect width="18" height="18" x="3" y="3" rx="2" />
+                        <path d="M9 15V9h6" />
+                        <path d="M9 9h6v6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
