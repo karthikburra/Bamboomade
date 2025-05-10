@@ -58,43 +58,67 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
       <CardContent className="pt-0">
         <div className="space-y-4">
           {eventsToDisplay.map((event) => {
-            // Analyze event to extract dates and other info
-            const eventInfo = analyzeEventContent(event.content, event.title);
+            // Use event-specific fields if available, or fall back to content analysis
+            let eventDate: Date | null = null;
+            let eventLocation: string | null = null;
+            let registrationLink: string | null = null;
             
-            // Extract month and day from the start date
+            // Check if the content type is 'event' and we have specific fields populated
+            if (event.contentType === 'event') {
+              // Handle eventDate
+              if (event.eventDate) {
+                eventDate = new Date(event.eventDate);
+              }
+              
+              // Handle eventLocation - ensure it's string | null and not undefined
+              if (typeof event.eventLocation === 'string') {
+                eventLocation = event.eventLocation;
+              }
+              
+              // Handle registrationLink - ensure it's string | null and not undefined
+              if (typeof event.registrationLink === 'string') {
+                registrationLink = event.registrationLink;
+              }
+            }
+            
+            // If we don't have direct fields data, fall back to analyzing content
+            if (!eventDate || !eventLocation || !registrationLink) {
+              const eventInfo = analyzeEventContent(event.content, event.title);
+              
+              if (!eventDate && eventInfo.dates.startDate) {
+                eventDate = eventInfo.dates.startDate;
+              }
+              
+              if (!eventLocation && eventInfo.location?.name) {
+                eventLocation = eventInfo.location.name;
+              }
+              
+              if (!registrationLink && eventInfo.registration?.url) {
+                registrationLink = eventInfo.registration.url;
+              }
+            }
+            
+            // Extract month and day from the event date
             let month = "TBD";
             let day = "";
             
-            if (eventInfo.dates.startDate) {
-              const date = eventInfo.dates.startDate;
-              month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-              day = date.getDate().toString();
+            if (eventDate) {
+              month = eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+              day = eventDate.getDate().toString();
             }
             
             // Format time
             let timeDisplay = "";
-            if (eventInfo.dates.startDate) {
-              const startTime = eventInfo.dates.startDate.toLocaleString('en-US', {
+            if (eventDate) {
+              timeDisplay = eventDate.toLocaleString('en-US', {
                 hour: 'numeric', 
                 minute: 'numeric',
                 hour12: true
               });
-              
-              let endTime = "";
-              if (eventInfo.dates.endDate) {
-                endTime = eventInfo.dates.endDate.toLocaleString('en-US', {
-                  hour: 'numeric', 
-                  minute: 'numeric',
-                  hour12: true
-                });
-                timeDisplay = `${startTime} - ${endTime}`;
-              } else {
-                timeDisplay = startTime;
-              }
             }
             
-            // Determine event category/type
-            const eventType = eventInfo.details?.category || "Workshop";
+            // Determine event category/type - default to "Event" if not specified
+            const eventType = event.contentType === 'event' ? "Event" : "Workshop";
             
             return (
               <div 
@@ -112,11 +136,9 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                 <div className="flex-1 min-w-0">
                   {/* Event category badge and time */}
                   <div className="flex items-center mb-1">
-                    {eventType && (
-                      <Badge variant="outline" className="mr-2 text-xs px-1.5 py-0 bg-zinc-900/90 text-amber-400 border-amber-900/60">
-                        {eventType}
-                      </Badge>
-                    )}
+                    <Badge variant="outline" className="mr-2 text-xs px-1.5 py-0 bg-zinc-900/90 text-amber-400 border-amber-900/60">
+                      {eventType}
+                    </Badge>
                     
                     {timeDisplay && (
                       <div className="text-xs text-zinc-400 flex items-center">
@@ -132,22 +154,23 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                   </h3>
                   
                   {/* Location if available */}
-                  {eventInfo.location?.name && (
-                    <div className="text-xs text-zinc-400 mb-1 truncate">
-                      {eventInfo.location.name}
+                  {eventLocation && (
+                    <div className="text-xs text-zinc-400 mb-1 flex items-center truncate">
+                      <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{eventLocation}</span>
                     </div>
                   )}
                   
                   {/* Registration link if available */}
-                  {eventInfo.registration?.url && (
+                  {registrationLink && (
                     <a 
-                      href={eventInfo.registration.url}
+                      href={registrationLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-xs text-green-500 hover:text-green-400 transition-colors mt-1"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {eventInfo.registration.text || "Register Now"}
+                      Register Now
                       <ExternalLink className="h-3 w-3 ml-1" />
                     </a>
                   )}

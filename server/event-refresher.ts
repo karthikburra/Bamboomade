@@ -249,6 +249,10 @@ export async function getUpcomingEvents(date?: Date): Promise<Array<{
   content: string;
   createdAt: Date;
   source: string | null;
+  contentType?: string;
+  eventDate?: string | null;
+  eventLocation?: string | null;
+  registrationLink?: string | null;
 }>> {
   try {
     // Get all content from the knowledge base
@@ -259,6 +263,16 @@ export async function getUpcomingEvents(date?: Date): Promise<Array<{
     
     // Filter for event content types and content containing future dates
     const upcomingEvents = allContent.filter(item => {
+      // First - check if it's an event content type with a future eventDate
+      if (item.contentType === 'event' && item.eventDate) {
+        const eventDate = new Date(item.eventDate);
+        // If the event date is in the future, include it
+        if (eventDate >= currentDate && item.status === "active") {
+          return true;
+        }
+      }
+      
+      // Fallback to the old content analysis method
       // Check if it's specifically an event content type
       const isEventType = item.contentType === 'event';
       
