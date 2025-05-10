@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ExternalLink, MapPin, User } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin, User, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { analyzeEventContent } from '@/utils/eventAnalyzer';
@@ -50,10 +50,20 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
   return (
     <Card className="bg-zinc-900 border-zinc-800">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-bold text-zinc-100 flex items-center">
-          <CalendarDays className="h-5 w-5 mr-2 text-green-500" />
-          Upcoming Events
-        </CardTitle>
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-xl font-bold text-zinc-100 flex items-center">
+            <CalendarDays className="h-5 w-5 mr-2 text-green-500" />
+            Upcoming Events
+          </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-4">

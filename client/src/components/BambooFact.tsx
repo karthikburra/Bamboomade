@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen } from 'lucide-react';
+import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen, RefreshCw } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -186,13 +186,25 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
   return (
     <Card className="border-zinc-800 bg-zinc-900 h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-          <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
-          Did You Know?
-        </CardTitle>
-        <CardDescription className="text-xs text-zinc-400">
-          Interesting facts about bamboo architecture and design
-        </CardDescription>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+              <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
+              Did You Know?
+            </CardTitle>
+            <CardDescription className="text-xs text-zinc-400">
+              Interesting facts about bamboo architecture and design
+            </CardDescription>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-amber-400 -mt-1 -mr-2"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

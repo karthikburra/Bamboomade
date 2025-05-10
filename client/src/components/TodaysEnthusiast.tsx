@@ -165,6 +165,15 @@ export function TodaysEnthusiast() {
               Spotlighting innovators in sustainable bamboo design
             </CardDescription>
           </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-amber-400 -mt-1 -mr-2"
+            onClick={handleRefresh}
+            disabled={isRefreshing || allEnthusiasts.length <= 1}
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
@@ -228,20 +237,7 @@ export function TodaysEnthusiast() {
         />
       </CardContent>
       
-      {allEnthusiasts.length > 1 && (
-        <CardFooter className="pt-0 pb-3 justify-end">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-zinc-400 hover:text-amber-400"
-            onClick={handleRefresh}
-            disabled={isRefreshing || allEnthusiasts.length <= 1}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Show Another
-          </Button>
-        </CardFooter>
-      )}
+
     </Card>
   );
 }
