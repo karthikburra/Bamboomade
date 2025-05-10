@@ -4327,7 +4327,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   });
   
   // File upload endpoint for the AI Knowledge Base
-  app.post("/api/ai-knowledge/upload-file", isAdmin, upload.single("file"), async (req, res) => {
+  app.post("/api/ai-knowledge/upload-file", isAdmin, upload.single("image"), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });

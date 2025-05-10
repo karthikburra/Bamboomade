@@ -239,7 +239,7 @@ export default function AIKnowledgeDatabase() {
   }, {});
 
   return (
-    <div className="container pb-16 pt-8 max-w-7xl dark min-h-screen bg-gray-950">
+    <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-amber-400">AI Knowledge Database</h1>
       
       <AdminTabs value="database">
