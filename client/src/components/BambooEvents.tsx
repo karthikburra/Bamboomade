@@ -59,9 +59,14 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
     return null;
   };
   
-  // Filter events to only include actual events (not Medium articles or other content types)
+  // Filter events to only include actual events (not Medium articles, enthusiast profiles, or other content types)
   const filterActualEvents = (events: Event[]) => {
     return events.filter(event => {
+      // Explicitly exclude enthusiast content types
+      if (event.contentType === 'enthusiast') {
+        return false;
+      }
+      
       // Check if it's explicitly an event content type
       if (event.contentType === 'event') {
         return true;
@@ -72,19 +77,23 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
           event.title.toLowerCase().includes('event') ||
           event.title.toLowerCase().includes('course') ||
           event.title.toLowerCase().includes('webinar') ||
-          event.title.toLowerCase().includes('session')) {
+          event.title.toLowerCase().includes('session') ||
+          event.title.toLowerCase().includes('training')) {
         return true;
       }
       
-      // If title contains "Medium" or similar publication names, it's not an event
+      // If title contains non-event indicators, it's not an event
       if (event.title.includes('Medium') || 
           event.title.includes('Blog') ||
-          event.title.includes('Article')) {
+          event.title.includes('Article') ||
+          event.title.includes('Profile') ||
+          event.title.includes('Enthusiast') ||
+          event.title.includes('Meet')) {
         return false;
       }
       
       // Check content for event indicators
-      const eventKeywords = ['register', 'rsvp', 'join us', 'workshop', 'webinar', 'session', 'training'];
+      const eventKeywords = ['register', 'rsvp', 'join us', 'workshop', 'webinar', 'session', 'training', 'seminar'];
       for (const keyword of eventKeywords) {
         if (event.content.toLowerCase().includes(keyword)) {
           return true;
@@ -355,57 +364,91 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
             return (
               <div 
                 key={event.id}
-                className="bg-zinc-800 rounded-lg overflow-hidden hover:bg-zinc-750 transition-colors border border-zinc-700 hover:border-green-800 shadow-md flex flex-col"
+                className="bg-gradient-to-br from-zinc-800 to-zinc-850 rounded-lg overflow-hidden hover:from-zinc-750 hover:to-zinc-800 transition-all border border-zinc-700 hover:border-green-600 shadow-lg flex flex-col transform hover:-translate-y-1 hover:shadow-green-900/20"
               >
-                {/* Header with event title and date */}
-                <div className="bg-zinc-700 p-3 border-b border-zinc-600">
-                  <h3 className="font-medium text-green-400 truncate">{event.title}</h3>
+                {/* Header with event title */}
+                <div className="bg-gradient-to-r from-green-900/50 to-zinc-800/90 p-3 border-b border-zinc-600 flex items-center justify-between">
+                  <h3 className="font-medium text-green-300 truncate text-sm">{event.title}</h3>
+                  <Badge className="bg-green-800/50 text-green-300 border-0 text-[10px] px-1.5 py-0">
+                    Workshop
+                  </Badge>
                 </div>
                 
                 {/* Event details section */}
                 <div className="p-4 flex-1 flex flex-col">
-                  {/* Date and Location section */}
-                  <div className="mb-3 space-y-2">
-                    <div className="flex items-center text-xs text-zinc-300">
-                      <Clock className="h-3 w-3 mr-2 text-green-400" />
-                      <span className="font-medium">Date:</span>
-                      <span className="ml-1">{eventDate || "Coming Soon"}</span>
+                  {/* Date tile at the top */}
+                  <div className="mb-3 flex justify-between items-start">
+                    <div className="flex-shrink-0 bg-zinc-900 rounded border border-green-900/30 p-1.5 flex flex-col items-center justify-center w-[60px] shadow-inner">
+                      {eventDate ? (
+                        <>
+                          <span className="text-green-400 text-xs font-bold">
+                            {(() => {
+                              try {
+                                const date = new Date(eventDate);
+                                return date.toLocaleDateString('en-US', { month: 'short' });
+                              } catch (e) {
+                                // If parsing fails, try to extract month from string
+                                const monthMatch = eventDate.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i);
+                                return monthMatch ? monthMatch[0] : 'Soon';
+                              }
+                            })()}
+                          </span>
+                          <span className="text-white text-lg font-bold leading-none mt-0.5">
+                            {(() => {
+                              try {
+                                const date = new Date(eventDate);
+                                return date.getDate();
+                              } catch (e) {
+                                // If parsing fails, try to extract day from string
+                                const dayMatch = eventDate.match(/\b(\d{1,2})\b/);
+                                return dayMatch ? dayMatch[0] : '';
+                              }
+                            })()}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-green-400 text-xs font-bold">Soon</span>
+                      )}
                     </div>
                     
-                    {eventLocation && (
-                      <div className="flex items-center text-xs text-zinc-300">
-                        <MapPin className="h-3 w-3 mr-2 text-green-400" />
-                        <span className="font-medium">Location:</span>
-                        <span className="ml-1">{eventLocation}</span>
-                      </div>
-                    )}
-                    
-                    {organizerInfo && (
-                      <div className="flex items-center text-xs text-zinc-300">
-                        <User className="h-3 w-3 mr-2 text-green-400" />
-                        <span className="font-medium">Organizer:</span>
-                        <span className="ml-1">{organizerInfo}</span>
-                      </div>
-                    )}
+                    <div className="flex flex-col space-y-1 flex-1 ml-3">
+                      {eventLocation && (
+                        <div className="flex items-center text-xs text-zinc-300">
+                          <MapPin className="h-3 w-3 mr-1.5 text-green-400 flex-shrink-0" />
+                          <span className="truncate">{eventLocation}</span>
+                        </div>
+                      )}
+                      
+                      {organizerInfo && (
+                        <div className="flex items-center text-xs text-zinc-300">
+                          <Building className="h-3 w-3 mr-1.5 text-green-400 flex-shrink-0" />
+                          <span className="truncate">{organizerInfo}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Divider */}
+                  <div className="border-t border-zinc-700/50 my-2 opacity-50"></div>
                   
                   {/* Workshop brief */}
                   <div 
-                    className="text-zinc-300 text-xs mb-3 flex-1 cursor-pointer" 
+                    className="text-zinc-300 text-xs mb-3 flex-1 cursor-pointer hover:text-zinc-100 transition-colors" 
                     onClick={() => onEventClick && onEventClick(event.title)}
                   >
-                    <p>{brief}</p>
+                    <p className="line-clamp-3">{brief}</p>
                   </div>
                 </div>
                 
                 {/* Footer with registration button */}
-                <div className="bg-zinc-750 p-3 border-t border-zinc-700 flex justify-between items-center">
+                <div className="bg-zinc-850 px-3 py-2.5 border-t border-zinc-700/80 flex justify-between items-center">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="text-xs h-8 border-zinc-600 hover:border-green-700 bg-zinc-800 hover:bg-zinc-700"
+                    className="text-xs h-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
                     onClick={() => onEventClick && onEventClick(event.title)}
                   >
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" />
                     Details
                   </Button>
                   
@@ -414,11 +457,11 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                       href={registrationLink.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs px-3 py-1.5 bg-green-800 hover:bg-green-700 text-white rounded-md inline-flex items-center"
+                      className="text-xs px-3 py-1.5 bg-gradient-to-r from-green-800 to-green-700 hover:from-green-700 hover:to-green-600 text-white rounded-md inline-flex items-center shadow transform transition-all hover:scale-105"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {registrationLink.text}
-                      <ExternalLink className="h-3 w-3 ml-1" />
+                      <ExternalLink className="h-3 w-3 ml-1.5" />
                     </a>
                   )}
                 </div>
