@@ -2009,6 +2009,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Today's Bamboo Enthusiast API Endpoint - shows a randomly selected enthusiast that changes daily
+  app.get("/api/todays-enthusiast", async (req, res) => {
+    try {
+      // Get the current date or use date parameter if provided
+      const dateParam = req.query.date as string | undefined;
+      let selectedDate: Date;
+      
+      if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+        selectedDate = new Date(dateParam);
+        if (isNaN(selectedDate.getTime())) {
+          selectedDate = new Date();
+        }
+      } else {
+        selectedDate = new Date();
+      }
+      
+      // Format date as YYYY-MM-DD for consistent selection
+      const dateString = selectedDate.toISOString().split('T')[0];
+      
+      // Get all enthusiast profiles from the knowledge database
+      const allContent = await storage.getAllAiKnowledgeContent();
+      const enthusiasts = allContent.filter(item => 
+        item.contentType === 'enthusiast' && 
+        item.status === 'published'
+      );
+      
+      if (enthusiasts.length === 0) {
+        return res.status(404).json({ error: "No bamboo enthusiasts found" });
+      }
+      
+      // Use the date string as a seed for deterministic selection
+      // This ensures the same enthusiast is shown all day, but changes each day
+      const seed = dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const selectedIndex = seed % enthusiasts.length;
+      const todaysEnthusiast = enthusiasts[selectedIndex];
+      
+      res.json(todaysEnthusiast);
+    } catch (error) {
+      console.error("Error fetching today's enthusiast:", error);
+      res.status(500).json({ error: "Failed to fetch today's bamboo enthusiast" });
+    }
+  });
+  
   // Save Dashboard Snapshot - captures the current dashboard state for a specific date
   app.post("/api/dashboard-snapshots", isAdmin, async (req, res) => {
     try {

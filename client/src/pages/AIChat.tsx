@@ -11,6 +11,7 @@ import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
 import RecentArticles from "@/components/RecentArticles";
 import SocialMediaCarousel from "@/components/SocialMediaCarousel";
+import TodaysEnthusiast from "@/components/TodaysEnthusiast";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
