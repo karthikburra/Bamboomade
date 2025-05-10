@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { 
   X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
   AlertTriangle, AlertCircle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
-  UploadCloud, CheckCircle, Clock, ThumbsUp, ThumbsDown, Bell, Loader2
+  UploadCloud, CheckCircle, Clock, ThumbsUp, ThumbsDown, Bell, Loader2, Eye
 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -443,14 +443,22 @@ export default function AIKnowledgeDatabase() {
             </div>
             
             <div className="text-sm text-gray-400 mt-2 mb-4 px-1">
-              {filteredContent ? (
-                <span><span className="text-amber-400 font-semibold">{filteredContent.length}</span> items found</span>
+              {activeTab === "all" ? (
+                filteredContent ? (
+                  <span><span className="text-amber-400 font-semibold">{filteredContent.length}</span> items found</span>
+                ) : (
+                  <span>Loading...</span>
+                )
               ) : (
-                <span>Loading...</span>
+                pendingContent ? (
+                  <span><span className="text-amber-400 font-semibold">{pendingContent.length}</span> pending items</span>
+                ) : (
+                  <span>Loading pending content...</span>
+                )
               )}
             </div>
 
-            {isLoading ? (
+            {(activeTab === "all" && isLoading) || (activeTab === "pending" && isPendingLoading) ? (
               <div className="space-y-10">
                 <div className="flex justify-center items-center gap-3 py-6">
                   <LoadingSpinner size="md" />
@@ -486,15 +494,19 @@ export default function AIKnowledgeDatabase() {
                   </div>
                 ))}
               </div>
-            ) : error ? (
+            ) : (activeTab === "all" && error) || (activeTab === "pending" && pendingError) ? (
               <div className="bg-red-900/20 border border-red-800 rounded-lg p-6 text-center">
                 <div className="flex flex-col items-center gap-3">
                   <AlertCircle className="h-10 w-10 text-red-400" />
                   <p className="text-lg font-semibold text-red-400">Error loading AI knowledge content</p>
                   <p className="text-gray-400 max-w-md mx-auto mb-2">
-                    {error instanceof Error 
-                      ? error.message
-                      : "There was a problem connecting to the server. This could be due to high server load or network issues."}
+                    {activeTab === "pending" 
+                      ? (pendingError instanceof Error 
+                          ? pendingError.message 
+                          : "There was a problem connecting to the server while fetching pending content.")
+                      : (error instanceof Error 
+                          ? error.message
+                          : "There was a problem connecting to the server. This could be due to high server load or network issues.")}
                   </p>
                   
                   <div className="bg-red-900/30 border border-red-800/50 p-4 rounded-md text-sm text-left w-full max-w-lg my-2">
@@ -509,7 +521,7 @@ export default function AIKnowledgeDatabase() {
                   
                   <Button 
                     variant="default" 
-                    onClick={() => refetch()} 
+                    onClick={() => activeTab === "pending" ? refetchPending() : refetch()} 
                     className="mt-2 bg-red-900 hover:bg-red-800 border border-red-700"
                   >
                     <RefreshCcw className="mr-2 h-4 w-4" />
@@ -519,7 +531,89 @@ export default function AIKnowledgeDatabase() {
               </div>
             ) : (
               <>
-                {Object.keys(groupedContent || {}).length === 0 ? (
+                {activeTab === "pending" ? (
+                  pendingContent && pendingContent.length === 0 ? (
+                    <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-12 text-center">
+                      <p className="text-gray-400">There are no pending content items waiting for approval.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {pendingContent && pendingContent.map((content: AiKnowledgeContent) => (
+                        <div key={content.id} className="bg-orange-950/30 border border-orange-900/50 rounded-lg p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-lg font-semibold text-white">{content.title}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge className={getContentTypeColor(content.contentType)}>
+                                  {getContentTypeLabel(content.contentType)}
+                                </Badge>
+                                <span className="text-sm text-gray-400">Added on {new Date(content.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="default"
+                              size="sm" 
+                              className="bg-green-700 hover:bg-green-600 border-none text-white"
+                              onClick={() => approveContent(content.id)}
+                              disabled={isApproving}
+                            >
+                              {isApproving ? (
+                                <>
+                                  <LoadingSpinner size="sm" className="mr-2" />
+                                  Approving...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  Approve
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          
+                          <div className="bg-gray-900/50 rounded border border-gray-800 p-4 mb-4">
+                            <p className="text-gray-300 whitespace-pre-wrap">{content.content}</p>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-400">Content Type: <span className="text-white">{getContentTypeLabel(content.contentType)}</span></p>
+                              {content.source && <p className="text-sm text-gray-400">Source: <span className="text-white">{content.source}</span></p>}
+                              
+                              {content.contentType === "event" && (
+                                <>
+                                  {content.eventDate && <p className="text-sm text-gray-400">Event Date: <span className="text-white">{new Date(content.eventDate).toLocaleDateString()}</span></p>}
+                                  {content.eventLocation && <p className="text-sm text-gray-400">Location: <span className="text-white">{content.eventLocation}</span></p>}
+                                </>
+                              )}
+                            </div>
+                            
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline"
+                                size="sm" 
+                                className="border-amber-600 text-amber-400 hover:bg-amber-900/20"
+                                onClick={() => handleViewDetails(content)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </Button>
+                              <Button 
+                                variant="outline"
+                                size="sm" 
+                                className="border-red-600 text-red-400 hover:bg-red-900/20"
+                                onClick={() => handleDeleteContent(content)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : Object.keys(groupedContent || {}).length === 0 ? (
                   <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-12 text-center">
                     <p className="text-gray-400">No content matches your search criteria.</p>
                   </div>
