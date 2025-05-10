@@ -11,6 +11,7 @@ import BambooFact from "@/components/BambooFact";
 import RecentArticles from "@/components/RecentArticles";
 import SocialMediaCarousel from "@/components/SocialMediaCarousel";
 import TodaysEnthusiast from "@/components/TodaysEnthusiast";
+import UpcomingEventsList from "@/components/UpcomingEventsList";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
@@ -180,14 +181,22 @@ const AIChat: React.FC = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Facts Section */}
-                    <div className="mb-4 sm:mb-6">
+                    {/* Top Row - Facts and Events */}
+                    <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6 md:grid-cols-2">
                       {/* Bamboo Facts Card */}
                       <div>
                         <BambooFact 
                           factData={dashboardData?.fact || null}
                           factsData={dashboardData?.facts || []}
                           onFactClick={handleTopicClick}
+                        />
+                      </div>
+                      
+                      {/* Upcoming Events List */}
+                      <div>
+                        <UpcomingEventsList 
+                          events={dashboardData?.upcomingEvents || []}
+                          onEventClick={handleTopicClick}
                         />
                       </div>
                     </div>
