@@ -183,6 +183,10 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   twitterUrl: text("twitter_url"), // Twitter/X profile URL
   facebookUrl: text("facebook_url"), // Facebook profile URL
   personalWebsite: text("personal_website"), // Personal website URL
+  // Event specific fields
+  eventDate: text("event_date"), // Date and time of the event
+  eventLocation: text("event_location"), // Physical or virtual location of the event
+  registrationLink: text("registration_link"), // URL for event registration
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdBy: integer("created_by").notNull(), // Admin ID who created this content
@@ -205,6 +209,10 @@ export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeCont
   twitterUrl: true,
   facebookUrl: true,
   personalWebsite: true,
+  // Event specific fields
+  eventDate: true,
+  eventLocation: true,
+  registrationLink: true,
   createdBy: true,
 });
 
