@@ -117,8 +117,6 @@ const AIChat: React.FC = () => {
               
               <p className="text-sm text-zinc-400">
                 <span className="text-green-400 font-medium">All Bamboo Data in one place.</span>
-                <span className="mx-2 text-zinc-600">|</span>
-                <span className="text-green-500">First 5 questions free</span>
               </p>
             </div>
           </div>
