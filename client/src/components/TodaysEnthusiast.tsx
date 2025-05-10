@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Phone, Sparkles } from 'lucide-react';
+import { User, Mail, Phone, Sparkles, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import EnthusiastSocialLinks from './EnthusiastSocialLinks';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -27,28 +28,55 @@ interface EnthusiastProfile {
 
 export function TodaysEnthusiast() {
   const [enthusiast, setEnthusiast] = useState<EnthusiastProfile | null>(null);
+  const [allEnthusiasts, setAllEnthusiasts] = useState<EnthusiastProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const fetchAllEnthusiasts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/todays-enthusiast?all=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch bamboo enthusiasts');
+      }
+      const data = await response.json();
+      setAllEnthusiasts(data);
+      
+      // Show a random enthusiast from the list
+      if (data.length > 0) {
+        const randomIndex = Math.floor(Math.random() * data.length);
+        setEnthusiast(data[randomIndex]);
+      }
+    } catch (err) {
+      console.error('Error fetching enthusiasts:', err);
+      setError('Could not load bamboo enthusiasts');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleRefresh = () => {
+    if (allEnthusiasts.length <= 1) return;
+    
+    setIsRefreshing(true);
+    
+    // Get a random enthusiast that's different from the current one
+    let newIndex;
+    do {
+      newIndex = Math.floor(Math.random() * allEnthusiasts.length);
+    } while (allEnthusiasts[newIndex].id === enthusiast?.id && allEnthusiasts.length > 1);
+    
+    setEnthusiast(allEnthusiasts[newIndex]);
+    
+    // Show refresh animation
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 500);
+  };
 
   useEffect(() => {
-    const fetchEnthusiast = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/todays-enthusiast');
-        if (!response.ok) {
-          throw new Error('Failed to fetch today\'s bamboo enthusiast');
-        }
-        const data = await response.json();
-        setEnthusiast(data);
-      } catch (err) {
-        console.error('Error fetching enthusiast:', err);
-        setError('Could not load today\'s bamboo enthusiast');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEnthusiast();
+    fetchAllEnthusiasts();
   }, []);
 
   if (isLoading) {
@@ -127,7 +155,7 @@ export function TodaysEnthusiast() {
           <div>
             <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
               <User className="h-5 w-5 mr-2 text-amber-500" />
-              Today's Bamboo Enthusiast
+              Bamboo Enthusiast
             </CardTitle>
             <CardDescription className="text-zinc-400">
               Spotlighting innovators in sustainable bamboo design
@@ -208,6 +236,21 @@ export function TodaysEnthusiast() {
           githubUrl={enthusiast.githubUrl}
         />
       </CardContent>
+      
+      {allEnthusiasts.length > 1 && (
+        <CardFooter className="pt-0 pb-3 justify-end">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-amber-400"
+            onClick={handleRefresh}
+            disabled={isRefreshing || allEnthusiasts.length <= 1}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Show Another
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

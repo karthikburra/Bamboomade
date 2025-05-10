@@ -2011,9 +2011,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Today's Bamboo Enthusiast API Endpoint - shows a randomly selected enthusiast that changes daily
+  // Today's Bamboo Enthusiast API Endpoint - returns either all enthusiasts or one random enthusiast
   app.get("/api/todays-enthusiast", async (req, res) => {
     try {
+      // Check if we should return all enthusiasts
+      const returnAll = req.query.all === 'true';
+      
       // Get the current date or use date parameter if provided
       const dateParam = req.query.date as string | undefined;
       let selectedDate: Date;
@@ -2041,7 +2044,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No bamboo enthusiasts found" });
       }
       
-      // Use the date string as a seed for deterministic selection
+      // If returnAll is true, return all enthusiasts
+      if (returnAll) {
+        return res.json(enthusiasts);
+      }
+      
+      // Otherwise use the date string as a seed for deterministic selection
       // This ensures the same enthusiast is shown all day, but changes each day
       const seed = dateString.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
       const selectedIndex = seed % enthusiasts.length;
