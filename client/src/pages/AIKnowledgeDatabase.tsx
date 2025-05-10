@@ -81,6 +81,8 @@ export default function AIKnowledgeDatabase() {
         return "YouTube";
       case "training":
         return "Training";
+      case "enthusiast":
+        return "Bamboo Enthusiast";
       case "custom":
         return "Custom";
       default:
@@ -104,6 +106,8 @@ export default function AIKnowledgeDatabase() {
         return "bg-red-600";
       case "training":
         return "bg-cyan-600";
+      case "enthusiast":
+        return "bg-teal-600";
       case "custom":
         return "bg-slate-600";
       default:
@@ -283,6 +287,7 @@ export default function AIKnowledgeDatabase() {
                       <SelectItem value="event" className="hover:bg-zinc-800 focus:bg-zinc-800 text-amber-400">Events</SelectItem>
                       <SelectItem value="youtube" className="hover:bg-zinc-800 focus:bg-zinc-800 text-red-400">YouTube</SelectItem>
                       <SelectItem value="training" className="hover:bg-zinc-800 focus:bg-zinc-800 text-cyan-400">Training</SelectItem>
+                      <SelectItem value="enthusiast" className="hover:bg-zinc-800 focus:bg-zinc-800 text-teal-400">Bamboo Enthusiasts</SelectItem>
                       <SelectItem value="custom" className="hover:bg-zinc-800 focus:bg-zinc-800 text-gray-400">Custom</SelectItem>
                     </SelectContent>
                   </Select>
@@ -614,6 +619,7 @@ export default function AIKnowledgeDatabase() {
                       <SelectItem value="event" className="hover:bg-zinc-800 text-amber-300 focus:bg-zinc-800 focus:text-amber-300">Event</SelectItem>
                       <SelectItem value="youtube" className="hover:bg-zinc-800 text-red-300 focus:bg-zinc-800 focus:text-red-300">YouTube</SelectItem>
                       <SelectItem value="training" className="hover:bg-zinc-800 text-sky-300 focus:bg-zinc-800 focus:text-sky-300">Training</SelectItem>
+                      <SelectItem value="enthusiast" className="hover:bg-zinc-800 text-teal-300 focus:bg-zinc-800 focus:text-teal-300">Bamboo Enthusiast</SelectItem>
                       <SelectItem value="custom" className="hover:bg-zinc-800 text-gray-300 focus:bg-zinc-800 focus:text-gray-300">Custom</SelectItem>
                     </SelectContent>
                   </Select>
