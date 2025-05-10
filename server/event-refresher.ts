@@ -392,9 +392,9 @@ export async function getRecentUpdates(date?: Date): Promise<Array<{
       return [];
     }
     
-    // Implement daily rotation using the current date
-    const today = new Date();
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    // Implement daily rotation using the provided date or current date
+    const targetDate = date || new Date();
+    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / 86400000);
     
     // Sort all articles by date (newest first)
     externalArticles.sort((a, b) => 
@@ -488,13 +488,19 @@ export async function getMultipleBambooFacts(count: number = 3, date?: Date): Pr
     // Create a diverse collection of content by picking from different types
     let selectedContent: any[] = [];
     
+    // Use provided date parameter to generate a consistent set of facts for a given date
+    const targetDate = date || new Date();
+    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / 86400000);
+    
     // First try to get one item from each different content type
     for (let i = 0; i < Math.min(count, availableTypes.length); i++) {
       const type = availableTypes[i];
       if (contentByType[type] && contentByType[type].length > 0) {
-        // Shuffle to get a random item of this type
-        const shuffledTypeContent = [...contentByType[type]].sort(() => 0.5 - Math.random());
-        selectedContent.push(shuffledTypeContent[0]);
+        // Instead of random shuffle, use date-based selection to ensure consistent results for a given date
+        const typeItems = contentByType[type];
+        // Use the day of year and type name to generate a deterministic index
+        const dateBasedIndex = (dayOfYear + type.length + i) % typeItems.length;
+        selectedContent.push(typeItems[dateBasedIndex]);
       }
     }
     
@@ -511,17 +517,28 @@ export async function getMultipleBambooFacts(count: number = 3, date?: Date): Pr
         remainingContent = [...remainingContent, ...unusedItems];
       });
       
-      // Shuffle and select remaining items needed
-      const shuffledRemaining = remainingContent.sort(() => 0.5 - Math.random());
-      const additionalItems = shuffledRemaining.slice(0, count - selectedContent.length);
+      // Use date-based selection for remaining items too
+      // Sort by ID to ensure consistency
+      const sortedRemaining = remainingContent.sort((a, b) => a.id - b.id);
+      // Select in a deterministic way based on date
+      const neededCount = count - selectedContent.length;
+      const startIndex = dayOfYear % Math.max(1, sortedRemaining.length - neededCount + 1);
+      const additionalItems = sortedRemaining.slice(startIndex, startIndex + neededCount);
       selectedContent = [...selectedContent, ...additionalItems];
     }
     
     // If we still don't have enough content, just use whatever we have
     if (selectedContent.length === 0) {
-      // Fallback to original random selection
-      const shuffled = [...bambooContent].sort(() => 0.5 - Math.random());
-      selectedContent = shuffled.slice(0, Math.min(count, shuffled.length));
+      // Fallback to deterministic selection based on date
+      const sortedContent = [...bambooContent].sort((a, b) => a.id - b.id);
+      const startIndex = dayOfYear % Math.max(1, sortedContent.length - count + 1);
+      selectedContent = sortedContent.slice(startIndex, startIndex + Math.min(count, sortedContent.length - startIndex));
+      
+      // If we still need more content and we couldn't get enough from the start index, wrap around
+      if (selectedContent.length < count && sortedContent.length > 0) {
+        const remaining = count - selectedContent.length;
+        selectedContent = [...selectedContent, ...sortedContent.slice(0, remaining)];
+      }
     }
     
     // Get OpenAI instance
