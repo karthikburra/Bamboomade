@@ -97,8 +97,82 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
     });
   };
   
-  // Use provided upcomingEvents or the fetched ones, but filter to actual events only
-  const eventsToDisplay = filterActualEvents(upcomingEvents.length > 0 ? upcomingEvents : fetchedEvents);
+  // Filter events to only include upcoming (future) events
+  const filterUpcomingEvents = (events: Event[]) => {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set to beginning of day
+    
+    return events.filter(event => {
+      // If we can extract a date from the content, use that to determine if it's upcoming
+      const eventDateStr = extractDate(event.content);
+      if (eventDateStr) {
+        try {
+          // Convert the extracted date string to a Date object
+          // First try with Date constructor
+          let extractedDate = new Date(eventDateStr);
+          
+          // If that fails, try manual parsing for common formats
+          if (isNaN(extractedDate.getTime())) {
+            // Try parsing formats like "May 31, 2025"
+            const monthMap: Record<string, number> = {
+              'january': 0, 'february': 1, 'march': 2, 'april': 3, 'may': 4, 'june': 5,
+              'july': 6, 'august': 7, 'september': 8, 'october': 9, 'november': 10, 'december': 11
+            };
+            
+            const parts = eventDateStr.toLowerCase().replace(/[,st|nd|rd|th]/g, '').split(/\s+/);
+            // Check if format is "May 31 2025" or "31 May 2025"
+            if (parts.length >= 3) {
+              let month = -1, day = -1, year = -1;
+              
+              // Try to identify which part is month, day, year
+              for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                if (monthMap[part] !== undefined) {
+                  month = monthMap[part];
+                } else if (!isNaN(parseInt(part)) && parseInt(part) <= 31 && parseInt(part) >= 1) {
+                  // Could be day or year
+                  if (parseInt(part) <= 31 && day === -1) {
+                    day = parseInt(part);
+                  } else if (parseInt(part) >= 1000 && year === -1) {
+                    year = parseInt(part);
+                  }
+                }
+              }
+              
+              // If we found all parts, create date
+              if (month !== -1 && day !== -1 && year !== -1) {
+                extractedDate = new Date(year, month, day);
+              }
+            }
+          }
+          
+          // Check if the extracted date is in the future
+          if (!isNaN(extractedDate.getTime()) && extractedDate >= currentDate) {
+            return true;
+          }
+        } catch (e) {
+          // If date parsing fails, fall back to keyword checking
+          console.error("Error parsing date:", e);
+        }
+      }
+      
+      // Check if content has keywords indicating a future event
+      const content = event.content.toLowerCase();
+      const hasUpcomingKeywords = 
+        content.includes('upcoming') || 
+        content.includes('scheduled') || 
+        content.includes('register now') ||
+        content.includes('soon') ||
+        content.includes('will be held');
+        
+      return hasUpcomingKeywords;
+    });
+  };
+  
+  // Use provided upcomingEvents or the fetched ones, but filter to actual events and upcoming events only
+  const eventsToDisplay = filterUpcomingEvents(
+    filterActualEvents(upcomingEvents.length > 0 ? upcomingEvents : fetchedEvents)
+  );
 
   // Extract location from event content if available
   const extractLocation = (content: string): string | null => {

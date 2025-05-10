@@ -457,12 +457,13 @@ export async function getMultipleBambooFacts(count: number = 3, date?: Date): Pr
     const allContent = await storage.getAllAiKnowledgeContent();
     
     // Get content that might contain interesting facts about bamboo
-    // Look for content with bamboo in the text, excluding book content type
+    // Look for content with bamboo in the text, excluding book and enthusiast content types
     const bambooContent = allContent.filter(item => 
       item.status === "active" &&
       item.content &&
       item.content.toLowerCase().includes('bamboo') &&
-      item.contentType !== 'book' // Exclude books from Did You Know section
+      item.contentType !== 'book' && // Exclude books from Did You Know section
+      item.contentType !== 'enthusiast' // Exclude bamboo enthusiasts from Did You Know section
     );
     
     if (bambooContent.length === 0) {
@@ -619,12 +620,13 @@ export async function getInterestingBambooFact(count: number = 1, date?: Date): 
     const allContent = await storage.getAllAiKnowledgeContent();
     
     // Get content that might contain interesting facts
-    // Look for content with bamboo in the text, excluding book content type
+    // Look for content with bamboo in the text, excluding book and enthusiast content types
     const bambooContent = allContent.filter(item => 
       item.status === "active" &&
       item.content &&
       item.content.toLowerCase().includes('bamboo') &&
-      item.contentType !== 'book' // Exclude books from Did You Know section
+      item.contentType !== 'book' && // Exclude books from Did You Know section
+      item.contentType !== 'enthusiast' // Exclude bamboo enthusiasts from Did You Know section
     );
     
     if (bambooContent.length === 0) {
