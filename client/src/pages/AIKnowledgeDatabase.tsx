@@ -863,10 +863,10 @@ export default function AIKnowledgeDatabase() {
                               try {
                                 // Create a FormData object to send the file
                                 const formData = new FormData();
-                                formData.append('file', file);
+                                formData.append('image', file);
                                 
                                 // Make request to upload endpoint
-                                const uploadResponse = await fetch('/api/upload', {
+                                const uploadResponse = await fetch('/api/ai-knowledge/upload-file', {
                                   method: 'POST',
                                   body: formData,
                                 });
@@ -880,7 +880,7 @@ export default function AIKnowledgeDatabase() {
                                 // Update the mediaUrl with the path to the uploaded file
                                 setSelectedContent({
                                   ...selectedContent, 
-                                  mediaUrl: data.filePath
+                                  mediaUrl: data.fileUrl
                                 });
                                 
                                 toast({

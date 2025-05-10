@@ -462,6 +462,8 @@ const upload = multer({
   }
 });
 
+
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
