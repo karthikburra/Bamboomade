@@ -2574,23 +2574,56 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
 
   app.post("/api/ai-knowledge", isAdmin, async (req, res) => {
     try {
-      const { title, content, source, contentType, status } = req.body;
+      const { 
+        title, 
+        content, 
+        source, 
+        contentType, 
+        status,
+        mediaUrl,
+        mediaType,
+        // Enthusiast-specific fields
+        contactEmail,
+        contactPhone,
+        linkedinUrl,
+        instagramUrl,
+        twitterUrl,
+        facebookUrl,
+        personalWebsite
+      } = req.body;
       
       // Validate required fields
       if (!title || !content || !contentType) {
         return res.status(400).json({ message: "Title, content, and contentType are required" });
       }
       
-      // Add the content
-      const createdBy = req.session.userId;
-      const newContent = await storage.createAiKnowledgeContent({
+      // Create base content object
+      const contentData: any = {
         title,
         content,
         source: source || null,
         contentType,
         status: status || "active",
-        createdBy
-      });
+        mediaUrl: mediaUrl || null,
+        mediaType: mediaType || null,
+        createdBy: req.session.userId
+      };
+      
+      // Add enthusiast-specific fields if content type is "enthusiast"
+      if (contentType === "enthusiast") {
+        Object.assign(contentData, {
+          contactEmail,
+          contactPhone,
+          linkedinUrl,
+          instagramUrl,
+          twitterUrl,
+          facebookUrl,
+          personalWebsite
+        });
+      }
+      
+      // Add the content
+      const newContent = await storage.createAiKnowledgeContent(contentData);
       
       res.status(201).json(newContent);
     } catch (error) {
@@ -2603,7 +2636,22 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   app.put("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { title, content, source, contentType, status, mediaUrl } = req.body;
+      const { 
+        title, 
+        content, 
+        source, 
+        contentType, 
+        status, 
+        mediaUrl,
+        // Enthusiast-specific fields
+        contactEmail,
+        contactPhone,
+        linkedinUrl,
+        instagramUrl,
+        twitterUrl,
+        facebookUrl,
+        personalWebsite
+      } = req.body;
       
       console.log("PUT update with content type:", contentType);
       
@@ -2613,15 +2661,31 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(404).json({ message: "AI knowledge content not found" });
       }
       
-      // Update the content
-      const updatedContent = await storage.updateAiKnowledgeContent(id, {
+      // Prepare updates object
+      const updates: any = {
         title,
         content,
         source,
         contentType,
         status,
         mediaUrl
-      });
+      };
+      
+      // Add enthusiast-specific fields if content type is "enthusiast"
+      if (contentType === "enthusiast") {
+        Object.assign(updates, {
+          contactEmail,
+          contactPhone,
+          linkedinUrl,
+          instagramUrl,
+          twitterUrl,
+          facebookUrl,
+          personalWebsite
+        });
+      }
+      
+      // Update the content
+      const updatedContent = await storage.updateAiKnowledgeContent(id, updates);
       
       res.json(updatedContent);
     } catch (error) {
