@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ExternalLink, Clock, MapPin } from "lucide-react";
+import { CalendarDays, ExternalLink, Clock, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { analyzeEventContent } from '@/utils/eventAnalyzer';
@@ -63,6 +63,9 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
             let eventLocation: string | null = null;
             let registrationLink: string | null = null;
             
+            // Initialize organizer info
+            let organizerName: string | null = null;
+            
             // Check if the content type is 'event' and we have specific fields populated
             if (event.contentType === 'event') {
               // Handle eventDate
@@ -81,21 +84,25 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
               }
             }
             
-            // If we don't have direct fields data, fall back to analyzing content
-            if (!eventDate || !eventLocation || !registrationLink) {
-              const eventInfo = analyzeEventContent(event.content, event.title);
-              
-              if (!eventDate && eventInfo.dates.startDate) {
-                eventDate = eventInfo.dates.startDate;
-              }
-              
-              if (!eventLocation && eventInfo.location?.name) {
-                eventLocation = eventInfo.location.name;
-              }
-              
-              if (!registrationLink && eventInfo.registration?.url) {
-                registrationLink = eventInfo.registration.url;
-              }
+            // Always analyze content for organizer info and other missing fields
+            const eventInfo = analyzeEventContent(event.content, event.title);
+            
+            // Extract organizer info
+            if (eventInfo.organizer?.name) {
+              organizerName = eventInfo.organizer.name;
+            }
+            
+            // Fall back to content analysis for missing fields
+            if (!eventDate && eventInfo.dates.startDate) {
+              eventDate = eventInfo.dates.startDate;
+            }
+            
+            if (!eventLocation && eventInfo.location?.name) {
+              eventLocation = eventInfo.location.name;
+            }
+            
+            if (!registrationLink && eventInfo.registration?.url) {
+              registrationLink = eventInfo.registration.url;
             }
             
             // Extract month and day from the event date
@@ -107,7 +114,7 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
               day = eventDate.getDate().toString();
             }
             
-            // Format time
+            // Format time (we'll use this for displaying event time but not with the badge)
             let timeDisplay = "";
             if (eventDate) {
               timeDisplay = eventDate.toLocaleString('en-US', {
@@ -134,18 +141,11 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                 
                 {/* Right side: Event details */}
                 <div className="flex-1 min-w-0">
-                  {/* Event category badge and time */}
+                  {/* Event category badge (with no time) */}
                   <div className="flex items-center mb-1">
                     <Badge variant="outline" className="mr-2 text-xs px-1.5 py-0 bg-zinc-900/90 text-amber-400 border-amber-900/60">
                       {eventType}
                     </Badge>
-                    
-                    {timeDisplay && (
-                      <div className="text-xs text-zinc-400 flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        <span>{timeDisplay}</span>
-                      </div>
-                    )}
                   </div>
                   
                   {/* Event title */}
@@ -153,11 +153,27 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                     {event.title}
                   </h3>
                   
+                  {/* Time if available - moved below title */}
+                  {timeDisplay && (
+                    <div className="text-xs text-zinc-400 flex items-center mb-1">
+                      <Clock className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span>{timeDisplay}</span>
+                    </div>
+                  )}
+                  
                   {/* Location if available */}
                   {eventLocation && (
                     <div className="text-xs text-zinc-400 mb-1 flex items-center truncate">
                       <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
                       <span className="truncate">{eventLocation}</span>
+                    </div>
+                  )}
+                  
+                  {/* Organizer if available */}
+                  {organizerName && (
+                    <div className="text-xs text-zinc-400 mb-1 flex items-center truncate">
+                      <User className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{organizerName}</span>
                     </div>
                   )}
                   
