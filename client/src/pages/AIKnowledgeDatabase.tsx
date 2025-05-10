@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
   AlertTriangle, AlertCircle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
-  UploadCloud, CheckCircle, Clock
+  UploadCloud, CheckCircle, Clock, ThumbsUp, ThumbsDown, Bell, Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -68,8 +68,12 @@ export default function AIKnowledgeDatabase() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
+  const [isApproving, setIsApproving] = useState(false);
 
-  // Fetch AI knowledge content
+  const queryClient = useQueryClient();
+
+  // Fetch all AI knowledge content
   const { data: aiContent, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/ai-knowledge"],
     queryFn: async () => {
@@ -100,6 +104,76 @@ export default function AIKnowledgeDatabase() {
     // Increase stale time to reduce number of background refetches
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Fetch pending AI knowledge content
+  const { data: pendingContent, isLoading: isPendingLoading, error: pendingError, refetch: refetchPending } = useQuery({
+    queryKey: ["/api/ai-knowledge/pending"],
+    queryFn: async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      try {
+        const response = await fetch("/api/ai-knowledge/pending", {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch pending AI knowledge content");
+        }
+        
+        return response.json();
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err?.name === 'AbortError') {
+          throw new Error("Request timed out. The server is taking too long to respond.");
+        }
+        throw err;
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Function to approve content
+  const approveContent = async (contentId: number) => {
+    setIsApproving(true);
+    
+    try {
+      const response = await fetch(`/api/ai-knowledge/${contentId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to approve content");
+      }
+      
+      // Success! Refetch both queries to update the UI
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/ai-knowledge"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/ai-knowledge/pending"] })
+      ]);
+      
+      toast({
+        title: "Content approved",
+        description: "The content has been approved and is now active in the AI knowledge base.",
+        variant: "default",
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Approval failed",
+        description: error.message || "There was an error approving the content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsApproving(false);
+    }
+  };
 
   const getContentTypeLabel = (type: string) => {
     switch (type) {
@@ -269,6 +343,29 @@ export default function AIKnowledgeDatabase() {
   return (
     <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-amber-400">AI Knowledge Database</h1>
+      
+      <div className="flex flex-wrap gap-2 mb-6">
+        <Button 
+          variant={activeTab === "all" ? "default" : "outline"}
+          onClick={() => setActiveTab("all")}
+          className={activeTab === "all" ? "bg-amber-600 hover:bg-amber-700" : "border-amber-600 text-amber-400 hover:bg-amber-900/20"}
+        >
+          All Content
+        </Button>
+        
+        <Button 
+          variant={activeTab === "pending" ? "default" : "outline"}
+          onClick={() => setActiveTab("pending")}
+          className={activeTab === "pending" ? "bg-amber-600 hover:bg-amber-700" : "border-amber-600 text-amber-400 hover:bg-amber-900/20"}
+        >
+          Pending Content
+          {pendingContent && pendingContent.length > 0 && (
+            <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+              {pendingContent.length}
+            </span>
+          )}
+        </Button>
+      </div>
       
       <AdminTabs value="database">
         <TabsContent value="database" className="space-y-6">
