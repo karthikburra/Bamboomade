@@ -2509,6 +2509,55 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Get pending AI knowledge content for admin approval
+  app.get("/api/ai-knowledge/pending", isAdmin, async (req, res) => {
+    try {
+      const pendingContent = await storage.getPendingAiKnowledgeContent();
+      res.json(pendingContent);
+    } catch (error) {
+      console.error("Error fetching pending AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to fetch pending AI knowledge content" });
+    }
+  });
+  
+  // Approve pending AI knowledge content
+  app.post("/api/ai-knowledge/:id/approve", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid content ID" });
+      }
+      
+      // Get the content to verify it's pending
+      const content = await storage.getAiKnowledgeContentById(id);
+      
+      if (!content) {
+        return res.status(404).json({ message: "Content not found" });
+      }
+      
+      if (content.status !== 'pending') {
+        return res.status(400).json({ message: "Only pending content can be approved" });
+      }
+      
+      // Update the content status to active
+      const updatedContent = await storage.updateAiKnowledgeContent(id, { status: 'active' });
+      
+      if (!updatedContent) {
+        return res.status(500).json({ message: "Failed to approve content" });
+      }
+      
+      res.json({
+        success: true,
+        message: "Content approved successfully",
+        content: updatedContent
+      });
+    } catch (error) {
+      console.error("Error approving AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to approve content", error: (error as Error).message });
+    }
+  });
+  
   // Analyze content and suggest categorization
   app.post("/api/ai-knowledge/analyze", isAdmin, async (req, res) => {
     try {

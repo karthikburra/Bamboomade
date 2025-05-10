@@ -511,6 +511,18 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // Get only pending AI Knowledge Content for admin approval
+  async getPendingAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
+    try {
+      return await db.select().from(aiKnowledgeContent)
+        .where(eq(aiKnowledgeContent.status, 'pending'))
+        .orderBy(desc(aiKnowledgeContent.createdAt));
+    } catch (error) {
+      console.error("Database error in getPendingAiKnowledgeContent:", error);
+      return [];
+    }
+  }
+  
   // Secure backup of all AI Knowledge Content for future deployments
   async exportAiKnowledgeContentBackup(): Promise<{ data: AiKnowledgeContent[], timestamp: string, checksum: string }> {
     try {

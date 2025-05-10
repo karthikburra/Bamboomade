@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { 
   X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
   AlertTriangle, AlertCircle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
-  UploadCloud
+  UploadCloud, CheckCircle, Clock
 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
