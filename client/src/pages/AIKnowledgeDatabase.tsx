@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
-  AlertTriangle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook 
+  AlertTriangle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
+  UploadCloud
 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";

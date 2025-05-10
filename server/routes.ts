@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, asc, desc } from "drizzle-orm";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import OpenAI from "openai";
@@ -30,9 +33,6 @@ import { ZodError } from "zod";
 import { z } from "zod";
 import admin from "firebase-admin";
 import bcrypt from "bcrypt";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
 
 /**
  * Calculate string similarity using Levenshtein distance
