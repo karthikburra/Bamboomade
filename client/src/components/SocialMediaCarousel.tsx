@@ -29,7 +29,7 @@ const SocialMediaCarousel: React.FC = () => {
               Social Media
             </CardTitle>
             <CardDescription className="text-zinc-400 ml-2">
-              Content from our social media platforms
+              Content in social media platforms
             </CardDescription>
           </div>
           
