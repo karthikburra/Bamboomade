@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2, MessageCircle, Info, LayoutDashboard } from "lucide-react";
+import { Sparkles, Loader2, MessageCircle, Info, LayoutDashboard, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import ChatInterface from "@/components/ChatInterface";
 import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
@@ -22,22 +25,35 @@ const AIChat: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
   // Simple no-op handler since we're not tracking tokens anymore
   const handleTokensUsed = (usedTokens: number) => {
     // No-op, we don't track tokens anymore
   };
 
+  // Format date as YYYY-MM-DD
+  const formatDateForAPI = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Load dashboard data when selected date changes
   useEffect(() => {
     const loadDashboardData = async () => {
+      if (!selectedDate) return;
+      
       setIsLoading(true);
       try {
-        const data = await fetchDashboardData();
+        // Format date as YYYY-MM-DD for API
+        const formattedDate = formatDateForAPI(selectedDate);
+        
+        // Fetch data for the selected date
+        const data = await fetchDashboardData(formattedDate);
         setDashboardData(data);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         toast({
-          title: "Couldn't load all dashboard data",
+          title: "Couldn't load dashboard data",
           description: "Some sections may not display correctly. You can still use the chat normally.",
           variant: "destructive",
         });
@@ -47,7 +63,7 @@ const AIChat: React.FC = () => {
     };
 
     loadDashboardData();
-  }, [toast]);
+  }, [selectedDate, toast]);
 
   // Handle clicks on dashboard items to set AI chat questions
   const handleTopicClick = (topic: string) => {
@@ -115,11 +131,40 @@ const AIChat: React.FC = () => {
               </div>
             </div>
             
-            {/* Second Row - Description text */}
-            <div className="flex flex-wrap items-center">
+            {/* Second Row - Description text and date filter */}
+            <div className="flex justify-between items-center">
               <p className="text-sm text-zinc-400">
                 <span className="text-green-400 font-medium">All Bamboo Data in one place.</span>
               </p>
+              
+              {/* Only show date picker in dashboard tab */}
+              {activeTab === "dashboard" && (
+                <div className="flex items-center">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="h-9 border-zinc-700 bg-zinc-800/70 hover:bg-zinc-700 text-zinc-300 flex items-center gap-2"
+                      >
+                        <Calendar className="h-3.5 w-3.5" />
+                        <span className="text-xs">
+                          {selectedDate ? format(selectedDate, 'PPP') : 'Select date'}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700">
+                      <CalendarComponent
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        initialFocus
+                        disabled={(date) => date > new Date()}
+                        className="bg-zinc-900 text-zinc-200 border-zinc-700"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
             </div>
           </div>
           

@@ -183,11 +183,15 @@ export interface DashboardData {
 
 /**
  * Fetches dashboard data for the AI Chat screen including events, recent updates and interesting facts
+ * @param date Optional date to retrieve data for (in YYYY-MM-DD format)
  * @returns Dashboard data from the knowledge base
  */
-export async function fetchDashboardData(): Promise<DashboardData> {
+export async function fetchDashboardData(date?: string): Promise<DashboardData> {
   try {
-    const response = await apiRequest("GET", "/api/dashboard-data");
+    // Include date parameter if provided
+    const url = date ? `/api/dashboard-data?date=${date}` : "/api/dashboard-data";
+    const response = await apiRequest("GET", url);
+    
     if (!response.ok) {
       throw new Error("Failed to fetch dashboard data");
     }
@@ -198,6 +202,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'dashboard_data_loaded', {
         'event_category': 'AI_Chat',
+        'event_label': date || 'current',
         'non_interaction': true
       });
     }
