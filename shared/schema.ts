@@ -225,3 +225,42 @@ export const insertSocialMediaContentSchema = createInsertSchema(socialMediaCont
 
 export type SocialMediaContent = typeof socialMediaContent.$inferSelect;
 export type InsertSocialMediaContent = z.infer<typeof insertSocialMediaContentSchema>;
+
+// Dashboard Snapshots - Daily saved dashboard content
+export const dashboardSnapshots = pgTable("dashboard_snapshots", {
+  id: serial("id").primaryKey(),
+  date: text("date").notNull().unique(), // Format: YYYY-MM-DD 
+  eventsSummary: text("events_summary"), // Markdown summary of events
+  upcomingEvents: json("upcoming_events").$type<Array<{
+    id: number;
+    title: string;
+    content: string;
+    source: string | null;
+    contentType: string;
+    mediaUrl?: string | null;
+  }>>(),
+  recentUpdates: json("recent_updates").$type<Array<{
+    id: number;
+    title: string;
+    content: string;
+    source: string | null;
+  }>>(),
+  facts: json("facts").$type<Array<{
+    id: number;
+    fact: string;
+    source: string | null;
+    contentType?: string;
+  }>>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertDashboardSnapshotSchema = createInsertSchema(dashboardSnapshots).pick({
+  date: true,
+  eventsSummary: true,
+  upcomingEvents: true,
+  recentUpdates: true,
+  facts: true,
+});
+
+export type DashboardSnapshot = typeof dashboardSnapshots.$inferSelect;
+export type InsertDashboardSnapshot = z.infer<typeof insertDashboardSnapshotSchema>;

@@ -6,7 +6,8 @@ import {
   aiTrainingData, type AiTrainingData, type InsertAiTrainingData,
   tokenPurchases, type TokenPurchase, type InsertTokenPurchase,
   availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot,
-  aiKnowledgeContent, type AiKnowledgeContent, type InsertAiKnowledgeContent
+  aiKnowledgeContent, type AiKnowledgeContent, type InsertAiKnowledgeContent,
+  dashboardSnapshots, type DashboardSnapshot, type InsertDashboardSnapshot
 } from "@shared/schema";
 import { eq, and, asc, desc } from 'drizzle-orm';
 import { db } from './db';
@@ -67,6 +68,11 @@ export interface IStorage {
   // Secure AI Knowledge Content backup & restore
   exportAiKnowledgeContentBackup(): Promise<{ data: AiKnowledgeContent[], timestamp: string, checksum: string }>;
   importAiKnowledgeContentBackup(backup: { data: AiKnowledgeContent[], timestamp: string, checksum: string }): Promise<{ success: boolean, imported: number, errors: number }>;
+  
+  // Dashboard Snapshots operations
+  getDashboardSnapshotByDate(date: string): Promise<DashboardSnapshot | undefined>;
+  getAllDashboardSnapshots(): Promise<DashboardSnapshot[]>;
+  saveDashboardSnapshot(snapshot: InsertDashboardSnapshot): Promise<DashboardSnapshot>;
 }
 
 export class DatabaseStorage implements IStorage {
