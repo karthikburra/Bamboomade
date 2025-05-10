@@ -177,15 +177,6 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
           </div>
           
           {renderSourceInfo(fact)}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 w-full border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-            onClick={() => onFactClick && onFactClick("What are some interesting facts about bamboo?")}
-          >
-            More bamboo facts
-          </Button>
         </CardContent>
       </Card>
     );
@@ -221,15 +212,6 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
             </div>
           ))}
         </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-3 w-full border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-          onClick={() => onFactClick && onFactClick("What are some interesting facts about bamboo?")}
-        >
-          More bamboo facts
-        </Button>
       </CardContent>
     </Card>
   );
