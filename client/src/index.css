@@ -13,6 +13,30 @@
     }
   }
   
+  /* Social Media Embed styles */
+  .embed-container {
+    overflow: hidden;
+  }
+  
+  .instagram-embed {
+    background-color: #f8f8f8;
+    border-radius: 0 0 0.5rem 0.5rem;
+  }
+  
+  .instagram-embed .instagram-media {
+    max-width: 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 auto !important;
+  }
+  
+  .youtube-embed iframe,
+  .linkedin-embed iframe {
+    width: 100%;
+    height: 100%;
+    border-radius: 0 0 0.5rem 0.5rem;
+  }
+  
   /* Custom scrollbar styles */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
