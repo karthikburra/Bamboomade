@@ -165,21 +165,6 @@ export function TodaysEnthusiast() {
               Spotlighting innovators in sustainable bamboo design
             </CardDescription>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge 
-              variant="outline" 
-              className="text-xs bg-amber-950/30 text-amber-400 border-amber-800/50"
-            >
-              <Sparkles className="h-3 w-3 mr-1" />
-              Featured
-            </Badge>
-            <Badge 
-              variant="outline" 
-              className="text-xs bg-teal-950/30 text-teal-400 border-teal-800/50"
-            >
-              Enthusiast
-            </Badge>
-          </div>
         </div>
       </CardHeader>
       <CardContent>
