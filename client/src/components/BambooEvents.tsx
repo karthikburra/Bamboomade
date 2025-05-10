@@ -231,28 +231,69 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
         {/* Display events as tiles/cards */}
         <div className="grid grid-cols-1 gap-4">
           {eventsToDisplay.map(event => {
-            // Get event date - extract from content or use createdAt if not found
+            // STEP 1: Extract & format event date 
             let eventDate = extractDate(event.content);
+            
+            // Use createdAt as fallback if no date found in content
             if (!eventDate && event.createdAt) {
-              // Format createdAt date if extractDate didn't find a date
               const date = new Date(event.createdAt);
-              // Only format if it's a valid date
               if (!isNaN(date.getTime())) {
-                const options: Intl.DateTimeFormatOptions = { 
+                eventDate = date.toLocaleDateString('en-US', { 
                   year: 'numeric', 
                   month: 'long', 
                   day: 'numeric' 
-                };
-                eventDate = date.toLocaleDateString('en-US', options);
+                });
               }
             }
             
+            // STEP 2: Format date components for display
+            let day = "TBD";
+            let month = "";
+            let year = "";
+            
+            if (eventDate) {
+              try {
+                // Try standard date parsing first
+                const dateObj = new Date(eventDate);
+                
+                if (!isNaN(dateObj.getTime())) {
+                  day = dateObj.getDate().toString();
+                  month = dateObj.toLocaleString('en-US', { month: 'short' });
+                  year = dateObj.getFullYear().toString();
+                } else {
+                  // Fallback to regex pattern matching for non-standard date formats
+                  const dateMatch = eventDate.match(/(\d{1,2})[^\d]*([A-Za-z]+)[^\d]*(\d{4})/);
+                  if (dateMatch) {
+                    day = dateMatch[1];
+                    month = dateMatch[2].substring(0, 3);
+                    year = dateMatch[3];
+                  }
+                }
+              } catch (e) {
+                console.error("Error parsing date:", e);
+              }
+            }
+            
+            // STEP 3: Extract event location
             const eventLocation = extractLocation(event.content);
             
-            // Extract registration link if available
+            // STEP 4: Determine workshop type/category
+            let workshopType = "Workshop";
+            const content = event.content.toLowerCase();
+            const title = event.title.toLowerCase();
+            
+            if (title.includes("college") || content.includes("college")) {
+              workshopType = "College Workshop";
+            } else if (title.includes("training") || content.includes("training")) {
+              workshopType = "Training Session";
+            } else if (title.includes("webinar") || content.includes("webinar")) {
+              workshopType = "Webinar";
+            }
+            
+            // STEP 5: Extract registration link
             let registrationLink = null;
             
-            // First try markdown-style links
+            // Check for markdown-style links first
             const markdownLinkMatch = event.content.match(/\[([^\]]+)\]\(([^)]+)\)/);
             if (markdownLinkMatch) {
               registrationLink = {
@@ -260,7 +301,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                 url: markdownLinkMatch[2]
               };
             } 
-            // Also look for regular URLs in the content
+            // Then check for regular URLs
             else {
               const urlMatch = event.content.match(/(https?:\/\/[^\s]+)/);
               if (urlMatch) {
@@ -269,7 +310,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                   url: urlMatch[1]
                 };
               }
-              // Check if we have a source that could be a registration link
+              // Use source URL as fallback
               else if (event.source && event.source.startsWith('http')) {
                 registrationLink = {
                   text: "More Information",
@@ -278,73 +319,50 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
               }
             }
             
-            // Truncate content for preview
-            const contentPreview = event.content.substring(0, 160) + (event.content.length > 160 ? '...' : '');
-            
-            // Detect workshop type/category (College workshop, public workshop, training session, etc.)
-            let workshopType = "Workshop";
-            if (event.title.toLowerCase().includes("college") || event.content.toLowerCase().includes("college")) {
-              workshopType = "College Workshop";
-            } else if (event.title.toLowerCase().includes("training") || event.content.toLowerCase().includes("training")) {
-              workshopType = "Training Session";
-            } else if (event.title.toLowerCase().includes("webinar") || event.content.toLowerCase().includes("webinar")) {
-              workshopType = "Webinar";
-            }
-            
-            // Format event date components
-            let day = "TBD";
-            let month = "";
-            let year = "";
-            
-            if (eventDate) {
-              try {
-                // Try to parse the date
-                const dateObj = new Date(eventDate);
-                if (!isNaN(dateObj.getTime())) {
-                  day = dateObj.getDate().toString();
-                  month = dateObj.toLocaleString('en-US', { month: 'short' });
-                  year = dateObj.getFullYear().toString();
-                } else {
-                  // If direct parsing fails, try to extract from string
-                  const dateMatch = eventDate.match(/(\d{1,2})[^\d]*([A-Za-z]+)[^\d]*(\d{4})/);
-                  if (dateMatch) {
-                    day = dateMatch[1];
-                    month = dateMatch[2].substring(0, 3);
-                    year = dateMatch[3];
-                  } else {
-                    day = "TBD";
-                    month = "";
-                    year = "";
-                  }
-                }
-              } catch (e) {
-                console.error("Error parsing date:", e);
-              }
-            }
-            
-            // Extract a short summary (6-8 words)
+            // STEP 6: Extract short description (6-8 words)
             const contentWords = event.content.split(/\s+/);
             const shortSummary = contentWords.slice(0, 7).join(' ') + (contentWords.length > 7 ? '...' : '');
             
-            // Extract organizer info if available
+            // STEP 7: Extract organizer information
             const extractOrganizerInfo = () => {
-              // Try to find contact person or organizer details
-              const contactMatch = event.content.match(/contact:?\s*([^,\.\n]+)/i) || 
-                                   event.content.match(/organized by:?\s*([^,\.\n]+)/i) ||
-                                   event.content.match(/coordinator:?\s*([^,\.\n]+)/i) ||
-                                   event.content.match(/point of contact:?\s*([^,\.\n]+)/i);
+              // Find contact person/organizer
+              const contactPatterns = [
+                /contact:?\s*([^,\.\n]+)/i,
+                /organiz(?:er|ed by):?\s*([^,\.\n]+)/i,
+                /coordinator:?\s*([^,\.\n]+)/i,
+                /point of contact:?\s*([^,\.\n]+)/i
+              ];
               
-              let contactPerson = contactMatch ? contactMatch[1].trim() : null;
+              let contactPerson = null;
+              for (const pattern of contactPatterns) {
+                const match = event.content.match(pattern);
+                if (match) {
+                  contactPerson = match[1].trim();
+                  break;
+                }
+              }
               
-              // Look for phone number
-              const phoneMatch = event.content.match(/(\+?\d[\d\s-]{8,}\d)/);
-              const phoneNumber = phoneMatch ? phoneMatch[1].trim() : null;
+              // Find phone number
+              const phonePatterns = [
+                /(\+?\d[\d\s-]{8,}\d)/,                       // Standard phone format
+                /(?:phone|call|contact|tel):?\s*(\+?\d[\d\s-]{8,}\d)/i  // Labeled phone
+              ];
+              
+              let phoneNumber = null;
+              for (const pattern of phonePatterns) {
+                const match = event.content.match(pattern);
+                if (match) {
+                  phoneNumber = match[1].trim();
+                  break;
+                }
+              }
               
               return { contactPerson, phoneNumber };
             };
             
             const { contactPerson, phoneNumber } = extractOrganizerInfo();
             
+            // STEP 8: Render event tile
             return (
               <div 
                 key={event.id}
@@ -352,26 +370,25 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                 onClick={() => onEventClick && onEventClick(event.title)}
               >
                 {/* Left side: Date display */}
-                <div className="w-20 min-w-[5rem] bg-green-900/40 flex flex-col items-center justify-center p-3 border-r border-zinc-700">
+                <div className="w-24 min-w-[6rem] bg-green-900/40 flex flex-col items-center justify-center p-3 border-r border-zinc-700">
                   <Badge variant="outline" className="mb-1 text-xs bg-zinc-900/90 text-amber-400 border-amber-900/60 px-1.5 py-0">
                     {workshopType}
                   </Badge>
                   <div className="text-center">
                     {month && <div className="text-xs text-green-400 font-medium uppercase">{month}</div>}
-                    <div className="text-2xl font-bold text-white">{day}</div>
+                    <div className="text-3xl font-bold text-white">{day}</div>
                     {year && <div className="text-xs text-zinc-400">{year}</div>}
                   </div>
                 </div>
                 
                 {/* Right side: Event details */}
                 <div className="flex-1 flex flex-col p-3">
-                  {/* Event title */}
+                  {/* Event title and location */}
                   <div className="mb-2">
                     <h3 className="font-semibold text-green-400 text-base group-hover:text-green-300 transition-colors">
                       {event.title}
                     </h3>
                     
-                    {/* Location info */}
                     {eventLocation && (
                       <div className="flex items-center text-xs text-zinc-400 mt-1">
                         <MapPin className="h-3 w-3 mr-1" />
@@ -380,7 +397,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                     )}
                   </div>
                   
-                  {/* Organizer info if available */}
+                  {/* Organizer info section */}
                   {(contactPerson || phoneNumber) && (
                     <div className="mb-2 text-xs">
                       {contactPerson && (
@@ -409,13 +426,14 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                   <p className="text-zinc-300 text-xs mb-3 flex-grow">{shortSummary}</p>
                   
                   {/* Action buttons */}
-                  <div className="flex justify-between items-center gap-2 mt-auto">
+                  <div className="flex items-center gap-2 mt-auto">
+                    {/* Registration button */}
                     {registrationLink ? (
                       <a 
                         href={registrationLink.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-amber-700/50 hover:bg-amber-600/50 text-amber-200 hover:text-amber-100 rounded-md text-xs font-medium inline-flex items-center border border-amber-800/70 transition-colors"
+                        className="flex-1 px-3 py-1.5 bg-amber-700/50 hover:bg-amber-600/50 text-amber-200 hover:text-amber-100 rounded-md text-xs font-medium inline-flex items-center justify-center border border-amber-800/70 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {registrationLink.text}
@@ -423,7 +441,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                       </a>
                     ) : (
                       <button 
-                        className="px-3 py-1.5 bg-green-900/40 hover:bg-green-800/60 text-green-400 hover:text-green-300 rounded-md text-xs font-medium inline-flex items-center border border-green-900/70 transition-colors"
+                        className="flex-1 px-3 py-1.5 bg-green-900/40 hover:bg-green-800/60 text-green-400 hover:text-green-300 rounded-md text-xs font-medium inline-flex items-center justify-center border border-green-900/70 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
                           onEventClick && onEventClick(`Tell me more details about "${event.title}"`);
@@ -438,8 +456,9 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                       </button>
                     )}
                     
+                    {/* Workshop info button */}
                     <button 
-                      className="px-3 py-1.5 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-zinc-300 rounded-md text-xs font-medium inline-flex items-center border border-zinc-700 transition-colors"
+                      className="flex-1 px-3 py-1.5 bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-zinc-300 rounded-md text-xs font-medium inline-flex items-center justify-center border border-zinc-700 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         onEventClick && onEventClick(`What are the workshop details for "${event.title}"?`);
@@ -459,11 +478,10 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
           })}
         </div>
         
-        {/* Fallback to traditional markdown display if needed */}
+        {/* Fallback to traditional markdown display if needed (but with h1 header removed) */}
         {eventsToDisplay.length === 0 && events && (
           <div className="prose prose-sm prose-invert max-w-none prose-headings:text-zinc-200 prose-a:text-green-400">
             <ReactMarkdown components={{
-              // Remove the "Upcoming Bamboo Architectural event" header by filtering it out
               h1: () => null, // Skip the h1 heading completely
               a: ({ node, ...props }) => (
                 <a
@@ -495,6 +513,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
           </div>
         )}
         
+        {/* "Ask about events" button */}
         <Button
           variant="outline"
           size="sm"
