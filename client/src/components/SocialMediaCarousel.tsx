@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Instagram, Youtube, ArrowRight, ExternalLink, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import { Instagram, Youtube, ArrowRight, ExternalLink, Loader } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import useEmblaCarousel from 'embla-carousel-react';
 import { cn } from '@/lib/utils';
 
 // Define types for social media content
@@ -31,10 +30,6 @@ interface SocialMediaData {
 
 const SocialMediaCarousel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'instagram' | 'youtube'>('instagram');
-  
-  // Embla carousel hooks
-  const [instagramRef, instagramApi] = useEmblaCarousel({ loop: true, align: 'start' });
-  const [youtubeRef, youtubeApi] = useEmblaCarousel({ loop: true, align: 'start' });
   
   // Query to fetch social media content
   const { data: socialMediaData, isLoading } = useQuery<SocialMediaData>({
@@ -67,56 +62,12 @@ const SocialMediaCarousel: React.FC = () => {
   const instagramLink = socialMediaData?.links?.instagram || 'https://www.instagram.com/bamboomadein/';
   const youtubeLink = socialMediaData?.links?.youtube || 'https://www.youtube.com/@bamboomade_in';
 
-  // Carousel navigation functions
-  const scrollPrev = useCallback(() => {
-    if (activeTab === 'instagram' && instagramApi) {
-      instagramApi.scrollPrev();
-    } else if (activeTab === 'youtube' && youtubeApi) {
-      youtubeApi.scrollPrev();
-    }
-  }, [activeTab, instagramApi, youtubeApi]);
-
-  const scrollNext = useCallback(() => {
-    if (activeTab === 'instagram' && instagramApi) {
-      instagramApi.scrollNext();
-    } else if (activeTab === 'youtube' && youtubeApi) {
-      youtubeApi.scrollNext();
-    }
-  }, [activeTab, instagramApi, youtubeApi]);
-
-  // Autoplay functionality with pause on hover
-  const [isPaused, setIsPaused] = useState(false);
-  
-  useEffect(() => {
-    // Only start autoplay if not paused and if we have content
-    if (!isPaused && ((activeTab === 'instagram' && instagramContent.length > 0) || 
-                      (activeTab === 'youtube' && youtubeContent.length > 0))) {
-      const interval = setInterval(() => {
-        scrollNext();
-      }, 4000); // Change slide every 4 seconds for a bit faster rotation
-      
-      // Cleanup on component unmount or when tab changes
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  }, [activeTab, scrollNext, isPaused, instagramContent.length, youtubeContent.length]);
-  
-  // Helper functions to pause/resume autoplay on hover
-  const handleMouseEnter = useCallback(() => {
-    setIsPaused(true);
-  }, []);
-  
-  const handleMouseLeave = useCallback(() => {
-    setIsPaused(false);
-  }, []);
-
   // Loading placeholders with animation
   const renderSkeletons = () => (
     <div>
-      <div className="flex gap-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="min-w-[280px] flex-shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i}>
             <Card className="overflow-hidden border-zinc-800 bg-zinc-900">
               <div className={cn(
                 "w-full bg-zinc-800 animate-pulse",
@@ -169,10 +120,10 @@ const SocialMediaCarousel: React.FC = () => {
     }
 
     return (
-      <div className="overflow-hidden" ref={youtubeRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <div className="flex">
+      <div className="overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {youtubeContent.map((item: SocialMediaContent) => (
-            <div key={item.id} className="min-w-[280px] mr-4 flex-shrink-0">
+            <div key={item.id}>
               <Card className="overflow-hidden border-zinc-800 bg-zinc-900 h-full flex flex-col">
                 <a 
                   href={item.url} 
@@ -243,10 +194,10 @@ const SocialMediaCarousel: React.FC = () => {
     }
 
     return (
-      <div className="overflow-hidden" ref={instagramRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <div className="flex">
+      <div className="overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {instagramContent.map((item: SocialMediaContent) => (
-            <div key={item.id} className="min-w-[280px] mr-4 flex-shrink-0">
+            <div key={item.id}>
               <Card className="overflow-hidden border-zinc-800 bg-zinc-900 h-full flex flex-col">
                 <a 
                   href={item.url} 
@@ -346,41 +297,7 @@ const SocialMediaCarousel: React.FC = () => {
           activeTab === 'instagram' ? renderInstagramContent() : renderYoutubeContent()
         )}
         
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="h-8 w-8 border-zinc-700 p-0 text-zinc-400"
-              onClick={scrollPrev}
-              aria-label="Previous slide"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="h-8 w-8 border-zinc-700 p-0 text-zinc-400"
-              onClick={scrollNext}
-              aria-label="Next slide"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            
-            {/* Auto-scroll indicator */}
-            <span 
-              className={cn(
-                "text-xs px-2 py-1 rounded-full transition-colors",
-                isPaused 
-                  ? "bg-zinc-800 text-zinc-400" 
-                  : "bg-zinc-700 text-amber-300"
-              )}
-              title={isPaused ? "Auto-scroll paused (hover to pause)" : "Auto-scrolling active"}
-            >
-              {isPaused ? "Paused" : "Auto"}
-            </span>
-          </div>
-          
+        <div className="flex justify-end items-center mt-4">
           <a 
             href={activeTab === 'instagram' ? instagramLink : youtubeLink} 
             target="_blank" 
