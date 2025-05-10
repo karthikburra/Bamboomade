@@ -940,6 +940,11 @@ export default function AIKnowledgeDatabase() {
                                 const formData = new FormData();
                                 formData.append('image', file);
                                 
+                                // Add required title and contentType parameters
+                                formData.append('title', selectedContent.title || 'Uploaded Image');
+                                formData.append('contentType', selectedContent.contentType || 'enthusiast');
+                                formData.append('description', selectedContent.content || '');
+                                
                                 // Make request to upload endpoint
                                 const uploadResponse = await fetch('/api/ai-knowledge/upload-file', {
                                   method: 'POST',
@@ -963,9 +968,20 @@ export default function AIKnowledgeDatabase() {
                                   description: "The image has been successfully uploaded.",
                                 });
                               } catch (error) {
+                                console.error("File upload error:", error);
+                                
+                                // Try to get more detailed error message
+                                let errorMessage = "Failed to upload the image. Please try again.";
+                                
+                                if (error instanceof Error) {
+                                  errorMessage = error.message;
+                                } else if (typeof error === 'string') {
+                                  errorMessage = error;
+                                }
+                                
                                 toast({
                                   title: "Upload failed",
-                                  description: "Failed to upload the image. Please try again.",
+                                  description: errorMessage,
                                   variant: "destructive",
                                 });
                               }

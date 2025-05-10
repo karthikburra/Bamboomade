@@ -441,7 +441,7 @@ const multerStorage = multer.diskStorage({
 const upload = multer({ 
   storage: multerStorage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max file size
+    fileSize: 25 * 1024 * 1024, // 25MB max file size (increased from 10MB)
   },
   fileFilter: function(req, file, cb) {
     // Accept images, documents, PDFs
