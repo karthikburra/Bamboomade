@@ -290,21 +290,21 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
 
   return (
     <Card className="border-zinc-800 bg-zinc-900">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 pt-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-            <Calendar className="h-5 w-5 mr-2 text-green-500" />
+          <CardTitle className="text-md font-medium text-zinc-200 flex items-center">
+            <Calendar className="h-4 w-4 mr-2 text-green-500" />
             Upcoming Events
           </CardTitle>
-          <Badge variant="outline" className="text-xs bg-zinc-800 text-green-400 border-green-800 px-2">
+          <Badge variant="outline" className="text-xs bg-zinc-800/70 text-green-400 border-green-800 px-2 py-0">
             Live
           </Badge>
         </div>
-        <CardDescription className="text-xs text-zinc-400">
-          Click on any event card to ask our AI for details or use the registration links
+        <CardDescription className="text-xs text-zinc-400 mt-0.5">
+          Click on any event to get details or use registration links
         </CardDescription>
       </CardHeader>
-      <CardContent className="text-sm">
+      <CardContent className="text-sm pt-0">
         {/* Display events as tiles/cards - new grid-based tile UI */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {eventsToDisplay.map(event => {
@@ -364,24 +364,24 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
             return (
               <div 
                 key={event.id}
-                className="bg-gradient-to-br from-zinc-800 to-zinc-850 rounded-lg overflow-hidden hover:from-zinc-750 hover:to-zinc-800 transition-all border border-zinc-700 hover:border-green-600 shadow-lg flex flex-col transform hover:-translate-y-1 hover:shadow-green-900/20"
+                className="bg-gradient-to-br from-zinc-800/90 to-zinc-900 rounded-lg overflow-hidden hover:from-zinc-750 hover:to-zinc-850 transition-all border border-zinc-700/80 hover:border-green-600/80 shadow-md flex flex-col transform hover:-translate-y-0.5 hover:shadow-green-900/10"
               >
                 {/* Header with event title */}
-                <div className="bg-gradient-to-r from-green-900/50 to-zinc-800/90 p-3 border-b border-zinc-600 flex items-center justify-between">
-                  <h3 className="font-medium text-green-300 truncate text-sm">{event.title}</h3>
-                  <Badge className="bg-green-800/50 text-green-300 border-0 text-[10px] px-1.5 py-0">
+                <div className="bg-gradient-to-r from-green-900/40 to-zinc-800/80 p-2.5 border-b border-zinc-700/70 flex items-center justify-between">
+                  <h3 className="font-medium text-green-300 truncate text-xs">{event.title}</h3>
+                  <Badge className="bg-green-900/60 text-green-300 border-0 text-[10px] px-1.5 py-0">
                     Workshop
                   </Badge>
                 </div>
                 
                 {/* Event details section */}
-                <div className="p-4 flex-1 flex flex-col">
+                <div className="p-3 flex-1 flex flex-col">
                   {/* Date tile at the top */}
-                  <div className="mb-3 flex justify-between items-start">
-                    <div className="flex-shrink-0 bg-zinc-900 rounded border border-green-900/30 p-1.5 flex flex-col items-center justify-center w-[60px] shadow-inner">
+                  <div className="mb-2 flex justify-between items-start">
+                    <div className="flex-shrink-0 bg-zinc-800/80 rounded border border-green-900/20 p-1.5 flex flex-col items-center justify-center w-[50px] shadow-inner">
                       {eventDate ? (
                         <>
-                          <span className="text-green-400 text-xs font-bold">
+                          <span className="text-green-400 text-[10px] font-bold uppercase tracking-wide">
                             {(() => {
                               try {
                                 const date = new Date(eventDate);
@@ -393,7 +393,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                               }
                             })()}
                           </span>
-                          <span className="text-white text-lg font-bold leading-none mt-0.5">
+                          <span className="text-white text-base font-bold leading-none mt-0.5">
                             {(() => {
                               try {
                                 const date = new Date(eventDate);
@@ -407,21 +407,21 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                           </span>
                         </>
                       ) : (
-                        <span className="text-green-400 text-xs font-bold">Soon</span>
+                        <span className="text-green-400 text-[10px] font-bold">Soon</span>
                       )}
                     </div>
                     
-                    <div className="flex flex-col space-y-1 flex-1 ml-3">
+                    <div className="flex flex-col space-y-0.5 flex-1 ml-2">
                       {eventLocation && (
-                        <div className="flex items-center text-xs text-zinc-300">
-                          <MapPin className="h-3 w-3 mr-1.5 text-green-400 flex-shrink-0" />
+                        <div className="flex items-center text-[10px] text-zinc-300">
+                          <MapPin className="h-3 w-3 mr-1 text-green-400/80 flex-shrink-0" />
                           <span className="truncate">{eventLocation}</span>
                         </div>
                       )}
                       
                       {organizerInfo && (
-                        <div className="flex items-center text-xs text-zinc-300">
-                          <Building className="h-3 w-3 mr-1.5 text-green-400 flex-shrink-0" />
+                        <div className="flex items-center text-[10px] text-zinc-300">
+                          <Building className="h-3 w-3 mr-1 text-green-400/80 flex-shrink-0" />
                           <span className="truncate">{organizerInfo}</span>
                         </div>
                       )}
@@ -429,26 +429,26 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                   </div>
                   
                   {/* Divider */}
-                  <div className="border-t border-zinc-700/50 my-2 opacity-50"></div>
+                  <div className="border-t border-zinc-700/40 my-2 opacity-40"></div>
                   
                   {/* Workshop brief */}
                   <div 
-                    className="text-zinc-300 text-xs mb-3 flex-1 cursor-pointer hover:text-zinc-100 transition-colors" 
+                    className="text-zinc-300 text-[11px] mb-2 flex-1 cursor-pointer hover:text-zinc-100 transition-colors" 
                     onClick={() => onEventClick && onEventClick(event.title)}
                   >
-                    <p className="line-clamp-3">{brief}</p>
+                    <p className="line-clamp-3 leading-snug">{brief}</p>
                   </div>
                 </div>
                 
                 {/* Footer with registration button */}
-                <div className="bg-zinc-850 px-3 py-2.5 border-t border-zinc-700/80 flex justify-between items-center">
+                <div className="bg-zinc-800/90 px-2.5 py-2 border-t border-zinc-700/60 flex justify-between items-center">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs h-8 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/50"
+                    className="text-[10px] h-7 px-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/40"
                     onClick={() => onEventClick && onEventClick(event.title)}
                   >
-                    <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                    <Calendar className="h-3 w-3 mr-1" />
                     Details
                   </Button>
                   
@@ -457,11 +457,11 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
                       href={registrationLink.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs px-3 py-1.5 bg-gradient-to-r from-green-800 to-green-700 hover:from-green-700 hover:to-green-600 text-white rounded-md inline-flex items-center shadow transform transition-all hover:scale-105"
+                      className="text-[10px] px-2.5 py-1 bg-gradient-to-r from-green-800 to-green-700 hover:from-green-700 hover:to-green-600 text-white rounded-md inline-flex items-center shadow-sm transform transition-all hover:scale-105"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {registrationLink.text}
-                      <ExternalLink className="h-3 w-3 ml-1.5" />
+                      <ExternalLink className="h-2.5 w-2.5 ml-1" />
                     </a>
                   )}
                 </div>
@@ -507,10 +507,11 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
         <Button
           variant="outline"
           size="sm"
-          className="mt-3 w-full border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+          className="mt-3 w-full border-zinc-700/60 text-zinc-400 hover:text-green-300 hover:border-green-900/50 bg-zinc-800/30 hover:bg-zinc-800/60 text-xs h-8"
           onClick={() => onEventClick && onEventClick("What bamboo architecture events are coming up?")}
         >
-          Ask about upcoming events
+          <Calendar className="h-3.5 w-3.5 mr-1.5 text-green-500/70" />
+          Ask about more upcoming events
         </Button>
       </CardContent>
     </Card>
