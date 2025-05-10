@@ -54,6 +54,11 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
       if (domain.includes('blogger.com')) return 'Blogger';
       if (domain.includes('substack.com')) return 'Substack';
       
+      // Book sources
+      if (domain.includes('amazon') || domain.includes('amzn.')) return 'Amazon';
+      if (domain.includes('goodreads.com')) return 'Goodreads';
+      if (domain.includes('books.google.com')) return 'Google Books';
+      
       return domain;
     } catch {
       return url;
@@ -70,6 +75,11 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
     if (domain.includes('wordpress.com') || domain.includes('wp.com')) return <BookOpen className="h-3 w-3 mr-1" />;
     if (domain.includes('blogger.com') || domain.includes('blogspot.com')) return <MessageSquare className="h-3 w-3 mr-1" />;
     if (domain.includes('substack.com')) return <Newspaper className="h-3 w-3 mr-1" />;
+    
+    // Book platforms
+    if (domain.includes('amazon') || domain.includes('amzn.')) return <BookOpen className="h-3 w-3 mr-1" />;
+    if (domain.includes('goodreads.com')) return <BookOpen className="h-3 w-3 mr-1" />;
+    if (domain.includes('books.google.com')) return <BookOpen className="h-3 w-3 mr-1" />;
     
     // Social media platforms
     if (domain.includes('twitter.com') || domain.includes('x.com')) return <Twitter className="h-3 w-3 mr-1" />;
@@ -92,6 +102,16 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
       return <Newspaper className="h-3 w-3 mr-1" />;
     }
     
+    // Check for book indicators in URL path
+    if (
+      path.includes('/book/') || 
+      path.includes('/books/') || 
+      path.includes('/ebook/') || 
+      path.includes('/publication/')
+    ) {
+      return <BookOpen className="h-3 w-3 mr-1" />;
+    }
+    
     // Default for other sources
     return <Globe className="h-3 w-3 mr-1" />;
   };
@@ -107,7 +127,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
         </CardHeader>
         <CardContent>
           <CardDescription className="text-zinc-400">
-            External articles and resources from our trusted sources will appear here. 
+            External articles, books, and resources from our trusted sources will appear here. 
             These rotate daily, so check back often for new content.
           </CardDescription>
         </CardContent>
@@ -123,7 +143,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
           Articles & Resources
         </CardTitle>
         <CardDescription className="text-zinc-400">
-          Content from external websites, blogs, and publications
+          Content from external websites, blogs, books, and publications
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -184,7 +204,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
             className="w-full border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
             onClick={() => onArticleClick && onArticleClick("What are the recent updates in bamboo architecture?")}
           >
-            <span>View More Articles</span>
+            <span>View More Resources</span>
             <ArrowRight className="h-3 w-3 ml-1" />
           </Button>
         </CardFooter>
