@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, AlertTriangle, Save } from "lucide-react";
+import { 
+  X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
+  AlertTriangle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook 
+} from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -373,9 +376,93 @@ export default function AIKnowledgeDatabase() {
                                 )}
                               </CardHeader>
                               <CardContent className="pb-2">
-                                <p className="text-sm text-gray-300 line-clamp-3">
-                                  {truncateText(content.content, 120)}
-                                </p>
+                                {content.contentType === 'enthusiast' ? (
+                                  <div className="space-y-2">
+                                    <p className="text-sm text-gray-300 line-clamp-2">
+                                      {truncateText(content.content, 100)}
+                                    </p>
+                                    
+                                    {/* Profile photo and contact info */}
+                                    <div className="flex items-center mt-2 gap-3">
+                                      {content.mediaUrl && (
+                                        <div className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border border-gray-700">
+                                          <img 
+                                            src={content.mediaUrl} 
+                                            alt={content.title} 
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              e.currentTarget.src = "https://via.placeholder.com/100?text=Profile";
+                                            }}
+                                          />
+                                        </div>
+                                      )}
+                                      <div className="flex-1 overflow-hidden">
+                                        {content.contactEmail && (
+                                          <div className="flex items-center text-xs text-teal-300 truncate">
+                                            <Mail className="h-3 w-3 mr-1.5 flex-shrink-0" />
+                                            <span className="truncate">{content.contactEmail}</span>
+                                          </div>
+                                        )}
+                                        {content.contactPhone && (
+                                          <div className="flex items-center text-xs text-teal-300 truncate">
+                                            <Phone className="h-3 w-3 mr-1.5 flex-shrink-0" />
+                                            <span className="truncate">{content.contactPhone}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Social media links */}
+                                    {(content.linkedinUrl || content.instagramUrl || content.twitterUrl || content.facebookUrl) && (
+                                      <div className="flex gap-2 mt-2">
+                                        {content.linkedinUrl && (
+                                          <a 
+                                            href={content.linkedinUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="text-[#0077b5] hover:bg-[#0077b5]/10 p-1 rounded"
+                                          >
+                                            <Linkedin className="h-3.5 w-3.5" />
+                                          </a>
+                                        )}
+                                        {content.instagramUrl && (
+                                          <a 
+                                            href={content.instagramUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="text-[#E1306C] hover:bg-[#E1306C]/10 p-1 rounded"
+                                          >
+                                            <Instagram className="h-3.5 w-3.5" />
+                                          </a>
+                                        )}
+                                        {content.twitterUrl && (
+                                          <a 
+                                            href={content.twitterUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="text-[#1DA1F2] hover:bg-[#1DA1F2]/10 p-1 rounded"
+                                          >
+                                            <Twitter className="h-3.5 w-3.5" />
+                                          </a>
+                                        )}
+                                        {content.facebookUrl && (
+                                          <a 
+                                            href={content.facebookUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="text-[#4267B2] hover:bg-[#4267B2]/10 p-1 rounded"
+                                          >
+                                            <Facebook className="h-3.5 w-3.5" />
+                                          </a>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-300 line-clamp-3">
+                                    {truncateText(content.content, 120)}
+                                  </p>
+                                )}
                               </CardContent>
                               <CardFooter className="flex justify-between items-center pt-0">
                                 <span className="text-xs text-gray-400">
@@ -481,6 +568,118 @@ export default function AIKnowledgeDatabase() {
                     <pre className="text-xs text-gray-300 whitespace-pre-wrap">
                       {JSON.stringify(selectedContent.socialMediaInfo, null, 2)}
                     </pre>
+                  </div>
+                </div>
+              )}
+              
+              {/* Bamboo Enthusiast specific information */}
+              {selectedContent.contentType === 'enthusiast' && (
+                <div className="bg-teal-900/20 rounded-lg p-4 border border-teal-800">
+                  <h3 className="text-sm font-medium text-teal-400 mb-3">Bamboo Enthusiast Profile</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Contact Information */}
+                    {(selectedContent.contactEmail || selectedContent.contactPhone) && (
+                      <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                        <h4 className="text-xs font-medium text-amber-400 mb-2">Contact Information:</h4>
+                        <div className="space-y-2">
+                          {selectedContent.contactEmail && (
+                            <div className="flex items-center">
+                              <span className="text-xs text-gray-400 mr-2">Email:</span>
+                              <a 
+                                href={`mailto:${selectedContent.contactEmail}`} 
+                                className="text-blue-400 hover:text-blue-300 text-sm"
+                              >
+                                {selectedContent.contactEmail}
+                              </a>
+                            </div>
+                          )}
+                          
+                          {selectedContent.contactPhone && (
+                            <div className="flex items-center">
+                              <span className="text-xs text-gray-400 mr-2">Phone:</span>
+                              <a 
+                                href={`tel:${selectedContent.contactPhone}`} 
+                                className="text-blue-400 hover:text-blue-300 text-sm"
+                              >
+                                {selectedContent.contactPhone}
+                              </a>
+                            </div>
+                          )}
+                          
+                          {selectedContent.personalWebsite && (
+                            <div className="flex items-center">
+                              <span className="text-xs text-gray-400 mr-2">Website:</span>
+                              <a 
+                                href={selectedContent.personalWebsite} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-400 hover:text-blue-300 flex items-center text-sm break-all"
+                              >
+                                {selectedContent.personalWebsite}
+                                <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Social Media Links */}
+                    {(selectedContent.linkedinUrl || selectedContent.instagramUrl || selectedContent.twitterUrl || selectedContent.facebookUrl) && (
+                      <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700">
+                        <h4 className="text-xs font-medium text-amber-400 mb-2">Social Media Links:</h4>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {selectedContent.linkedinUrl && (
+                            <a 
+                              href={selectedContent.linkedinUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="px-3 py-1.5 bg-[#0077b5]/10 text-[#0077b5] border border-[#0077b5]/20 rounded-lg text-sm font-medium hover:bg-[#0077b5]/20 flex items-center"
+                            >
+                              LinkedIn
+                              <ExternalLink className="ml-1.5 h-3 w-3" />
+                            </a>
+                          )}
+                          
+                          {selectedContent.instagramUrl && (
+                            <a 
+                              href={selectedContent.instagramUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="px-3 py-1.5 bg-[#E1306C]/10 text-[#E1306C] border border-[#E1306C]/20 rounded-lg text-sm font-medium hover:bg-[#E1306C]/20 flex items-center"
+                            >
+                              Instagram
+                              <ExternalLink className="ml-1.5 h-3 w-3" />
+                            </a>
+                          )}
+                          
+                          {selectedContent.twitterUrl && (
+                            <a 
+                              href={selectedContent.twitterUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="px-3 py-1.5 bg-[#1DA1F2]/10 text-[#1DA1F2] border border-[#1DA1F2]/20 rounded-lg text-sm font-medium hover:bg-[#1DA1F2]/20 flex items-center"
+                            >
+                              Twitter
+                              <ExternalLink className="ml-1.5 h-3 w-3" />
+                            </a>
+                          )}
+                          
+                          {selectedContent.facebookUrl && (
+                            <a 
+                              href={selectedContent.facebookUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="px-3 py-1.5 bg-[#4267B2]/10 text-[#4267B2] border border-[#4267B2]/20 rounded-lg text-sm font-medium hover:bg-[#4267B2]/20 flex items-center"
+                            >
+                              Facebook
+                              <ExternalLink className="ml-1.5 h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
