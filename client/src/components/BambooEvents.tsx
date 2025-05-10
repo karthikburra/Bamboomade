@@ -227,9 +227,9 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
           Click on any event card to ask our AI for details or use the registration links
         </CardDescription>
       </CardHeader>
-      <CardContent className="text-sm">
+      <CardContent className="text-sm p-4">
         {/* Display events as tiles/cards */}
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-4">
           {eventsToDisplay.map(event => {
             // Get event date - extract from content or use createdAt if not found
             let eventDate = extractDate(event.content);
@@ -279,38 +279,88 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
             }
             
             // Truncate content for preview
-            const contentPreview = event.content.substring(0, 120) + (event.content.length > 120 ? '...' : '');
+            const contentPreview = event.content.substring(0, 160) + (event.content.length > 160 ? '...' : '');
+            
+            // Detect workshop type/category (College workshop, public workshop, training session, etc.)
+            let workshopType = "Workshop";
+            if (event.title.toLowerCase().includes("college") || event.content.toLowerCase().includes("college")) {
+              workshopType = "College Workshop";
+            } else if (event.title.toLowerCase().includes("training") || event.content.toLowerCase().includes("training")) {
+              workshopType = "Training Session";
+            } else if (event.title.toLowerCase().includes("webinar") || event.content.toLowerCase().includes("webinar")) {
+              workshopType = "Webinar";
+            }
             
             return (
               <div 
                 key={event.id}
-                className="p-3 bg-zinc-800 rounded-md cursor-pointer hover:bg-zinc-750 transition-colors border border-transparent hover:border-green-800/50"
+                className="bg-zinc-800/70 rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg border border-zinc-700 hover:border-green-800/60 group"
                 onClick={() => onEventClick && onEventClick(event.title)}
               >
-                <h3 className="font-medium text-green-400 mb-1">{event.title}</h3>
-                <div className="flex items-center text-xs text-zinc-400 mb-1">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {eventDate || "Coming Soon"}
-                </div>
-                {eventLocation && (
-                  <div className="flex items-center text-xs text-zinc-400 mb-1">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {eventLocation}
+                {/* Event header with date */}
+                <div className="relative bg-gradient-to-r from-green-900/60 to-zinc-800 p-4 border-b border-zinc-700">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-semibold text-green-400 text-base mb-0.5 pr-16 group-hover:text-green-300 transition-colors">
+                      {event.title}
+                    </h3>
+                    <Badge variant="outline" className="absolute top-4 right-4 text-xs bg-zinc-900/90 text-amber-400 border-amber-900/60 px-1.5 py-0">
+                      {workshopType}
+                    </Badge>
                   </div>
-                )}
-                <p className="text-zinc-300 text-xs mb-2">{contentPreview}</p>
-                {registrationLink && (
-                  <a 
-                    href={registrationLink.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-green-400 hover:text-green-300 inline-flex items-center"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {registrationLink.text}
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                )}
+                  
+                  {/* Date and location info */}
+                  <div className="mt-2 flex items-center gap-3">
+                    <div className="flex items-center text-xs text-zinc-300">
+                      <Calendar className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+                      <span className="font-medium">{eventDate || "Coming Soon"}</span>
+                    </div>
+                    {eventLocation && (
+                      <div className="flex items-center text-xs text-zinc-300">
+                        <MapPin className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+                        <span>{eventLocation}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Event content */}
+                <div className="p-4">
+                  {/* Event description */}
+                  <p className="text-zinc-300 text-xs leading-relaxed mb-3">{contentPreview}</p>
+                  
+                  {/* Registration/information button */}
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex gap-2">
+                      {registrationLink && (
+                        <a 
+                          href={registrationLink.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-green-900/40 hover:bg-green-800/60 text-green-400 hover:text-green-300 rounded-md text-xs font-medium inline-flex items-center border border-green-900/80 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {registrationLink.text}
+                          <ExternalLink className="h-3 w-3 ml-1.5" />
+                        </a>
+                      )}
+                    </div>
+                    
+                    <button 
+                      className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEventClick && onEventClick(`Tell me more details about "${event.title}"`);
+                      }}
+                    >
+                      More details
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 16v-4"/>
+                        <path d="M12 8h.01"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -353,7 +403,7 @@ const BambooEvents: React.FC<BambooEventsProps> = ({ events, onEventClick, upcom
         <Button
           variant="outline"
           size="sm"
-          className="mt-3 w-full border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+          className="mt-4 w-full border-zinc-700 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
           onClick={() => onEventClick && onEventClick("What bamboo architecture events are coming up?")}
         >
           Ask about upcoming events
