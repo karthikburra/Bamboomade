@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, MessageCircle, Info, LayoutDashboard } from "lucide-react";
 import ChatInterface from "@/components/ChatInterface";
 import BambooEvents from "@/components/BambooEvents";
 import BambooFact from "@/components/BambooFact";
@@ -21,6 +21,7 @@ const AIChat: React.FC = () => {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [chatQuestion, setChatQuestion] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
   
   // Simple no-op handler since we're not tracking tokens anymore
   const handleTokensUsed = (usedTokens: number) => {
@@ -60,11 +61,8 @@ const AIChat: React.FC = () => {
       });
     }
     
-    // Scroll to chat interface
-    const chatElement = document.getElementById('chat-interface');
-    if (chatElement) {
-      chatElement.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Switch to chat tab instead of scrolling
+    setActiveTab("chat");
   };
 
   return (
@@ -76,72 +74,109 @@ const AIChat: React.FC = () => {
       
       <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 py-6 sm:py-8 md:py-12">
         <div className="container max-w-screen-xl px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="mb-3 sm:mb-4 md:mb-6 text-left flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800">
-              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-green-500" />
-              <span className="text-xs sm:text-sm font-medium">AI-Powered Assistant</span>
-            </div>
-            
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100 ml-1">
-              BambooMade AI
-            </h1>
-            
-            <p className="text-sm text-zinc-400">
-              <span className="text-green-400 font-medium">All Bamboo Data in one place.</span>
-              <span className="mx-2 text-zinc-600">|</span>
-              <span className="text-green-500">First 5 questions free</span>
-            </p>
-          </div>
-          
-          {/* Dashboard Information Section */}
-          {isLoading ? (
-            <div className="flex justify-center items-center py-6 sm:py-8 md:py-10">
-              <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-green-500" />
-              <span className="ml-2 sm:ml-3 text-sm sm:text-base text-zinc-400">Loading information dashboard...</span>
-            </div>
-          ) : (
-            <>
-              {/* Top Row - Facts and Events */}
-              <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6 md:grid-cols-2">
-                {/* Bamboo Facts Card */}
-                <div>
-                  <BambooFact 
-                    factData={dashboardData?.fact || null}
-                    factsData={dashboardData?.facts || []}
-                    onFactClick={handleTopicClick}
-                  />
-                </div>
-                
-                {/* Upcoming Events Card */}
-                <div>
-                  <BambooEvents 
-                    events={dashboardData?.events || null} 
-                    upcomingEvents={dashboardData?.upcomingEvents || []}
-                    onEventClick={handleTopicClick}
-                  />
-                </div>
+          <div className="mb-3 sm:mb-4 md:mb-6 text-left flex flex-wrap items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-green-500" />
+                <span className="text-xs sm:text-sm font-medium">AI-Powered Assistant</span>
               </div>
               
-              {/* Second Row - Recent Articles */}
-              <div className="mb-6 sm:mb-8">
-                <RecentArticles 
-                  articles={dashboardData?.updates || []} 
-                  onArticleClick={handleTopicClick}
-                />
-              </div>
-
-              {/* Third Row - Social Media Carousel */}
-              <div className="mb-6 sm:mb-8 md:mb-12">
-                <SocialMediaCarousel />
-              </div>
-            </>
-          )}
-          
-          {/* Chat Interface Section */}
-          <div id="chat-interface" className="grid grid-cols-1">
-            <div>
-              <ChatInterface onTokensUsed={handleTokensUsed} initialQuestion={chatQuestion} />
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100 ml-1">
+                BambooMade AI
+              </h1>
+              
+              <p className="text-sm text-zinc-400 hidden sm:block">
+                <span className="text-green-400 font-medium">All Bamboo Data in one place.</span>
+                <span className="mx-2 text-zinc-600">|</span>
+                <span className="text-green-500">First 5 questions free</span>
+              </p>
             </div>
+            
+            {/* Tab Selection in Header */}
+            <div className="bg-zinc-800 border border-zinc-700 rounded-md px-1 py-1 flex space-x-1">
+              <button
+                onClick={() => setActiveTab("dashboard")}
+                className={`flex items-center px-3 py-1.5 text-xs font-medium rounded-sm ${
+                  activeTab === "dashboard" 
+                    ? "bg-green-800/80 text-zinc-100" 
+                    : "bg-transparent text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-300"
+                }`}
+              >
+                <LayoutDashboard className="h-3.5 w-3.5 mr-1.5" />
+                <span>Dashboard</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("chat")}
+                className={`flex items-center px-3 py-1.5 text-xs font-medium rounded-sm ${
+                  activeTab === "chat" 
+                    ? "bg-green-800/80 text-zinc-100" 
+                    : "bg-transparent text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-300"
+                }`}
+              >
+                <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
+                <span>AI Chat</span>
+              </button>
+            </div>
+          </div>
+          
+          {/* Tab Content */}
+          <div className="min-h-[600px]">
+            {/* Dashboard Tab */}
+            {activeTab === "dashboard" && (
+              <>
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-6 sm:py-8 md:py-10">
+                    <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-green-500" />
+                    <span className="ml-2 sm:ml-3 text-sm sm:text-base text-zinc-400">Loading information dashboard...</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* Top Row - Facts and Events */}
+                    <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6 md:grid-cols-2">
+                      {/* Bamboo Facts Card */}
+                      <div>
+                        <BambooFact 
+                          factData={dashboardData?.fact || null}
+                          factsData={dashboardData?.facts || []}
+                          onFactClick={handleTopicClick}
+                        />
+                      </div>
+                      
+                      {/* Upcoming Events Card */}
+                      <div>
+                        <BambooEvents 
+                          events={dashboardData?.events || null} 
+                          upcomingEvents={dashboardData?.upcomingEvents || []}
+                          onEventClick={handleTopicClick}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Second Row - Recent Articles */}
+                    <div className="mb-6 sm:mb-8">
+                      <RecentArticles 
+                        articles={dashboardData?.updates || []} 
+                        onArticleClick={handleTopicClick}
+                      />
+                    </div>
+
+                    {/* Third Row - Social Media Carousel */}
+                    <div className="mb-6 sm:mb-8 md:mb-12">
+                      <SocialMediaCarousel />
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+            
+            {/* Chat Tab */}
+            {activeTab === "chat" && (
+              <div id="chat-interface" className="grid grid-cols-1">
+                <div>
+                  <ChatInterface onTokensUsed={handleTokensUsed} initialQuestion={chatQuestion} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
