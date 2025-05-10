@@ -497,7 +497,7 @@ export default function AIKnowledgeDatabase() {
       {/* View Details Dialog */}
       {selectedContent && (
         <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark">
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark px-4 sm:px-6">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-amber-400">{selectedContent.title}</DialogTitle>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -740,7 +740,7 @@ export default function AIKnowledgeDatabase() {
       {/* Edit Dialog */}
       {selectedContent && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark">
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark px-4 sm:px-6">
             <DialogHeader className="border-b border-gray-800 pb-4">
               <DialogTitle className="text-xl font-bold text-amber-400">Edit Content</DialogTitle>
               <DialogDescription className="text-gray-400">
@@ -1108,7 +1108,7 @@ export default function AIKnowledgeDatabase() {
       {/* Delete Confirmation Dialog */}
       {selectedContent && (
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 shadow-xl dark">
+          <DialogContent className="bg-gray-900 border-gray-800 shadow-xl dark px-4 sm:px-6">
             <DialogHeader className="border-b border-gray-800 pb-4">
               <DialogTitle className="text-xl font-bold text-red-400">
                 <AlertTriangle className="h-5 w-5 inline-block mr-2 text-red-400" />
