@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { 
   X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
-  AlertTriangle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
+  AlertTriangle, AlertCircle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
   UploadCloud
 } from "lucide-react";
 import { format } from "date-fns";
@@ -69,12 +69,32 @@ export default function AIKnowledgeDatabase() {
   const { data: aiContent, isLoading, error, refetch } = useQuery({
     queryKey: ["/api/ai-knowledge"],
     queryFn: async () => {
-      const response = await fetch("/api/ai-knowledge");
-      if (!response.ok) {
-        throw new Error("Failed to fetch AI knowledge content");
+      // Add a timeout for the fetch operation
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      try {
+        const response = await fetch("/api/ai-knowledge", {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch AI knowledge content");
+        }
+        
+        return response.json();
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err?.name === 'AbortError') {
+          throw new Error("Request timed out. The server is taking too long to respond.");
+        }
+        throw err;
       }
-      return response.json();
     },
+    // Increase stale time to reduce number of background refetches
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const getContentTypeLabel = (type: string) => {
@@ -325,16 +345,71 @@ export default function AIKnowledgeDatabase() {
             </div>
 
             {isLoading ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner size="lg" />
+              <div className="space-y-10">
+                <div className="flex justify-center items-center gap-3 py-6">
+                  <LoadingSpinner size="md" />
+                  <span className="text-gray-400 animate-pulse">Fetching AI knowledge content...</span>
+                </div>
+                
+                {/* Loading skeletons for content */}
+                {[1, 2, 3].map((i) => (
+                  <div key={`skeleton-${i}`} className="space-y-4">
+                    <div className="h-7 bg-gray-800 rounded-md w-60 animate-pulse mb-3"></div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[1, 2, 3].map((j) => (
+                        <div key={`card-${i}-${j}`} className="bg-gray-900 rounded-lg border border-gray-800 shadow-md overflow-hidden">
+                          <div className="p-4 border-b border-gray-800">
+                            <div className="h-5 bg-gray-800 rounded-md w-3/4 animate-pulse"></div>
+                          </div>
+                          <div className="p-4 space-y-3">
+                            <div className="h-4 bg-gray-800 rounded-md w-full animate-pulse"></div>
+                            <div className="h-4 bg-gray-800 rounded-md w-5/6 animate-pulse"></div>
+                            <div className="h-4 bg-gray-800 rounded-md w-4/6 animate-pulse"></div>
+                          </div>
+                          <div className="px-4 py-3 bg-gray-850 flex justify-between items-center border-t border-gray-800">
+                            <div className="h-4 bg-gray-800 rounded-md w-20 animate-pulse"></div>
+                            <div className="flex space-x-2">
+                              <div className="h-6 w-6 bg-gray-800 rounded-md animate-pulse"></div>
+                              <div className="h-6 w-6 bg-gray-800 rounded-md animate-pulse"></div>
+                              <div className="h-6 w-6 bg-gray-800 rounded-md animate-pulse"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : error ? (
-              <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-center">
-                <p className="text-red-400">Error loading AI knowledge content</p>
-                <Button variant="ghost" onClick={() => refetch()} className="mt-2">
-                  <RefreshCcw className="mr-2 h-4 w-4" />
-                  Retry
-                </Button>
+              <div className="bg-red-900/20 border border-red-800 rounded-lg p-6 text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <AlertCircle className="h-10 w-10 text-red-400" />
+                  <p className="text-lg font-semibold text-red-400">Error loading AI knowledge content</p>
+                  <p className="text-gray-400 max-w-md mx-auto mb-2">
+                    {error instanceof Error 
+                      ? error.message
+                      : "There was a problem connecting to the server. This could be due to high server load or network issues."}
+                  </p>
+                  
+                  <div className="bg-red-900/30 border border-red-800/50 p-4 rounded-md text-sm text-left w-full max-w-lg my-2">
+                    <p className="text-gray-300 font-medium mb-2">Troubleshooting tips:</p>
+                    <ul className="list-disc pl-5 text-gray-400 space-y-1">
+                      <li>Check your internet connection</li>
+                      <li>The server might be processing a large amount of data</li>
+                      <li>Try refreshing after a few moments</li>
+                      <li>Contact an administrator if the problem persists</li>
+                    </ul>
+                  </div>
+                  
+                  <Button 
+                    variant="default" 
+                    onClick={() => refetch()} 
+                    className="mt-2 bg-red-900 hover:bg-red-800 border border-red-700"
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    Retry Loading
+                  </Button>
+                </div>
               </div>
             ) : (
               <>
