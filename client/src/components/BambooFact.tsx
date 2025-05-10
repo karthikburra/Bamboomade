@@ -38,6 +38,8 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
         return <Globe className="h-3 w-3 mr-1" />;
       case 'article':
         return <FileText className="h-3 w-3 mr-1" />;
+      case 'book':
+        return <BookOpen className="h-3 w-3 mr-1" />;
       case 'event':
         return <Calendar className="h-3 w-3 mr-1" />;
       case 'training':
