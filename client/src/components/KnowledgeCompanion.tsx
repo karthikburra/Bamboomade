@@ -179,9 +179,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
 
   // State for extracted data from selected sources
   const [sourceExtractedData, setSourceExtractedData] = useState<{
-    facts: Array<{id: number, content: string}>;
-    events: Array<{title: string, date: string, description: string}>;
-    blogContent: Array<{title: string, summary: string}>;
+    facts: Array<{id: number, content: string, saved?: boolean}>;
+    events: Array<{id?: number, title: string, date: string, description: string, saved?: boolean}>;
+    blogContent: Array<{id?: number, title: string, summary: string, saved?: boolean}>;
     loading: boolean;
   }>({
     facts: [],
@@ -224,13 +224,44 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         console.log('Mapped facts:', mappedFacts);
       }
       
-      // TODO: Add endpoints for events and blog content extraction
       // For now, we're only handling facts which are already implemented
+      // Add some mock events and blog content for demonstration purposes
+      const mockEvents = [
+        { 
+          id: 1001,
+          title: 'Bamboo Workshop', 
+          date: '2025-06-15', 
+          description: 'Learn about sustainable bamboo architecture techniques',
+          saved: false
+        },
+        { 
+          id: 1002,
+          title: 'Bamboo Crafting Exhibition', 
+          date: '2025-07-10', 
+          description: 'Showcasing innovative bamboo designs from around the world',
+          saved: false
+        }
+      ];
+      
+      const mockBlogContent = [
+        {
+          id: 2001,
+          title: 'The Future of Bamboo in Modern Architecture',
+          summary: 'Exploring how bamboo is becoming a cornerstone of sustainable building practices',
+          saved: false
+        },
+        {
+          id: 2002,
+          title: 'Bamboo vs Traditional Materials: A Comparison',
+          summary: 'Analyzing the structural properties of bamboo compared to steel, concrete, and wood',
+          saved: false
+        }
+      ];
       
       setSourceExtractedData({
         facts: mappedFacts,
-        events: [], // Will be populated when backend endpoint is available
-        blogContent: [], // Will be populated when backend endpoint is available
+        events: mockEvents, // Will be replaced with actual API data when available
+        blogContent: mockBlogContent, // Will be replaced with actual API data when available
         loading: false
       });
     } catch (error) {
