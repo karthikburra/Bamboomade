@@ -173,41 +173,42 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                     </div>
                   )}
                   
-                  {/* Source information */}
-                  {event.source && (
-                    <div className="text-xs text-zinc-400 mb-1 flex items-center truncate">
-                      <Link className="h-3 w-3 mr-1 flex-shrink-0" />
-                      <span className="truncate">
-                        {event.source.startsWith('http') ? (
-                          <a 
-                            href={event.source} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-zinc-400 hover:text-green-400 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {event.source.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
-                          </a>
-                        ) : (
-                          event.source
-                        )}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Registration link if available */}
-                  {registrationLink && (
-                    <a 
-                      href={registrationLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-xs text-green-500 hover:text-green-400 transition-colors mt-1"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Register Now
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </a>
-                  )}
+                  {/* Source information and Registration link in one line */}
+                  <div className="flex items-center justify-between mt-1">
+                    {event.source && (
+                      <div className="text-xs text-zinc-400 flex items-center truncate flex-1 mr-2">
+                        <Link className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <span className="truncate">
+                          {event.source.startsWith('http') ? (
+                            <a 
+                              href={event.source} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-zinc-400 hover:text-green-400 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {event.source.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
+                            </a>
+                          ) : (
+                            event.source
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {registrationLink && (
+                      <a 
+                        href={registrationLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-xs text-green-500 hover:text-green-400 transition-colors flex-shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Register Now
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             );
