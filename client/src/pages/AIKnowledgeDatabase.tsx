@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/card";
 
 import AdminTabs from "@/components/AdminTabs";
+import ContentEditDialog from "@/components/ContentEditDialog";
 
 interface AiKnowledgeContent {
   id: number;
