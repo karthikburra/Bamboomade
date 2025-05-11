@@ -30,6 +30,8 @@ interface ContentItem {
   source: string | null;
   status: string;
   mediaUrl?: string | null;
+  rawContent?: string | null;
+  lastResummarizedAt?: Date | null;
 }
 
 interface ContentEditDialogProps {
@@ -144,6 +146,31 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       setIsRefreshing(false);
     },
   });
+  
+  const resummarizeContentMutation = useMutation({
+    mutationFn: async (contentId: number) => {
+      return apiRequest('POST', `/api/ai-knowledge/${contentId}/resummarize`);
+    },
+    onSuccess: async (response) => {
+      const data = await response.json();
+      setBodyContent(data.content);
+      
+      toast({
+        title: 'Content resummarized',
+        description: 'The content has been regenerated from stored raw data.',
+      });
+      
+      setIsResummarizing(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error resummarizing content',
+        description: error.message || 'Unable to regenerate content from stored data.',
+        variant: 'destructive',
+      });
+      setIsResummarizing(false);
+    },
+  });
 
   const handleSave = () => {
     updateMutation.mutate({
@@ -172,6 +199,20 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       extractFacts: true,
       saveExtractedFacts: false
     });
+  };
+  
+  const handleResummarizeContent = () => {
+    if (!content?.id) {
+      toast({
+        title: 'Cannot resummarize content',
+        description: 'Content ID is missing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsResummarizing(true);
+    resummarizeContentMutation.mutate(content.id);
   };
 
   const saveFactToDb = async (factContent: string) => {
@@ -322,11 +363,24 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                   variant="outline" 
                   size="sm" 
                   onClick={handleRefreshWebsite}
-                  disabled={isRefreshing}
+                  disabled={isRefreshing || isResummarizing}
                   className="flex items-center gap-1"
                 >
                   <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {isRefreshing ? 'Refreshing...' : 'Re-crawl Content'}
+                </Button>
+              )}
+              
+              {content?.rawContent && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleResummarizeContent}
+                  disabled={isResummarizing || isRefreshing}
+                  className="flex items-center gap-1"
+                >
+                  <Sparkles className={`h-4 w-4 ${isResummarizing ? 'animate-spin' : ''}`} />
+                  {isResummarizing ? 'Processing...' : 'Resummarize'}
                 </Button>
               )}
               
