@@ -69,6 +69,7 @@ export default function AIKnowledgeDatabase() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isViewDetailsDialogOpen, setIsViewDetailsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
   const [isApproving, setIsApproving] = useState(false);
 
@@ -293,6 +294,36 @@ export default function AIKnowledgeDatabase() {
       });
     }
   };
+  
+  const handleAddContent = async (formData: FormData) => {
+    try {
+      const response = await fetch('/api/ai-knowledge', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add content');
+      }
+      
+      const data = await response.json();
+      
+      toast({
+        title: 'Content added',
+        description: 'The content has been added to the AI knowledge base.',
+      });
+      
+      refetch();
+      setIsAddDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add content. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const getDomainFromUrl = (url: string | null) => {
     if (!url) return "";
@@ -343,7 +374,16 @@ export default function AIKnowledgeDatabase() {
 
   return (
     <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-amber-400">AI Knowledge Database</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-amber-400">AI Knowledge Database</h1>
+        <Button 
+          onClick={() => setIsAddDialogOpen(true)}
+          className="bg-amber-600 hover:bg-amber-700 text-white"
+        >
+          <UploadCloud className="mr-2 h-4 w-4" />
+          Add Content
+        </Button>
+      </div>
       
       <AdminTabs value="database">
         <TabsContent value="database" className="space-y-6">
@@ -1622,6 +1662,111 @@ export default function AIKnowledgeDatabase() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Add Content Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="bg-gray-900 border-gray-800 text-white sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-amber-400">Add New Content</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Add content manually to the AI knowledge database.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            handleAddContent(formData);
+          }} className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <label htmlFor="title" className="text-sm font-medium text-gray-300">Title</label>
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder="Enter content title"
+                  required
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label htmlFor="contentType" className="text-sm font-medium text-gray-300">Content Type</label>
+                <Select name="contentType" defaultValue="webpage">
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Select content type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectItem value="webpage">Web Page</SelectItem>
+                    <SelectItem value="article">Article</SelectItem>
+                    <SelectItem value="book">Book</SelectItem>
+                    <SelectItem value="social">Social Media</SelectItem>
+                    <SelectItem value="fact">Bamboo Fact</SelectItem>
+                    <SelectItem value="event">Event</SelectItem>
+                    <SelectItem value="youtube">YouTube</SelectItem>
+                    <SelectItem value="training">Training</SelectItem>
+                    <SelectItem value="enthusiast">Bamboo Enthusiast</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <label htmlFor="source" className="text-sm font-medium text-gray-300">Source URL (optional)</label>
+                <Input
+                  id="source"
+                  name="source"
+                  placeholder="Enter source URL"
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label htmlFor="content" className="text-sm font-medium text-gray-300">Content</label>
+                <textarea
+                  id="content"
+                  name="content"
+                  placeholder="Enter content"
+                  required
+                  rows={5}
+                  className="w-full rounded-md bg-gray-800 border-gray-700 text-white resize-none p-3"
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <label htmlFor="status" className="text-sm font-medium text-gray-300">Status</label>
+                <Select name="status" defaultValue="active">
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <DialogFooter className="flex gap-2 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsAddDialogOpen(false)}
+                className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                Add Content
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
