@@ -345,29 +345,6 @@ export default function AIKnowledgeDatabase() {
     <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-amber-400">AI Knowledge Database</h1>
       
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Button 
-          variant={activeTab === "all" ? "default" : "outline"}
-          onClick={() => setActiveTab("all")}
-          className={activeTab === "all" ? "bg-amber-600 hover:bg-amber-700" : "border-amber-600 text-amber-400 hover:bg-amber-900/20"}
-        >
-          All Content
-        </Button>
-        
-        <Button 
-          variant={activeTab === "pending" ? "default" : "outline"}
-          onClick={() => setActiveTab("pending")}
-          className={activeTab === "pending" ? "bg-amber-600 hover:bg-amber-700" : "border-amber-600 text-amber-400 hover:bg-amber-900/20"}
-        >
-          Pending Content
-          {pendingContent && pendingContent.length > 0 && (
-            <span className="ml-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
-              {pendingContent.length}
-            </span>
-          )}
-        </Button>
-      </div>
-      
       <AdminTabs value="database">
         <TabsContent value="database" className="space-y-6">
           <div className="space-y-4 bg-gray-900 p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl">
