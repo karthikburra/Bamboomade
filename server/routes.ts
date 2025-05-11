@@ -4916,6 +4916,72 @@ Please structure the summary in a helpful format with clear headings, bullet poi
     }
   });
 
+  // Endpoint to regenerate content summary using stored raw content
+  app.post('/api/ai-knowledge/regenerate-summary', isAdmin, async (req, res) => {
+    try {
+      const { id } = req.body;
+      
+      if (!id) {
+        return res.status(400).json({ success: false, error: 'Content ID is required' });
+      }
+      
+      // Get the content item with raw content
+      const content = await storage.getAiKnowledgeContentById(id);
+      
+      if (!content) {
+        return res.status(404).json({ success: false, error: 'Content not found' });
+      }
+      
+      if (!content.rawContent) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'No raw content available for re-summarization. This content may have been created before raw content storage was implemented.' 
+        });
+      }
+      
+      // Get OpenAI instance
+      const openai = getOpenAI();
+      
+      // Call OpenAI to regenerate the summary
+      const prompt = `You are an expert in bamboo architecture, design, and sustainability. Your task is to summarize the following content about bamboo into a well-structured, informative, and engaging summary. Focus on key points related to bamboo architecture, techniques, sustainability benefits, and design aspects. Include specific details when available.\n\nContent to summarize:\n${content.rawContent}`;
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4-0613", // Using a reliable model for content summarization
+        messages: [
+          {
+            role: "system",
+            content: "You are a knowledgeable assistant specializing in bamboo architecture and sustainability."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.5, // Slightly creative but mostly factual
+      });
+      
+      // Get the summary from the completion
+      const newSummary = completion.choices[0].message.content;
+      
+      // Update the content in the database
+      const updatedContent = await storage.updateAiKnowledgeContent(id, {
+        content: newSummary,
+        lastResummarizedAt: new Date()
+      });
+      
+      // Return the updated content
+      res.json({ success: true, content: updatedContent });
+    } catch (error) {
+      console.error('Error regenerating content summary:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to regenerate content summary', 
+        message: (error as Error).message 
+      });
+    }
+  });
+
   app.post('/api/ai-knowledge/refresh-website', isAdmin, async (req, res) => {
     const { id, url, extractFacts = false, saveExtractedFacts = true } = req.body;
     
