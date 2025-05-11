@@ -32,9 +32,6 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       case "sessions":
         navigate("/admin-dashboard?tab=pending");
         break;
-      case "knowledge":
-        navigate("/ai-knowledge-management");
-        break;
       case "database":
         navigate("/ai-knowledge-database");
         break;
@@ -67,10 +64,7 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
             <Calendar className="w-4 h-4 mr-2" />
             Session Management
           </TabsTrigger>
-          <TabsTrigger value="knowledge" className="data-[state=active]:bg-blue-600 text-sm whitespace-nowrap">
-            <BookOpen className="w-4 h-4 mr-2" />
-            Add Knowledge
-          </TabsTrigger>
+
           <TabsTrigger value="database" className="data-[state=active]:bg-amber-600 text-sm whitespace-nowrap">
             <Database className="w-4 h-4 mr-2" />
             Knowledge Database
