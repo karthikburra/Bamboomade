@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, Share2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Globe, Share2, RefreshCw } from 'lucide-react';
 import SocialMediaEmbed from './SocialMediaEmbed';
 import InstagramScript from './InstagramScript';
 
@@ -33,10 +34,19 @@ const SocialMediaCarousel: React.FC = () => {
             </CardDescription>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             <span className="bg-amber-400/20 text-amber-300 text-xs px-2 py-0.5 rounded-full font-medium">
               Featured Posts
             </span>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+              title="Refresh social media content"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+            </Button>
           </div>
         </div>
         

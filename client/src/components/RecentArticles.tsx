@@ -21,7 +21,8 @@ import {
   Facebook,
   Instagram,
   Youtube,
-  Music
+  Music,
+  RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -120,10 +121,21 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
     return (
       <Card className="border-zinc-800 bg-zinc-900 h-full">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-            <FileText className="h-5 w-5 mr-2 text-green-500" />
-            Articles & Resources
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-green-500" />
+              Articles & Resources
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+              title="Refresh articles and resources"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <CardDescription className="text-zinc-400">
@@ -138,10 +150,21 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
   return (
     <Card className="border-zinc-800 bg-zinc-900">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-          <FileText className="h-5 w-5 mr-2 text-green-500" />
-          Articles & Resources
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-green-500" />
+            Articles & Resources
+          </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+            title="Refresh articles and resources"
+            onClick={() => window.location.reload()}
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+          </Button>
+        </div>
         <CardDescription className="text-zinc-400">
           Content from external websites, blogs, books, and publications
         </CardDescription>
