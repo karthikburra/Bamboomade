@@ -156,19 +156,74 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         selected: sourceType === 'uploaded' && source.id === sourceId
       }))
     );
+    
+    // Fetch extracted information for the selected source
+    if (sourceType === 'database') {
+      fetchSourceExtractedData(sourceId);
+    } else {
+      // For uploaded sources, we don't have extracted data yet in the database
+      // So we'll clear the extracted data
+      setSourceExtractedData({
+        facts: [],
+        events: [],
+        blogContent: [],
+        loading: false
+      });
+    }
   };
   
   // Combine both sources for display
   const combinedSources = [...allSources, ...uploadedSources];
 
-  // Dummy studio data that would come from the backend
-  const studioData = {
-    currentAnalysis: "Audio Overview",
-    extractedFacts: [
-      "Bamboo is one of the fastest-growing plants in the world with some species growing up to 91 cm (36 in) within a 24-hour period.",
-      "Bamboo has a higher specific compressive strength than brick or concrete and a specific tensile strength that rivals steel.",
-      "Traditional bamboo architecture in Asia has been developed for over 5,000 years, creating complex structures without modern fasteners."
-    ]
+  // State for extracted data from selected sources
+  const [sourceExtractedData, setSourceExtractedData] = useState<{
+    facts: Array<{id: number, content: string}>;
+    events: Array<{title: string, date: string, description: string}>;
+    blogContent: Array<{title: string, summary: string}>;
+    loading: boolean;
+  }>({
+    facts: [],
+    events: [],
+    blogContent: [],
+    loading: false
+  });
+  
+  // Fetch facts and extracted content from the selected source
+  const fetchSourceExtractedData = async (sourceId: number) => {
+    setSourceExtractedData(prev => ({ ...prev, loading: true }));
+    
+    try {
+      // Fetch facts from the source
+      const factsResponse = await fetch(`/api/ai-knowledge/${sourceId}/facts`);
+      if (!factsResponse.ok) {
+        throw new Error('Failed to fetch facts for this source');
+      }
+      
+      const factsData = await factsResponse.json();
+      
+      // TODO: Add endpoints for events and blog content extraction
+      // For now, we're only handling facts which are already implemented
+      
+      setSourceExtractedData({
+        facts: factsData.facts || [],
+        events: [], // Will be populated when backend endpoint is available
+        blogContent: [], // Will be populated when backend endpoint is available
+        loading: false
+      });
+    } catch (error) {
+      console.error('Error fetching source information:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load extracted information from this source.',
+        variant: 'destructive',
+      });
+      setSourceExtractedData({
+        facts: [],
+        events: [],
+        blogContent: [],
+        loading: false
+      });
+    }
   };
   
   // Fetch all knowledge sources from the API
@@ -762,18 +817,18 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="p-3 border-b border-gray-800">
-            <div className="text-sm text-gray-300 mb-2">Audio Overview</div>
+            <div className="text-sm text-gray-300 mb-2">Source Overview</div>
             <div className="text-xs text-gray-400 mb-1 flex items-center">
-              <span>Create an Audio Overview in more languages</span>
-              <button className="ml-auto text-blue-400 text-xs hover:text-blue-300">Learn more</button>
+              <span>View information from selected source</span>
+              <button className="ml-auto text-blue-400 text-xs hover:text-blue-300">Refresh</button>
             </div>
             
             <Button className="w-full text-xs justify-between mt-2 bg-gray-800 hover:bg-gray-700 text-gray-300">
               <div className="flex items-center">
                 <FileText className="h-3 w-3 mr-2" />
-                <span>Click to load the conversation</span>
+                <span>Generate source summary</span>
               </div>
-              <span className="text-gray-400">Load</span>
+              <span className="text-gray-400">Generate</span>
             </Button>
           </div>
           
@@ -804,28 +859,92 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="p-3 flex-1 overflow-y-auto">
-            <div className="text-sm text-gray-300 mb-2">Extracted Facts</div>
-            <div className="space-y-2">
-              {studioData.extractedFacts.map((fact, index) => (
-                <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
-                  <div className="flex items-center mb-1">
-                    <Lightbulb className="h-3 w-3 mr-1 text-amber-500" />
-                    <span className="text-amber-500 font-medium">Fact</span>
-                  </div>
-                  <div>{fact}</div>
-                  <div className="flex justify-end mt-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="h-6 text-xs text-gray-400 hover:text-gray-300"
-                    >
-                      <ThumbsUp className="h-3 w-3 mr-1" />
-                      <span>Save to knowledge base</span>
-                    </Button>
-                  </div>
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-gray-300">Selected Source Information</div>
+              {sourceExtractedData.loading && (
+                <div className="flex items-center">
+                  <div className="animate-spin h-3 w-3 border-2 border-amber-500 border-t-transparent rounded-full mr-1"></div>
+                  <span className="text-xs text-gray-400">Loading...</span>
                 </div>
-              ))}
+              )}
             </div>
+            
+            {/* Facts Section */}
+            {sourceExtractedData.facts.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs font-medium text-amber-500 mb-2 flex items-center">
+                  <Lightbulb className="h-3 w-3 mr-1" />
+                  <span>EXTRACTED FACTS ({sourceExtractedData.facts.length})</span>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {sourceExtractedData.facts.map((fact) => (
+                    <div key={fact.id} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                      <div>{fact.content}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Events Section - Will be populated when event extraction is implemented */}
+            {sourceExtractedData.events.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs font-medium text-blue-500 mb-2 flex items-center">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <span>IDENTIFIED EVENTS ({sourceExtractedData.events.length})</span>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {sourceExtractedData.events.map((event, index) => (
+                    <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                      <div className="font-medium mb-1">{event.title}</div>
+                      <div className="text-gray-400 mb-1">{event.date}</div>
+                      <div>{event.description}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Blog Content Section - Will be populated when content extraction is implemented */}
+            {sourceExtractedData.blogContent.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs font-medium text-green-500 mb-2 flex items-center">
+                  <FileText className="h-3 w-3 mr-1" />
+                  <span>BLOG CONTENT ({sourceExtractedData.blogContent.length})</span>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {sourceExtractedData.blogContent.map((blog, index) => (
+                    <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                      <div className="font-medium mb-1">{blog.title}</div>
+                      <div>{blog.summary}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* No data message */}
+            {!sourceExtractedData.loading && 
+             sourceExtractedData.facts.length === 0 && 
+             sourceExtractedData.events.length === 0 && 
+             sourceExtractedData.blogContent.length === 0 && (
+              <div className="text-center py-8">
+                <div className="text-gray-400 text-xs">
+                  {selectedSourceType ? 
+                    "No information extracted from this source yet." : 
+                    "Select a source from the left panel to see extracted information."}
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-2 text-xs text-amber-500"
+                  disabled={!selectedSourceType}
+                >
+                  <RefreshCcw className="h-3 w-3 mr-1" />
+                  <span>Extract information</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
