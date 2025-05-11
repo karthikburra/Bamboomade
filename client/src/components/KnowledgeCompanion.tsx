@@ -55,7 +55,9 @@ import {
   Database,
   File,
   FileText as FileTextIcon,
-  ClipboardPaste
+  ClipboardPaste,
+  Trash2,
+  ChevronRight
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -73,90 +75,118 @@ interface KnowledgeCompanionProps {
   initialMessage?: string;
 }
 
+type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
+
 export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanionProps) {
   const [message, setMessage] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: initialMessage || 'Welcome to the Bamboo Knowledge Notebook. Share information you\'d like to add to the knowledge base, or paste a website URL to extract content.',
+      content: initialMessage || "Hello! I'm your Bamboo Knowledge Companion. Ask me anything about bamboo architecture, or upload content to get specific answers.",
       timestamp: new Date(),
-      id: 'welcome',
-      actionButtons: false
+      id: 'welcome'
     }
   ]);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  
+  const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   
-  // Auto-scroll to bottom of chat
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatHistory]);
+  // Modal state
+  const [showAddSourceModal, setShowAddSourceModal] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<'file' | 'drive' | 'web' | 'text'>('file');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [webUrl, setWebUrl] = useState('');
+  const [textContent, setTextContent] = useState('');
+  const [googleDriveUrl, setGoogleDriveUrl] = useState('');
+  
+  // Example queries to show as chips
+  const exampleQueries = [
+    "What are the properties of bamboo as a building material?",
+    "How to design bamboo joints correctly?",
+    "What are the best cultivation practices for bamboo?",
+    "Add facts about bamboo sustainability"
+  ];
 
-  // Auto-resize textarea as content grows
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [message]);
+  // State for uploaded sources in the current session
+  const [uploadedSources, setUploadedSources] = useState<Array<{
+    id: number,
+    title: string,
+    type: string,
+    size: string,
+    timestamp: Date,
+    selected: boolean
+  }>>([]);
 
-  // Add content to knowledge base
-  const addMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest('POST', '/api/ai-knowledge', data);
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to add content');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
-    }
-  });
-
-  // Extract URL if present in message
-  const extractUrl = (text: string): string | null => {
-    const urlMatch = text.match(/(https?:\/\/[^\s]+)/);
-    return urlMatch ? urlMatch[0] : null;
+  // Dummy studio data that would come from the backend
+  const studioData = {
+    currentAnalysis: "Audio Overview",
+    extractedFacts: [
+      "Bamboo is one of the fastest-growing plants in the world with some species growing up to 91 cm (36 in) within a 24-hour period.",
+      "Bamboo has a higher specific compressive strength than brick or concrete and a specific tensile strength that rivals steel.",
+      "Traditional bamboo architecture in Asia has been developed for over 5,000 years, creating complex structures without modern fasteners."
+    ]
   };
-
-  // Toggle expanded state for a message
-  const toggleExpanded = (id: string) => {
-    setExpanded(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
+  
+  // Scroll to bottom whenever chat history updates
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+  
+  // If the user presses Enter in the textarea, submit the form
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendMessage();
   };
   
   // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file type
-      if (file.type === 'application/pdf' || 
-          file.type === 'text/plain' || 
-          file.type === 'text/markdown' || 
-          file.type.startsWith('audio/')) {
-        setSelectedFile(file);
-      } else {
+      const fileSizeMB = file.size / (1024 * 1024);
+      if (fileSizeMB > 20) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please upload a PDF, TXT, Markdown, or audio file.',
+          title: 'File too large',
+          description: 'Please select a file smaller than 20MB.',
           variant: 'destructive',
         });
+        return;
       }
+      
+      const allowedTypes = [
+        'application/pdf', 
+        'text/plain', 
+        'text/markdown',
+        'audio/mpeg', 
+        'audio/wav', 
+        'audio/ogg'
+      ];
+      
+      if (!allowedTypes.includes(file.type) && 
+          !file.name.endsWith('.pdf') && 
+          !file.name.endsWith('.txt') && 
+          !file.name.endsWith('.md') && 
+          !file.name.endsWith('.mp3') && 
+          !file.name.endsWith('.wav') && 
+          !file.name.endsWith('.ogg')) {
+        toast({
+          title: 'Unsupported file type',
+          description: 'Please select a PDF, text, markdown, or audio file.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      
+      setSelectedFile(file);
     }
   };
   
-  // Trigger file input click
-  const triggerFileInput = () => {
+  // Handle click on the file input button
+  const handleFileButtonClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -223,6 +253,20 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       // Process the uploaded file content
       await processFileContent(selectedFile);
       
+      // Add to the uploaded sources list
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+      setUploadedSources(prev => [
+        ...prev, 
+        {
+          id: Date.now(),
+          title: selectedFile.name,
+          type: fileExtension,
+          size: (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
+          timestamp: new Date(),
+          selected: true
+        }
+      ]);
+      
       // Set success state
       setUploadStatus('success');
       
@@ -249,89 +293,41 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     
-    const userMessage = message;
+    // Add user message to chat
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+      id: `user-${Date.now()}`
+    };
+    
+    setChatHistory(prev => [...prev, userMessage]);
     setMessage('');
     setIsProcessing(true);
     
-    const messageId = `user-${Date.now()}`;
-    const url = extractUrl(userMessage);
-    
-    // Add user message to chat
-    setChatHistory(prev => [...prev, { 
-      role: 'user', 
-      content: userMessage,
-      timestamp: new Date(),
-      id: messageId,
-      websiteUrl: url
-    }]);
-    
     try {
-      // Call the companion chat API
-      const response = await apiRequest('POST', '/api/ai-knowledge/companion-chat', {
-        message: userMessage,
-        history: chatHistory
-      });
+      // Simulate AI response
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to process message');
-      }
-      
-      const data = await response.json();
-      const responseId = `assistant-${Date.now()}`;
-      
-      // Determine if this response should have action buttons
-      const hasActionButtons = data.websiteUrl || (data.shouldAddToKnowledge && data.suggestion);
-      
-      // Add assistant response to chat
-      setChatHistory(prev => [...prev, { 
-        role: 'assistant', 
-        content: data.response,
+      // Add assistant message to chat
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: `Thanks for your question about bamboo! Based on my knowledge, here's what I know about "${message.trim()}".\n\nBamboo is a versatile and sustainable material used in architecture around the world. It's known for its strength, flexibility, and rapid growth rate, making it an excellent choice for eco-friendly construction.\n\nIf you have more specific questions or would like to explore a particular aspect of bamboo architecture, please let me know!`,
         timestamp: new Date(),
-        id: responseId,
-        actionButtons: hasActionButtons,
-        websiteUrl: data.websiteUrl,
-        contentId: data.suggestion?.id,
-        contentType: data.suggestion?.contentType
-      }]);
+        id: `assistant-${Date.now()}`
+      };
       
-      // If the message should be added to the knowledge base
-      if (data.shouldAddToKnowledge && data.suggestion) {
-        const suggestion = data.suggestion;
-        
-        // Automatically add to knowledge base without confirmation
-        addMutation.mutate({
-          title: suggestion.title,
-          content: suggestion.content,
-          contentType: suggestion.contentType,
-          source: suggestion.source,
-          status: 'pending'  // Set status to pending by default for admin review
-        });
-        
-        toast({
-          title: 'Added to Knowledge Base',
-          description: `"${suggestion.title}" has been added to the knowledge base.`,
-        });
-      } else if (data.isDuplicate) {
-        // Content was identified as a duplicate
-        toast({
-          title: 'Duplicate Content Detected',
-          description: 'Similar information already exists in the knowledge base.',
-        });
-      }
-      
+      setChatHistory(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to process message',
+        description: 'Failed to process your message. Please try again.',
         variant: 'destructive',
       });
       
-      // Add error message to chat
-      setChatHistory(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Sorry, I encountered an error while processing your message. Please try again.',
+      setChatHistory(prev => [...prev, {
+        role: 'assistant',
+        content: 'I apologize, but I encountered an error while processing your message. Please try again or contact support if the issue persists.',
         timestamp: new Date(),
         id: `error-${Date.now()}`
       }]);
@@ -340,486 +336,113 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     }
   };
   
-  // Refresh website content
-  const refreshWebsite = async (id: number, url: string) => {
-    try {
-      setIsProcessing(true);
-      
-      const response = await apiRequest('POST', '/api/ai-knowledge/refresh-website', {
-        id,
-        url
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to refresh website');
-      }
-      
-      const data = await response.json();
-      
-      // Add success message to chat
-      setChatHistory(prev => [...prev, { 
-        role: 'assistant', 
-        content: `I've refreshed the content for "${data.content.title}". The knowledge base now has the latest information from this website.`,
-        timestamp: new Date(),
-        id: `refresh-${Date.now()}`
-      }]);
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
-      
-      toast({
-        title: 'Website Refreshed',
-        description: 'The content has been updated with the latest information.',
-      });
-    } catch (error) {
-      console.error('Refresh error:', error);
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to refresh website',
-        variant: 'destructive',
-      });
-      
-      // Add error message to chat
-      setChatHistory(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Sorry, I encountered an error while refreshing the website. Please try again.',
-        timestamp: new Date(),
-        id: `error-refresh-${Date.now()}`
-      }]);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Copy text to clipboard
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied to clipboard',
-      description: 'Text has been copied to your clipboard.',
-    });
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSendMessage();
-  };
-
-  // Format timestamp
+  // Format the timestamp for display
   const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  // Get content type icon
-  const getContentTypeIcon = (type?: string) => {
-    switch (type) {
-      case 'webpage':
-        return <LinkIcon className="h-4 w-4" />;
-      case 'book':
-        return <BookText className="h-4 w-4" />;
-      case 'article':
-        return <FileText className="h-4 w-4" />;
-      case 'event':
-        return <Calendar className="h-4 w-4" />;
-      case 'fact':
-        return <Lightbulb className="h-4 w-4" />;
-      default:
-        return <Info className="h-4 w-4" />;
-    }
-  };
-
-  // Render user message (input cell)
-  const renderUserMessage = (msg: ChatMessage, index: number) => {
-    return (
-      <div 
-        key={msg.id || index} 
-        className="py-4 border-b border-gray-800 last:border-0"
-      >
-        {/* Input section header */}
-        <div className="flex items-center mb-2 text-xs text-gray-400">
-          <div className="flex items-center mr-2">
-            <Search className="h-4 w-4 mr-1 text-blue-400" />
-            <span>Query</span>
-          </div>
-          {msg.timestamp && (
-            <span className="ml-auto">{formatTimestamp(msg.timestamp)}</span>
-          )}
-        </div>
-        
-        {/* Input content */}
-        <div className="text-sm md:text-base text-white font-medium whitespace-pre-wrap break-words mb-2">
-          {msg.content}
-        </div>
-        
-        {/* URL badge if present */}
-        {msg.websiteUrl && (
-          <div className="flex items-center mt-2">
-            <Badge variant="outline" className="bg-gray-800 text-blue-300 border-blue-800 flex items-center">
-              <LinkIcon className="h-3 w-3 mr-1" />
-              {msg.websiteUrl.length > 40 ? `${msg.websiteUrl.substring(0, 40)}...` : msg.websiteUrl}
-            </Badge>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render assistant message (output cell)
-  const renderAssistantMessage = (msg: ChatMessage, index: number) => {
-    const isExpanded = expanded[msg.id || ''] !== false; // Default to expanded
-    
-    return (
-      <div 
-        key={msg.id || index} 
-        className="py-4 border-b border-gray-800 last:border-0"
-      >
-        {/* Output section header */}
-        <div className="flex items-center mb-2 text-xs">
-          <div className="flex items-center mr-2">
-            <Sparkles className="h-4 w-4 mr-1 text-amber-400" />
-            <span className="text-amber-400 font-medium">Bamboo Knowledge</span>
-          </div>
-          
-          {msg.contentType && (
-            <Badge variant="outline" className="ml-2 bg-gray-800 text-gray-300 border-gray-700 flex items-center">
-              {getContentTypeIcon(msg.contentType)}
-              <span className="ml-1 capitalize">{msg.contentType}</span>
-            </Badge>
-          )}
-          
-          {msg.timestamp && (
-            <span className="ml-auto text-gray-400">{formatTimestamp(msg.timestamp)}</span>
-          )}
-        </div>
-        
-        {/* Output content */}
-        <div 
-          className={`text-sm md:text-base text-gray-100 whitespace-pre-wrap break-words mb-4 ${
-            !isExpanded && msg.content.length > 300 ? 'line-clamp-5' : ''
-          }`}
-        >
-          {msg.content}
-        </div>
-        
-        {/* Show expand/collapse toggle for long messages */}
-        {msg.content.length > 300 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-amber-500 hover:text-amber-400 hover:bg-gray-800 mb-2"
-            onClick={() => toggleExpanded(msg.id || '')}
-          >
-            {isExpanded ? 'Show less' : 'Show more'}
-          </Button>
-        )}
-        
-        {/* Action buttons */}
-        {msg.actionButtons && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {msg.websiteUrl && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="bg-gray-800 hover:bg-gray-700 text-blue-300 border-gray-700 text-xs"
-                onClick={() => {
-                  if (msg.contentId && msg.websiteUrl) {
-                    refreshWebsite(msg.contentId, msg.websiteUrl);
-                  }
-                }}
-              >
-                <RefreshCcw className="h-3 w-3 mr-1" />
-                <span>Refresh Content</span>
-              </Button>
-            )}
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700 text-xs"
-              onClick={() => copyToClipboard(msg.content)}
-            >
-              <Copy className="h-3 w-3 mr-1" />
-              <span>Copy</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700 text-xs"
-            >
-              <ThumbsUp className="h-3 w-3 mr-1" />
-              <span>Helpful</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700 text-xs"
-            >
-              <Share2 className="h-3 w-3 mr-1" />
-              <span>Share</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700 text-xs ml-auto"
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Get example queries
-  const exampleQueries = [
-    "Add information about bamboo's tensile strength",
-    "Extract content from bamboomade.in",
-    "What are the best cultivation practices for bamboo?",
-    "Add facts about bamboo sustainability"
-  ];
-
-  // Define dummy source data for the UI - this would be replaced with real data
-  const sources = [
-    { id: 1, title: "Bamboo Architecture Design and Construction", selected: true },
-    { id: 2, title: "The Hardy Family and Bamboo Education", selected: true }
-  ];
-
-  // Dummy studio data that would come from the backend
-  const studioData = {
-    currentAnalysis: "Audio Overview",
-    extractedFacts: [
-      "Bamboo has excellent tensile strength compared to steel.",
-      "Bamboo grows 3-5 times faster than traditional timber.",
-      "Bamboo architecture reduces carbon footprint by 70%."
-    ],
-    notes: []
+    return new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
   
-  // State for add source modal and file handling
-  const [showAddSourceModal, setShowAddSourceModal] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <div className="w-full h-full flex flex-col bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
-      <div className="border-b border-gray-800 bg-gray-950 p-3 sm:p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-lg sm:text-xl text-white">
-            <BookText className="h-5 w-5 mr-2 text-amber-400" />
-            <span>Building a Better World with Bamboo</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-300 hover:bg-gray-800">
-              <Download className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-300 hover:bg-gray-800">
-              <Bookmark className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Save</span>
-            </Button>
-          </div>
+  // Render a user message
+  const renderUserMessage = (msg: ChatMessage, index: number) => (
+    <div key={msg.id || index} className="flex flex-col py-4 px-4">
+      <div className="flex items-start">
+        <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border bg-background shadow-sm">
+          <span className="text-sm">You</span>
+        </div>
+        <div className="ml-3 flex-1 space-y-1">
+          <div className="text-sm text-gray-300">{msg.content}</div>
+          {msg.timestamp && (
+            <div className="flex items-center text-xs text-gray-500">
+              {formatTimestamp(msg.timestamp)}
+            </div>
+          )}
         </div>
       </div>
-      
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Column - Sources */}
-        <div className="hidden md:flex md:flex-col border-r border-gray-800 w-64 flex-shrink-0 bg-gray-900">
-          <div className="flex items-center justify-between p-3 border-b border-gray-800">
-            <span className="text-sm font-medium text-gray-300">Sources</span>
-            <div className="flex space-x-1">
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                <Plus className="h-4 w-4 text-gray-400" />
-              </Button>
+    </div>
+  );
+  
+  // Render an assistant message
+  const renderAssistantMessage = (msg: ChatMessage, index: number) => (
+    <div key={msg.id || index} className="flex flex-col bg-gray-800/50 py-4 px-4">
+      <div className="flex items-start">
+        <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md border bg-gray-800 shadow-sm">
+          <Sparkles className="h-4 w-4 text-amber-500" />
+        </div>
+        <div className="ml-3 flex-1 space-y-1">
+          <div className="text-sm text-gray-300 whitespace-pre-line">{msg.content}</div>
+          {msg.timestamp && (
+            <div className="flex items-center text-xs text-gray-500">
+              {formatTimestamp(msg.timestamp)}
             </div>
-          </div>
-          
-          <div className="flex p-2 mx-2 my-2 border border-gray-800 rounded-md">
+          )}
+        </div>
+      </div>
+    </div>
+  );
+  
+  return (
+    <div className="h-[calc(100vh-4rem)] flex flex-col">
+      <div className="flex h-full overflow-hidden">
+        {/* Left Column - Data Sources */}
+        <div className="w-72 flex-shrink-0 flex flex-col border-r border-gray-800 bg-gray-900">
+          <div className="flex items-center justify-between p-3 border-b border-gray-800">
+            <span className="text-sm font-medium text-gray-300">Your Data Sources</span>
             <Button 
-              className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7"
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0"
               onClick={() => setShowAddSourceModal(true)}
             >
-              <Plus className="h-3 w-3 mr-1" /> Add
-            </Button>
-            <Button className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7 ml-1">
-              <Search className="h-3 w-3 mr-1" /> Discover
+              <Plus className="h-4 w-4 text-gray-400" />
             </Button>
           </div>
           
-          {/* Add Source Modal */}
-          <Dialog open={showAddSourceModal} onOpenChange={setShowAddSourceModal}>
-            <DialogContent className="bg-gray-950 border-gray-800 text-gray-200 sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <div className="flex items-center">
-                  <Plus className="w-5 h-5 mr-2 text-blue-400" />
-                  <DialogTitle className="text-xl font-normal">Add sources</DialogTitle>
-                </div>
-                <DialogDescription className="text-gray-400 mt-2">
-                  Sources let NotebookLM base its responses on the information that matters most to you.
-                  <br />(Examples: marketing plans, course reading, research notes, meeting transcripts, sales documents, etc.)
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="border border-dashed border-gray-700 rounded-md p-8 my-4">
-                <div className="flex flex-col items-center justify-center text-center">
-                  <div className="bg-blue-500/10 rounded-full p-3 mb-3">
-                    <Upload className="h-6 w-6 text-blue-400" />
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">Upload sources</h3>
-                  <p className="text-gray-400 text-sm mb-4">Drag and drop or choose file to upload</p>
-                  
-                  {/* Hidden file input */}
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept=".pdf,.txt,.md,.markdown,.mp3,.wav,.m4a"
-                  />
-                  
-                  {selectedFile ? (
-                    <div className="space-y-3 w-full max-w-sm">
-                      <div className="border border-gray-700 rounded-md p-3 bg-gray-800">
-                        <div className="flex items-center">
-                          <FileText className="h-4 w-4 text-blue-400 mr-2" />
-                          <span className="text-sm text-gray-300 truncate max-w-[200px]">
-                            {selectedFile.name}
-                          </span>
-                          <span className="ml-auto text-xs text-gray-400">
-                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                          </span>
-                        </div>
-                        
-                        {uploadStatus === 'uploading' && (
-                          <div className="mt-2">
-                            <Progress value={uploadProgress} className="h-1 bg-gray-700" />
-                            <div className="text-xs text-gray-400 mt-1">
-                              Uploading... {uploadProgress}%
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          className="flex-1 border-gray-700 hover:bg-gray-800 text-gray-400"
-                          onClick={() => setSelectedFile(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button 
-                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                          onClick={uploadFile}
-                          disabled={uploadStatus === 'uploading'}
-                        >
-                          {uploadStatus === 'uploading' ? 'Uploading...' : 'Upload PDF'}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <Button 
-                        variant="outline" 
-                        className="border-gray-700 hover:bg-gray-800 text-blue-400"
-                        onClick={triggerFileInput}
-                      >
-                        Choose file
-                      </Button>
-                      <p className="text-gray-500 text-xs mt-4">
-                        Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3)
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                <div className="border border-gray-800 hover:border-gray-700 rounded-md p-4 cursor-pointer transition-colors">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Database className="h-5 w-5 text-blue-400" />
-                    <span className="font-medium">Google Drive</span>
-                  </div>
-                  <div className="space-y-2 mt-3">
-                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
-                      <FileTextIcon className="h-3 w-3 mr-2 text-blue-400" /> Google Docs
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
-                      <FileTextIcon className="h-3 w-3 mr-2 text-blue-400" /> Google Slides
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="border border-gray-800 hover:border-gray-700 rounded-md p-4 cursor-pointer transition-colors">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <LinkIcon className="h-5 w-5 text-blue-400" />
-                    <span className="font-medium">Link</span>
-                  </div>
-                  <div className="space-y-2 mt-3">
-                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
-                      <LinkIcon className="h-3 w-3 mr-2 text-blue-400" /> Website
-                    </Button>
-                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
-                      <Youtube className="h-3 w-3 mr-2 text-red-400" /> YouTube
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="border border-gray-800 hover:border-gray-700 rounded-md p-4 cursor-pointer transition-colors">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <ClipboardPaste className="h-5 w-5 text-blue-400" />
-                    <span className="font-medium">Paste text</span>
-                  </div>
-                  <div className="space-y-2 mt-3">
-                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
-                      <File className="h-3 w-3 mr-2 text-blue-400" /> Copied text
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          
-          <div className="p-2 text-xs text-gray-400 flex items-center">
-            <span>Select all sources</span>
-            <div className="ml-auto">
-              <Input 
-                type="checkbox" 
-                className="h-4 w-4 rounded border-gray-700 bg-gray-800"
-                checked={true}
-                readOnly
+          <div className="flex-none p-3 border-b border-gray-800">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                type="search"
+                placeholder="Search your sources..."
+                className="w-full bg-gray-800 border-gray-700 pl-9 text-sm text-gray-300 placeholder:text-gray-500"
               />
             </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-2">
-            {sources.map(source => (
-              <div key={source.id} className="flex items-center p-2 rounded hover:bg-gray-800 mb-1">
-                <div className="flex-shrink-0 mr-2 text-blue-400">
-                  <FileText className="h-4 w-4" />
-                </div>
-                <div className="flex-1 text-xs text-gray-300 overflow-hidden">
-                  <div className="truncate">{source.title}</div>
-                </div>
-                <div className="ml-auto">
-                  <Input 
-                    type="checkbox" 
-                    className="h-4 w-4 rounded border-gray-700 bg-gray-800"
-                    checked={source.selected}
-                    readOnly
-                  />
-                </div>
+            {uploadedSources.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
+                <FileText className="h-10 w-10 mb-2 opacity-40" />
+                <p className="text-xs text-center">Files added will appear here. Upload a file to get started.</p>
               </div>
-            ))}
+            ) : (
+              uploadedSources.map(source => (
+                <div key={source.id} className="flex items-center p-2 rounded hover:bg-gray-800 mb-1">
+                  <div className="flex-shrink-0 mr-2 text-blue-400">
+                    {source.type === 'pdf' ? (
+                      <FileText className="h-4 w-4" />
+                    ) : source.type === 'txt' || source.type === 'md' ? (
+                      <FileText className="h-4 w-4" />
+                    ) : (
+                      <File className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="flex-1 text-xs text-gray-300 overflow-hidden">
+                    <div className="truncate">{source.title}</div>
+                    <div className="text-xs text-gray-500">{source.size}</div>
+                  </div>
+                  <div className="ml-auto">
+                    <Input 
+                      type="checkbox" 
+                      className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                      checked={source.selected}
+                      readOnly
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
         
@@ -1013,6 +636,182 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
         </div>
       </div>
+      
+      {/* Add Source Modal */}
+      <Dialog open={showAddSourceModal} onOpenChange={setShowAddSourceModal}>
+        <DialogContent className="sm:max-w-md bg-gray-900 text-gray-100 border-gray-800">
+          <DialogHeader>
+            <DialogTitle>Add to Knowledge Base</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Add content to enhance your AI companion's knowledge.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex border-b border-gray-800 mb-4">
+            <button
+              className={`pb-2 px-4 text-sm font-medium ${selectedTab === 'file' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400'}`}
+              onClick={() => setSelectedTab('file')}
+            >
+              Upload File
+            </button>
+            <button
+              className={`pb-2 px-4 text-sm font-medium ${selectedTab === 'drive' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400'}`}
+              onClick={() => setSelectedTab('drive')}
+            >
+              Google Drive
+            </button>
+            <button
+              className={`pb-2 px-4 text-sm font-medium ${selectedTab === 'web' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400'}`}
+              onClick={() => setSelectedTab('web')}
+            >
+              Web Link
+            </button>
+            <button
+              className={`pb-2 px-4 text-sm font-medium ${selectedTab === 'text' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400'}`}
+              onClick={() => setSelectedTab('text')}
+            >
+              Text
+            </button>
+          </div>
+          
+          {selectedTab === 'file' && (
+            <div className="space-y-4">
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-800/50 transition-colors 
+                  ${selectedFile ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700'}`}
+                onClick={handleFileButtonClick}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.txt,.md,.mp3,.wav,.ogg"
+                  onChange={handleFileSelected}
+                  className="hidden"
+                />
+                
+                {selectedFile ? (
+                  <div className="space-y-2">
+                    <FileText className="mx-auto h-10 w-10 text-blue-400" />
+                    <div className="text-sm font-medium text-gray-200">{selectedFile.name}</div>
+                    <div className="text-xs text-gray-400">
+                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </div>
+                    
+                    {uploadStatus === 'uploading' && (
+                      <div className="space-y-2">
+                        <Progress value={uploadProgress} className="h-2 w-full" />
+                        <div className="text-xs text-gray-400">{uploadProgress}% uploaded</div>
+                      </div>
+                    )}
+                    
+                    {uploadStatus === 'success' && (
+                      <div className="text-sm text-green-400">Upload complete!</div>
+                    )}
+                    
+                    {uploadStatus === 'error' && (
+                      <div className="text-sm text-red-400">Upload failed. Please try again.</div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Upload className="mx-auto h-10 w-10 text-gray-400" />
+                    <div className="text-sm font-medium text-gray-200">Click to upload or drag and drop</div>
+                    <div className="text-xs text-gray-400">
+                      PDF, TXT, MD, MP3, WAV, OGG (max 20MB)
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {selectedFile && uploadStatus === 'idle' && (
+                <div className="flex justify-end">
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white" 
+                    onClick={uploadFile}
+                  >
+                    Upload and Process
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {selectedTab === 'drive' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-200">Google Drive Link</label>
+                <Input
+                  placeholder="https://drive.google.com/file/d/..."
+                  value={googleDriveUrl}
+                  onChange={(e) => setGoogleDriveUrl(e.target.value)}
+                  className="bg-gray-800 border-gray-700"
+                />
+                <p className="text-xs text-gray-400">
+                  Paste a link to a Google Drive document, spreadsheet, or presentation
+                </p>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={!googleDriveUrl}
+                >
+                  Add to Knowledge Base
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {selectedTab === 'web' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-200">Web URL</label>
+                <Input
+                  placeholder="https://example.com/article"
+                  value={webUrl}
+                  onChange={(e) => setWebUrl(e.target.value)}
+                  className="bg-gray-800 border-gray-700"
+                />
+                <p className="text-xs text-gray-400">
+                  Enter a URL to a web page or article that contains relevant information
+                </p>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={!webUrl}
+                >
+                  Add to Knowledge Base
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {selectedTab === 'text' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-200">Content</label>
+                <Textarea
+                  placeholder="Paste or type text content here..."
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  className="min-h-[150px] bg-gray-800 border-gray-700"
+                />
+              </div>
+              
+              <div className="flex justify-end">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={!textContent.trim()}
+                >
+                  Add to Knowledge Base
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
