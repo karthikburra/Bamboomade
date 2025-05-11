@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ExternalLink, MapPin, User, RefreshCw } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin, User, RefreshCw, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { analyzeEventContent } from '@/utils/eventAnalyzer';
@@ -170,6 +170,28 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
                     <div className="text-xs text-zinc-400 mb-1 flex items-center truncate">
                       <User className="h-3 w-3 mr-1 flex-shrink-0" />
                       <span className="truncate">{organizerName}</span>
+                    </div>
+                  )}
+                  
+                  {/* Source information */}
+                  {event.source && (
+                    <div className="text-xs text-zinc-400 mb-1 flex items-center truncate">
+                      <Link className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">
+                        {event.source.startsWith('http') ? (
+                          <a 
+                            href={event.source} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-zinc-400 hover:text-green-400 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {event.source.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
+                          </a>
+                        ) : (
+                          event.source
+                        )}
+                      </span>
                     </div>
                   )}
                   
