@@ -776,7 +776,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             <div className="text-sm text-gray-300 mb-2">Audio Overview</div>
             <div className="text-xs text-gray-400 mb-1 flex items-center">
               <span>Create an Audio Overview in more languages</span>
-              <Link className="ml-auto text-blue-400 text-xs hover:text-blue-300">Learn more</Link>
+              <button className="ml-auto text-blue-400 text-xs hover:text-blue-300">Learn more</button>
             </div>
             
             <Button className="w-full text-xs justify-between mt-2 bg-gray-800 hover:bg-gray-700 text-gray-300">
