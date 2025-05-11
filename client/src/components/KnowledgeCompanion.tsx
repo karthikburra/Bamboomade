@@ -21,13 +21,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogHeader,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { 
   Send, 
   RefreshCcw, 
   Plus, 
   Lightbulb, 
   BookText, 
-  Link, 
+  Link as LinkIcon, 
   Copy, 
   Pencil, 
   Search, 
@@ -39,7 +47,14 @@ import {
   ThumbsUp,
   Download,
   FileText,
-  Calendar
+  Calendar,
+  Upload,
+  Youtube,
+  X,
+  Database,
+  File,
+  FileText as FileTextIcon,
+  ClipboardPaste
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -292,7 +307,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   const getContentTypeIcon = (type?: string) => {
     switch (type) {
       case 'webpage':
-        return <Link className="h-4 w-4" />;
+        return <LinkIcon className="h-4 w-4" />;
       case 'book':
         return <BookText className="h-4 w-4" />;
       case 'article':
@@ -333,7 +348,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         {msg.websiteUrl && (
           <div className="flex items-center mt-2">
             <Badge variant="outline" className="bg-gray-800 text-blue-300 border-blue-800 flex items-center">
-              <Link className="h-3 w-3 mr-1" />
+              <LinkIcon className="h-3 w-3 mr-1" />
               {msg.websiteUrl.length > 40 ? `${msg.websiteUrl.substring(0, 40)}...` : msg.websiteUrl}
             </Badge>
           </div>
@@ -475,6 +490,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     ],
     notes: []
   };
+  
+  // State for add source modal
+  const [showAddSourceModal, setShowAddSourceModal] = useState(false);
 
   return (
     <div className="w-full h-full flex flex-col bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
@@ -511,13 +529,92 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="flex p-2 mx-2 my-2 border border-gray-800 rounded-md">
-            <Button className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7">
+            <Button 
+              className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7"
+              onClick={() => setShowAddSourceModal(true)}
+            >
               <Plus className="h-3 w-3 mr-1" /> Add
             </Button>
             <Button className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7 ml-1">
               <Search className="h-3 w-3 mr-1" /> Discover
             </Button>
           </div>
+          
+          {/* Add Source Modal */}
+          <Dialog open={showAddSourceModal} onOpenChange={setShowAddSourceModal}>
+            <DialogContent className="bg-gray-950 border-gray-800 text-gray-200 sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <div className="flex items-center">
+                  <Plus className="w-5 h-5 mr-2 text-blue-400" />
+                  <DialogTitle className="text-xl font-normal">Add sources</DialogTitle>
+                </div>
+                <DialogDescription className="text-gray-400 mt-2">
+                  Sources let NotebookLM base its responses on the information that matters most to you.
+                  <br />(Examples: marketing plans, course reading, research notes, meeting transcripts, sales documents, etc.)
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="border border-dashed border-gray-700 rounded-md p-8 my-4">
+                <div className="flex flex-col items-center justify-center text-center">
+                  <div className="bg-blue-500/10 rounded-full p-3 mb-3">
+                    <Upload className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">Upload sources</h3>
+                  <p className="text-gray-400 text-sm mb-4">Drag and drop or choose file to upload</p>
+                  <Button variant="outline" className="border-gray-700 hover:bg-gray-800 text-blue-400">
+                    Choose file
+                  </Button>
+                  <p className="text-gray-500 text-xs mt-4">
+                    Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3)
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div className="border border-gray-800 hover:border-gray-700 rounded-md p-4 cursor-pointer transition-colors">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Database className="h-5 w-5 text-blue-400" />
+                    <span className="font-medium">Google Drive</span>
+                  </div>
+                  <div className="space-y-2 mt-3">
+                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
+                      <FileTextIcon className="h-3 w-3 mr-2 text-blue-400" /> Google Docs
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
+                      <FileTextIcon className="h-3 w-3 mr-2 text-blue-400" /> Google Slides
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="border border-gray-800 hover:border-gray-700 rounded-md p-4 cursor-pointer transition-colors">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <LinkIcon className="h-5 w-5 text-blue-400" />
+                    <span className="font-medium">Link</span>
+                  </div>
+                  <div className="space-y-2 mt-3">
+                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
+                      <LinkIcon className="h-3 w-3 mr-2 text-blue-400" /> Website
+                    </Button>
+                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
+                      <Youtube className="h-3 w-3 mr-2 text-red-400" /> YouTube
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="border border-gray-800 hover:border-gray-700 rounded-md p-4 cursor-pointer transition-colors">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <ClipboardPaste className="h-5 w-5 text-blue-400" />
+                    <span className="font-medium">Paste text</span>
+                  </div>
+                  <div className="space-y-2 mt-3">
+                    <Button variant="ghost" size="sm" className="w-full justify-start text-xs bg-gray-900 hover:bg-gray-800">
+                      <File className="h-3 w-3 mr-2 text-blue-400" /> Copied text
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           
           <div className="p-2 text-xs text-gray-400 flex items-center">
             <span>Select all sources</span>
