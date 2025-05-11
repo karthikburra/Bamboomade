@@ -242,6 +242,26 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       console.log(`Making API request to /api/ai-knowledge/${sourceId}/facts`);
       const factsResponse = await fetch(`/api/ai-knowledge/${sourceId}/facts`);
       
+      // Handle authentication errors
+      if (factsResponse.status === 401) {
+        console.log('Authentication required to access facts');
+        
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in as an admin to view source facts.',
+          variant: 'destructive',
+        });
+        
+        // Set loading to false and return empty data
+        setSourceExtractedData({
+          facts: [],
+          events: [],
+          blogContent: [],
+          loading: false
+        });
+        return;
+      }
+      
       if (!factsResponse.ok) {
         console.error(`API error: ${factsResponse.status} ${factsResponse.statusText}`);
         throw new Error('Failed to fetch facts for this source');
