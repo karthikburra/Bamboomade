@@ -18,7 +18,7 @@ import { eq, and, asc, desc } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent } from "@shared/schema";
+import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent, bambooFacts } from "@shared/schema";
 import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
@@ -4740,26 +4740,34 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       if (extractFacts) {
         extractedFacts = await extractFactsFromContent(cleanContent, url);
         
-        // Save each extracted fact as a separate entry with 'fact' content type
+        // Save facts to bamboo_facts table (associated with this source content)
         if (saveExtractedFacts && extractedFacts.length > 0) {
-          for (const factContent of extractedFacts) {
-            if (factContent.length > 10) {
-              const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
-              
-              try {
-                await storage.createAiKnowledgeContent({
-                  title: factTitle,
-                  content: factContent + "\n\nSource: " + (url || "Unknown"),
-                  contentType: "fact",
-                  source: url,
-                  status: "active",
-                  createdBy: req.session.adminUser.id
-                });
-              } catch (err) {
-                console.error("Error saving extracted fact:", err);
-                // Continue with the next fact even if one fails
+          try {
+            // Store facts in bamboo_facts table, linked to this content ID
+            await saveFactsToDb(extractedFacts, updatedContent.id, req.session.adminUser.id);
+            
+            // Also create separate fact entries in the main knowledge content table (legacy approach)
+            for (const factContent of extractedFacts) {
+              if (factContent.length > 10) {
+                const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
+                
+                try {
+                  await storage.createAiKnowledgeContent({
+                    title: factTitle,
+                    content: factContent + "\n\nSource: " + (url || "Unknown"),
+                    contentType: "fact",
+                    source: url,
+                    status: "active",
+                    createdBy: req.session.adminUser.id
+                  });
+                } catch (err) {
+                  console.error("Error saving extracted fact:", err);
+                  // Continue with the next fact even if one fails
+                }
               }
             }
+          } catch (factError) {
+            console.error("Error saving facts to database:", factError);
           }
         }
       }
@@ -4776,6 +4784,58 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       return res.status(500).json({ error: `Failed to refresh website content: ${error.message}` });
     }
   });
+
+  // Add a new endpoint to get facts by content source ID
+  app.get('/api/ai-knowledge/:id/facts', isAdmin, async (req, res) => {
+    try {
+      const contentId = parseInt(req.params.id);
+      if (isNaN(contentId)) {
+        return res.status(400).json({ error: 'Invalid content ID' });
+      }
+      
+      const facts = await getFactsBySourceId(contentId);
+      return res.json({ success: true, facts });
+    } catch (error) {
+      console.error('Error getting facts:', error);
+      return res.status(500).json({ error: 'Failed to get facts' });
+    }
+  });
+
+  // Helper function to save facts to the bamboo_facts table
+  async function saveFactsToDb(facts: string[], sourceContentId: number, createdById: number): Promise<number> {
+    try {
+      let factsAdded = 0;
+      
+      for (const fact of facts) {
+        await db.insert(bambooFacts).values({
+          fact: fact,
+          sourceContentId: sourceContentId,
+          createdBy: createdById,
+          status: 'active'
+        });
+        factsAdded++;
+      }
+      
+      return factsAdded;
+    } catch (error) {
+      console.error("Error saving facts to database:", error);
+      return 0;
+    }
+  }
+  
+  // Helper function to get facts by source content ID
+  async function getFactsBySourceId(sourceContentId: number): Promise<string[]> {
+    try {
+      const facts = await db.select().from(bambooFacts)
+        .where(eq(bambooFacts.sourceContentId, sourceContentId))
+        .where(eq(bambooFacts.status, 'active'));
+      
+      return facts.map(f => f.fact);
+    } catch (error) {
+      console.error("Error getting facts by source id:", error);
+      return [];
+    }
+  }
 
   const httpServer = createServer(app);
   return httpServer;
