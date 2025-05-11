@@ -4725,40 +4725,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   
   // Function to extract bamboo facts from content
   async function extractFactsFromContent(content: string, source: string | null): Promise<string[]> {
-    const openAiClient = getOpenAI();
-    if (!openAiClient) {
-      return [];
-    }
-    
     try {
-      const response = await openAiClient.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system", 
-            content: `You are a bamboo expert extracting interesting facts from content. Extract 2-3 interesting, verified facts about bamboo from the provided content.
-            
-            Rules:
-            1. Extract ONLY facts that are explicitly stated in the content - do not invent or infer facts
-            2. Each fact should be concise (1-2 sentences) and standalone
-            3. Do not use any markdown formatting or special characters like #, *, etc.
-            4. Facts should focus on bamboo properties, uses, sustainability aspects, or architecture applications
-            5. Format each fact as a simple declarative statement - no bullet points, numbers, or "Did You Know" prefix
-            6. Skip if no clear bamboo facts are present in the content
-            
-            Return only an array of fact strings in JSON format.`
-          },
-          {
-            role: "user",
-            content: `Extract 2-3 interesting bamboo facts from this content: ${content}`
-          }
-        ],
-        response_format: { type: "json_object" }
-      });
-      
-      const result = JSON.parse(response.choices[0].message.content);
-      return Array.isArray(result.facts) ? result.facts : [];
-      
+      // Use geminiExtractFacts function from gemini-service.ts
+      return await geminiExtractFacts(content, 'document');
     } catch (error) {
       console.error("Error extracting facts:", error);
       return [];
