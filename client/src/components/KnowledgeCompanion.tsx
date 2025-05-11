@@ -103,12 +103,12 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           content: suggestion.content,
           contentType: suggestion.contentType,
           source: suggestion.source,
-          status: 'active'
+          status: 'pending'  // Set status to pending by default for admin review
         });
         
         toast({
-          title: 'Added to Knowledge Base',
-          description: `"${suggestion.title}" has been added to the knowledge base.`,
+          title: 'Submitted for Approval',
+          description: `"${suggestion.title}" has been added to the pending queue and will be reviewed by an admin.`,
         });
       } else if (data.isDuplicate) {
         // Content was identified as a duplicate
