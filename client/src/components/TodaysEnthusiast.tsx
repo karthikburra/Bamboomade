@@ -127,14 +127,15 @@ export function TodaysEnthusiast() {
                 Spotlighting innovators in sustainable bamboo design
               </CardDescription>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge 
-                variant="outline" 
-                className="text-xs bg-teal-950/30 text-teal-400 border-teal-800/50"
-              >
-                Enthusiast
-              </Badge>
-            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+              title="Refresh enthusiast profiles"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

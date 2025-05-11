@@ -140,10 +140,21 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
     return (
       <Card className="border-zinc-800 bg-zinc-900 h-full">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-            <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
-            Bamboo Facts
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+              <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
+              Bamboo Facts
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+              title="Refresh bamboo facts"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <CardDescription className="text-zinc-400">
@@ -160,13 +171,26 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
     return (
       <Card className="border-zinc-800 bg-zinc-900 h-full">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
-            <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
-            Did You Know?
-          </CardTitle>
-          <CardDescription className="text-xs text-zinc-400">
-            Click to learn more about this interesting bamboo fact
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+                <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
+                Did You Know?
+              </CardTitle>
+              <CardDescription className="text-xs text-zinc-400">
+                Click to learn more about this interesting bamboo fact
+              </CardDescription>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+              title="Refresh bamboo facts"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div 
