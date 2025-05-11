@@ -1,11 +1,6 @@
 import React, { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Form, 
   FormControl, 
@@ -16,7 +11,6 @@ import {
   FormMessage 
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Select, 
@@ -27,18 +21,14 @@ import {
 } from "@/components/ui/select";
 import { 
   Upload, 
-  FileText, 
-  Calendar, 
-  LinkIcon, 
-  User, 
+  Link as LinkIcon, 
   Info,
   Check,
-  AlertCircle
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Define the form schema with validation
 const knowledgeFormSchema = z.object({
@@ -48,12 +38,13 @@ const knowledgeFormSchema = z.object({
     required_error: "Please select a content type",
   }),
   source: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  media: z.instanceof(File).optional(),
+  media: z.any().optional(), // Using any for file upload
 });
 
 // Create a type for our form values
 type KnowledgeFormValues = z.infer<typeof knowledgeFormSchema>;
 
+// Main component
 export default function AddKnowledgeForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,8 +100,14 @@ export default function AddKnowledgeForm() {
         formData.append("mediaFile", selectedFile);
       }
       
-      // Add current user (admin) ID
-      formData.append("createdBy", "1"); // Assuming admin ID is 1
+      // Add current user ID if available
+      const userResponse = await fetch("/api/auth/me");
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        if (userData.id) {
+          formData.append("createdBy", userData.id.toString());
+        }
+      }
       
       // Send API request
       const response = await fetch("/api/ai-knowledge", {
@@ -148,13 +145,7 @@ export default function AddKnowledgeForm() {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto bg-gray-950 border-gray-800">
-      <CardHeader className="border-b border-gray-800 bg-gray-900/50">
-        <CardTitle className="text-lg text-amber-500">Add Knowledge Content</CardTitle>
-        <CardDescription>
-          Add new content to the bamboo knowledge database
-        </CardDescription>
-      </CardHeader>
+    <Card className="w-full bg-gray-900 border-gray-800">
       <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -168,7 +159,7 @@ export default function AddKnowledgeForm() {
                   <FormControl>
                     <Input 
                       placeholder="Enter a descriptive title" 
-                      className="bg-gray-900 border-gray-700" 
+                      className="bg-gray-800 border-gray-700" 
                       {...field} 
                     />
                   </FormControl>
@@ -192,7 +183,7 @@ export default function AddKnowledgeForm() {
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
-                      <SelectTrigger className="bg-gray-900 border-gray-700">
+                      <SelectTrigger className="bg-gray-800 border-gray-700">
                         <SelectValue placeholder="Select content type" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-900 border-gray-700">
@@ -231,7 +222,7 @@ export default function AddKnowledgeForm() {
                       </span>
                       <Input
                         placeholder="https://example.com/bamboo-article"
-                        className="rounded-l-none bg-gray-900 border-gray-700"
+                        className="rounded-l-none bg-gray-800 border-gray-700"
                         {...field}
                       />
                     </div>
@@ -251,7 +242,7 @@ export default function AddKnowledgeForm() {
               </FormLabel>
               <div 
                 className={`border-2 border-dashed rounded-md p-6 transition-colors
-                  ${selectedFile ? 'border-amber-600/40 bg-amber-900/10' : 'border-gray-700 hover:border-gray-600 bg-gray-900/50'}
+                  ${selectedFile ? 'border-amber-600/40 bg-amber-900/10' : 'border-gray-700 hover:border-gray-600 bg-gray-800/50'}
                   flex flex-col items-center justify-center text-center`}
               >
                 {selectedFile ? (
@@ -323,7 +314,7 @@ export default function AddKnowledgeForm() {
                   <FormControl>
                     <Textarea
                       placeholder="Enter the knowledge content here..."
-                      className="min-h-[150px] bg-gray-900 border-gray-700"
+                      className="min-h-[150px] bg-gray-800 border-gray-700"
                       {...field}
                     />
                   </FormControl>
@@ -339,9 +330,9 @@ export default function AddKnowledgeForm() {
             <div className="flex p-3 rounded-md bg-blue-900/20 border border-blue-800/30">
               <Info className="h-5 w-5 text-blue-400 mr-3 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-gray-300">
-                <p className="mb-1 font-medium text-blue-400">Admin Only Feature</p>
+                <p className="mb-1 font-medium text-blue-400">Admin Review Process</p>
                 <p className="text-gray-400 text-xs">
-                  New content will be added with 'pending' status. It will be available in the AI Knowledge Database once approved.
+                  New content will be added with 'pending' status. It will be available in the AI Knowledge Database once approved by an admin.
                 </p>
               </div>
             </div>
