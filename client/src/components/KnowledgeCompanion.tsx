@@ -925,7 +925,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                                   >
                                     {fact.saved ? (
                                       <>
-                                        <Check className="h-3 w-3 mr-1" />
+                                        <RefreshCcw className="h-3 w-3 mr-1" />
                                         <span>Saved to Database</span>
                                       </>
                                     ) : (
@@ -978,7 +978,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                                   >
                                     {event.saved ? (
                                       <>
-                                        <Check className="h-3 w-3 mr-1" />
+                                        <RefreshCcw className="h-3 w-3 mr-1" />
                                         <span>Saved to Database</span>
                                       </>
                                     ) : (
@@ -1030,7 +1030,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                                   >
                                     {blog.saved ? (
                                       <>
-                                        <Check className="h-3 w-3 mr-1" />
+                                        <RefreshCcw className="h-3 w-3 mr-1" />
                                         <span>Saved to Database</span>
                                       </>
                                     ) : (
@@ -1055,7 +1055,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                   sourceExtractedData.events.length === 0 && 
                   sourceExtractedData.blogContent.length === 0 && (
                   <div className="text-center p-8 bg-gray-800/30 rounded-md border border-gray-800">
-                    <FileX className="h-12 w-12 mx-auto text-gray-600 mb-2" />
+                    <FileTextIcon className="h-12 w-12 mx-auto text-gray-600 mb-2" />
                     <h3 className="text-gray-300 text-sm font-medium mb-1">No Content Found</h3>
                     <p className="text-gray-400 text-xs mb-3">
                       No extractable content was found in this source.
