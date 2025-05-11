@@ -265,10 +265,16 @@ export async function extractStructuredInformation(
   if (!openai) {
     // Fallback without OpenAI
     const mainPage = crawledPages[0];
+    // Collect the full raw content for storage
+    const fullRawContent = crawledPages.map(page => {
+      return `PAGE URL: ${page.url}\nPAGE TITLE: ${page.title}\n\nPAGE CONTENT:\n${page.content}\n\n`;
+    }).join('---\n');
+    
     return {
       title: mainPage.title,
       contentType: 'webpage',
       mainContent: crawledPages.map(p => p.content).join('\n\n'),
+      fullRawContent,
       originalPages: crawledPages,
     };
   }
