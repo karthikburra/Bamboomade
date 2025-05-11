@@ -2826,6 +2826,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       const updates: any = {
         title,
         content,
+        rawContent: rawContent || null,
         source,
         contentType,
         status,
