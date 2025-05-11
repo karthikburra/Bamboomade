@@ -86,79 +86,80 @@ const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden border-zinc-800 bg-zinc-950 h-full w-full flex flex-col relative group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] pt-[75%]">
-      <div 
-        ref={containerRef} 
-        className={`w-full flex-grow flex items-center justify-center bg-zinc-800/50 embed-container ${
-          platform === 'instagram' ? 'instagram-embed' : 
-          platform === 'youtube' ? 'youtube-embed' : 
-          platform === 'linkedin' ? 'linkedin-embed' : ''
-        }`}
-        style={{
-          padding: platform === 'instagram' ? '8px' : '0',
-          minHeight: '250px',
-          maxHeight: 'none',
-          height: '100%',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0
-        }}
-      >
-        <div className="text-center text-zinc-500 text-sm">Loading embed...</div>
-      </div>
-      
-      {/* Platform badge */}
-      <div className="absolute top-3 left-3 z-10">
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${
-          platform === 'instagram' ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 
-          platform === 'youtube' ? 'bg-gradient-to-r from-red-600 to-red-700' : 
-          platform === 'linkedin' ? 'bg-gradient-to-r from-blue-600 to-blue-700' :
-          platform === 'twitter' ? 'bg-gradient-to-r from-sky-400 to-sky-500' : 
-          'bg-gradient-to-r from-zinc-700 to-zinc-800'
-        } shadow-lg`}>
-          {renderIcon()}
-          <span className="text-xs font-medium text-white capitalize">
-            {platform}
-          </span>
-        </div>
-      </div>
-      
-      {/* External link */}
-      <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-1.5 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors"
+    <a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block h-full w-full"
+      onClick={(e) => e.currentTarget === e.target && window.open(link, '_blank')}
+    >
+      <Card className="overflow-hidden border-zinc-800 bg-zinc-950 h-full w-full flex flex-col relative group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] pt-[75%] cursor-pointer">
+        <div 
+          ref={containerRef} 
+          className={`w-full flex-grow flex items-center justify-center bg-zinc-800/50 embed-container ${
+            platform === 'instagram' ? 'instagram-embed' : 
+            platform === 'youtube' ? 'youtube-embed' : 
+            platform === 'linkedin' ? 'linkedin-embed' : ''
+          }`}
+          style={{
+            padding: platform === 'instagram' ? '8px' : '0',
+            minHeight: '250px',
+            maxHeight: 'none',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+          onClick={(e) => e.stopPropagation()} // Prevent clicks on the embed from triggering the parent link
         >
-          <ExternalLink className="h-4 w-4 text-white" />
-        </a>
-      </div>
-      
-      {/* Content overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
-      
-      {/* Content info */}
-      <CardContent className="p-4 absolute bottom-0 left-0 right-0 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-        <div className="mb-2">
-          <h3 className="font-semibold text-base text-white group-hover:text-amber-300 transition-colors">{title}</h3>
-          <p className="text-sm text-zinc-200 line-clamp-2 mt-1 opacity-80 group-hover:opacity-100 transition-opacity">{getDescription()}</p>
+          <div className="text-center text-zinc-500 text-sm">Loading embed...</div>
         </div>
         
-        <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-amber-300 hover:text-amber-200 flex items-center gap-1 px-2 py-1 rounded bg-black/30 backdrop-blur-sm"
-          >
-            View full {platform === 'youtube' ? 'video' : 'post'} <ExternalLink className="h-3 w-3" />
-          </a>
+        {/* Platform badge */}
+        <div className="absolute top-3 left-3 z-10">
+          <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${
+            platform === 'instagram' ? 'bg-gradient-to-r from-purple-600 to-pink-500' : 
+            platform === 'youtube' ? 'bg-gradient-to-r from-red-600 to-red-700' : 
+            platform === 'linkedin' ? 'bg-gradient-to-r from-blue-600 to-blue-700' :
+            platform === 'twitter' ? 'bg-gradient-to-r from-sky-400 to-sky-500' : 
+            'bg-gradient-to-r from-zinc-700 to-zinc-800'
+          } shadow-lg`}>
+            {renderIcon()}
+            <span className="text-xs font-medium text-white capitalize">
+              {platform}
+            </span>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        {/* External link */}
+        <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div
+            className="p-1.5 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors"
+          >
+            <ExternalLink className="h-4 w-4 text-white" />
+          </div>
+        </div>
+        
+        {/* Content overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-300"></div>
+        
+        {/* Content info */}
+        <CardContent className="p-4 absolute bottom-0 left-0 right-0 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+          <div className="mb-2">
+            <h3 className="font-semibold text-base text-white group-hover:text-amber-300 transition-colors">{title}</h3>
+            <p className="text-sm text-zinc-200 line-clamp-2 mt-1 opacity-80 group-hover:opacity-100 transition-opacity">{getDescription()}</p>
+          </div>
+          
+          <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <span className="text-xs text-amber-300 flex items-center gap-1 px-2 py-1 rounded bg-black/30 backdrop-blur-sm">
+              View full {platform === 'youtube' ? 'video' : 'post'} <ExternalLink className="h-3 w-3" />
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </a>
   );
 };
 
