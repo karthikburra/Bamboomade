@@ -261,17 +261,14 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     }
   };
   
-  // Simulate file processing and handle response
+  // Process file content and provide chat responses
   const processFileContent = async (file: File) => {
-    // Simulate file processing (in a real implementation, this would be a call to an API
-    // that doesn't require admin authentication)
-    
-    // Wait a moment to simulate processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Extract text from the filename for the simulated response
+    // Extract information from the file
     const filename = file.name;
     const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
+    
+    // Wait a moment for natural response timing
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Add a message to chat about the file being analyzed
     setChatHistory(prev => [...prev, { 
@@ -285,18 +282,18 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       id: `upload-${Date.now()}`
     }]);
     
-    // Let the user know that their file is now available in the sources list
+    // Let the user know that their file has been permanently added to the knowledge database
     setChatHistory(prev => [...prev, { 
       role: 'assistant', 
-      content: `Your file "${filename}" has been added to "YOUR UPLOADS" in the sources list. This file will be available for reference during our current conversation, but only exists in this session.`,
+      content: `Your file "${filename}" has been permanently added to the BambooMade knowledge database! It appears in both the "KNOWLEDGE BASE" section and temporarily in "YOUR UPLOADS" for this session.`,
       timestamp: new Date(),
       id: `upload-status-${Date.now()}`
     }]);
     
-    // Explain the difference between session uploads and knowledge base
+    // Give information about accessibility
     setChatHistory(prev => [...prev, { 
       role: 'assistant', 
-      content: `Note: Your uploaded content is temporary and only available for this session. "KNOWLEDGE BASE" sources are permanent and available for all users. To permanently add your content to the BambooMade knowledge base, please contact an administrator.`,
+      content: `This file is now permanently available to all users of the BambooMade AI assistant. I'll use the information from this file to answer future questions about bamboo architecture and sustainable design.`,
       timestamp: new Date(),
       id: `upload-note-${Date.now()}`
     }]);
@@ -310,31 +307,61 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     setUploadProgress(0);
     
     try {
-      // Simulate upload progress
+      // Create a FormData object to send the file
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('title', selectedFile.name);
+      
+      // Determine appropriate content type based on file extension
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+      let contentType = 'article';
+      
+      if (fileExtension === 'pdf') {
+        contentType = 'book';
+      } else if (fileExtension === 'txt' || fileExtension === 'md') {
+        contentType = 'article';
+      } else if (['mp3', 'wav', 'ogg'].includes(fileExtension)) {
+        contentType = 'media';
+      }
+      
+      formData.append('contentType', contentType);
+      formData.append('status', 'active'); // Set as active immediately
+      
+      // Create a progress tracker
       let progress = 0;
       const interval = setInterval(() => {
         progress += 10;
-        if (progress <= 100) {
+        if (progress <= 90) { // Only go up to 90% for simulation
           setUploadProgress(progress);
         } else {
           clearInterval(interval);
         }
       }, 200);
       
-      // Simulate complete upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Actually upload to the server
+      const response = await fetch('/api/ai-knowledge/upload-file', {
+        method: 'POST',
+        body: formData,
+      });
+      
       clearInterval(interval);
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload file to knowledge database');
+      }
+      
+      const result = await response.json();
       setUploadProgress(100);
+      setUploadStatus('success');
       
-      // Process the uploaded file content
-      await processFileContent(selectedFile);
+      // Add to the knowledge base database
+      console.log('File uploaded to knowledge database:', result);
       
-      // Add to the uploaded sources list
-      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || '';
+      // Add to the temporary sources list for immediate display
       setUploadedSources(prev => [
         ...prev, 
         {
-          id: Date.now(),
+          id: result.id || Date.now(),
           title: selectedFile.name,
           type: fileExtension,
           size: (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
@@ -343,22 +370,25 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         }
       ]);
       
-      // Set success state
-      setUploadStatus('success');
+      // Refresh all sources from the API to include the newly added item
+      await fetchKnowledgeSources();
+      
+      // Process the file content to add it to the chat
+      await processFileContent(selectedFile);
       
       // Close modal and reset state
       setShowAddSourceModal(false);
       setSelectedFile(null);
       
       toast({
-        title: 'File analyzed successfully',
-        description: 'I can now answer questions about this content in our conversation.',
+        title: 'File added to knowledge database',
+        description: 'File has been permanently added to the BambooMade knowledge database.',
       });
       
     } catch (error) {
       setUploadStatus('error');
       toast({
-        title: 'Processing failed',
+        title: 'Upload failed',
         description: error instanceof Error ? error.message : 'An unknown error occurred',
         variant: 'destructive',
       });
@@ -899,6 +929,59 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                 <Button 
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={!webUrl}
+                  onClick={async () => {
+                    try {
+                      toast({
+                        title: 'Processing',
+                        description: 'Adding web link to knowledge database...',
+                      });
+                      
+                      const response = await fetch('/api/ai-knowledge', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          title: `Web Content: ${webUrl}`,
+                          source: webUrl,
+                          contentType: 'webpage',
+                          status: 'active',
+                        }),
+                      });
+                      
+                      if (!response.ok) {
+                        throw new Error('Failed to add web link to knowledge database');
+                      }
+                      
+                      const result = await response.json();
+                      
+                      setShowAddSourceModal(false);
+                      setWebUrl('');
+                      
+                      // Refresh knowledge sources
+                      await fetchKnowledgeSources();
+                      
+                      toast({
+                        title: 'Success',
+                        description: 'Web link has been added to the knowledge database',
+                      });
+                      
+                      // Add a confirmation message to the chat
+                      setChatHistory(prev => [...prev, { 
+                        role: 'assistant', 
+                        content: `I've added the web link "${webUrl}" to the BambooMade knowledge database. This content is now permanently available for future reference.`,
+                        timestamp: new Date(),
+                        id: `web-upload-${Date.now()}`
+                      }]);
+                      
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: error instanceof Error ? error.message : 'Failed to add web link',
+                        variant: 'destructive',
+                      });
+                    }
+                  }}
                 >
                   Add to Knowledge Base
                 </Button>
@@ -922,6 +1005,59 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                 <Button 
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={!textContent.trim()}
+                  onClick={async () => {
+                    try {
+                      toast({
+                        title: 'Processing',
+                        description: 'Adding content to knowledge database...',
+                      });
+                      
+                      const response = await fetch('/api/ai-knowledge', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          title: `Text Content: ${textContent.substring(0, 30)}${textContent.length > 30 ? '...' : ''}`,
+                          content: textContent,
+                          contentType: 'article',
+                          status: 'active',
+                        }),
+                      });
+                      
+                      if (!response.ok) {
+                        throw new Error('Failed to add text content to knowledge database');
+                      }
+                      
+                      const result = await response.json();
+                      
+                      setShowAddSourceModal(false);
+                      setTextContent('');
+                      
+                      // Refresh knowledge sources
+                      await fetchKnowledgeSources();
+                      
+                      toast({
+                        title: 'Success',
+                        description: 'Text content has been added to the knowledge database',
+                      });
+                      
+                      // Add a confirmation message to the chat
+                      setChatHistory(prev => [...prev, { 
+                        role: 'assistant', 
+                        content: `I've added your text content to the BambooMade knowledge database. This information is now permanently available for future reference.`,
+                        timestamp: new Date(),
+                        id: `text-upload-${Date.now()}`
+                      }]);
+                      
+                    } catch (error) {
+                      toast({
+                        title: 'Error',
+                        description: error instanceof Error ? error.message : 'Failed to add text content',
+                        variant: 'destructive',
+                      });
+                    }
+                  }}
                 >
                   Add to Knowledge Base
                 </Button>
