@@ -20,6 +20,7 @@ import AdminHome from "@/pages/AdminHome";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AIKnowledgeManagement from "@/pages/AIKnowledgeManagement";
 import AIKnowledgeDatabase from "@/pages/AIKnowledgeDatabase";
+import AddKnowledge from "@/pages/AddKnowledge";
 import AddWhatsAppBot from "@/pages/AddWhatsAppBot";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/ai-knowledge-management" component={AIKnowledgeManagement} />
       <Route path="/ai-knowledge-database" component={AIKnowledgeDatabase} />
+      <Route path="/add-knowledge" component={AddKnowledge} />
       <Route path="/dev-admin-login" component={DevAdminLogin} />
       <Route path="/login" component={Login} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
