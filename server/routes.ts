@@ -2598,6 +2598,30 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         try {
           const websiteData = await analyzeWebsite(content.trim());
           
+          // Automatically extract facts from the website content
+          if (websiteData && websiteData.content) {
+            try {
+              const facts = await extractFactsFromContent(websiteData.content, content.trim());
+              console.log(`Analysis: Automatically extracted ${facts.length} facts from URL: ${content.trim()}`);
+              
+              // Save each extracted fact
+              if (facts.length > 0 && req.session.adminUser && req.session.adminUser.id) {
+                for (const factContent of facts) {
+                  await storage.createAiKnowledgeContent({
+                    title: `Bamboo Fact: ${factContent.substring(0, 50)}...`,
+                    content: factContent,
+                    source: content.trim(),
+                    contentType: 'fact',
+                    status: 'active',
+                    createdBy: req.session.adminUser.id
+                  });
+                }
+              }
+            } catch (error) {
+              console.error('Error automatically extracting facts during analysis:', error);
+            }
+          }
+          
           // Return the analysis results from the website crawler
           return res.json({
             title: websiteData.title || "Untitled Website",
@@ -4519,6 +4543,30 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(401).json({ 
           error: "Admin authentication required. Please log in again." 
         });
+      }
+      
+      // Automatically extract facts if there's content to analyze
+      if (extractedContent && extractedContent.length > 50) {
+        try {
+          const facts = await extractFactsFromContent(extractedContent, fileUrl);
+          console.log(`Upload: Automatically extracted ${facts.length} facts from uploaded file`);
+          
+          // Save each extracted fact
+          if (facts.length > 0) {
+            for (const factContent of facts) {
+              await storage.createAiKnowledgeContent({
+                title: `Bamboo Fact: ${factContent.substring(0, 50)}...`,
+                content: factContent,
+                source: fileUrl,
+                contentType: 'fact',
+                status: 'active',
+                createdBy: req.session.adminUser.id
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error automatically extracting facts from uploaded file:', error);
+        }
       }
       
       // Add to AI knowledge base
