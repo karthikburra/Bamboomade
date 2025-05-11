@@ -163,6 +163,8 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
+  // Store the full raw content from crawled websites
+  rawContent: text("raw_content"),
   source: text("source"), // URL, Google Drive link, etc.
   contentType: text("content_type").notNull(), // 'webpage', 'document', 'event', 'manual', 'image', 'social_media', 'enthusiast', 'fact' etc.
   status: text("status").notNull().default("pending"), // 'active', 'pending', 'archived'
@@ -187,6 +189,7 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   eventDate: text("event_date"), // Date and time of the event
   eventLocation: text("event_location"), // Physical or virtual location of the event
   registrationLink: text("registration_link"), // URL for event registration
+  lastResummarizedAt: timestamp("last_resummarized_at"), // When content was last resummarized
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   createdBy: integer("created_by").notNull(), // Admin ID who created this content
@@ -195,6 +198,7 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
 export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeContent).pick({
   title: true,
   content: true,
+  rawContent: true,
   source: true,
   contentType: true,
   status: true,
@@ -213,6 +217,7 @@ export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeCont
   eventDate: true,
   eventLocation: true,
   registrationLink: true,
+  lastResummarizedAt: true,
   createdBy: true,
 });
 

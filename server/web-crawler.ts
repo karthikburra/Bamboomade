@@ -39,6 +39,8 @@ interface WebsiteExtractionResult {
   mainContent: string;
   // Store the full raw content from all crawled pages
   fullRawContent: string;
+  // Content field for compatibility with analyzeWebsite() return type
+  content?: string;
   // Author information for articles
   author?: string;
   publishedDate?: string;
@@ -346,11 +348,17 @@ export async function extractStructuredInformation(
   } catch (error) {
     console.error('Error extracting structured information:', error);
     
+    // Collect the full raw content even in fallback scenario
+    const fullRawContent = crawledPages.map(page => {
+      return `PAGE URL: ${page.url}\nPAGE TITLE: ${page.title}\n\nPAGE CONTENT:\n${page.content}\n\n`;
+    }).join('---\n');
+    
     // Fallback if AI analysis fails
     return {
       title: crawledPages[0].title,
       contentType: 'webpage',
       mainContent: crawledPages.map(p => p.content).join('\n\n').substring(0, 10000),
+      fullRawContent,
       originalPages: crawledPages,
     };
   }

@@ -4696,6 +4696,76 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   }
   
   // Refresh Website Content
+  // Endpoint to resummarize content from stored raw text
+  app.post('/api/ai-knowledge/resummarize', isAdmin, async (req, res) => {
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Content id is required' });
+    }
+    
+    try {
+      // First check if the content exists and has raw content
+      const existingContent = await storage.getAiKnowledgeContentById(id);
+      
+      if (!existingContent) {
+        return res.status(404).json({ error: 'Content not found' });
+      }
+      
+      if (!existingContent.rawContent) {
+        return res.status(400).json({ error: 'No raw content available for resummation' });
+      }
+      
+      // Use OpenAI to generate a new summary from the stored raw content
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI client not available' });
+      }
+      
+      console.log(`Resummarizing content ID ${id} with ${existingContent.rawContent.length} characters of raw content`);
+      
+      const prompt = `
+      You are analyzing raw content from a website about bamboo architecture. Generate a comprehensive, 
+      detailed summary that captures all the key information from this content.
+      
+      Focus on facts, techniques, approaches, and detailed information about bamboo architecture, 
+      construction, and sustainable practices.
+      
+      Raw content:
+      ${existingContent.rawContent}
+      
+      Generate a clean, well-structured summary that preserves as much factual information as possible.
+      `;
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3,
+      });
+      
+      // Get the newly generated summary
+      const newSummary = response.choices[0].message.content || '';
+      
+      // Update the content with the new summary
+      const updatedContent = await storage.updateAiKnowledgeContent(id, {
+        content: newSummary,
+        lastResummarizedAt: new Date()
+      });
+      
+      return res.json({
+        success: true,
+        message: 'Content has been successfully resummarized',
+        content: updatedContent
+      });
+      
+    } catch (error) {
+      console.error('Error resummarizing content:', error);
+      return res.status(500).json({ 
+        error: 'Failed to resummarize content',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   app.post('/api/ai-knowledge/refresh-website', isAdmin, async (req, res) => {
     const { id, url, extractFacts = false, saveExtractedFacts = true } = req.body;
     
@@ -4726,13 +4796,18 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Remove bullet points
       cleanContent = cleanContent.replace(/- /g, '');
       
+      // Store the full raw content for future resummation
+      const rawContent = extractedData.fullRawContent;
+      
       // Update the content in the database
       const updatedContent = await storage.updateAiKnowledgeContent(id, {
         title: extractedData.title,
         content: cleanContent,
+        rawContent: rawContent, // Store raw content for later resummation
         contentType: detectedType, // Use the detected type for proper segregation
         source: url,
-        status: existingContent.status
+        status: existingContent.status,
+        lastResummarizedAt: new Date(), // Track when content was last summarized
       });
       
       // Extract and save facts if requested
