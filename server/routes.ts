@@ -2427,7 +2427,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
                 ? contentType 
                 : "document",
               source: source === "null" ? null : source,
-              status: "active",
+              status: "pending", // Set status to pending by default for admin review
               createdBy: req.session.userId || 1 // Default to admin user if not logged in
             });
             
