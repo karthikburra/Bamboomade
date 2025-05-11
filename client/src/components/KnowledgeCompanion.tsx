@@ -63,6 +63,7 @@ import {
   Database,
   File,
   FileText as FileTextIcon,
+  ArrowLeft,
   ClipboardPaste,
   Trash2,
   ChevronRight
