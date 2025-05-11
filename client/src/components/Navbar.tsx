@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { 
-  Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone
+  Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone, User
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -54,6 +54,11 @@ const Navbar: React.FC = () => {
     { href: "/contact", label: "Contact" },
     { href: "/ai-chat", label: "AI Chat", isBeta: true },
   ];
+  
+  // Add profile link if user is logged in
+  const userLinks = user ? [
+    { href: "/profile", label: "Profile", icon: User }
+  ] : [];
 
   const isActive = (path: string) => location === path;
 
@@ -93,6 +98,24 @@ const Navbar: React.FC = () => {
                       Beta
                     </Badge>
                   )}
+                </span>
+              </ScrollLink>
+            ))}
+            
+            {/* User profile link if logged in */}
+            {user && userLinks.map((link) => (
+              <ScrollLink
+                key={`${link.href}-${link.label}`}
+                href={link.href}
+                className={`transition-colors hover:text-green-300 py-1 ${
+                  isActive(link.href)
+                    ? "text-green-300 font-semibold"
+                    : "text-green-400"
+                }`}
+              >
+                <span className="relative whitespace-nowrap flex items-center">
+                  <link.icon className="mr-1 h-3.5 w-3.5" />
+                  {link.label}
                 </span>
               </ScrollLink>
             ))}
@@ -158,9 +181,19 @@ const Navbar: React.FC = () => {
                   {/* Admin dashboard link removed */}
                   {user && (
                     <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50 space-y-3">
+                      {/* Profile link */}
+                      <ScrollLink
+                        href="/profile"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
+                      >
+                        <User className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                        Profile
+                      </ScrollLink>
+                      
                       {/* View My Sessions link */}
                       <ScrollLink
-                        href="/view-my-sessions"
+                        href="/profile"
                         onClick={() => setIsMenuOpen(false)}
                         className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-green-400 transition-colors hover:text-green-300"
                       >
