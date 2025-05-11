@@ -923,19 +923,19 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                 ) : (
                   <Accordion type="multiple" className="space-y-3">
                     {/* Facts Section */}
-                    {sourceExtractedData.facts.length > 0 && (
-                      <AccordionItem value="facts" className="border border-gray-800 rounded-md">
-                        <AccordionTrigger className="px-4 hover:no-underline">
-                          <div className="flex items-center">
-                            <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
-                            <span className="text-sm font-medium text-gray-200">
-                              Interesting Facts ({sourceExtractedData.facts.length})
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-3 px-4 pb-4">
-                            {sourceExtractedData.facts.map((fact) => (
+                    <AccordionItem value="facts" className="border border-gray-800 rounded-md">
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex items-center">
+                          <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                          <span className="text-sm font-medium text-gray-200">
+                            Interesting Facts {sourceExtractedData.facts.length > 0 && `(${sourceExtractedData.facts.length})`}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 px-4 pb-4">
+                          {sourceExtractedData.facts.length > 0 ? (
+                            sourceExtractedData.facts.map((fact) => (
                               <div 
                                 key={fact.id} 
                                 className={`p-3 rounded-md text-sm ${fact.saved ? 'bg-amber-900/20 border border-amber-800/30' : 'bg-gray-800'}`}
@@ -967,26 +967,42 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                                   </Button>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
+                            ))
+                          ) : hasSelectedSource ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <FileText className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">No facts available for this source</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                Login as admin to view source facts or try selecting a different source.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <ArrowLeft className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">Select a source to view facts</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                Choose a source from the left panel to explore its content.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                     
                     {/* Events Section */}
-                    {sourceExtractedData.events.length > 0 && (
-                      <AccordionItem value="events" className="border border-gray-800 rounded-md">
-                        <AccordionTrigger className="px-4 hover:no-underline">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2 text-blue-500" />
-                            <span className="text-sm font-medium text-gray-200">
-                              Events ({sourceExtractedData.events.length})
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-3 px-4 pb-4">
-                            {sourceExtractedData.events.map((event) => (
+                    <AccordionItem value="events" className="border border-gray-800 rounded-md">
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                          <span className="text-sm font-medium text-gray-200">
+                            Events {sourceExtractedData.events.length > 0 && `(${sourceExtractedData.events.length})`}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 px-4 pb-4">
+                          {sourceExtractedData.events.length > 0 ? (
+                            sourceExtractedData.events.map((event) => (
                               <div 
                                 key={event.id || event.title} 
                                 className={`p-3 rounded-md text-sm ${event.saved ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-gray-800'}`}
@@ -1020,26 +1036,42 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                                   </Button>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
+                            ))
+                          ) : hasSelectedSource ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <Calendar className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">No events found in this source</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                This source doesn't contain any events or authentication may be required.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <ArrowLeft className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">Select a source to view events</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                Choose a source from the left panel to explore its content.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                     
                     {/* Blog Content Section */}
-                    {sourceExtractedData.blogContent.length > 0 && (
-                      <AccordionItem value="blog" className="border border-gray-800 rounded-md">
-                        <AccordionTrigger className="px-4 hover:no-underline">
-                          <div className="flex items-center">
-                            <FileText className="h-4 w-4 mr-2 text-green-500" />
-                            <span className="text-sm font-medium text-gray-200">
-                              Blog Content ({sourceExtractedData.blogContent.length})
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-3 px-4 pb-4">
-                            {sourceExtractedData.blogContent.map((blog) => (
+                    <AccordionItem value="blog" className="border border-gray-800 rounded-md">
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex items-center">
+                          <FileText className="h-4 w-4 mr-2 text-green-500" />
+                          <span className="text-sm font-medium text-gray-200">
+                            Blog Content {sourceExtractedData.blogContent.length > 0 && `(${sourceExtractedData.blogContent.length})`}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 px-4 pb-4">
+                          {sourceExtractedData.blogContent.length > 0 ? (
+                            sourceExtractedData.blogContent.map((blog) => (
                               <div 
                                 key={blog.id || blog.title} 
                                 className={`p-3 rounded-md text-sm ${blog.saved ? 'bg-green-900/20 border border-green-800/30' : 'bg-gray-800'}`}
@@ -1072,11 +1104,27 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                                   </Button>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
+                            ))
+                          ) : hasSelectedSource ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <FileText className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">No blog content found in this source</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                This source doesn't contain any blog content or authentication may be required.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <ArrowLeft className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">Select a source to view blog content</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                Choose a source from the left panel to explore its content.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
                   </Accordion>
                 )}
                 
