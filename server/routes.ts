@@ -2722,7 +2722,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         status: status || "active",
         mediaUrl: mediaUrl || null,
         mediaType: mediaType || null,
-        createdBy: req.session.userId
+        createdBy: req.session.adminUser.id
       };
       
       // Add enthusiast-specific fields if content type is "enthusiast"
