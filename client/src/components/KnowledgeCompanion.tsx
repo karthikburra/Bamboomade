@@ -133,6 +133,31 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     selected: boolean
   }>>([]);
   
+  // Track which type of source is currently selected
+  const [selectedSourceType, setSelectedSourceType] = useState<'database' | 'uploaded' | null>(null);
+  
+  // Handle source selection (radio buttons)
+  const handleSourceSelection = (sourceId: number, sourceType: 'database' | 'uploaded') => {
+    // Update the selectedSourceType
+    setSelectedSourceType(sourceType);
+    
+    // Update database sources (deselect all except the selected one)
+    setAllSources(prev => 
+      prev.map(source => ({
+        ...source,
+        selected: sourceType === 'database' && source.id === sourceId
+      }))
+    );
+    
+    // Update uploaded sources (deselect all except the selected one)
+    setUploadedSources(prev => 
+      prev.map(source => ({
+        ...source,
+        selected: sourceType === 'uploaded' && source.id === sourceId
+      }))
+    );
+  };
+  
   // Combine both sources for display
   const combinedSources = [...allSources, ...uploadedSources];
 
@@ -565,10 +590,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         </div>
                         <div className="ml-auto">
                           <Input 
-                            type="checkbox" 
-                            className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                            type="radio" 
+                            name="knowledgeSource"
+                            className="h-4 w-4 border-gray-700 bg-gray-800"
                             checked={source.selected}
-                            readOnly
+                            onChange={() => handleSourceSelection(source.id, 'database')}
                           />
                         </div>
                       </div>
@@ -597,10 +623,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         </div>
                         <div className="ml-auto">
                           <Input 
-                            type="checkbox" 
-                            className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                            type="radio" 
+                            name="knowledgeSource"
+                            className="h-4 w-4 border-gray-700 bg-gray-800"
                             checked={source.selected}
-                            readOnly
+                            onChange={() => handleSourceSelection(source.id, 'uploaded')}
                           />
                         </div>
                       </div>
