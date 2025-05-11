@@ -1,6 +1,18 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+
+// Extend session interface to include admin user type
+declare module 'express-session' {
+  interface SessionData {
+    userId?: number;
+    adminUser?: {
+      email: string;
+      isAdmin: boolean;
+      id: number;
+    };
+  }
+}
 import { db } from "./db";
 import { eq, and, asc, desc } from "drizzle-orm";
 import multer from "multer";
@@ -555,7 +567,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user.isAdmin) {
         req.session.adminUser = {
           email: user.email,
-          isAdmin: true
+          isAdmin: true,
+          id: user.id
         };
       }
       
@@ -654,7 +667,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.userId = user.id;
         req.session.adminUser = {
           email,
-          isAdmin: true
+          isAdmin: true,
+          id: user.id
         };
         
         // Force session save to ensure it's stored before sending response
