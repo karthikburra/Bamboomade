@@ -4768,9 +4768,10 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(400).json({ error: 'No raw content available for resummation' });
       }
       
-      // Use OpenAI to generate a new summary from the stored raw content
+      // Get OpenAI instance
+      const openai = getOpenAI();
       if (!openai) {
-        return res.status(500).json({ error: 'OpenAI client not available' });
+        return res.status(500).json({ error: 'OpenAI service not available' });
       }
       
       console.log(`Resummarizing content ID ${id} with ${existingContent.rawContent.length} characters of raw content`);
