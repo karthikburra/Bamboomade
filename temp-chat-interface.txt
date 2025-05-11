@@ -1,0 +1,23 @@
+// Chat interface when no source is selected
+<div className="p-4">
+  <div className="mb-4 border-l-4 border-amber-500 pl-3">
+    <h3 className="text-md font-medium text-gray-200">Bamboo Knowledge Companion</h3>
+    <p className="text-sm text-gray-400">
+      Ask questions about bamboo architecture, design, and sustainability. 
+      The AI will answer using the knowledge database.
+    </p>
+    <div className="flex items-center text-xs text-amber-400 mt-2">
+      <Sparkles className="h-3 w-3 mr-1" />
+      <span>Powered by AI with bamboo knowledge</span>
+    </div>
+  </div>
+  
+  <div className="divide-y divide-gray-800">
+    {chatHistory.map((msg, idx) => (
+      msg.role === 'user' 
+        ? renderUserMessage(msg, idx) 
+        : renderAssistantMessage(msg, idx)
+    ))}
+    <div ref={messagesEndRef} />
+  </div>
+</div>
