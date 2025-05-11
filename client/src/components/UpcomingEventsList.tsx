@@ -32,10 +32,21 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
     return (
       <Card className="bg-zinc-900 border-zinc-800">
         <CardHeader className="pb-3">
-          <CardTitle className="text-xl font-bold text-zinc-100 flex items-center">
-            <CalendarDays className="h-5 w-5 mr-2 text-green-500" />
-            Upcoming Events
-          </CardTitle>
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-xl font-bold text-zinc-100 flex items-center">
+              <CalendarDays className="h-5 w-5 mr-2 text-green-500" />
+              Upcoming Events
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
+              title="Refresh events list"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           <p className="text-zinc-400 text-sm">No upcoming events found. Check back later!</p>
