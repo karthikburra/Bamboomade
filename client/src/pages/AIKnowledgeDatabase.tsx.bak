@@ -1121,22 +1121,6 @@ export default function AIKnowledgeDatabase() {
       
       {/* Edit Dialog */}
       {selectedContent && (
-        <ContentEditDialog
-          isOpen={isEditDialogOpen}
-          onClose={() => {
-            setIsEditDialogOpen(false);
-            // Refresh data after closing the dialog
-            refetch();
-            if (activeTab === "pending") {
-              refetchPending();
-            }
-          }}
-          content={selectedContent}
-        />
-      )}
-      
-      {/* Legacy Edit Dialog - Replaced with ContentEditDialog above */}
-      {false && selectedContent && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark px-4 sm:px-6">
             <DialogHeader className="border-b border-gray-800 pb-4">

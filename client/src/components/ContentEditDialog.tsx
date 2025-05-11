@@ -77,8 +77,8 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
     mutationFn: async (data: any) => {
       return apiRequest('POST', `/api/ai-knowledge/refresh-website`, data);
     },
-    onSuccess: (response) => {
-      const data = response.data;
+    onSuccess: async (response) => {
+      const data = await response.json();
       setBodyContent(data.content.content);
       setTitle(data.content.title);
       
