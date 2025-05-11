@@ -15,6 +15,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -859,8 +865,8 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="p-3 flex-1 overflow-y-auto">
-            <div className="flex justify-between items-center mb-2">
-              <div className="text-sm text-gray-300">Selected Source Information</div>
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-sm font-medium text-gray-300">Source Information</div>
               {sourceExtractedData.loading && (
                 <div className="flex items-center">
                   <div className="animate-spin h-3 w-3 border-2 border-amber-500 border-t-transparent rounded-full mr-1"></div>
@@ -869,58 +875,79 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
               )}
             </div>
             
-            {/* Facts Section */}
-            {sourceExtractedData.facts.length > 0 && (
-              <div className="mb-4">
-                <div className="text-xs font-medium text-amber-500 mb-2 flex items-center">
-                  <Lightbulb className="h-3 w-3 mr-1" />
-                  <span>EXTRACTED FACTS ({sourceExtractedData.facts.length})</span>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {sourceExtractedData.facts.map((fact) => (
-                    <div key={fact.id} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
-                      <div>{fact.content}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Events Section - Will be populated when event extraction is implemented */}
-            {sourceExtractedData.events.length > 0 && (
-              <div className="mb-4">
-                <div className="text-xs font-medium text-blue-500 mb-2 flex items-center">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <span>IDENTIFIED EVENTS ({sourceExtractedData.events.length})</span>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {sourceExtractedData.events.map((event, index) => (
-                    <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
-                      <div className="font-medium mb-1">{event.title}</div>
-                      <div className="text-gray-400 mb-1">{event.date}</div>
-                      <div>{event.description}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Blog Content Section - Will be populated when content extraction is implemented */}
-            {sourceExtractedData.blogContent.length > 0 && (
-              <div className="mb-4">
-                <div className="text-xs font-medium text-green-500 mb-2 flex items-center">
-                  <FileText className="h-3 w-3 mr-1" />
-                  <span>BLOG CONTENT ({sourceExtractedData.blogContent.length})</span>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {sourceExtractedData.blogContent.map((blog, index) => (
-                    <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
-                      <div className="font-medium mb-1">{blog.title}</div>
-                      <div>{blog.summary}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* Information Accordions */}
+            {(sourceExtractedData.facts.length > 0 || 
+              sourceExtractedData.events.length > 0 || 
+              sourceExtractedData.blogContent.length > 0) && (
+              <Accordion type="multiple" className="space-y-2 w-full">
+                {/* Facts Accordion */}
+                {sourceExtractedData.facts.length > 0 && (
+                  <AccordionItem value="facts" className="border-gray-800">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <div className="flex items-center text-xs font-medium text-amber-500">
+                        <Lightbulb className="h-3 w-3 mr-1.5" />
+                        <span>EXTRACTED FACTS ({sourceExtractedData.facts.length})</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {sourceExtractedData.facts.map((fact) => (
+                          <div key={fact.id} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                            <div>{fact.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                
+                {/* Events Accordion */}
+                {sourceExtractedData.events.length > 0 && (
+                  <AccordionItem value="events" className="border-gray-800">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <div className="flex items-center text-xs font-medium text-blue-500">
+                        <Calendar className="h-3 w-3 mr-1.5" />
+                        <span>IDENTIFIED EVENTS ({sourceExtractedData.events.length})</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {sourceExtractedData.events.map((event, index) => (
+                          <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                            <div className="font-medium mb-1">{event.title}</div>
+                            <div className="text-gray-400 mb-1">{event.date}</div>
+                            <div>{event.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                
+                {/* Blog Content Accordion */}
+                {sourceExtractedData.blogContent.length > 0 && (
+                  <AccordionItem value="blog-content" className="border-gray-800">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <div className="flex items-center text-xs font-medium text-green-500">
+                        <FileText className="h-3 w-3 mr-1.5" />
+                        <span>BLOG CONTENT ({sourceExtractedData.blogContent.length})</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {sourceExtractedData.blogContent.map((blog, index) => (
+                          <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                            <div className="font-medium mb-1">{blog.title}</div>
+                            <div>{blog.summary}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                
+                {/* Add more accordions for other categories here */}
+              </Accordion>
             )}
             
             {/* No data message */}
