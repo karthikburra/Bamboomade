@@ -277,8 +277,40 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[700px]">
+    <>
+      {/* Alert Dialog for Fact Deletion Confirmation */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Confirm Deletion
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this fact? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setFactToDelete(null);
+                setIsDeleteDialogOpen(false);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={deleteFact}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Edit Content</span>
@@ -505,5 +537,6 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
