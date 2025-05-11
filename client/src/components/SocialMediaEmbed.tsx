@@ -86,7 +86,7 @@ const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({
   };
 
   return (
-    <Card className="overflow-hidden border-zinc-800 bg-zinc-950 h-full flex flex-col relative group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+    <Card className="overflow-hidden border-zinc-800 bg-zinc-950 h-full w-full flex flex-col relative group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
       <div 
         ref={containerRef} 
         className={`w-full flex-grow flex items-center justify-center bg-zinc-800/50 embed-container ${
@@ -96,10 +96,9 @@ const SocialMediaEmbed: React.FC<SocialMediaEmbedProps> = ({
         }`}
         style={{
           padding: platform === 'instagram' ? '8px' : '0',
-          minHeight: platform === 'youtube' ? '250px' : 
-                    platform === 'linkedin' ? '250px' : 
-                    platform === 'instagram' ? '250px' : '250px',
-          maxHeight: '350px'
+          minHeight: '250px',
+          maxHeight: platform === 'youtube' || platform === 'linkedin' || platform === 'instagram' ? 'none' : '350px',
+          height: platform === 'youtube' || platform === 'linkedin' || platform === 'instagram' ? '100%' : 'auto'
         }}
       >
         <div className="text-center text-zinc-500 text-sm">Loading embed...</div>
