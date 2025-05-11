@@ -58,6 +58,8 @@ import {
   Upload,
   Youtube,
   X,
+  Check,
+  FileX,
   Database,
   File,
   FileText as FileTextIcon,
@@ -138,10 +140,17 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   // Track which type of source is currently selected
   const [selectedSourceType, setSelectedSourceType] = useState<'database' | 'uploaded' | null>(null);
   
+  // Track the selected source ID
+  const [selectedSourceId, setSelectedSourceId] = useState<number | null>(null);
+  
   // Handle source selection (radio buttons)
   const handleSourceSelection = (sourceId: number, sourceType: 'database' | 'uploaded') => {
-    // Update the selectedSourceType
+    // Update the selectedSourceType and selectedSourceId
     setSelectedSourceType(sourceType);
+    setSelectedSourceId(sourceId);
+    
+    // Fetch data for the selected source
+    fetchSourceExtractedData(sourceId);
     
     // Update database sources (deselect all except the selected one)
     setAllSources(prev => 
@@ -277,6 +286,112 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         blogContent: [],
         loading: false
       });
+    }
+  };
+  
+  // Function to save content to knowledge database based on type
+  const saveToKnowledgeDatabase = async (type: 'fact' | 'event' | 'blog', content: any) => {
+    try {
+      // Check if user is logged in as admin first
+      const adminCheckResponse = await fetch('/api/auth/admin-check');
+      const adminCheckResult = await adminCheckResponse.json();
+      
+      if (!adminCheckResponse.ok || !adminCheckResult.isAdmin) {
+        toast({
+          title: 'Admin access required',
+          description: 'You need to be logged in as an admin to add content to the knowledge database.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+      
+      let payload;
+      
+      // Format payload based on content type
+      switch (type) {
+        case 'fact':
+          payload = {
+            title: `Bamboo Fact: ${content.content.substring(0, 50)}...`,
+            content: content.content,
+            source: 'Knowledge Companion',
+            contentType: 'fact',
+            status: 'active',
+          };
+          break;
+        case 'event':
+          payload = {
+            title: `Event: ${content.title}`,
+            content: `${content.description}\nDate: ${content.date}`,
+            source: 'Knowledge Companion',
+            contentType: 'event',
+            status: 'active',
+          };
+          break;
+        case 'blog':
+          payload = {
+            title: `Blog: ${content.title}`,
+            content: content.summary,
+            source: 'Knowledge Companion',
+            contentType: 'article',
+            status: 'active',
+          };
+          break;
+      }
+      
+      // Send to API
+      const response = await fetch('/api/ai-knowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to save ${type} to knowledge database`);
+      }
+      
+      toast({
+        title: 'Success',
+        description: `${type.charAt(0).toUpperCase() + type.slice(1)} has been added to the knowledge database`,
+      });
+      
+      // Update the state to mark this item as saved
+      switch (type) {
+        case 'fact':
+          setSourceExtractedData(prev => ({
+            ...prev,
+            facts: prev.facts.map(f => 
+              f.id === content.id ? {...f, saved: true} : f
+            )
+          }));
+          break;
+        case 'event':
+          setSourceExtractedData(prev => ({
+            ...prev,
+            events: prev.events.map(e => 
+              e.id === content.id ? {...e, saved: true} : e
+            )
+          }));
+          break;
+        case 'blog':
+          setSourceExtractedData(prev => ({
+            ...prev,
+            blogContent: prev.blogContent.map(b => 
+              b.id === content.id ? {...b, saved: true} : b
+            )
+          }));
+          break;
+      }
+      
+      return true;
+      
+    } catch (error) {
+      console.error(`Error saving ${type}:`, error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : `Failed to save ${type}`,
+        variant: 'destructive',
+      });
+      return false;
     }
   };
   
@@ -760,14 +875,218 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="flex-1 overflow-y-auto p-0 bg-gray-900 min-h-[400px]">
-            <div className="divide-y divide-gray-800">
-              {chatHistory.map((msg, idx) => (
-                msg.role === 'user' 
-                  ? renderUserMessage(msg, idx) 
-                  : renderAssistantMessage(msg, idx)
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
+            {selectedSourceId ? (
+              <div className="p-4">
+                <div className="mb-4">
+                  <h3 className="text-md font-medium text-gray-200">Extracted Content</h3>
+                  <p className="text-sm text-gray-400">
+                    Content automatically extracted from the selected source. 
+                    Use the action buttons to add content to the knowledge database.
+                  </p>
+                </div>
+                
+                {sourceExtractedData.loading ? (
+                  <div className="flex items-center justify-center h-40">
+                    <div className="animate-spin h-6 w-6 border-2 border-amber-500 border-t-transparent rounded-full mr-2"></div>
+                    <span className="text-sm text-gray-400">Extracting content...</span>
+                  </div>
+                ) : (
+                  <Accordion type="multiple" className="space-y-3">
+                    {/* Facts Section */}
+                    {sourceExtractedData.facts.length > 0 && (
+                      <AccordionItem value="facts" className="border border-gray-800 rounded-md">
+                        <AccordionTrigger className="px-4 hover:no-underline">
+                          <div className="flex items-center">
+                            <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                            <span className="text-sm font-medium text-gray-200">
+                              Interesting Facts ({sourceExtractedData.facts.length})
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 px-4 pb-4">
+                            {sourceExtractedData.facts.map((fact) => (
+                              <div 
+                                key={fact.id} 
+                                className={`p-3 rounded-md text-sm ${fact.saved ? 'bg-amber-900/20 border border-amber-800/30' : 'bg-gray-800'}`}
+                              >
+                                <div className="text-gray-300 mb-2">{fact.content}</div>
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`text-xs ${
+                                      fact.saved 
+                                        ? 'bg-amber-900/30 text-amber-400 border-amber-800/30' 
+                                        : 'bg-gray-800 hover:bg-gray-700'
+                                    }`}
+                                    disabled={fact.saved}
+                                    onClick={() => saveToKnowledgeDatabase('fact', fact)}
+                                  >
+                                    {fact.saved ? (
+                                      <>
+                                        <Check className="h-3 w-3 mr-1" />
+                                        <span>Saved to Database</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        <span>Add to Knowledge Base</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                    
+                    {/* Events Section */}
+                    {sourceExtractedData.events.length > 0 && (
+                      <AccordionItem value="events" className="border border-gray-800 rounded-md">
+                        <AccordionTrigger className="px-4 hover:no-underline">
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+                            <span className="text-sm font-medium text-gray-200">
+                              Events ({sourceExtractedData.events.length})
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 px-4 pb-4">
+                            {sourceExtractedData.events.map((event) => (
+                              <div 
+                                key={event.id || event.title} 
+                                className={`p-3 rounded-md text-sm ${event.saved ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-gray-800'}`}
+                              >
+                                <div className="font-medium text-gray-200 mb-1">{event.title}</div>
+                                <div className="text-gray-400 mb-2">{event.date}</div>
+                                <div className="text-gray-300 mb-2">{event.description}</div>
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`text-xs ${
+                                      event.saved 
+                                        ? 'bg-blue-900/30 text-blue-400 border-blue-800/30' 
+                                        : 'bg-gray-800 hover:bg-gray-700'
+                                    }`}
+                                    disabled={event.saved}
+                                    onClick={() => saveToKnowledgeDatabase('event', event)}
+                                  >
+                                    {event.saved ? (
+                                      <>
+                                        <Check className="h-3 w-3 mr-1" />
+                                        <span>Saved to Database</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        <span>Add to Knowledge Base</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                    
+                    {/* Blog Content Section */}
+                    {sourceExtractedData.blogContent.length > 0 && (
+                      <AccordionItem value="blog" className="border border-gray-800 rounded-md">
+                        <AccordionTrigger className="px-4 hover:no-underline">
+                          <div className="flex items-center">
+                            <FileText className="h-4 w-4 mr-2 text-green-500" />
+                            <span className="text-sm font-medium text-gray-200">
+                              Blog Content ({sourceExtractedData.blogContent.length})
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 px-4 pb-4">
+                            {sourceExtractedData.blogContent.map((blog) => (
+                              <div 
+                                key={blog.id || blog.title} 
+                                className={`p-3 rounded-md text-sm ${blog.saved ? 'bg-green-900/20 border border-green-800/30' : 'bg-gray-800'}`}
+                              >
+                                <div className="font-medium text-gray-200 mb-1">{blog.title}</div>
+                                <div className="text-gray-300 mb-2">{blog.summary}</div>
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`text-xs ${
+                                      blog.saved 
+                                        ? 'bg-green-900/30 text-green-400 border-green-800/30' 
+                                        : 'bg-gray-800 hover:bg-gray-700'
+                                    }`}
+                                    disabled={blog.saved}
+                                    onClick={() => saveToKnowledgeDatabase('blog', blog)}
+                                  >
+                                    {blog.saved ? (
+                                      <>
+                                        <Check className="h-3 w-3 mr-1" />
+                                        <span>Saved to Database</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        <span>Add to Knowledge Base</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )}
+                  </Accordion>
+                )}
+                
+                {!sourceExtractedData.loading && 
+                  sourceExtractedData.facts.length === 0 && 
+                  sourceExtractedData.events.length === 0 && 
+                  sourceExtractedData.blogContent.length === 0 && (
+                  <div className="text-center p-8 bg-gray-800/30 rounded-md border border-gray-800">
+                    <FileX className="h-12 w-12 mx-auto text-gray-600 mb-2" />
+                    <h3 className="text-gray-300 text-sm font-medium mb-1">No Content Found</h3>
+                    <p className="text-gray-400 text-xs mb-3">
+                      No extractable content was found in this source.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs bg-gray-800 hover:bg-gray-700"
+                      onClick={() => {
+                        // Re-fetch extracted data
+                        if (selectedSourceId) {
+                          fetchSourceExtractedData(selectedSourceId);
+                        }
+                      }}
+                    >
+                      <RefreshCcw className="h-3 w-3 mr-1" />
+                      <span>Try Again</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-800">
+                {chatHistory.map((msg, idx) => (
+                  msg.role === 'user' 
+                    ? renderUserMessage(msg, idx) 
+                    : renderAssistantMessage(msg, idx)
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            )}
           </div>
           
           <div className="border-t border-gray-800 p-3 bg-gray-950">
