@@ -193,6 +193,8 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         facts: [],
         events: [],
         blogContent: [],
+        documents: [],
+        projects: [],
         loading: false
       });
     }
@@ -1153,7 +1155,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                 {!sourceExtractedData.loading && 
                   sourceExtractedData.facts.length === 0 && 
                   sourceExtractedData.events.length === 0 && 
-                  sourceExtractedData.blogContent.length === 0 && (
+                  sourceExtractedData.blogContent.length === 0 &&
+                  sourceExtractedData.documents.length === 0 &&
+                  sourceExtractedData.projects.length === 0 && (
                   <div className="text-center p-8 bg-gray-800/30 rounded-md border border-gray-800">
                     <FileTextIcon className="h-12 w-12 mx-auto text-gray-600 mb-2" />
                     <h3 className="text-gray-300 text-sm font-medium mb-1">No Content Found</h3>
