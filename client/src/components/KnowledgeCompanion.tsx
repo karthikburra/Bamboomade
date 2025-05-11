@@ -145,12 +145,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   
   // Handle source selection (radio buttons)
   const handleSourceSelection = (sourceId: number, sourceType: 'database' | 'uploaded') => {
+    console.log(`Selecting source: ID=${sourceId}, Type=${sourceType}`);
+    
     // Update the selectedSourceType and selectedSourceId
     setSelectedSourceType(sourceType);
     setSelectedSourceId(sourceId);
-    
-    // Fetch data for the selected source
-    fetchSourceExtractedData(sourceId);
     
     // Update database sources (deselect all except the selected one)
     setAllSources(prev => 
@@ -168,10 +167,18 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       }))
     );
     
+    // Make this really visible in the UI
+    toast({
+      title: 'Source Selected',
+      description: `Now viewing content from source #${sourceId}`,
+    });
+    
     // Fetch extracted information for the selected source
     if (sourceType === 'database') {
+      console.log(`Fetching data for source ID=${sourceId}`);
       fetchSourceExtractedData(sourceId);
     } else {
+      console.log(`Clearing data for uploaded source ID=${sourceId}`);
       // For uploaded sources, we don't have extracted data yet in the database
       // So we'll clear the extracted data
       setSourceExtractedData({
