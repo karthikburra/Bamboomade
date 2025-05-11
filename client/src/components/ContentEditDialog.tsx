@@ -352,21 +352,21 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       </AlertDialog>
       
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="w-[95vw] max-w-full sm:max-w-[90vw] md:max-w-[80vw] lg:max-w-[700px] h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <span>Edit Content</span>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {source && source.startsWith('http') && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={handleRefreshWebsite}
                   disabled={isRefreshing || isResummarizing}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs sm:text-sm"
                 >
-                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {isRefreshing ? 'Refreshing...' : 'Re-crawl Content'}
                 </Button>
               )}
@@ -377,9 +377,9 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                   size="sm" 
                   onClick={handleResummarizeContent}
                   disabled={isResummarizing || isRefreshing}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs sm:text-sm"
                 >
-                  <Sparkles className={`h-4 w-4 ${isResummarizing ? 'animate-spin' : ''}`} />
+                  <Sparkles className={`h-3 w-3 sm:h-4 sm:w-4 ${isResummarizing ? 'animate-spin' : ''}`} />
                   {isResummarizing ? 'Processing...' : 'Resummarize'}
                 </Button>
               )}
@@ -391,6 +391,9 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
               <Badge variant="outline">{contentType}</Badge>
             </div>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Edit content details and extract bamboo facts from the source
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -407,45 +410,47 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
           
           <TabsContent value="content" className="space-y-4 pt-4">
             <div className="grid gap-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="title" className="text-right">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="title" className="sm:text-right">
                   Title
                 </Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="col-span-3"
+                  className="col-span-1 sm:col-span-3"
                 />
               </div>
               
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="content-type" className="text-right">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="content-type" className="sm:text-right">
                   Content Type
                 </Label>
-                <Select
-                  value={contentType}
-                  onValueChange={setContentType}
-                >
-                  <SelectTrigger className="col-span-3" id="content-type">
-                    <SelectValue placeholder="Select content type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="article">Article</SelectItem>
-                    <SelectItem value="blog_post">Blog Post</SelectItem>
-                    <SelectItem value="webpage">Webpage</SelectItem>
-                    <SelectItem value="event">Event</SelectItem>
-                    <SelectItem value="document">Document</SelectItem>
-                    <SelectItem value="social">Social Media</SelectItem>
-                    <SelectItem value="fact">Fact</SelectItem>
-                    <SelectItem value="enthusiast">Bamboo Enthusiast</SelectItem>
-                    <SelectItem value="book">Book</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="col-span-1 sm:col-span-3">
+                  <Select
+                    value={contentType}
+                    onValueChange={setContentType}
+                  >
+                    <SelectTrigger id="content-type">
+                      <SelectValue placeholder="Select content type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="article">Article</SelectItem>
+                      <SelectItem value="blog_post">Blog Post</SelectItem>
+                      <SelectItem value="webpage">Webpage</SelectItem>
+                      <SelectItem value="event">Event</SelectItem>
+                      <SelectItem value="document">Document</SelectItem>
+                      <SelectItem value="social">Social Media</SelectItem>
+                      <SelectItem value="fact">Fact</SelectItem>
+                      <SelectItem value="enthusiast">Bamboo Enthusiast</SelectItem>
+                      <SelectItem value="book">Book</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="source" className="text-right">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="source" className="sm:text-right">
                   Source
                 </Label>
                 <Input
@@ -453,35 +458,37 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                   placeholder="URL or source reference"
                   value={source}
                   onChange={(e) => setSource(e.target.value)}
-                  className="col-span-3"
+                  className="col-span-1 sm:col-span-3"
                 />
               </div>
               
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="status" className="text-right">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="status" className="sm:text-right">
                   Status
                 </Label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger className="col-span-3" id="status">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="col-span-1 sm:col-span-3">
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="grid grid-cols-4 gap-4">
-                <Label htmlFor="content" className="text-right">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
+                <Label htmlFor="content" className="sm:text-right">
                   Content
                 </Label>
                 <Textarea
                   id="content"
                   value={bodyContent}
                   onChange={(e) => setBodyContent(e.target.value)}
-                  className="col-span-3 min-h-[300px]"
+                  className="col-span-1 sm:col-span-3 min-h-[200px] sm:min-h-[300px]"
                 />
               </div>
             </div>
@@ -489,21 +496,21 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
           
           <TabsContent value="facts" className="space-y-4 pt-4">
             {/* Existing Facts Section - Only shows facts from this specific source */}
-            <div className="border rounded-md p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Facts from This Source</h3>
+            <div className="border rounded-md p-3 sm:p-4 space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h3 className="text-base sm:text-lg font-medium">Facts from This Source</h3>
                 <span><Badge variant="outline">{existingFacts.length}</Badge></span>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {existingFacts.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground">
+                  <div className="text-center py-3 sm:py-4 text-muted-foreground">
                     <p>No facts have been extracted from this specific source yet.</p>
                   </div>
                 ) : (
                   existingFacts.map((fact) => (
-                    <div key={fact.id} className="border rounded-md p-3 bg-amber-950/30">
-                      <p className="mb-2">{fact.fact}</p>
+                    <div key={fact.id} className="border rounded-md p-2 sm:p-3 bg-amber-950/30">
+                      <p className="mb-2 text-sm sm:text-base">{fact.fact}</p>
                       <div className="flex justify-end space-x-2">
                         <Button 
                           variant="outline"
@@ -523,9 +530,9 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
             </div>
             
             {/* Extracted Facts Section */}
-            <div className="border rounded-md p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Extract New Facts</h3>
+            <div className="border rounded-md p-3 sm:p-4 space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <h3 className="text-base sm:text-lg font-medium">Extract New Facts</h3>
                 {source && source.startsWith('http') && (
                   <span>
                     <Button 
@@ -533,39 +540,39 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                       size="sm" 
                       onClick={handleRefreshWebsite}
                       disabled={isRefreshing}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 text-xs sm:text-sm w-full sm:w-auto"
                     >
-                      <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                       {isRefreshing ? 'Extracting...' : 'Extract Facts from Source'}
                     </Button>
                   </span>
                 )}
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {extractedFacts.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No new facts found to extract.</p>
+                  <div className="text-center py-4 sm:py-8 text-muted-foreground">
+                    <Lightbulb className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm sm:text-base">No new facts found to extract.</p>
                     {source && source.startsWith('http') ? (
-                      <p className="text-sm">Click "Extract Facts from Source" to analyze this content for bamboo facts.</p>
+                      <p className="text-xs sm:text-sm">Click "Extract Facts from Source" to analyze this content for bamboo facts.</p>
                     ) : (
-                      <p className="text-sm">Enter a valid URL source to extract facts automatically.</p>
+                      <p className="text-xs sm:text-sm">Enter a valid URL source to extract facts automatically.</p>
                     )}
                   </div>
                 ) : (
                   extractedFacts.map((fact, index) => (
-                    <div key={index} className="border rounded-md p-3 bg-muted/30">
-                      <p className="mb-2">{fact}</p>
+                    <div key={index} className="border rounded-md p-2 sm:p-3 bg-muted/30">
+                      <p className="mb-2 text-sm sm:text-base">{fact}</p>
                       <div className="flex justify-end">
                         <Button 
                           variant="default"
                           size="sm"
                           onClick={() => saveFactToDb(fact)}
                           disabled={isExtractingFacts || isSavingFact}
-                          className="bg-amber-600 hover:bg-amber-700"
+                          className="bg-amber-600 hover:bg-amber-700 text-xs sm:text-sm"
                         >
-                          <Plus className="h-4 w-4 mr-1" />
+                          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                           Save to This Source
                         </Button>
                       </div>
@@ -577,13 +584,20 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
           </TabsContent>
         </Tabs>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0 mt-4 sm:mt-0">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            size="sm"
+            className="sm:mr-2 w-full sm:w-auto text-xs sm:text-sm"
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleSave} 
             disabled={updateMutation.isPending}
+            size="sm"
+            className="w-full sm:w-auto text-xs sm:text-sm"
           >
             {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
