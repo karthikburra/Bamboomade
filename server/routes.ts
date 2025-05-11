@@ -602,6 +602,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/project-guidance/my-sessions", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get sessions by user email
+      const userSessions = await storage.getProjectGuidancesByEmail(user.email);
+      
+      // Sort sessions by date (newest first)
+      userSessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      res.json(userSessions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user sessions", error: (error as Error).message });
+    }
+  });
+
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
