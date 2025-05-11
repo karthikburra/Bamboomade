@@ -207,11 +207,20 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       
       const factsData = await factsResponse.json();
       
+      // Map the returned facts to the expected format (backend returns "fact", frontend expects "content")
+      const mappedFacts = factsData.facts ? factsData.facts.map(item => ({
+        id: item.id,
+        content: item.fact // Map "fact" field to "content"
+      })) : [];
+      
+      console.log('Received facts:', factsData.facts);
+      console.log('Mapped facts:', mappedFacts);
+      
       // TODO: Add endpoints for events and blog content extraction
       // For now, we're only handling facts which are already implemented
       
       setSourceExtractedData({
-        facts: factsData.facts || [],
+        facts: mappedFacts,
         events: [], // Will be populated when backend endpoint is available
         blogContent: [], // Will be populated when backend endpoint is available
         loading: false
