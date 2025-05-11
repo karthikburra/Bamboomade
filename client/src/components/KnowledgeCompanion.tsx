@@ -112,6 +112,17 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     "Add facts about bamboo sustainability"
   ];
 
+  // State for all knowledge sources
+  const [allSources, setAllSources] = useState<Array<{
+    id: number,
+    title: string,
+    type: string,
+    contentType: string,
+    source: string | null,
+    createdAt: string,
+    selected: boolean
+  }>>([]);
+  
   // State for uploaded sources in the current session
   const [uploadedSources, setUploadedSources] = useState<Array<{
     id: number,
@@ -121,6 +132,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     timestamp: Date,
     selected: boolean
   }>>([]);
+  
+  // Combine both sources for display
+  const combinedSources = [...allSources, ...uploadedSources];
 
   // Dummy studio data that would come from the backend
   const studioData = {
@@ -132,10 +146,65 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     ]
   };
   
+  // Fetch all knowledge sources from the API
+  const fetchKnowledgeSources = async () => {
+    try {
+      const response = await fetch('/api/ai-knowledge');
+      if (!response.ok) {
+        throw new Error('Failed to fetch knowledge sources');
+      }
+      
+      const data = await response.json();
+      
+      // Map API data to our source format
+      const sources = data.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        type: item.mediaType || getFileTypeFromContentType(item.contentType),
+        contentType: item.contentType,
+        source: item.source,
+        createdAt: item.createdAt,
+        selected: true
+      }));
+      
+      setAllSources(sources);
+    } catch (error) {
+      console.error('Error fetching knowledge sources:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load knowledge sources.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  // Helper to determine file type icon from content type
+  const getFileTypeFromContentType = (contentType: string): string => {
+    switch (contentType) {
+      case 'book':
+      case 'article':
+        return 'pdf';
+      case 'social-media':
+      case 'social':
+        return 'link';
+      case 'webpage':
+        return 'link';
+      case 'event':
+        return 'event';
+      default:
+        return 'file';
+    }
+  };
+
   // Scroll to bottom whenever chat history updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
+  
+  // Fetch knowledge sources when component mounts
+  useEffect(() => {
+    fetchKnowledgeSources();
+  }, []);
   
   // If the user presses Enter in the textarea, submit the form
   const handleSubmit = (e: React.FormEvent) => {
@@ -204,7 +273,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     const filename = file.name;
     const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
     
-    // Add a message to chat
+    // Add a message to chat about the file being analyzed
     setChatHistory(prev => [...prev, { 
       role: 'assistant', 
       content: `I've analyzed "${filename}". ${
@@ -216,11 +285,18 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       id: `upload-${Date.now()}`
     }]);
     
-    // Since we can't add to the real knowledge base without admin rights,
-    // we add an explanation message to the chat
+    // Let the user know that their file is now available in the sources list
     setChatHistory(prev => [...prev, { 
       role: 'assistant', 
-      content: `Note: To permanently add this content to the BambooMade knowledge base, please contact an administrator with admin access rights. I'll do my best to answer questions about bamboo based on my existing knowledge.`,
+      content: `Your file "${filename}" has been added to "YOUR UPLOADS" in the sources list. This file will be available for reference during our current conversation, but only exists in this session.`,
+      timestamp: new Date(),
+      id: `upload-status-${Date.now()}`
+    }]);
+    
+    // Explain the difference between session uploads and knowledge base
+    setChatHistory(prev => [...prev, { 
+      role: 'assistant', 
+      content: `Note: Your uploaded content is temporary and only available for this session. "KNOWLEDGE BASE" sources are permanent and available for all users. To permanently add your content to the BambooMade knowledge base, please contact an administrator.`,
       timestamp: new Date(),
       id: `upload-note-${Date.now()}`
     }]);
@@ -411,37 +487,79 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="flex-1 overflow-y-auto p-2">
-            {uploadedSources.length === 0 ? (
+            {combinedSources.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
                 <FileText className="h-10 w-10 mb-2 opacity-40" />
-                <p className="text-xs text-center">Files added will appear here. Upload a file to get started.</p>
+                <p className="text-xs text-center">No data sources available. Upload a file to get started.</p>
               </div>
             ) : (
-              uploadedSources.map(source => (
-                <div key={source.id} className="flex items-center p-2 rounded hover:bg-gray-800 mb-1">
-                  <div className="flex-shrink-0 mr-2 text-blue-400">
-                    {source.type === 'pdf' ? (
-                      <FileText className="h-4 w-4" />
-                    ) : source.type === 'txt' || source.type === 'md' ? (
-                      <FileText className="h-4 w-4" />
-                    ) : (
-                      <File className="h-4 w-4" />
-                    )}
+              <div className="space-y-2">
+                {/* Show database sources */}
+                {allSources.length > 0 && (
+                  <div className="py-1">
+                    <h3 className="text-xs text-gray-400 font-semibold mb-2 px-2">KNOWLEDGE BASE</h3>
+                    {allSources.map(source => (
+                      <div key={`db-${source.id}`} className="flex items-center p-2 rounded hover:bg-gray-800 mb-1">
+                        <div className="flex-shrink-0 mr-2 text-blue-400">
+                          {source.type === 'pdf' ? (
+                            <FileText className="h-4 w-4" />
+                          ) : source.type === 'link' ? (
+                            <LinkIcon className="h-4 w-4" />
+                          ) : source.type === 'event' ? (
+                            <Calendar className="h-4 w-4" />
+                          ) : (
+                            <File className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="flex-1 text-xs text-gray-300 overflow-hidden">
+                          <div className="truncate">{source.title}</div>
+                          <div className="text-xs text-gray-500">{source.contentType}</div>
+                        </div>
+                        <div className="ml-auto">
+                          <Input 
+                            type="checkbox" 
+                            className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                            checked={source.selected}
+                            readOnly
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex-1 text-xs text-gray-300 overflow-hidden">
-                    <div className="truncate">{source.title}</div>
-                    <div className="text-xs text-gray-500">{source.size}</div>
+                )}
+                
+                {/* Show session-uploaded sources */}
+                {uploadedSources.length > 0 && (
+                  <div className="py-1">
+                    <h3 className="text-xs text-gray-400 font-semibold mb-2 px-2">YOUR UPLOADS</h3>
+                    {uploadedSources.map(source => (
+                      <div key={`upload-${source.id}`} className="flex items-center p-2 rounded hover:bg-gray-800 mb-1">
+                        <div className="flex-shrink-0 mr-2 text-amber-400">
+                          {source.type === 'pdf' ? (
+                            <FileText className="h-4 w-4" />
+                          ) : source.type === 'txt' || source.type === 'md' ? (
+                            <FileText className="h-4 w-4" />
+                          ) : (
+                            <File className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="flex-1 text-xs text-gray-300 overflow-hidden">
+                          <div className="truncate">{source.title}</div>
+                          <div className="text-xs text-gray-500">{source.size}</div>
+                        </div>
+                        <div className="ml-auto">
+                          <Input 
+                            type="checkbox" 
+                            className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                            checked={source.selected}
+                            readOnly
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="ml-auto">
-                    <Input 
-                      type="checkbox" 
-                      className="h-4 w-4 rounded border-gray-700 bg-gray-800"
-                      checked={source.selected}
-                      readOnly
-                    />
-                  </div>
-                </div>
-              ))
+                )}
+              </div>
             )}
           </div>
         </div>
