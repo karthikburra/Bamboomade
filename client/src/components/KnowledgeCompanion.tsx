@@ -192,6 +192,10 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   
   // Combine both sources for display
   const combinedSources = [...allSources, ...uploadedSources];
+  
+  // Debug if anything is selected
+  const hasSelectedSource = allSources.some(s => s.selected) || uploadedSources.some(s => s.selected);
+  console.log('Has selected source:', hasSelectedSource, 'Selected ID:', selectedSourceId);
 
   // State for extracted data from selected sources
   const [sourceExtractedData, setSourceExtractedData] = useState<{
@@ -240,44 +244,17 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         console.log('Mapped facts:', mappedFacts);
       }
       
-      // For now, we're only handling facts which are already implemented
-      // Add some mock events and blog content for demonstration purposes
-      const mockEvents = [
-        { 
-          id: 1001,
-          title: 'Bamboo Workshop', 
-          date: '2025-06-15', 
-          description: 'Learn about sustainable bamboo architecture techniques',
-          saved: false
-        },
-        { 
-          id: 1002,
-          title: 'Bamboo Crafting Exhibition', 
-          date: '2025-07-10', 
-          description: 'Showcasing innovative bamboo designs from around the world',
-          saved: false
-        }
-      ];
+      // Set empty arrays for events and blog content (not implemented yet)
+      const sourceEvents: { id?: number; title: string; date: string; description: string; saved?: boolean }[] = [];
+      const sourceBlogContent: { id?: number; title: string; summary: string; saved?: boolean }[] = [];
       
-      const mockBlogContent = [
-        {
-          id: 2001,
-          title: 'The Future of Bamboo in Modern Architecture',
-          summary: 'Exploring how bamboo is becoming a cornerstone of sustainable building practices',
-          saved: false
-        },
-        {
-          id: 2002,
-          title: 'Bamboo vs Traditional Materials: A Comparison',
-          summary: 'Analyzing the structural properties of bamboo compared to steel, concrete, and wood',
-          saved: false
-        }
-      ];
+      // Only use facts from the actual API response
+      console.log('Setting extracted data with facts:', mappedFacts);
       
       setSourceExtractedData({
         facts: mappedFacts,
-        events: mockEvents, // Will be replaced with actual API data when available
-        blogContent: mockBlogContent, // Will be replaced with actual API data when available
+        events: sourceEvents,
+        blogContent: sourceBlogContent,
         loading: false
       });
     } catch (error) {
@@ -884,10 +861,10 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           <div className="flex-1 overflow-y-auto p-0 bg-gray-900 min-h-[400px]">
             {selectedSourceId ? (
               <div className="p-4">
-                <div className="mb-4">
-                  <h3 className="text-md font-medium text-gray-200">Extracted Content</h3>
+                <div className="mb-4 border-l-4 border-amber-500 pl-3">
+                  <h3 className="text-md font-medium text-gray-200">Source Content View</h3>
                   <p className="text-sm text-gray-400">
-                    Content automatically extracted from the selected source. 
+                    Viewing content from source #{selectedSourceId}. 
                     Use the action buttons to add content to the knowledge database.
                   </p>
                 </div>
@@ -1064,8 +1041,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                   <div className="text-center p-8 bg-gray-800/30 rounded-md border border-gray-800">
                     <FileTextIcon className="h-12 w-12 mx-auto text-gray-600 mb-2" />
                     <h3 className="text-gray-300 text-sm font-medium mb-1">No Content Found</h3>
-                    <p className="text-gray-400 text-xs mb-3">
+                    <p className="text-gray-400 text-xs mb-1">
                       No extractable content was found in this source.
+                    </p>
+                    <p className="text-gray-400 text-xs mb-3">
+                      Source ID: {selectedSourceId} | Selected: {hasSelectedSource ? 'Yes' : 'No'}
                     </p>
                     <Button 
                       variant="outline" 
@@ -1085,13 +1065,30 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                 )}
               </div>
             ) : (
-              <div className="divide-y divide-gray-800">
-                {chatHistory.map((msg, idx) => (
-                  msg.role === 'user' 
-                    ? renderUserMessage(msg, idx) 
-                    : renderAssistantMessage(msg, idx)
-                ))}
-                <div ref={messagesEndRef} />
+              <div>
+                <div className="bg-gray-800/50 m-4 p-3 mb-4 rounded-md border border-gray-700">
+                  <div className="flex items-center mb-2">
+                    <Info className="h-4 w-4 text-blue-400 mr-2" />
+                    <h3 className="text-sm font-medium text-gray-200">Knowledge Source Selection</h3>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-3">
+                    Select a knowledge source from the left panel to view and extract its content. You can add facts, events, 
+                    and blog content to the knowledge database.
+                  </p>
+                  <div className="flex items-center text-xs text-amber-400">
+                    <ArrowLeft className="h-3 w-3 mr-1" />
+                    <span>Click a source radio button to begin</span>
+                  </div>
+                </div>
+                
+                <div className="divide-y divide-gray-800">
+                  {chatHistory.map((msg, idx) => (
+                    msg.role === 'user' 
+                      ? renderUserMessage(msg, idx) 
+                      : renderAssistantMessage(msg, idx)
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
               </div>
             )}
           </div>
