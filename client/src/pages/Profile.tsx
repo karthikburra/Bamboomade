@@ -199,21 +199,21 @@ const Profile: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <p className="text-sm text-gray-400">Username</p>
-                            <p className="text-gray-200">{user.username}</p>
+                            <p className="text-gray-200">{userData.username}</p>
                           </div>
                           <div className="space-y-2">
                             <p className="text-sm text-gray-400">Email</p>
-                            <p className="text-gray-200">{user.email}</p>
+                            <p className="text-gray-200">{userData.email}</p>
                           </div>
                           <div className="space-y-2">
                             <p className="text-sm text-gray-400">Role</p>
                             <p className="text-gray-200">
-                              {user.isAdmin ? "Administrator" : "Member"}
+                              {userData.isAdmin ? "Administrator" : "Member"}
                             </p>
                           </div>
                           <div className="space-y-2">
                             <p className="text-sm text-gray-400">AI Tokens</p>
-                            <p className="text-gray-200">{user.tokens}</p>
+                            <p className="text-gray-200">{userData.tokens}</p>
                           </div>
                         </div>
                       </div>
@@ -255,7 +255,7 @@ const Profile: React.FC = () => {
                         ) : sessions && sessions.length > 0 ? (
                           <ScrollArea className="h-[450px] rounded-md border border-gray-800">
                             <div className="space-y-4 p-4">
-                              {sessions.map((session: any) => (
+                              {sessions.map((session: UserSession) => (
                                 <Card key={session.id} className="bg-gray-800 border-gray-700">
                                   <CardHeader className="pb-2">
                                     <div className="flex justify-between items-start">
