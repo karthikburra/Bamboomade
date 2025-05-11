@@ -564,29 +564,37 @@ export async function getMultipleBambooFacts(count: number = 3, date?: Date): Pr
       return [];
     }
     
-    // Extract facts in parallel
+    // Extract facts directly from the content without AI generation
     const factPromises = selectedContent.map(async (content) => {
       try {
-        const factResponse = await openai.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: `You are a helpful assistant that extracts one interesting fact about bamboo from the given content.
-              The fact should be concise, engaging, and educational - something that would surprise or fascinate someone learning about bamboo.
-              Return ONLY the interesting fact, nothing else. Keep it under 100 words and make it sound natural and engaging.`
-            },
-            {
-              role: "user",
-              content: `Extract one interesting fact about bamboo from this content:\n\n${content.content}`
-            }
-          ]
-        });
+        // Extract bamboo-related sentences directly from the content
+        const contentText = content.content;
+        const sentences = contentText.match(/[^.!?]+[.!?]+/g) || [];
         
-        const extractedFact = factResponse.choices[0].message.content?.trim();
+        // Find sentences that mention bamboo
+        const bambooSentences = sentences.filter(sentence => 
+          sentence.toLowerCase().includes('bamboo') && 
+          sentence.length <= 200 && 
+          sentence.length >= 30
+        );
         
-        if (!extractedFact) {
+        // If no bamboo sentences found, return null
+        if (bambooSentences.length === 0) {
           return null;
+        }
+        
+        // Select a sentence based on the date to maintain consistency
+        const targetDateForFact = date || new Date();
+        const dayOfYearForFact = Math.floor((targetDateForFact.getTime() - new Date(targetDateForFact.getFullYear(), 0, 0).getTime()) / 86400000);
+        const sentenceIndex = dayOfYearForFact % bambooSentences.length;
+        
+        // Clean up the selected sentence
+        let extractedFact = bambooSentences[sentenceIndex].trim();
+        
+        // Ensure the fact starts with a capital letter and ends with proper punctuation
+        extractedFact = extractedFact.charAt(0).toUpperCase() + extractedFact.slice(1);
+        if (!extractedFact.match(/[.!?]$/)) {
+          extractedFact += '.';
         }
         
         return {
@@ -649,39 +657,42 @@ export async function getInterestingBambooFact(count: number = 1, date?: Date): 
     
     // Use the provided date or current date to select a fact that changes every 15 days
     // This is a simple rotation mechanism
-    const targetDate = date || new Date();
-    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / 86400000);
-    const factIndex = Math.floor(dayOfYear / 15) % bambooContent.length;
+    let dateToUse = date || new Date();
+    let dayNum = Math.floor((dateToUse.getTime() - new Date(dateToUse.getFullYear(), 0, 0).getTime()) / 86400000);
+    const factIndex = Math.floor(dayNum / 15) % bambooContent.length;
     
     const selectedFact = bambooContent[factIndex];
     
-    // Use OpenAI to extract an interesting fact from the content
-    const openai = getOpenAI();
-    if (!openai) {
-      console.error('OpenAI not available');
+    // Extract bamboo-related sentence directly from content without AI
+    // Extract bamboo-related sentences directly from the content
+    const contentText = selectedFact.content;
+    const sentences = contentText.match(/[^.!?]+[.!?]+/g) || [];
+    
+    // Find sentences that mention bamboo
+    const bambooSentences = sentences.filter(sentence => 
+      sentence.toLowerCase().includes('bamboo') && 
+      sentence.length <= 200 && 
+      sentence.length >= 30
+    );
+    
+    // If no bamboo sentences found, return null
+    if (bambooSentences.length === 0) {
       return null;
     }
     
-    const factResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a helpful assistant that extracts one interesting fact about bamboo from the given content.
-          The fact should be concise, engaging, and educational - something that would surprise or fascinate someone learning about bamboo.
-          Return ONLY the interesting fact, nothing else. Keep it under 120 words and make it sound natural and engaging.`
-        },
-        {
-          role: "user",
-          content: `Extract one interesting fact about bamboo from this content:\n\n${selectedFact.content}`
-        }
-      ]
-    });
+    // Select a sentence based on the date to maintain consistency
+    // Calculate day of year for consistent sentence selection
+    const targetDateForSentence = date || new Date();
+    const dayOfYearForSentence = Math.floor((targetDateForSentence.getTime() - new Date(targetDateForSentence.getFullYear(), 0, 0).getTime()) / 86400000);
+    const sentenceIndex = dayOfYearForSentence % bambooSentences.length;
     
-    const extractedFact = factResponse.choices[0].message.content?.trim();
+    // Clean up the selected sentence
+    let extractedFact = bambooSentences[sentenceIndex].trim();
     
-    if (!extractedFact) {
-      return null;
+    // Ensure the fact starts with a capital letter and ends with proper punctuation
+    extractedFact = extractedFact.charAt(0).toUpperCase() + extractedFact.slice(1);
+    if (!extractedFact.match(/[.!?]$/)) {
+      extractedFact += '.';
     }
     
     return {
