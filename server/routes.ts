@@ -2338,6 +2338,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Knowledge Companion Chat - For admin to add content through AI chat
+  app.post("/api/knowledge-companion/chat", isAdmin, async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+      
+      // Get OpenAI client
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI service not available' });
+      }
+      
+      // First, analyze if this message contains content that should be added to knowledge base
+      const systemPrompt = `You are an AI Knowledge Assistant for BambooMade, a company focused on bamboo architecture and sustainable design.
+      
+Your role is to help administrators add high-quality content to the knowledge base. Follow these guidelines:
+
+1. Determine if the user's message contains valuable information about bamboo, architecture, sustainable design, or events that should be added to the knowledge base.
+2. For informational content, suggest adding it as a "document" type with an appropriate title.
+3. For event information, suggest adding it as an "event" type.
+4. For website content, suggest adding it as a "webpage" type.
+5. For user-authored content, suggest adding it as a "manual" type.
+
+Only respond with "true" for shouldAddToKnowledge if the message contains substantial, informative content about bamboo or related topics.
+
+Respond in JSON format with:
+{
+  "response": "Your friendly, helpful response to the user",
+  "shouldAddToKnowledge": boolean,
+  "suggestion": "If shouldAddToKnowledge is true, suggest how to format and categorize the content",
+  "isDuplicate": boolean // Set to true if this appears to be content already likely in the system
+}`;
+
+      // Send the user message to OpenAI to analyze if it should be added to knowledge base
+      const knowledgeAnalysisResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ],
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse the AI response
+      let aiResponse;
+      try {
+        aiResponse = JSON.parse(knowledgeAnalysisResponse.choices[0].message.content);
+      } catch (error) {
+        console.error("Error parsing AI response:", error);
+        aiResponse = {
+          response: "I had trouble processing that. Could you try rephrasing your message?",
+          shouldAddToKnowledge: false,
+          suggestion: null,
+          isDuplicate: false
+        };
+      }
+      
+      // Generate a default response if the AI didn't provide one
+      if (!aiResponse.response) {
+        aiResponse.response = "Thank you for sharing that information. Would you like me to add it to our knowledge base?";
+      }
+      
+      return res.json({
+        response: aiResponse.response,
+        shouldAddToKnowledge: aiResponse.shouldAddToKnowledge,
+        suggestion: aiResponse.suggestion,
+        isDuplicate: aiResponse.isDuplicate
+      });
+      
+    } catch (error: any) {
+      console.error('Knowledge companion chat error:', error);
+      return res.status(500).json({ error: `Failed to process message: ${error.message}` });
+    }
+  });
+  
+  // Add content to knowledge base from AI chat
+  app.post("/api/ai-knowledge/from-chat", isAdmin, async (req, res) => {
+    try {
+      const { userMessage, aiSuggestion } = req.body;
+      
+      if (!userMessage) {
+        return res.status(400).json({ error: 'User message is required' });
+      }
+      
+      if (!req.session.adminUser || !req.session.adminUser.id) {
+        return res.status(401).json({ error: 'Admin authentication required' });
+      }
+      
+      // Get OpenAI client
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI service not available' });
+      }
+      
+      // Use GPT-4o to format the content properly for the knowledge base
+      const systemPrompt = `You are formatting content for a bamboo architecture knowledge base.
+      
+Format the user's message into structured knowledge content suitable for a database. Extract or generate:
+1. A clear, concise title (max 100 chars)
+2. Well-formatted content preserving the key information
+3. A content type: "document", "event", "webpage", or "manual"
+4. A source URL if mentioned (or null)
+
+Respond in this format EXACTLY:
+Title: [extracted title]
+Content: [formatted content]
+Content Type: [document|event|webpage|manual]
+Source: [source URL or null]`;
+
+      // Send the user message to OpenAI to format it for the knowledge base
+      const contentFormattingResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+          { role: "assistant", content: aiSuggestion || "Please format this for our knowledge base." }
+        ]
+      });
+      
+      // Get the AI response
+      const aiResponse = contentFormattingResponse.choices[0].message.content;
+      
+      // Parse the formatted content
+      let addedContent = null;
+      
+      // Extract values using regex
+      const titleMatch = aiResponse.match(/Title:\s*([^\n]+)/i);
+      const contentMatch = aiResponse.match(/Content:\s*([^]*)(?=(Content Type|Source|$))/i);
+      const contentTypeMatch = aiResponse.match(/Content Type:\s*([^\n]+)/i);
+      const sourceMatch = aiResponse.match(/Source:\s*([^\n]+)/i);
+      
+      if (titleMatch && contentMatch) {
+        const title = titleMatch[1].trim();
+        let content = contentMatch[1].trim();
+        const contentType = contentTypeMatch ? contentTypeMatch[1].trim().toLowerCase() : "document";
+        const source = sourceMatch ? sourceMatch[1].trim() : null;
+        
+        // Only add if we have meaningful content
+        if (title.length > 5 && content.length > 20) {
+          // Create knowledge content
+          addedContent = await storage.createAiKnowledgeContent({
+            title,
+            content,
+            contentType: contentType === "document" || contentType === "event" || contentType === "webpage" || contentType === "manual" 
+              ? contentType 
+              : "document",
+            source: source === "null" ? null : source,
+            status: "pending", // Set status to pending by default for admin review
+            createdBy: req.session.adminUser.id
+          });
+          
+          console.log(`Added new AI knowledge content: ${title}`);
+        }
+      }
+      
+      res.status(200).json({
+        message: aiResponse,
+        addedContent
+      });
+      
+    } catch (error: any) {
+      console.error('Error adding knowledge from chat:', error);
+      return res.status(500).json({ 
+        error: `Failed to add knowledge content: ${error.message}`,
+        message: "Failed to add this content to the knowledge base."
+      });
+    }
+  });
+  
 
   
   // AI Training Chat for Admins (Knowledge Management)

@@ -376,13 +376,23 @@ export default function AIKnowledgeDatabase() {
     <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-amber-400">AI Knowledge Database</h1>
-        <Button 
-          onClick={() => setIsAddDialogOpen(true)}
-          className="bg-amber-600 hover:bg-amber-700 text-white"
-        >
-          <UploadCloud className="mr-2 h-4 w-4" />
-          Add Content
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => navigate("/admin-ai-knowledge-chat")}
+            variant="outline"
+            className="border-amber-700 text-amber-400 hover:border-amber-600 hover:bg-amber-950"
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            Knowledge Assistant
+          </Button>
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)}
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <UploadCloud className="mr-2 h-4 w-4" />
+            Add Content
+          </Button>
+        </div>
       </div>
       
       <AdminTabs value="database">
