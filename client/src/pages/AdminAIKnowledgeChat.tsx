@@ -58,18 +58,18 @@ const AdminAIKnowledgeChat = () => {
         <title>Knowledge Assistant | BambooMade Admin</title>
       </Helmet>
       
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto py-8 px-4 bg-gray-950 min-h-screen text-gray-100">
         <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
           <div>
-            <h1 className="text-2xl font-bold mb-2 text-zinc-100">Knowledge Assistant</h1>
-            <p className="text-zinc-400 text-sm mb-4">
+            <h1 className="text-2xl font-bold mb-2 text-amber-400">Knowledge Assistant</h1>
+            <p className="text-gray-300 text-sm mb-4">
               Use AI to help analyze and add content to the knowledge base
             </p>
           </div>
           
           <Button 
             variant="outline" 
-            className="mb-4 sm:mb-0"
+            className="mb-4 sm:mb-0 border-amber-700 text-amber-400 hover:border-amber-600 hover:bg-amber-950"
             onClick={() => navigate("/ai-knowledge-database")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

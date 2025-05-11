@@ -227,7 +227,7 @@ const AdminAIChat = () => {
   };
   
   return (
-    <div className="flex flex-col h-[calc(100vh-220px)] min-h-[500px] bg-gray-950 rounded-lg border border-gray-800 shadow-xl">
+    <div className="flex flex-col h-[calc(100vh-220px)] min-h-[500px] bg-gray-950 rounded-lg border border-amber-800/40 shadow-xl">
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
@@ -238,8 +238,8 @@ const AdminAIChat = () => {
             }`}
           >
             {message.role === "assistant" && (
-              <Avatar className="h-8 w-8 border border-amber-600/30 bg-gray-900">
-                <AvatarFallback className="bg-amber-900/20 text-amber-500">
+              <Avatar className="h-8 w-8 border border-amber-600/40 bg-gray-900">
+                <AvatarFallback className="bg-amber-950 text-amber-500">
                   <Bot size={16} />
                 </AvatarFallback>
               </Avatar>
@@ -248,10 +248,10 @@ const AdminAIChat = () => {
             <div 
               className={`rounded-lg px-4 py-2 max-w-[85%] ${
                 message.role === "user"
-                  ? "bg-amber-800/30 text-amber-100 border border-amber-800/30"
+                  ? "bg-amber-900/40 text-amber-100 border border-amber-800/50"
                   : message.isThinking
-                  ? "bg-gray-800/50 text-gray-300 border border-gray-700"
-                  : "bg-gray-800 text-gray-200 border border-gray-700"
+                  ? "bg-gray-900 text-gray-300 border border-gray-800"
+                  : "bg-gray-900 text-gray-200 border border-gray-800"
               }`}
             >
               {message.isThinking ? (
@@ -287,8 +287,8 @@ const AdminAIChat = () => {
             </div>
 
             {message.role === "user" && (
-              <Avatar className="h-8 w-8 border border-amber-600/30 bg-gray-900">
-                <AvatarFallback className="bg-amber-900/20 text-amber-500">
+              <Avatar className="h-8 w-8 border border-amber-600/40 bg-gray-900">
+                <AvatarFallback className="bg-amber-950 text-amber-500">
                   <UserCircle2 size={16} />
                 </AvatarFallback>
               </Avatar>
@@ -299,13 +299,13 @@ const AdminAIChat = () => {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-gray-800 p-4">
+      <div className="border-t border-amber-800/30 p-4 bg-gray-950">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Textarea
             placeholder="Share information about bamboo, projects, or events..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="flex-1 min-h-[60px] max-h-[200px] bg-gray-900 border-gray-700 focus-visible:ring-amber-500"
+            className="flex-1 min-h-[60px] max-h-[200px] bg-gray-900 border-amber-800/30 text-gray-100 focus-visible:ring-amber-500"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -316,7 +316,7 @@ const AdminAIChat = () => {
           <Button 
             type="submit" 
             size="icon" 
-            className="bg-amber-600 hover:bg-amber-700 text-white h-[60px] w-[60px]"
+            className="bg-amber-800 hover:bg-amber-700 text-white h-[60px] w-[60px]"
             disabled={isLoading || !inputValue.trim()}
           >
             {isLoading ? (
@@ -333,17 +333,17 @@ const AdminAIChat = () => {
         open={addToKnowledgeDialogOpen} 
         onOpenChange={setAddToKnowledgeDialogOpen}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-gray-900 border-amber-800/30 text-gray-100">
           <AlertDialogHeader>
-            <AlertDialogTitle>Add to Knowledge Base?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-amber-400">Add to Knowledge Base?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               This information appears to be valuable for the knowledge base. Would you like to add it?
             </AlertDialogDescription>
           </AlertDialogHeader>
           
           <div className="mt-2 mb-4">
-            <Card className="bg-gray-900 border-gray-700">
-              <CardContent className="p-3 text-sm text-gray-300">
+            <Card className="bg-gray-950 border-amber-800/40">
+              <CardContent className="p-3 text-sm text-gray-200">
                 <p className="font-medium mb-1 text-amber-400">Content to add:</p>
                 <p className="whitespace-pre-wrap">{currentMessage}</p>
               </CardContent>
@@ -351,11 +351,16 @@ const AdminAIChat = () => {
           </div>
           
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel 
+              disabled={isLoading}
+              className="border-amber-800/40 bg-gray-800 text-gray-200 hover:bg-gray-700"
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={addToKnowledgeBase}
               disabled={isLoading}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className="bg-amber-700 hover:bg-amber-600 text-white"
             >
               {isLoading ? (
                 <>
