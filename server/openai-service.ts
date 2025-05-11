@@ -354,7 +354,7 @@ Note: Participants are encouraged to use public transportation and avoid bringin
     // Send request to OpenAI with reliable configuration that has been tested to work
     console.log("Sending request to OpenAI API...");
     const chatCompletion = await (openai as OpenAI).chat.completions.create({
-      model: "gpt-3.5-turbo", // Use reliable model that has been verified to work
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
         { role: "system", content: systemMessage },
         { role: "user", content: message }
@@ -457,7 +457,7 @@ export async function processMessageForTraining(message: string): Promise<string
     // First determine if the message is relevant to bamboo or requires a response
     console.log("Analyzing WhatsApp message with OpenAI API...");
     const analysisCompletion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Use a more accessible model for initial testing
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
         { 
           role: "system", 
@@ -591,7 +591,7 @@ export async function convertWhatsAppToTrainingData(): Promise<number> {
     for (const item of relevantData) {
       // Generate a Q&A pair and category from the message (using simpler model)
       const trainingCompletion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo", // Use reliable model with consistent results
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
         messages: [
           { 
             role: "system", 
