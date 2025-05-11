@@ -153,6 +153,8 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       facts: [],
       events: [],
       blogContent: [],
+      documents: [],
+      projects: [],
       loading: true
     });
     
@@ -229,30 +231,46 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     }>;
   }
   
-  // Fetch facts and extracted content from the selected source
+  // Extract content from selected source using Google Gemini API
   const fetchSourceExtractedData = async (sourceId: number) => {
-    console.log('Fetching data for source:', sourceId);
+    console.log('Extracting data for source:', sourceId);
     
     // Start with loading state and clear previous data
     setSourceExtractedData({
       facts: [],
       events: [],
       blogContent: [],
+      documents: [],
+      projects: [],
       loading: true
     });
     
     try {
-      // Fetch facts from the source
-      console.log(`Making API request to /api/ai-knowledge/${sourceId}/facts`);
-      const factsResponse = await fetch(`/api/ai-knowledge/${sourceId}/facts`);
+      // First, find the selected source from all sources
+      const selectedSource = [...allSources, ...uploadedSources].find(s => s.id === sourceId);
+      
+      if (!selectedSource) {
+        throw new Error(`Source with ID ${sourceId} not found`);
+      }
+      
+      // Use new Gemini-powered extraction endpoint
+      console.log(`Making API request to /api/extract-content-url with URL: ${selectedSource.source}`);
+      
+      const extractionResponse = await fetch('/api/extract-content-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url: selectedSource.source })
+      });
       
       // Handle authentication errors
-      if (factsResponse.status === 401) {
-        console.log('Authentication required to access facts');
+      if (extractionResponse.status === 401) {
+        console.log('Authentication required to extract content');
         
         toast({
           title: 'Authentication Required',
-          description: 'Please log in as an admin to view source facts.',
+          description: 'Please log in as an admin to extract content from sources.',
           variant: 'destructive',
         });
         
@@ -261,57 +279,57 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           facts: [],
           events: [],
           blogContent: [],
+          documents: [],
+          projects: [],
           loading: false
         });
         return;
       }
       
-      if (!factsResponse.ok) {
-        console.error(`API error: ${factsResponse.status} ${factsResponse.statusText}`);
-        throw new Error('Failed to fetch facts for this source');
+      if (!extractionResponse.ok) {
+        console.error(`API error: ${extractionResponse.status} ${extractionResponse.statusText}`);
+        throw new Error('Failed to extract content from this source');
       }
       
-      const factsData = await factsResponse.json() as FactsApiResponse;
-      console.log('API response received:', factsData);
-      
-      // Map the returned facts to the expected format (backend returns "fact", frontend expects "content")
-      const mappedFacts = factsData.facts ? factsData.facts.map((item: { id: number; fact: string }) => ({
-        id: item.id,
-        content: item.fact // Map "fact" field to "content"
-      })) : [];
-      
-      console.log('Mapped facts:', mappedFacts);
-      
-      // Set empty arrays for events and blog content (not implemented yet)
-      const sourceEvents: { id?: number; title: string; date: string; description: string; saved?: boolean }[] = [];
-      const sourceBlogContent: { id?: number; title: string; summary: string; saved?: boolean }[] = [];
+      // Get the extracted data in various categories
+      const extractionData = await extractionResponse.json();
+      console.log('Extracted content:', extractionData);
       
       // Show a toast notification if no data was found
-      if (mappedFacts.length === 0) {
+      if (!extractionData.facts.length && 
+          !extractionData.events.length && 
+          !extractionData.blogContent.length && 
+          !extractionData.documents.length && 
+          !extractionData.projects.length) {
         toast({
-          title: 'No facts found',
-          description: 'This source does not contain any extractable facts.',
+          title: 'No content extracted',
+          description: 'This source does not contain any extractable content, or the content requires authentication.',
           variant: 'default',
         });
       }
       
+      // Update UI with the extracted data
       setSourceExtractedData({
-        facts: mappedFacts,
-        events: sourceEvents,
-        blogContent: sourceBlogContent,
+        facts: extractionData.facts || [],
+        events: extractionData.events || [],
+        blogContent: extractionData.blogContent || [],
+        documents: extractionData.documents || [],
+        projects: extractionData.projects || [],
         loading: false
       });
     } catch (error) {
-      console.error('Error fetching source information:', error);
+      console.error('Error extracting content:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load extracted information from this source.',
+        description: 'Failed to extract content from this source. Please try again later.',
         variant: 'destructive',
       });
       setSourceExtractedData({
         facts: [],
         events: [],
         blogContent: [],
+        documents: [],
+        projects: [],
         loading: false
       });
     }
