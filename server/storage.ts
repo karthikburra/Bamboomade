@@ -30,6 +30,7 @@ export interface IStorage {
   // Project guidance operations
   getAllProjectGuidances(): Promise<ProjectGuidance[]>;
   getProjectGuidance(id: number): Promise<ProjectGuidance | undefined>;
+  getProjectGuidancesByEmail(email: string): Promise<ProjectGuidance[]>;
   createProjectGuidance(session: InsertProjectGuidance): Promise<ProjectGuidance>;
   updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined>;
@@ -232,6 +233,15 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in getProjectGuidance:", error);
       return undefined;
+    }
+  }
+  
+  async getProjectGuidancesByEmail(email: string): Promise<ProjectGuidance[]> {
+    try {
+      return await db.select().from(projectGuidances).where(eq(projectGuidances.email, email));
+    } catch (error) {
+      console.error("Database error in getProjectGuidancesByEmail:", error);
+      return [];
     }
   }
 

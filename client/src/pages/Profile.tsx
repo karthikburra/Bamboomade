@@ -14,18 +14,40 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
+interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  tokens: number;
+  isAdmin: boolean;
+  role: string;
+}
+
+interface UserSession {
+  id: number;
+  studentName: string;
+  email: string;
+  date: string;
+  duration: number;
+  topic: string;
+  notes: string | null;
+  status: string;
+  googleMeetLink: string | null;
+  paymentConfirmed: boolean;
+}
+
 const Profile: React.FC = () => {
   const [_, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Fetch current user data
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery<UserProfile>({
     queryKey: ["/api/auth/me"],
     enabled: true,
   });
 
   // Fetch user's sessions
-  const { data: sessions, isLoading: sessionsLoading } = useQuery({
+  const { data: sessions, isLoading: sessionsLoading } = useQuery<UserSession[]>({
     queryKey: ["/api/project-guidance/my-sessions"],
     enabled: !!user,
   });
@@ -63,6 +85,9 @@ const Profile: React.FC = () => {
   if (!user) {
     return null; // Will redirect to login
   }
+  
+  // Create a strongly typed user variable
+  const userData: UserProfile = user;
 
   // Calculate token usage
   const getInitials = (name: string) => {
@@ -90,12 +115,12 @@ const Profile: React.FC = () => {
                   <div className="flex flex-col items-center">
                     <Avatar className="h-24 w-24 mb-4 border-2 border-green-600">
                       <AvatarFallback className="bg-green-800 text-green-100 text-xl">
-                        {getInitials(user.username)}
+                        {getInitials(userData.username)}
                       </AvatarFallback>
                     </Avatar>
-                    <CardTitle className="text-xl text-center text-green-300">{user.username}</CardTitle>
+                    <CardTitle className="text-xl text-center text-green-300">{userData.username}</CardTitle>
                     <CardDescription className="text-green-500 text-center mt-1">
-                      {user.isAdmin ? "Administrator" : "Member"}
+                      {userData.isAdmin ? "Administrator" : "Member"}
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -103,11 +128,11 @@ const Profile: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex items-center text-gray-300">
                       <Mail className="h-4 w-4 mr-2 text-green-400" />
-                      {user.email}
+                      {userData.email}
                     </div>
                     <div className="flex items-center text-gray-300">
                       <Sparkles className="h-4 w-4 mr-2 text-amber-400" />
-                      {user.tokens} AI tokens remaining
+                      {userData.tokens} AI tokens remaining
                     </div>
                   </div>
 
