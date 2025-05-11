@@ -2731,6 +2731,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       const { 
         title, 
         content, 
+        rawContent,
         source, 
         contentType, 
         status,
@@ -2755,6 +2756,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       const contentData: any = {
         title,
         content,
+        rawContent: rawContent || null,
         source: source || null,
         contentType,
         status: status || "active",
@@ -2793,6 +2795,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       const { 
         title, 
         content, 
+        rawContent,
         source, 
         contentType, 
         status, 
