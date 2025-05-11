@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -142,6 +143,14 @@ const AdminCheck = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function AddKnowledge() {
+  const [, navigate] = useLocation();
+  
+  // Redirect to the new KnowledgeCompanion interface
+  useEffect(() => {
+    navigate("/ai-knowledge-management");
+  }, [navigate]);
+  
+  // Original code preserved below
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
