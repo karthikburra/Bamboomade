@@ -987,7 +987,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           
           <div className="flex-1 overflow-y-auto p-0 bg-gray-900 min-h-[400px]">
             {selectedSourceId ? (
-              // Source Content View
+              // Source Content View when a source is selected
               <div className="p-4">
                 <div className="mb-4 border-l-4 border-amber-500 pl-3">
                   <h3 className="text-md font-medium text-gray-200">Source Content View</h3>
