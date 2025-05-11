@@ -148,7 +148,15 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   const handleSourceSelection = (sourceId: number, sourceType: 'database' | 'uploaded') => {
     console.log(`Selecting source: ID=${sourceId}, Type=${sourceType}`);
     
-    // Update the selectedSourceType and selectedSourceId
+    // Force the UI state to update by showing loading state
+    setSourceExtractedData({
+      facts: [],
+      events: [],
+      blogContent: [],
+      loading: true
+    });
+    
+    // Update selectedSourceType and selectedSourceId
     setSelectedSourceType(sourceType);
     setSelectedSourceId(sourceId);
     
@@ -168,7 +176,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       }))
     );
     
-    // Make this really visible in the UI
+    // Show toast notification
     toast({
       title: 'Source Selected',
       description: `Now viewing content from source #${sourceId}`,
@@ -176,12 +184,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     
     // Fetch extracted information for the selected source
     if (sourceType === 'database') {
-      console.log(`Fetching data for source ID=${sourceId}`);
       fetchSourceExtractedData(sourceId);
     } else {
-      console.log(`Clearing data for uploaded source ID=${sourceId}`);
-      // For uploaded sources, we don't have extracted data yet in the database
-      // So we'll clear the extracted data
+      // For uploaded sources, clear the extracted data
       setSourceExtractedData({
         facts: [],
         events: [],
@@ -222,16 +227,28 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   
   // Fetch facts and extracted content from the selected source
   const fetchSourceExtractedData = async (sourceId: number) => {
-    setSourceExtractedData(prev => ({ ...prev, loading: true }));
+    console.log('Fetching data for source:', sourceId);
+    
+    // Start with loading state and clear previous data
+    setSourceExtractedData({
+      facts: [],
+      events: [],
+      blogContent: [],
+      loading: true
+    });
     
     try {
       // Fetch facts from the source
+      console.log(`Making API request to /api/ai-knowledge/${sourceId}/facts`);
       const factsResponse = await fetch(`/api/ai-knowledge/${sourceId}/facts`);
+      
       if (!factsResponse.ok) {
+        console.error(`API error: ${factsResponse.status} ${factsResponse.statusText}`);
         throw new Error('Failed to fetch facts for this source');
       }
       
       const factsData = await factsResponse.json() as FactsApiResponse;
+      console.log('API response received:', factsData);
       
       // Map the returned facts to the expected format (backend returns "fact", frontend expects "content")
       const mappedFacts = factsData.facts ? factsData.facts.map((item: { id: number; fact: string }) => ({
@@ -239,18 +256,20 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         content: item.fact // Map "fact" field to "content"
       })) : [];
       
-      // Remove logging in production
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Received facts:', factsData.facts);
-        console.log('Mapped facts:', mappedFacts);
-      }
+      console.log('Mapped facts:', mappedFacts);
       
       // Set empty arrays for events and blog content (not implemented yet)
       const sourceEvents: { id?: number; title: string; date: string; description: string; saved?: boolean }[] = [];
       const sourceBlogContent: { id?: number; title: string; summary: string; saved?: boolean }[] = [];
       
-      // Only use facts from the actual API response
-      console.log('Setting extracted data with facts:', mappedFacts);
+      // Show a toast notification if no data was found
+      if (mappedFacts.length === 0) {
+        toast({
+          title: 'No facts found',
+          description: 'This source does not contain any extractable facts.',
+          variant: 'default',
+        });
+      }
       
       setSourceExtractedData({
         facts: mappedFacts,
@@ -798,13 +817,16 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                           <div className="text-xs text-gray-500">{source.contentType}</div>
                         </div>
                         <div className="ml-auto">
-                          <Input 
-                            type="radio" 
-                            name="knowledgeSource"
-                            className="h-4 w-4 border-gray-700 bg-gray-800"
-                            checked={source.selected}
-                            onChange={() => handleSourceSelection(source.id, 'database')}
-                          />
+                          <div className="flex flex-col items-center">
+                            <Input 
+                              type="radio" 
+                              name="knowledgeSource"
+                              className="h-4 w-4 border-gray-700 bg-gray-800"
+                              checked={source.selected}
+                              onChange={() => handleSourceSelection(source.id, 'database')}
+                            />
+                            {source.selected && <div className="mt-1 w-1 h-1 rounded-full bg-amber-500"></div>}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -831,13 +853,16 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                           <div className="text-xs text-gray-500">{source.size}</div>
                         </div>
                         <div className="ml-auto">
-                          <Input 
-                            type="radio" 
-                            name="knowledgeSource"
-                            className="h-4 w-4 border-gray-700 bg-gray-800"
-                            checked={source.selected}
-                            onChange={() => handleSourceSelection(source.id, 'uploaded')}
-                          />
+                          <div className="flex flex-col items-center">
+                            <Input 
+                              type="radio" 
+                              name="knowledgeSource"
+                              className="h-4 w-4 border-gray-700 bg-gray-800"
+                              checked={source.selected}
+                              onChange={() => handleSourceSelection(source.id, 'uploaded')}
+                            />
+                            {source.selected && <div className="mt-1 w-1 h-1 rounded-full bg-amber-500"></div>}
+                          </div>
                         </div>
                       </div>
                     ))}
