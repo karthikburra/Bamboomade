@@ -18,6 +18,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -132,6 +133,110 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       ...prev,
       [id]: !prev[id]
     }));
+  };
+  
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (file.type === 'application/pdf' || 
+          file.type === 'text/plain' || 
+          file.type === 'text/markdown' || 
+          file.type.startsWith('audio/')) {
+        setSelectedFile(file);
+      } else {
+        toast({
+          title: 'Invalid file type',
+          description: 'Please upload a PDF, TXT, Markdown, or audio file.',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+  
+  // Trigger file input click
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  // Upload file to server
+  const uploadFile = async () => {
+    if (!selectedFile) return;
+    
+    setUploadStatus('uploading');
+    setUploadProgress(0);
+    
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('contentType', 'book'); // Default to book for PDFs
+    
+    try {
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
+      });
+      
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+          setUploadStatus('success');
+          
+          // Add success message to chat
+          setChatHistory(prev => [...prev, { 
+            role: 'assistant', 
+            content: `I've successfully processed "${selectedFile?.name}". The content has been added to the knowledge base.`,
+            timestamp: new Date(),
+            id: `upload-${Date.now()}`
+          }]);
+          
+          // Close modal and reset state
+          setShowAddSourceModal(false);
+          setSelectedFile(null);
+          setUploadProgress(0);
+          
+          toast({
+            title: 'Upload successful',
+            description: 'File has been processed and added to the knowledge base.',
+          });
+          
+          // Invalidate queries to refresh the knowledge base
+          queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+        } else {
+          setUploadStatus('error');
+          toast({
+            title: 'Upload failed',
+            description: `Error: ${xhr.statusText}`,
+            variant: 'destructive',
+          });
+        }
+      });
+      
+      xhr.addEventListener('error', () => {
+        setUploadStatus('error');
+        toast({
+          title: 'Upload failed',
+          description: 'There was an error connecting to the server.',
+          variant: 'destructive',
+        });
+      });
+      
+      xhr.open('POST', '/api/ai-knowledge/upload-file');
+      xhr.send(formData);
+    } catch (error) {
+      setUploadStatus('error');
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        variant: 'destructive',
+      });
+    }
   };
 
   // Chat with the companion
@@ -491,8 +596,12 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     notes: []
   };
   
-  // State for add source modal
+  // State for add source modal and file handling
   const [showAddSourceModal, setShowAddSourceModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="w-full h-full flex flex-col bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
@@ -561,12 +670,70 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                   </div>
                   <h3 className="text-lg font-medium mb-2">Upload sources</h3>
                   <p className="text-gray-400 text-sm mb-4">Drag and drop or choose file to upload</p>
-                  <Button variant="outline" className="border-gray-700 hover:bg-gray-800 text-blue-400">
-                    Choose file
-                  </Button>
-                  <p className="text-gray-500 text-xs mt-4">
-                    Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3)
-                  </p>
+                  
+                  {/* Hidden file input */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept=".pdf,.txt,.md,.markdown,.mp3,.wav,.m4a"
+                  />
+                  
+                  {selectedFile ? (
+                    <div className="space-y-3 w-full max-w-sm">
+                      <div className="border border-gray-700 rounded-md p-3 bg-gray-800">
+                        <div className="flex items-center">
+                          <FileText className="h-4 w-4 text-blue-400 mr-2" />
+                          <span className="text-sm text-gray-300 truncate max-w-[200px]">
+                            {selectedFile.name}
+                          </span>
+                          <span className="ml-auto text-xs text-gray-400">
+                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        </div>
+                        
+                        {uploadStatus === 'uploading' && (
+                          <div className="mt-2">
+                            <Progress value={uploadProgress} className="h-1 bg-gray-700" />
+                            <div className="text-xs text-gray-400 mt-1">
+                              Uploading... {uploadProgress}%
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 border-gray-700 hover:bg-gray-800 text-gray-400"
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={uploadFile}
+                          disabled={uploadStatus === 'uploading'}
+                        >
+                          {uploadStatus === 'uploading' ? 'Uploading...' : 'Upload PDF'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="border-gray-700 hover:bg-gray-800 text-blue-400"
+                        onClick={triggerFileInput}
+                      >
+                        Choose file
+                      </Button>
+                      <p className="text-gray-500 text-xs mt-4">
+                        Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3)
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
               
