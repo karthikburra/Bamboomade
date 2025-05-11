@@ -10,7 +10,17 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Lightbulb, RefreshCw, Save, Plus, Trash2 } from 'lucide-react';
+import { Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ContentItem {
   id: number;
@@ -40,6 +50,8 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExtractingFacts, setIsExtractingFacts] = useState(false);
   const [isSavingFact, setIsSavingFact] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [factToDelete, setFactToDelete] = useState<number | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -193,22 +205,33 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
     }
   };
   
+  // Function to open delete confirmation dialog
+  const confirmDeleteFact = (factId: number) => {
+    setFactToDelete(factId);
+    setIsDeleteDialogOpen(true);
+  };
+  
   // Delete a fact from the database
-  const deleteFact = async (factId: number) => {
+  const deleteFact = async () => {
+    if (!factToDelete) return;
+    
     try {
       setIsSavingFact(true);
       
       // Delete the fact
-      await apiRequest('DELETE', `/api/bamboo-facts/${factId}`);
+      await apiRequest('DELETE', `/api/bamboo-facts/${factToDelete}`);
       
       // Update the UI by removing the deleted fact
-      setExistingFacts(prev => prev.filter(f => f.id !== factId));
+      setExistingFacts(prev => prev.filter(f => f.id !== factToDelete));
       
       toast({
         title: 'Fact deleted',
-        description: 'The fact has been removed.',
+        description: 'The fact has been removed from this content source.',
       });
       
+      // Reset state
+      setFactToDelete(null);
+      setIsDeleteDialogOpen(false);
       setIsSavingFact(false);
     } catch (error: any) {
       toast({
@@ -406,7 +429,7 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                         <Button 
                           variant="outline"
                           size="sm"
-                          onClick={() => deleteFact(fact.id)}
+                          onClick={() => confirmDeleteFact(fact.id)}
                           disabled={isSavingFact}
                           className="text-xs border-destructive text-destructive hover:bg-destructive/10"
                         >
