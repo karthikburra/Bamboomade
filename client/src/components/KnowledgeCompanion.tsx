@@ -459,14 +459,31 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     "Add facts about bamboo sustainability"
   ];
 
+  // Define dummy source data for the UI - this would be replaced with real data
+  const sources = [
+    { id: 1, title: "Bamboo Architecture Design and Construction", selected: true },
+    { id: 2, title: "The Hardy Family and Bamboo Education", selected: true }
+  ];
+
+  // Dummy studio data that would come from the backend
+  const studioData = {
+    currentAnalysis: "Audio Overview",
+    extractedFacts: [
+      "Bamboo has excellent tensile strength compared to steel.",
+      "Bamboo grows 3-5 times faster than traditional timber.",
+      "Bamboo architecture reduces carbon footprint by 70%."
+    ],
+    notes: []
+  };
+
   return (
-    <Card className="w-full h-full flex flex-col bg-gray-900 border-gray-800 shadow-lg max-w-full overflow-hidden">
-      <CardHeader className="border-b border-gray-800 bg-gray-950 rounded-t-lg p-4 sm:p-6">
+    <div className="w-full h-full flex flex-col bg-gray-900 border-gray-800 shadow-lg overflow-hidden">
+      <div className="border-b border-gray-800 bg-gray-950 p-3 sm:p-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-white flex items-center text-lg sm:text-xl">
+          <div className="flex items-center text-lg sm:text-xl text-white">
             <BookText className="h-5 w-5 mr-2 text-amber-400" />
-            Bamboo Knowledge Notebook
-          </CardTitle>
+            <span>Building a Better World with Bamboo</span>
+          </div>
           
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-300 hover:bg-gray-800">
@@ -479,110 +496,253 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             </Button>
           </div>
         </div>
-        <CardDescription className="text-gray-400 text-xs sm:text-sm mt-2">
-          Add knowledge about bamboo architecture, sustainability, and techniques to our knowledge base.
-        </CardDescription>
-      </CardHeader>
+      </div>
       
-      <CardContent className="flex-1 overflow-y-auto p-0 bg-gray-900 min-h-[400px] h-[60vh] sm:h-[50vh] md:h-[60vh]">
-        <div className="divide-y divide-gray-800">
-          {chatHistory.map((msg, idx) => (
-            msg.role === 'user' 
-              ? renderUserMessage(msg, idx) 
-              : renderAssistantMessage(msg, idx)
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-      </CardContent>
-      
-      <CardFooter className="border-t border-gray-800 p-4 sm:p-6 bg-gray-950 rounded-b-lg">
-        <form onSubmit={handleSubmit} className="w-full space-y-4">
-          {/* Example queries */}
-          <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-            {exampleQueries.map((query, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                className="bg-gray-800 hover:bg-gray-700 text-amber-300 border-gray-700 text-xs whitespace-normal h-auto py-1"
-                onClick={() => setMessage(query)}
-              >
-                {query}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Column - Sources */}
+        <div className="hidden md:flex md:flex-col border-r border-gray-800 w-64 flex-shrink-0 bg-gray-900">
+          <div className="flex items-center justify-between p-3 border-b border-gray-800">
+            <span className="text-sm font-medium text-gray-300">Sources</span>
+            <div className="flex space-x-1">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Plus className="h-4 w-4 text-gray-400" />
               </Button>
-            ))}
+            </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative">
-              {isProcessing ? (
-                <div className="border border-gray-700 rounded-lg bg-gray-800 p-3 min-h-[100px]">
-                  <div className="animate-pulse flex space-x-2 items-center">
-                    <div className="rounded-full bg-gray-700 h-3 w-3"></div>
-                    <div className="rounded-full bg-gray-700 h-3 w-3"></div>
-                    <div className="rounded-full bg-gray-700 h-3 w-3"></div>
-                    <span className="text-gray-400 text-sm">Processing...</span>
-                  </div>
-                </div>
-              ) : (
-                <Textarea
-                  ref={textareaRef}
-                  placeholder="Add information to the knowledge base, ask a question, or paste a URL..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  className="resize-none border-gray-700 bg-gray-800 text-white placeholder-gray-500 min-h-[100px] pr-10"
-                />
-              )}
-              
-              <div className="absolute bottom-3 right-3 flex items-center space-x-1 text-gray-400">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 rounded-full hover:bg-gray-700"
-                      onClick={() => {
-                        if (textareaRef.current) {
-                          textareaRef.current.focus();
-                        }
-                      }}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-gray-800 text-gray-200 border-gray-700">
-                    Edit
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-            
-            <div>
-              <Button 
-                type="submit" 
-                disabled={isProcessing || !message.trim()} 
-                className="bg-amber-600 hover:bg-amber-700 text-white h-10 px-4 w-full"
-              >
-                <Send className="h-5 w-5" />
-                <span className="ml-2 hidden sm:inline">Process</span>
-              </Button>
-              
-              <div className="mt-2 text-xs text-gray-400 text-center">
-                <span className="flex items-center justify-center">
-                  <Lightbulb className="inline h-3 w-3 mr-1 text-amber-600" />
-                  Content is AI-analyzed for facts
-                </span>
-              </div>
+          <div className="flex p-2 mx-2 my-2 border border-gray-800 rounded-md">
+            <Button className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7">
+              <Plus className="h-3 w-3 mr-1" /> Add
+            </Button>
+            <Button className="flex-grow text-xs bg-gray-800 hover:bg-gray-700 h-7 ml-1">
+              <Search className="h-3 w-3 mr-1" /> Discover
+            </Button>
+          </div>
+          
+          <div className="p-2 text-xs text-gray-400 flex items-center">
+            <span>Select all sources</span>
+            <div className="ml-auto">
+              <Input 
+                type="checkbox" 
+                className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                checked={true}
+                readOnly
+              />
             </div>
           </div>
-        </form>
-      </CardFooter>
-    </Card>
+          
+          <div className="flex-1 overflow-y-auto p-2">
+            {sources.map(source => (
+              <div key={source.id} className="flex items-center p-2 rounded hover:bg-gray-800 mb-1">
+                <div className="flex-shrink-0 mr-2 text-blue-400">
+                  <FileText className="h-4 w-4" />
+                </div>
+                <div className="flex-1 text-xs text-gray-300 overflow-hidden">
+                  <div className="truncate">{source.title}</div>
+                </div>
+                <div className="ml-auto">
+                  <Input 
+                    type="checkbox" 
+                    className="h-4 w-4 rounded border-gray-700 bg-gray-800"
+                    checked={source.selected}
+                    readOnly
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Middle Column - Chat */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+          <div className="flex items-center p-3 border-b border-gray-800">
+            <span className="text-sm font-medium text-gray-300">Chat</span>
+            <div className="ml-auto flex space-x-1">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <RefreshCcw className="h-4 w-4 text-gray-400" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-0 bg-gray-900 min-h-[400px]">
+            <div className="divide-y divide-gray-800">
+              {chatHistory.map((msg, idx) => (
+                msg.role === 'user' 
+                  ? renderUserMessage(msg, idx) 
+                  : renderAssistantMessage(msg, idx)
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 p-3 bg-gray-950">
+            <form onSubmit={handleSubmit} className="w-full space-y-3">
+              <div className="flex flex-wrap gap-2 justify-start">
+                {exampleQueries.map((query, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    className="bg-gray-800 hover:bg-gray-700 text-amber-300 border-gray-700 text-xs whitespace-normal h-auto py-1"
+                    onClick={() => setMessage(query)}
+                  >
+                    {query}
+                  </Button>
+                ))}
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <div className="relative">
+                  {isProcessing ? (
+                    <div className="border border-gray-700 rounded-lg bg-gray-800 p-3 min-h-[80px]">
+                      <div className="animate-pulse flex space-x-2 items-center">
+                        <div className="rounded-full bg-gray-700 h-3 w-3"></div>
+                        <div className="rounded-full bg-gray-700 h-3 w-3"></div>
+                        <div className="rounded-full bg-gray-700 h-3 w-3"></div>
+                        <span className="text-gray-400 text-sm">Processing...</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <Textarea
+                      ref={textareaRef}
+                      placeholder="Ask a question about bamboo or add information to the knowledge base..."
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      className="resize-none border-gray-700 bg-gray-800 text-white placeholder-gray-500 min-h-[80px] pr-10"
+                    />
+                  )}
+                  
+                  <div className="absolute bottom-3 right-3 flex items-center space-x-1 text-gray-400">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 rounded-full hover:bg-gray-700"
+                          onClick={() => {
+                            if (textareaRef.current) {
+                              textareaRef.current.focus();
+                            }
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-gray-800 text-gray-200 border-gray-700">
+                        Edit
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="text-xs text-gray-400">
+                    <span className="flex items-center">
+                      <Lightbulb className="inline h-3 w-3 mr-1 text-amber-600" />
+                      Content is AI-analyzed for facts
+                    </span>
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    disabled={isProcessing || !message.trim()} 
+                    className="bg-amber-600 hover:bg-amber-700 text-white h-9 px-4"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    <span>Send</span>
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        {/* Right Column - Studio */}
+        <div className="hidden lg:flex lg:flex-col border-l border-gray-800 w-72 flex-shrink-0 bg-gray-900">
+          <div className="flex items-center justify-between p-3 border-b border-gray-800">
+            <span className="text-sm font-medium text-gray-300">Studio</span>
+            <div className="flex space-x-1">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Info className="h-4 w-4 text-gray-400" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="p-3 border-b border-gray-800">
+            <div className="text-sm text-gray-300 mb-2">Audio Overview</div>
+            <div className="text-xs text-gray-400 mb-1 flex items-center">
+              <span>Create an Audio Overview in more languages</span>
+              <Link className="ml-auto text-blue-400 text-xs hover:text-blue-300">Learn more</Link>
+            </div>
+            
+            <Button className="w-full text-xs justify-between mt-2 bg-gray-800 hover:bg-gray-700 text-gray-300">
+              <div className="flex items-center">
+                <FileText className="h-3 w-3 mr-2" />
+                <span>Click to load the conversation</span>
+              </div>
+              <span className="text-gray-400">Load</span>
+            </Button>
+          </div>
+          
+          <div className="p-3 border-b border-gray-800">
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm text-gray-300">Notes</div>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <MoreHorizontal className="h-4 w-4 text-gray-400" />
+              </Button>
+            </div>
+            
+            <Button className="w-full text-xs justify-start mt-1 bg-gray-800 hover:bg-gray-700 text-gray-300">
+              <Plus className="h-3 w-3 mr-2" />
+              <span>Add note</span>
+            </Button>
+            
+            <div className="mt-3 space-y-2">
+              <Button className="w-full text-xs justify-start bg-gray-800 hover:bg-gray-700 text-gray-300">
+                <Search className="h-3 w-3 mr-2" />
+                <span>Study guide</span>
+              </Button>
+              
+              <Button className="w-full text-xs justify-start bg-gray-800 hover:bg-gray-700 text-gray-300">
+                <FileText className="h-3 w-3 mr-2" />
+                <span>Briefing doc</span>
+              </Button>
+            </div>
+          </div>
+          
+          <div className="p-3 flex-1 overflow-y-auto">
+            <div className="text-sm text-gray-300 mb-2">Extracted Facts</div>
+            <div className="space-y-2">
+              {studioData.extractedFacts.map((fact, index) => (
+                <div key={index} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                  <div className="flex items-center mb-1">
+                    <Lightbulb className="h-3 w-3 mr-1 text-amber-500" />
+                    <span className="text-amber-500 font-medium">Fact</span>
+                  </div>
+                  <div>{fact}</div>
+                  <div className="flex justify-end mt-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-6 text-xs text-gray-400 hover:text-gray-300"
+                    >
+                      <ThumbsUp className="h-3 w-3 mr-1" />
+                      <span>Save to knowledge base</span>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
