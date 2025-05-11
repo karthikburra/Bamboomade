@@ -338,7 +338,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   };
   
   // Function to save content to knowledge database based on type
-  const saveToKnowledgeDatabase = async (type: 'fact' | 'event' | 'blog', content: any) => {
+  const saveToKnowledgeDatabase = async (type: 'fact' | 'event' | 'blog' | 'document' | 'project', content: any) => {
     try {
       // Check if user is logged in as admin first
       const adminCheckResponse = await fetch('/api/auth/admin-check');
@@ -1141,6 +1141,193 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                             <div className="py-6 flex flex-col items-center justify-center text-center">
                               <ArrowLeft className="h-10 w-10 text-gray-700 mb-3" />
                               <p className="text-gray-400 mb-1">Select a source to view blog content</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                Choose a source from the left panel to explore its content.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    {/* Documents Section */}
+                    <AccordionItem value="documents" className="border border-gray-800 rounded-md">
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex items-center">
+                          <FileIcon className="h-4 w-4 mr-2 text-purple-500" />
+                          <span className="text-sm font-medium text-gray-200">
+                            Documents {sourceExtractedData.documents.length > 0 && `(${sourceExtractedData.documents.length})`}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 px-4 pb-4">
+                          {sourceExtractedData.documents.length > 0 ? (
+                            sourceExtractedData.documents.map((document) => (
+                              <div 
+                                key={document.id || document.title} 
+                                className={`p-3 rounded-md text-sm ${document.saved ? 'bg-purple-900/20 border border-purple-800/30' : 'bg-gray-800'}`}
+                              >
+                                <div className="font-medium text-gray-200 mb-1">{document.title}</div>
+                                <div className="text-gray-300 mb-2">{document.summary}</div>
+                                {document.fileType && (
+                                  <div className="text-gray-400 text-xs mb-2">
+                                    <span className="inline-flex items-center bg-gray-700/50 rounded px-2 py-1">
+                                      <FileIcon className="h-3 w-3 mr-1" />
+                                      {document.fileType}
+                                      {document.fileSize && ` - ${document.fileSize}`}
+                                    </span>
+                                  </div>
+                                )}
+                                {document.downloadLink && (
+                                  <div className="mb-2">
+                                    <a 
+                                      href={document.downloadLink} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-400 hover:text-blue-300 inline-flex items-center"
+                                    >
+                                      <DownloadIcon className="h-3 w-3 mr-1" />
+                                      Download Document
+                                    </a>
+                                  </div>
+                                )}
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`text-xs ${
+                                      document.saved 
+                                        ? 'bg-purple-900/30 text-purple-400 border-purple-800/30' 
+                                        : 'bg-gray-800 hover:bg-gray-700'
+                                    }`}
+                                    disabled={document.saved}
+                                    onClick={() => saveToKnowledgeDatabase('document', document)}
+                                  >
+                                    {document.saved ? (
+                                      <>
+                                        <RefreshCcw className="h-3 w-3 mr-1" />
+                                        <span>Saved to Database</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        <span>Add to Knowledge Base</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : hasSelectedSource ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <FileIcon className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">No documents found in this source</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                This source doesn't contain any extractable documents or authentication may be required.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <ArrowLeft className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">Select a source to view documents</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                Choose a source from the left panel to explore its content.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    {/* Projects Section */}
+                    <AccordionItem value="projects" className="border border-gray-800 rounded-md">
+                      <AccordionTrigger className="px-4 hover:no-underline">
+                        <div className="flex items-center">
+                          <Building2Icon className="h-4 w-4 mr-2 text-amber-500" />
+                          <span className="text-sm font-medium text-gray-200">
+                            Projects {sourceExtractedData.projects.length > 0 && `(${sourceExtractedData.projects.length})`}
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3 px-4 pb-4">
+                          {sourceExtractedData.projects.length > 0 ? (
+                            sourceExtractedData.projects.map((project) => (
+                              <div 
+                                key={project.id || project.title} 
+                                className={`p-3 rounded-md text-sm ${project.saved ? 'bg-amber-900/20 border border-amber-800/30' : 'bg-gray-800'}`}
+                              >
+                                <div className="font-medium text-gray-200 mb-1">{project.title}</div>
+                                <div className="text-gray-300 mb-2">{project.summary}</div>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                  {project.location && (
+                                    <span className="text-xs text-gray-400 inline-flex items-center bg-gray-700/50 rounded px-2 py-1">
+                                      <MapPinIcon className="h-3 w-3 mr-1" />
+                                      {project.location}
+                                    </span>
+                                  )}
+                                  {project.completionDate && (
+                                    <span className="text-xs text-gray-400 inline-flex items-center bg-gray-700/50 rounded px-2 py-1">
+                                      <CalendarIcon className="h-3 w-3 mr-1" />
+                                      {project.completionDate}
+                                    </span>
+                                  )}
+                                </div>
+                                {project.architects && project.architects.length > 0 && (
+                                  <div className="mb-2">
+                                    <div className="text-xs text-gray-400 mb-1">Architects:</div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {project.architects.map((architect, idx) => (
+                                        <span 
+                                          key={idx} 
+                                          className="text-xs bg-gray-700/50 text-gray-300 rounded px-2 py-1"
+                                        >
+                                          {architect}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="flex justify-end">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`text-xs ${
+                                      project.saved 
+                                        ? 'bg-amber-900/30 text-amber-400 border-amber-800/30' 
+                                        : 'bg-gray-800 hover:bg-gray-700'
+                                    }`}
+                                    disabled={project.saved}
+                                    onClick={() => saveToKnowledgeDatabase('project', project)}
+                                  >
+                                    {project.saved ? (
+                                      <>
+                                        <RefreshCcw className="h-3 w-3 mr-1" />
+                                        <span>Saved to Database</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        <span>Add to Knowledge Base</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : hasSelectedSource ? (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <Building2Icon className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">No projects found in this source</p>
+                              <p className="text-gray-500 text-xs max-w-xs">
+                                This source doesn't contain any extractable projects or authentication may be required.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="py-6 flex flex-col items-center justify-center text-center">
+                              <ArrowLeft className="h-10 w-10 text-gray-700 mb-3" />
+                              <p className="text-gray-400 mb-1">Select a source to view projects</p>
                               <p className="text-gray-500 text-xs max-w-xs">
                                 Choose a source from the left panel to explore its content.
                               </p>
