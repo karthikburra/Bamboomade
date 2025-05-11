@@ -272,3 +272,23 @@ export const insertDashboardSnapshotSchema = createInsertSchema(dashboardSnapsho
 
 export type DashboardSnapshot = typeof dashboardSnapshots.$inferSelect;
 export type InsertDashboardSnapshot = z.infer<typeof insertDashboardSnapshotSchema>;
+
+// Bamboo Facts - Links facts to specific content sources
+export const bambooFacts = pgTable("bamboo_facts", {
+  id: serial("id").primaryKey(),
+  fact: text("fact").notNull(),
+  sourceContentId: integer("source_content_id").notNull(), // ID of the content this fact is from
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdBy: integer("created_by").notNull(),
+  status: text("status").notNull().default("active"), // 'active', 'pending', 'archived'
+});
+
+export const insertBambooFactSchema = createInsertSchema(bambooFacts).pick({
+  fact: true,
+  sourceContentId: true,
+  createdBy: true,
+  status: true,
+});
+
+export type BambooFact = typeof bambooFacts.$inferSelect;
+export type InsertBambooFact = z.infer<typeof insertBambooFactSchema>;
