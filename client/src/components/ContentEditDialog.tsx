@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import { Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle, Sparkles } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +48,7 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   const [extractedFacts, setExtractedFacts] = useState<string[]>([]);
   const [existingFacts, setExistingFacts] = useState<Array<{id: number, fact: string}>>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isResummarizing, setIsResummarizing] = useState(false);
   const [isExtractingFacts, setIsExtractingFacts] = useState(false);
   const [isSavingFact, setIsSavingFact] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
