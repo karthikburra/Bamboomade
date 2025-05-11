@@ -19,7 +19,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent, bambooFacts } from "@shared/schema";
-import { processMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
+import { processMessage as processOpenAIMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
+import { getGeminiAI, processMessage, summarizeContent as geminiSummarizeContent, extractFactsFromContent as geminiExtractFacts } from "./gemini-service";
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
 // PhonePe service removed
@@ -4962,9 +4963,6 @@ Please structure the summary in a helpful format with clear headings, bullet poi
         });
       }
       
-      // Get OpenAI instance
-      const openai = getOpenAI();
-      
       // Customize the prompt based on content type
       let customPrompt = '';
       switch (content.contentType) {
@@ -4993,52 +4991,34 @@ Please structure the summary in a helpful format with clear headings, bullet poi
           customPrompt = 'Focus on key points related to bamboo architecture, techniques, sustainability benefits, and design aspects. Include specific details when available.';
       }
       
-      // Call OpenAI to regenerate the summary with a more specific prompt based on content type
-      let systemPrompt = "You are a knowledgeable assistant specializing in bamboo architecture, sustainability, and traditional crafts.";
-      
-      // Customize system prompt for specific content types
-      if (content.contentType === 'enthusiast') {
-        systemPrompt += " Your expertise includes highlighting the achievements and contributions of bamboo experts and enthusiasts.";
-      } else if (content.contentType === 'event') {
-        systemPrompt += " You have expertise in describing bamboo-related events, workshops, and educational programs with clarity and detail.";
-      } else if (content.contentType === 'book') {
-        systemPrompt += " You excel at summarizing bamboo-related books, research papers, and educational materials.";
+      try {
+        // Call Gemini service for content summarization
+        const newSummary = await geminiSummarizeContent(textToSummarize, content.contentType);
+        
+        // Log success
+        console.log(`Successfully summarized content with Gemini: ${content.id} (${content.contentType})`);
+        
+        // Update the content in the database
+        const updatedContent = await storage.updateAiKnowledgeContent(id, {
+          content: newSummary,
+          lastResummarizedAt: new Date()
+        });
+        
+        // Return the updated content
+        return res.json({ success: true, content: updatedContent, message: 'Content successfully re-summarized' });
+      } catch (summaryError) {
+        console.error('Error regenerating content summary with Gemini:', summaryError);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Failed to regenerate content summary', 
+          message: (summaryError as Error).message 
+        });
       }
-      
-      const prompt = `Summarize the following content about bamboo into a well-structured, informative, and engaging summary. ${customPrompt}\n\nContent to summarize:\n${textToSummarize}`;
-      
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4-0613", // Using a reliable model for content summarization
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.5, // Slightly creative but mostly factual
-      });
-      
-      // Get the summary from the completion
-      const newSummary = completion.choices[0].message.content;
-      
-      // Update the content in the database
-      const updatedContent = await storage.updateAiKnowledgeContent(id, {
-        content: newSummary,
-        lastResummarizedAt: new Date()
-      });
-      
-      // Return the updated content
-      res.json({ success: true, content: updatedContent, message: 'Content successfully re-summarized' });
     } catch (error) {
-      console.error('Error regenerating content summary:', error);
-      res.status(500).json({ 
+      console.error('General error in regenerate-summary endpoint:', error);
+      return res.status(500).json({ 
         success: false, 
-        error: 'Failed to regenerate content summary', 
+        error: 'An unexpected error occurred', 
         message: (error as Error).message 
       });
     }
