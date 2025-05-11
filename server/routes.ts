@@ -4101,9 +4101,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
     
     try {
-      const openai = getOpenAI();
-      if (!openai) {
-        return res.status(500).json({ error: 'OpenAI service not available' });
+      const gemini = getGeminiAI();
+      if (!gemini) {
+        return res.status(500).json({ error: 'Gemini AI service not available' });
       }
       
       // Initialize variables for response
