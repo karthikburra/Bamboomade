@@ -1648,7 +1648,100 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                   </AccordionItem>
                 )}
                 
-                {/* Add more accordions for other categories here */}
+                {/* Documents Accordion */}
+                {sourceExtractedData.documents.length > 0 && (
+                  <AccordionItem value="documents" className="border-gray-800">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <div className="flex items-center text-xs font-medium text-purple-500">
+                        <FileIcon className="h-3 w-3 mr-1.5" />
+                        <span>DOCUMENTS ({sourceExtractedData.documents.length})</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {sourceExtractedData.documents.map((document) => (
+                          <div key={document.id} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                            <div className="font-medium text-gray-200 mb-1">{document.title}</div>
+                            <div>{document.summary}</div>
+                            {document.fileType && (
+                              <div className="mt-2 text-xs text-gray-400">
+                                <span className="inline-flex items-center bg-gray-700/50 rounded px-2 py-1">
+                                  <FileIcon className="h-3 w-3 mr-1" />
+                                  {document.fileType}
+                                  {document.fileSize && ` - ${document.fileSize}`}
+                                </span>
+                              </div>
+                            )}
+                            {document.downloadLink && (
+                              <div className="mt-2">
+                                <a 
+                                  href={document.downloadLink} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-400 hover:text-blue-300 inline-flex items-center"
+                                >
+                                  <DownloadIcon className="h-3 w-3 mr-1" />
+                                  Download
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+                
+                {/* Projects Accordion */}
+                {sourceExtractedData.projects.length > 0 && (
+                  <AccordionItem value="projects" className="border-gray-800">
+                    <AccordionTrigger className="py-2 hover:no-underline">
+                      <div className="flex items-center text-xs font-medium text-amber-500">
+                        <Building2Icon className="h-3 w-3 mr-1.5" />
+                        <span>PROJECTS ({sourceExtractedData.projects.length})</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {sourceExtractedData.projects.map((project) => (
+                          <div key={project.id} className="bg-gray-800 rounded-md p-2 text-xs text-gray-300">
+                            <div className="font-medium text-gray-200 mb-1">{project.title}</div>
+                            <div>{project.summary}</div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {project.location && (
+                                <span className="text-xs text-gray-400 inline-flex items-center bg-gray-700/50 rounded px-2 py-1">
+                                  <MapPinIcon className="h-3 w-3 mr-1" />
+                                  {project.location}
+                                </span>
+                              )}
+                              {project.completionDate && (
+                                <span className="text-xs text-gray-400 inline-flex items-center bg-gray-700/50 rounded px-2 py-1">
+                                  <CalendarIcon className="h-3 w-3 mr-1" />
+                                  {project.completionDate}
+                                </span>
+                              )}
+                            </div>
+                            {project.architects && project.architects.length > 0 && (
+                              <div className="mt-2">
+                                <div className="text-xs text-gray-400 mb-1">Architects:</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {project.architects.map((architect, idx) => (
+                                    <span 
+                                      key={idx} 
+                                      className="text-xs bg-gray-700/50 text-gray-300 rounded px-2 py-1"
+                                    >
+                                      {architect}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
               </Accordion>
             )}
             
@@ -1656,7 +1749,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             {!sourceExtractedData.loading && 
              sourceExtractedData.facts.length === 0 && 
              sourceExtractedData.events.length === 0 && 
-             sourceExtractedData.blogContent.length === 0 && (
+             sourceExtractedData.blogContent.length === 0 &&
+             sourceExtractedData.documents.length === 0 &&
+             sourceExtractedData.projects.length === 0 && (
               <div className="text-center py-8">
                 <div className="text-gray-400 text-xs">
                   {selectedSourceType ? 
