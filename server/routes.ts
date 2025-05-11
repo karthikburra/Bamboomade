@@ -2931,7 +2931,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       let summaryPrompt = `You are a knowledge extraction expert. Please analyze this raw content and extract the most relevant information in a well-organized format, focusing on key points, insights, and facts. Organize the content in an easy-to-read format with clear sections where appropriate, removing any duplicative or unnecessary information.\n\nThis content is related to bamboo architecture and sustainable building practices. Focus on information that would be helpful for architects, builders, or students interested in bamboo construction.\n\nRaw content to summarize:\n${contentItem.rawContent}`;
       
       const completion = await openai.chat.completions.create({
-        model: "gpt-4",
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
         messages: [
           { role: "system", content: "You are a knowledge extraction expert specializing in bamboo architecture and sustainable building." },
           { role: "user", content: summaryPrompt }
@@ -4347,6 +4347,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       
       // Get all existing knowledge content to check for duplicates
       const existingContent = await storage.getAllAiKnowledgeContent();
+      
+      // Get OpenAI instance
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI service not available' });
+      }
       
       // First, analyze the message in depth
       const analysis = await openai.chat.completions.create({
