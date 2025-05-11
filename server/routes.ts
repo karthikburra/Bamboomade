@@ -21,6 +21,7 @@ import fs from "fs";
 import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent, bambooFacts } from "@shared/schema";
 import { processMessage as processOpenAIMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import { getGeminiAI, processMessage, summarizeContent as geminiSummarizeContent, extractFactsFromContent as geminiExtractFacts } from "./gemini-service";
+import { processUrlWithGemini, processFileWithGemini } from "./gemini-extractor";
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
 // PhonePe service removed
