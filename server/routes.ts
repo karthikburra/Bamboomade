@@ -3992,8 +3992,48 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(500).json({ error: 'OpenAI service not available' });
       }
       
-      // Check if it's a URL first
+      // Check if it's a "Did You Know" fact
+      const isDidYouKnow = message.trim().toLowerCase().startsWith('did you know:');
+      
+      // Check if it's a URL
       const isUrl = message.trim().startsWith('http');
+      
+      // Process "Did You Know" facts directly
+      if (isDidYouKnow) {
+        // Extract the fact content
+        const factContent = message.trim().substring('Did You Know:'.length).trim();
+        
+        if (factContent.length < 10) {
+          return res.json({
+            response: "Your fact seems too short. Could you provide a more detailed fact about bamboo?",
+            shouldAddToKnowledge: false
+          });
+        }
+        
+        // Format the fact with a title
+        const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
+        
+        // Create the fact content in markdown format
+        const formattedContent = `# ${factTitle}\n\n${factContent}\n\nSource: Manually added via Knowledge Companion`;
+        
+        // Add to the knowledge base with content type 'fact'
+        suggestion = {
+          title: factTitle,
+          contentType: "fact",
+          content: formattedContent,
+          source: null
+        };
+        
+        // Conversational response
+        response = `Thanks for sharing this interesting bamboo fact! I've added it to our "Did You Know" section. It will now appear in the bamboo facts rotation on the website. Would you like to add another fact?`;
+        
+        return res.json({
+          response,
+          shouldAddToKnowledge: true,
+          suggestion,
+          isDuplicate: false
+        });
+      }
       
       if (isUrl) {
         // Process it directly through the web crawler

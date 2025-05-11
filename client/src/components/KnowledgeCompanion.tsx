@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Send, RefreshCcw, Plus } from 'lucide-react';
+import { Send, RefreshCcw, Plus, Lightbulb } from 'lucide-react';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -275,39 +275,62 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       </CardContent>
       
       <CardFooter className="border-t border-gray-800 p-2 sm:p-4 bg-gray-950 rounded-b-lg">
-        <form onSubmit={handleSubmit} className="w-full flex flex-col sm:flex-row gap-2">
-          <div className="flex-1">
-            {isProcessing ? (
-              <Textarea
-                placeholder="Processing your message..."
-                disabled
-                className="resize-none bg-gray-800 border-gray-700 text-gray-300 placeholder-gray-500 min-h-[60px] sm:min-h-[80px] text-sm sm:text-base"
-              />
-            ) : (
-              <Textarea
-                placeholder="Share information or paste a website URL..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                className="resize-none bg-gray-800 border-gray-700 text-gray-300 placeholder-gray-500 min-h-[60px] sm:min-h-[80px] text-sm sm:text-base"
-              />
-            )}
+        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-2">
+          <div className="flex flex-row gap-2">
+            <Button
+              type="button"
+              onClick={() => setMessage(message => message.startsWith("Did You Know: ") ? message : "Did You Know: " + message)}
+              className="bg-amber-600 hover:bg-amber-700 text-white h-10 px-2 text-xs sm:text-sm"
+              disabled={isProcessing}
+            >
+              <Lightbulb className="h-4 w-4 mr-1" />
+              <span>Add as Fact</span>
+            </Button>
+            
+            <div className="flex-1">
+              <div className="text-xs text-gray-400 mb-1">
+                <span className="flex items-center">
+                  <Lightbulb className="inline h-3 w-3 mr-1 text-amber-600" />
+                  Bamboo facts will appear in the "Did You Know" section
+                </span>
+              </div>
+            </div>
           </div>
           
-          <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={isProcessing || !message.trim()} 
-              className="bg-amber-600 hover:bg-amber-700 text-white h-10 px-4 w-full sm:w-auto"
-            >
-              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="ml-2">Send</span>
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex-1">
+              {isProcessing ? (
+                <Textarea
+                  placeholder="Processing your message..."
+                  disabled
+                  className="resize-none bg-gray-800 border-gray-700 text-gray-300 placeholder-gray-500 min-h-[60px] sm:min-h-[80px] text-sm sm:text-base"
+                />
+              ) : (
+                <Textarea
+                  placeholder="Share information, paste a website URL, or add a 'Did You Know' fact about bamboo..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="resize-none bg-gray-800 border-gray-700 text-gray-300 placeholder-gray-500 min-h-[60px] sm:min-h-[80px] text-sm sm:text-base"
+                />
+              )}
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                type="submit" 
+                disabled={isProcessing || !message.trim()} 
+                className="bg-amber-600 hover:bg-amber-700 text-white h-10 px-4 w-full sm:w-auto"
+              >
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="ml-2">Send</span>
+              </Button>
+            </div>
           </div>
         </form>
       </CardFooter>
