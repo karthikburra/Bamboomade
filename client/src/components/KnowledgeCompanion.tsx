@@ -763,13 +763,34 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     setIsProcessing(true);
     
     try {
-      // Simulate AI response
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create a simplified history array for the API
+      const simplifiedHistory = chatHistory.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      
+      // Send the message to the AI backend
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message.trim(),
+          history: simplifiedHistory
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      
+      const data = await response.json();
       
       // Add assistant message to chat
       const assistantMessage: ChatMessage = {
         role: 'assistant',
-        content: `Thanks for your question about bamboo! Based on my knowledge, here's what I know about "${message.trim()}".\n\nBamboo is a versatile and sustainable material used in architecture around the world. It's known for its strength, flexibility, and rapid growth rate, making it an excellent choice for eco-friendly construction.\n\nIf you have more specific questions or would like to explore a particular aspect of bamboo architecture, please let me know!`,
+        content: data.response || 'I apologize, but I was not able to process your request. Please try again.',
         timestamp: new Date(),
         id: `assistant-${Date.now()}`
       };
