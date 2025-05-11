@@ -18,6 +18,18 @@ import { toast } from "@/hooks/use-toast";
 interface Citation {
   source: string;
   url?: string;
+  contentType?: string; // Type of content: pdf, webpage, social, etc.
+  title?: string; // Title of the content source
+  summary?: string; // Brief summary of the content
+}
+
+// Document content interface for file and specialized content
+interface DocumentContent {
+  type: 'pdf' | 'google-drive' | 'webpage' | 'social' | 'article' | 'image';
+  title?: string;
+  url: string;
+  summary?: string;
+  thumbnailUrl?: string;
 }
 
 interface Message {
@@ -25,6 +37,12 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   citations?: Citation[]; // Optional array of citation sources
+  documents?: DocumentContent[]; // Optional array of document content
+  contentAnalysis?: {
+    summary?: string;
+    keyPoints?: string[];
+    topics?: string[];
+  }; // Optional content analysis results
 }
 
 interface ChatInterfaceProps {

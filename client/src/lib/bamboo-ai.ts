@@ -42,6 +42,20 @@ export interface ProjectGuidance {
 export interface Citation {
   source: string;
   url?: string;
+  contentType?: string; // Type of content: pdf, webpage, social, etc.
+  title?: string; // Title of the content source
+  summary?: string; // Brief summary of the content
+}
+
+/**
+ * Document content interface for file and specialized content
+ */
+export interface DocumentContent {
+  type: 'pdf' | 'google-drive' | 'webpage' | 'social' | 'article' | 'image';
+  title?: string;
+  url: string;
+  summary?: string;
+  thumbnailUrl?: string;
 }
 
 /**
@@ -53,7 +67,13 @@ export async function processAiChat(message: string): Promise<{
   response: string; 
   tokensUsed: number; 
   remainingTokens?: number;
-  citations?: Citation[]
+  citations?: Citation[];
+  documents?: DocumentContent[];
+  contentAnalysis?: {
+    summary?: string;
+    keyPoints?: string[];
+    topics?: string[];
+  };
 }> {
   try {
     // Send the message to our backend which will process it with OpenAI
@@ -69,6 +89,7 @@ export async function processAiChat(message: string): Promise<{
       (window as any).gtag('event', 'ai_message_processed', {
         'event_category': 'AI_Chat',
         'event_label': message.substring(0, 50), // First 50 chars of message
+        'event_value': data.documents ? 1 : 0, // Track if this contains document analysis
         'non_interaction': false
       });
     }
@@ -78,7 +99,9 @@ export async function processAiChat(message: string): Promise<{
       tokensUsed: data.tokensUsed,
       // No remainingTokens since we're not tracking tokens per user anymore
       remainingTokens: undefined,
-      citations: data.citations || [] // Include citation information
+      citations: data.citations || [], // Include citation information
+      documents: data.documents || [], // Include document content information
+      contentAnalysis: data.contentAnalysis || {} // Include content analysis results
     };
   } catch (error) {
     // Track errors in Google Analytics if available
