@@ -5191,6 +5191,50 @@ Please structure the summary in a helpful format with clear headings, bullet poi
     }
   }
 
+  // Extract content from URL using Google Gemini AI
+  app.post("/api/extract-content-url", isAdmin, async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: "URL is required" });
+      }
+      
+      console.log(`Extracting content from URL using Gemini: ${url}`);
+      const extractionResult = await processUrlWithGemini(url);
+      
+      res.json(extractionResult);
+    } catch (error) {
+      console.error("Error extracting content from URL:", error);
+      res.status(500).json({ 
+        error: "Failed to extract content from URL", 
+        details: error.message 
+      });
+    }
+  });
+  
+  // Extract content from uploaded file using Google Gemini AI
+  app.post("/api/extract-content-file", isAdmin, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "File is required" });
+      }
+      
+      const filePath = req.file.path;
+      console.log(`Extracting content from file using Gemini: ${filePath}`);
+      
+      const extractionResult = await processFileWithGemini(filePath);
+      
+      res.json(extractionResult);
+    } catch (error) {
+      console.error("Error extracting content from file:", error);
+      res.status(500).json({ 
+        error: "Failed to extract content from file", 
+        details: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

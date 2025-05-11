@@ -205,14 +205,18 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
 
   // State for extracted data from selected sources
   const [sourceExtractedData, setSourceExtractedData] = useState<{
-    facts: Array<{id: number, content: string, saved?: boolean}>;
-    events: Array<{id?: number, title: string, date: string, description: string, saved?: boolean}>;
-    blogContent: Array<{id?: number, title: string, summary: string, saved?: boolean}>;
+    facts: Array<{id: string | number, content: string, source?: string, sourceType?: string, saved?: boolean}>;
+    events: Array<{id?: string | number, title: string, date: string, description: string, location?: string, registrationLink?: string, source?: string, sourceType?: string, saved?: boolean}>;
+    blogContent: Array<{id?: string | number, title: string, summary: string, author?: string, publishDate?: string, source?: string, sourceType?: string, saved?: boolean}>;
+    documents: Array<{id?: string | number, title: string, summary: string, fileType?: string, fileSize?: string, downloadLink?: string, source?: string, sourceType?: string, saved?: boolean}>;
+    projects: Array<{id?: string | number, title: string, summary: string, location?: string, completionDate?: string, architects?: string[], images?: string[], source?: string, sourceType?: string, saved?: boolean}>;
     loading: boolean;
   }>({
     facts: [],
     events: [],
     blogContent: [],
+    documents: [],
+    projects: [],
     loading: false
   });
   
