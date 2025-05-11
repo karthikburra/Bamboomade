@@ -46,7 +46,7 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
         return <Calendar className="h-3 w-3 mr-1" />;
       case 'training':
       case 'fact':
-        return <Lightbulb className="h-3 w-3 mr-1" />;
+        return <Lightbulb className="h-3 w-3 mr-1" color="#f59e0b" />;
       default:
         return <MessageSquare className="h-3 w-3 mr-1" />;
     }
