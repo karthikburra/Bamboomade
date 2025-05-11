@@ -111,12 +111,8 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   const [googleDriveUrl, setGoogleDriveUrl] = useState('');
   
   // Example queries to show as chips
-  const exampleQueries = [
-    "What are the properties of bamboo as a building material?",
-    "How to design bamboo joints correctly?",
-    "What are the best cultivation practices for bamboo?",
-    "Add facts about bamboo sustainability"
-  ];
+  // Example queries have been removed per user request
+  const exampleQueries: string[] = [];
 
   // State for all knowledge sources
   const [allSources, setAllSources] = useState<Array<{
@@ -194,6 +190,15 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     loading: false
   });
   
+  // Interface for the facts API response
+  interface FactsApiResponse {
+    success: boolean;
+    facts: Array<{
+      id: number;
+      fact: string;
+    }>;
+  }
+  
   // Fetch facts and extracted content from the selected source
   const fetchSourceExtractedData = async (sourceId: number) => {
     setSourceExtractedData(prev => ({ ...prev, loading: true }));
@@ -205,16 +210,19 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         throw new Error('Failed to fetch facts for this source');
       }
       
-      const factsData = await factsResponse.json();
+      const factsData = await factsResponse.json() as FactsApiResponse;
       
       // Map the returned facts to the expected format (backend returns "fact", frontend expects "content")
-      const mappedFacts = factsData.facts ? factsData.facts.map(item => ({
+      const mappedFacts = factsData.facts ? factsData.facts.map((item: { id: number; fact: string }) => ({
         id: item.id,
         content: item.fact // Map "fact" field to "content"
       })) : [];
       
-      console.log('Received facts:', factsData.facts);
-      console.log('Mapped facts:', mappedFacts);
+      // Remove logging in production
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Received facts:', factsData.facts);
+        console.log('Mapped facts:', mappedFacts);
+      }
       
       // TODO: Add endpoints for events and blog content extraction
       // For now, we're only handling facts which are already implemented
@@ -732,21 +740,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
           </div>
           
           <div className="border-t border-gray-800 p-3 bg-gray-950">
-            <form onSubmit={handleSubmit} className="w-full space-y-3">
-              <div className="flex flex-wrap gap-2 justify-start">
-                {exampleQueries.map((query, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="bg-gray-800 hover:bg-gray-700 text-amber-300 border-gray-700 text-xs whitespace-normal h-auto py-1"
-                    onClick={() => setMessage(query)}
-                  >
-                    {query}
-                  </Button>
-                ))}
-              </div>
-              
+            <form onSubmit={handleSubmit} className="w-full space-y-3">              
               <div className="flex flex-col gap-2">
                 <div className="relative">
                   {isProcessing ? (
