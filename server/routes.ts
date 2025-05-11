@@ -4800,6 +4800,59 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       return res.status(500).json({ error: 'Failed to get facts' });
     }
   });
+  
+  // Add endpoint to save facts to bamboo_facts table
+  app.post('/api/bamboo-facts', isAdmin, async (req, res) => {
+    try {
+      const { fact, sourceContentId } = req.body;
+      
+      if (!fact || !sourceContentId) {
+        return res.status(400).json({ error: 'Fact content and source content ID are required' });
+      }
+      
+      if (!req.session.adminUser) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      // Save the fact to the database
+      await db.insert(bambooFacts).values({
+        fact,
+        sourceContentId,
+        createdBy: req.session.adminUser.id,
+        status: 'active'
+      });
+      
+      return res.json({ 
+        success: true, 
+        message: 'Fact saved successfully' 
+      });
+    } catch (error) {
+      console.error('Error saving fact:', error);
+      return res.status(500).json({ error: 'Failed to save fact' });
+    }
+  });
+  
+  // Add endpoint to delete a fact
+  app.delete('/api/bamboo-facts/:id', isAdmin, async (req, res) => {
+    try {
+      const factId = parseInt(req.params.id);
+      
+      if (isNaN(factId)) {
+        return res.status(400).json({ error: 'Invalid fact ID' });
+      }
+      
+      // Delete the fact from the database
+      await db.delete(bambooFacts).where(eq(bambooFacts.id, factId));
+      
+      return res.json({
+        success: true,
+        message: 'Fact deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting fact:', error);
+      return res.status(500).json({ error: 'Failed to delete fact' });
+    }
+  });
 
   // Helper function to save facts to the bamboo_facts table
   async function saveFactsToDb(facts: string[], sourceContentId: number, createdById: number): Promise<number> {

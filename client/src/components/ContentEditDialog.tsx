@@ -8,9 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Lightbulb, RefreshCw } from 'lucide-react';
+import { Lightbulb, RefreshCw, Save, Plus } from 'lucide-react';
 
 interface ContentItem {
   id: number;
@@ -36,11 +36,36 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   const [status, setStatus] = useState('');
   const [activeTab, setActiveTab] = useState('content');
   const [extractedFacts, setExtractedFacts] = useState<string[]>([]);
+  const [existingFacts, setExistingFacts] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExtractingFacts, setIsExtractingFacts] = useState(false);
+  const [isSavingFact, setIsSavingFact] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch source-specific facts when content changes
+  const { data: factsData, refetch: refetchFacts } = useQuery({
+    queryKey: [`/api/ai-knowledge/${content?.id}/facts`],
+    queryFn: async () => {
+      if (!content?.id) return { success: true, facts: [] };
+      
+      const response = await apiRequest('GET', `/api/ai-knowledge/${content.id}/facts`);
+      return response.json();
+    },
+    enabled: !!content?.id && isOpen,
+  });
+
+  useEffect(() => {
+    if (factsData?.facts) {
+      setExistingFacts(factsData.facts);
+      
+      // If there are existing facts, switch to the facts tab
+      if (factsData.facts.length > 0 && activeTab === 'content') {
+        setActiveTab('facts');
+      }
+    }
+  }, [factsData]);
 
   useEffect(() => {
     if (content) {
@@ -49,6 +74,9 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       setContentType(content.contentType || '');
       setSource(content.source || '');
       setStatus(content.status || '');
+      
+      // Reset extracted facts when content changes
+      setExtractedFacts([]);
     }
   }, [content]);
 
@@ -133,12 +161,48 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
     });
   };
 
+  const saveFactToDb = async (factContent: string) => {
+    try {
+      setIsSavingFact(true);
+      
+      // Add the fact directly to bamboo_facts table
+      const response = await apiRequest('POST', '/api/bamboo-facts', {
+        fact: factContent,
+        sourceContentId: content?.id
+      });
+      
+      // Refresh the facts list
+      refetchFacts();
+      
+      toast({
+        title: 'Fact saved',
+        description: 'The fact has been associated with this content.',
+      });
+      
+      // Remove from the extracted facts list
+      setExtractedFacts(prev => prev.filter(fact => fact !== factContent));
+      
+      setIsSavingFact(false);
+    } catch (error: any) {
+      toast({
+        title: 'Error saving fact',
+        description: error.message || 'An error occurred while saving the fact.',
+        variant: 'destructive',
+      });
+      setIsSavingFact(false);
+    }
+  };
+  
+  // For backward compatibility - saves to general fact pool
   const saveFact = async (factContent: string) => {
     try {
       setIsExtractingFacts(true);
       
-      // Add the fact to the knowledge base
-      const response = await apiRequest('POST', '/api/ai-knowledge', {
+      // Save fact to this specific content source
+      await saveFactToDb(factContent);
+      
+      // Also add the fact to the knowledge base (legacy approach)
+      await apiRequest('POST', '/api/ai-knowledge', {
         title: `Bamboo Fact from ${title}`,
         content: factContent,
         contentType: 'fact',
@@ -150,9 +214,6 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
         title: 'Fact added',
         description: 'The fact has been added to the "Did You Know" section.',
       });
-      
-      // Remove from the extracted facts list
-      setExtractedFacts(prev => prev.filter(fact => fact !== factContent));
       
       setIsExtractingFacts(false);
     } catch (error: any) {
@@ -290,9 +351,43 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
           </TabsContent>
           
           <TabsContent value="facts" className="space-y-4 pt-4">
+            {/* Existing Facts Section */}
             <div className="border rounded-md p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Extracted Bamboo Facts</h3>
+                <h3 className="text-lg font-medium">Source-Specific Facts</h3>
+                <Badge variant="outline">{existingFacts.length}</Badge>
+              </div>
+              
+              <div className="space-y-4">
+                {existingFacts.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <p>No source-specific facts yet.</p>
+                  </div>
+                ) : (
+                  existingFacts.map((fact, index) => (
+                    <div key={index} className="border rounded-md p-3 bg-amber-950/30">
+                      <p className="mb-2">{fact}</p>
+                      <div className="flex justify-end">
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          disabled={true}
+                          className="text-xs"
+                        >
+                          <Save className="h-3 w-3 mr-1 opacity-50" />
+                          Saved
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            
+            {/* Extracted Facts Section */}
+            <div className="border rounded-md p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Extract New Facts</h3>
                 {source && source.startsWith('http') && (
                   <Button 
                     variant="outline" 
@@ -302,7 +397,7 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                     className="flex items-center gap-1"
                   >
                     <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Extract New Facts
+                    {isRefreshing ? 'Extracting...' : 'Extract New Facts'}
                   </Button>
                 )}
               </div>
@@ -311,8 +406,8 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                 {extractedFacts.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No facts extracted from this content yet.</p>
-                    <p className="text-sm">Click "Re-crawl Content" to extract facts from this source.</p>
+                    <p>No new facts extracted yet.</p>
+                    <p className="text-sm">Click "Extract New Facts" to analyze this content for bamboo facts.</p>
                   </div>
                 ) : (
                   extractedFacts.map((fact, index) => (
@@ -323,11 +418,11 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                           variant="default"
                           size="sm"
                           onClick={() => saveFact(fact)}
-                          disabled={isExtractingFacts}
+                          disabled={isExtractingFacts || isSavingFact}
                           className="bg-amber-600 hover:bg-amber-700"
                         >
-                          <Lightbulb className="h-4 w-4 mr-1" />
-                          Add as Fact
+                          <Plus className="h-4 w-4 mr-1" />
+                          Save Fact
                         </Button>
                       </div>
                     </div>
