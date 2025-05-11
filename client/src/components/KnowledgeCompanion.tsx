@@ -307,10 +307,28 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     setUploadProgress(0);
     
     try {
+      // Check if user is logged in as admin first
+      const adminCheckResponse = await fetch('/api/auth/admin-check');
+      const adminCheckResult = await adminCheckResponse.json();
+      
+      if (!adminCheckResponse.ok || !adminCheckResult.isAdmin) {
+        toast({
+          title: 'Admin access required',
+          description: 'You need to be logged in as an admin to add files to the knowledge database.',
+          variant: 'destructive',
+        });
+        throw new Error('Admin authentication required');
+      }
+
       // Create a FormData object to send the file
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      
+      // The server expects the file with key 'image'
+      formData.append('image', selectedFile);
       formData.append('title', selectedFile.name);
+      
+      // Add a description for the content
+      formData.append('description', `Content from uploaded file: ${selectedFile.name}. File was uploaded to the knowledge database for analysis and reference.`);
       
       // Determine appropriate content type based on file extension
       const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase() || '';
@@ -324,8 +342,8 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
         contentType = 'media';
       }
       
+      // Add content type field
       formData.append('contentType', contentType);
-      formData.append('status', 'active'); // Set as active immediately
       
       // Create a progress tracker
       let progress = 0;
@@ -931,6 +949,19 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                   disabled={!webUrl}
                   onClick={async () => {
                     try {
+                      // Check if user is logged in as admin first
+                      const adminCheckResponse = await fetch('/api/auth/admin-check');
+                      const adminCheckResult = await adminCheckResponse.json();
+                      
+                      if (!adminCheckResponse.ok || !adminCheckResult.isAdmin) {
+                        toast({
+                          title: 'Admin access required',
+                          description: 'You need to be logged in as an admin to add content to the knowledge database.',
+                          variant: 'destructive',
+                        });
+                        return;
+                      }
+                      
                       toast({
                         title: 'Processing',
                         description: 'Adding web link to knowledge database...',
@@ -943,6 +974,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         },
                         body: JSON.stringify({
                           title: `Web Content: ${webUrl}`,
+                          content: `Website content from ${webUrl}. This URL was added to the knowledge database for analysis and reference.`,
                           source: webUrl,
                           contentType: 'webpage',
                           status: 'active',
@@ -1007,6 +1039,19 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                   disabled={!textContent.trim()}
                   onClick={async () => {
                     try {
+                      // Check if user is logged in as admin first
+                      const adminCheckResponse = await fetch('/api/auth/admin-check');
+                      const adminCheckResult = await adminCheckResponse.json();
+                      
+                      if (!adminCheckResponse.ok || !adminCheckResult.isAdmin) {
+                        toast({
+                          title: 'Admin access required',
+                          description: 'You need to be logged in as an admin to add content to the knowledge database.',
+                          variant: 'destructive',
+                        });
+                        return;
+                      }
+                      
                       toast({
                         title: 'Processing',
                         description: 'Adding content to knowledge database...',
