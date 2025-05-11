@@ -4993,15 +4993,26 @@ Please structure the summary in a helpful format with clear headings, bullet poi
           customPrompt = 'Focus on key points related to bamboo architecture, techniques, sustainability benefits, and design aspects. Include specific details when available.';
       }
       
-      // Call OpenAI to regenerate the summary
-      const prompt = `You are an expert in bamboo architecture, design, and sustainability. Your task is to summarize the following content about bamboo into a well-structured, informative, and engaging summary. ${customPrompt}\n\nContent to summarize:\n${textToSummarize}`;
+      // Call OpenAI to regenerate the summary with a more specific prompt based on content type
+      let systemPrompt = "You are a knowledgeable assistant specializing in bamboo architecture, sustainability, and traditional crafts.";
+      
+      // Customize system prompt for specific content types
+      if (content.contentType === 'enthusiast') {
+        systemPrompt += " Your expertise includes highlighting the achievements and contributions of bamboo experts and enthusiasts.";
+      } else if (content.contentType === 'event') {
+        systemPrompt += " You have expertise in describing bamboo-related events, workshops, and educational programs with clarity and detail.";
+      } else if (content.contentType === 'book') {
+        systemPrompt += " You excel at summarizing bamboo-related books, research papers, and educational materials.";
+      }
+      
+      const prompt = `Summarize the following content about bamboo into a well-structured, informative, and engaging summary. ${customPrompt}\n\nContent to summarize:\n${textToSummarize}`;
       
       const completion = await openai.chat.completions.create({
         model: "gpt-4-0613", // Using a reliable model for content summarization
         messages: [
           {
             role: "system",
-            content: "You are a knowledgeable assistant specializing in bamboo architecture and sustainability."
+            content: systemPrompt
           },
           {
             role: "user",
