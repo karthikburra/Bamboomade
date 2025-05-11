@@ -2884,6 +2884,77 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       res.status(500).json({ message: "Failed to update AI knowledge content" });
     }
   });
+  
+  // Endpoint for resummarizing content using stored raw data
+  app.post("/api/ai-knowledge/:id/resummarize", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Fetch the content item to get the raw content
+      const contentItem = await storage.getAiKnowledgeContentById(id);
+      
+      if (!contentItem) {
+        return res.status(404).json({
+          success: false,
+          message: "Content not found"
+        });
+      }
+      
+      if (!contentItem.rawContent) {
+        return res.status(400).json({
+          success: false,
+          message: "No raw content available for resummarization"
+        });
+      }
+      
+      // Get API key for OpenAI
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({
+          success: false,
+          message: "OpenAI API key not configured"
+        });
+      }
+      
+      // Create a new OpenAI instance with configuration
+      const openai = new OpenAI({
+        apiKey: apiKey
+      });
+      
+      // Generate a new summary using the stored raw content
+      let summaryPrompt = `You are a knowledge extraction expert. Please analyze this raw content and extract the most relevant information in a well-organized format, focusing on key points, insights, and facts. Organize the content in an easy-to-read format with clear sections where appropriate, removing any duplicative or unnecessary information.\n\nThis content is related to bamboo architecture and sustainable building practices. Focus on information that would be helpful for architects, builders, or students interested in bamboo construction.\n\nRaw content to summarize:\n${contentItem.rawContent}`;
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          { role: "system", content: "You are a knowledge extraction expert specializing in bamboo architecture and sustainable building." },
+          { role: "user", content: summaryPrompt }
+        ],
+        max_tokens: 1500
+      });
+      
+      const newSummary = completion.choices[0].message.content;
+      
+      // Update the content with the new summary and timestamp
+      await storage.updateAiKnowledgeContent(id, {
+        content: newSummary,
+        lastResummarizedAt: new Date()
+      });
+      
+      res.json({
+        success: true,
+        message: "Content successfully resummarized",
+        content: newSummary
+      });
+    } catch (error) {
+      console.error('Error resummarizing content:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to resummarize content",
+        error: error.message
+      });
+    }
+  });
 
   app.delete("/api/ai-knowledge/:id", isAdmin, async (req, res) => {
     try {
