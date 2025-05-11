@@ -4052,6 +4052,30 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           
           const extractedData = await analyzeWebsite(url);
           
+          // Automatically extract facts from the content
+          if (extractedData && extractedData.content) {
+            try {
+              const facts = await extractFactsFromContent(extractedData.content, url);
+              console.log(`Automatically extracted ${facts.length} facts from URL: ${url}`);
+              
+              // Save each extracted fact
+              if (facts.length > 0 && req.session.adminUser && req.session.adminUser.id) {
+                for (const factContent of facts) {
+                  await storage.createAiKnowledgeContent({
+                    title: `Bamboo Fact: ${factContent.substring(0, 50)}...`,
+                    content: factContent,
+                    source: url,
+                    contentType: 'fact',
+                    status: 'active',
+                    createdBy: req.session.adminUser.id
+                  });
+                }
+              }
+            } catch (error) {
+              console.error('Error automatically extracting facts:', error);
+            }
+          }
+          
           // Enhance content type with more specific classification
           let enhancedContentType = extractedData.contentType;
           let socialMediaInfo = null;

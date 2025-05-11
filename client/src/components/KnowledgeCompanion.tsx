@@ -277,21 +277,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
       <CardFooter className="border-t border-gray-800 p-2 sm:p-4 bg-gray-950 rounded-b-lg">
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-2">
           <div className="flex flex-row gap-2">
-            <Button
-              type="button"
-              onClick={() => setMessage(message => message.startsWith("Did You Know: ") ? message : "Did You Know: " + message)}
-              className="bg-amber-600 hover:bg-amber-700 text-white h-10 px-2 text-xs sm:text-sm"
-              disabled={isProcessing}
-            >
-              <Lightbulb className="h-4 w-4 mr-1" />
-              <span>Add as Fact</span>
-            </Button>
-            
             <div className="flex-1">
               <div className="text-xs text-gray-400 mb-1">
                 <span className="flex items-center">
                   <Lightbulb className="inline h-3 w-3 mr-1 text-amber-600" />
-                  Bamboo facts will appear in the "Did You Know" section
+                  Facts are automatically extracted from all data sources
                 </span>
               </div>
             </div>
