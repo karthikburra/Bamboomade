@@ -2354,10 +2354,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Valid message is required" });
       }
       
-      // Initialize OpenAI
-      const openai = getOpenAI();
-      if (!openai) {
-        return res.status(500).json({ message: "OpenAI service not available" });
+      // Initialize Gemini
+      const gemini = getGeminiAI();
+      if (!gemini) {
+        return res.status(500).json({ message: "Gemini AI service not available" });
       }
       
       // Prepare conversation history
@@ -2475,50 +2475,44 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
-  // Test endpoint for OpenAI connection
-  app.get('/api/test-openai', async (req, res) => {
+  // Test endpoint for Gemini AI connection
+  app.get('/api/test-gemini', async (req, res) => {
     try {
-      console.log("Testing OpenAI connection...");
-      console.log(`API Key being used: ${process.env.OPENAI_API_KEY?.substring(0, 7)}...`);
+      console.log("Testing Gemini AI connection...");
+      console.log(`API Key being used: ${process.env.GOOGLE_GEMINI_API_KEY?.substring(0, 7)}...`);
       
       const response = {
         status: 'checking',
-        apiKeyPresent: !!process.env.OPENAI_API_KEY,
-        apiKeyType: process.env.OPENAI_API_KEY?.startsWith('sk-') ? 'OpenAI' : 
-                   (process.env.OPENAI_API_KEY?.startsWith('sk-proj') ? 'Project Key' : 'Unknown'),
+        apiKeyPresent: !!process.env.GOOGLE_GEMINI_API_KEY,
+        apiKeyType: process.env.GOOGLE_GEMINI_API_KEY?.startsWith('AI') ? 'Google AI' : 'Unknown',
         diagnostics: {}
       };
       
-      // Import OpenAI directly instead of using the service
-      const { default: OpenAI } = await import('openai');
+      // Import Google Generative AI directly
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
       
       try {
-        console.log("Initializing OpenAI with direct key...");
-        const openai = new OpenAI({ 
-          apiKey: process.env.OPENAI_API_KEY 
-        });
+        console.log("Initializing Gemini AI with direct key...");
+        const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || '');
         
         console.log("Making test API call...");
-        const testCompletion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "user", content: "Hello, this is a test. Reply with a single word: 'Working'" }
-          ],
-          max_tokens: 10,
-          temperature: 0,
-        });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const testCompletion = await model.generateContent("Hello, this is a test. Reply with a single word: 'Working'");
+        
+        const result = await testCompletion.response;
+        const text = result.text();
         
         response.status = 'success';
         response.diagnostics = {
-          model: testCompletion.model,
-          output: testCompletion.choices[0].message.content,
-          responseTime: `${testCompletion.usage?.total_tokens || 0} tokens used`
+          model: "gemini-1.5-pro",
+          output: text,
+          responseTime: `Response received successfully`
         };
-      } catch (error) {
-        console.error("Direct OpenAI test failed:", error);
+      } catch (error: any) {
+        console.error("Direct Gemini test failed:", error);
         response.status = 'failed';
         response.diagnostics = {
-          error: error.message,
+          error: error.message || 'Unknown error',
           type: error.type || 'Unknown',
           code: error.code || 'Unknown'
         };
