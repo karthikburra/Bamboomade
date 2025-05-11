@@ -3992,6 +3992,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(500).json({ error: 'OpenAI service not available' });
       }
       
+      // Initialize variables for response
+      let aiResponse = "";
+      let shouldAddToKnowledgeBase = true; // Default to adding
+      let contentSuggestion = null;
+      let isContentDuplicate = false;
+      
       // Check if it's a "Did You Know" fact
       const isDidYouKnow = message.trim().toLowerCase().startsWith('did you know:');
       
@@ -4010,14 +4016,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           });
         }
         
-        // Format the fact with a title
+        // Format the fact with a title - clean title without markdown
         const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
         
-        // Create the fact content in markdown format
-        const formattedContent = `# ${factTitle}\n\n${factContent}\n\nSource: Manually added via Knowledge Companion`;
+        // Create the fact content in plain text format (no markdown characters)
+        const formattedContent = factContent + "\n\nSource: Manually added via Knowledge Companion";
         
         // Add to the knowledge base with content type 'fact'
-        suggestion = {
+        contentSuggestion = {
           title: factTitle,
           contentType: "fact",
           content: formattedContent,
@@ -4025,12 +4031,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         };
         
         // Conversational response
-        response = `Thanks for sharing this interesting bamboo fact! I've added it to our "Did You Know" section. It will now appear in the bamboo facts rotation on the website. Would you like to add another fact?`;
+        aiResponse = `Thanks for sharing this interesting bamboo fact! I've added it to our "Did You Know" section. It will now appear in the bamboo facts rotation on the website. Would you like to add another fact?`;
         
         return res.json({
-          response,
+          response: aiResponse,
           shouldAddToKnowledge: true,
-          suggestion,
+          suggestion: contentSuggestion,
           isDuplicate: false
         });
       }
@@ -4561,9 +4567,51 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Function to extract bamboo facts from content
+  async function extractFactsFromContent(content: string, source: string | null): Promise<string[]> {
+    const openAiClient = getOpenAI();
+    if (!openAiClient) {
+      return [];
+    }
+    
+    try {
+      const response = await openAiClient.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system", 
+            content: `You are a bamboo expert extracting interesting facts from content. Extract 2-3 interesting, verified facts about bamboo from the provided content.
+            
+            Rules:
+            1. Extract ONLY facts that are explicitly stated in the content - do not invent or infer facts
+            2. Each fact should be concise (1-2 sentences) and standalone
+            3. Do not use any markdown formatting or special characters like #, *, etc.
+            4. Facts should focus on bamboo properties, uses, sustainability aspects, or architecture applications
+            5. Format each fact as a simple declarative statement - no bullet points, numbers, or "Did You Know" prefix
+            6. Skip if no clear bamboo facts are present in the content
+            
+            Return only an array of fact strings in JSON format.`
+          },
+          {
+            role: "user",
+            content: `Extract 2-3 interesting bamboo facts from this content: ${content}`
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+      
+      const result = JSON.parse(response.choices[0].message.content);
+      return Array.isArray(result.facts) ? result.facts : [];
+      
+    } catch (error) {
+      console.error("Error extracting facts:", error);
+      return [];
+    }
+  }
+  
   // Refresh Website Content
   app.post('/api/ai-knowledge/refresh-website', isAdmin, async (req, res) => {
-    const { id, url } = req.body;
+    const { id, url, extractFacts = false } = req.body;
     
     if (!id || !url) {
       return res.status(400).json({ error: 'Both id and url are required' });
@@ -4583,19 +4631,51 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Get the appropriate content type based on URL
       const detectedType = detectContentTypeFromUrl(url);
       
+      // Remove markdown formatting from content
+      let cleanContent = extractedData.content;
+      // Replace markdown headers
+      cleanContent = cleanContent.replace(/#+\s+/g, '');
+      // Remove bold and italic formatting
+      cleanContent = cleanContent.replace(/\*\*/g, '').replace(/\*/g, '');
+      // Remove bullet points
+      cleanContent = cleanContent.replace(/- /g, '');
+      
       // Update the content in the database
       const updatedContent = await storage.updateAiKnowledgeContent(id, {
         title: extractedData.title,
-        content: extractedData.content,
+        content: cleanContent,
         contentType: detectedType, // Use the detected type for proper segregation
         source: url,
         status: existingContent.status
       });
       
+      // Extract and save facts if requested
+      let extractedFacts = [];
+      if (extractFacts) {
+        extractedFacts = await extractFactsFromContent(cleanContent, url);
+        
+        // Save each extracted fact as a separate entry with 'fact' content type
+        for (const factContent of extractedFacts) {
+          if (factContent.length > 10) {
+            const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
+            
+            await storage.createAiKnowledgeContent({
+              title: factTitle,
+              content: factContent + "\n\nSource: " + (url || "Unknown"),
+              contentType: "fact",
+              source: url,
+              status: "active",
+              createdBy: req.session.adminUser.id
+            });
+          }
+        }
+      }
+      
       return res.json({
         success: true,
         message: 'Website content refreshed successfully',
-        content: updatedContent
+        content: updatedContent,
+        extractedFacts: extractedFacts.length > 0 ? extractedFacts : null
       });
       
     } catch (error: any) {
