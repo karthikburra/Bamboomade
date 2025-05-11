@@ -2402,8 +2402,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Add current user message
       conversationHistory.push({ role: "user", content: message });
       
+      // Get OpenAI instance from the service
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ message: "OpenAI service not available" });
+      }
+      
       const completion = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo", // Using 3.5 for cost efficiency
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
         messages: conversationHistory as any,
         temperature: 0.7,
         max_tokens: 1000,
