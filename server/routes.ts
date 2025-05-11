@@ -4932,7 +4932,30 @@ Please structure the summary in a helpful format with clear headings, bullet poi
         return res.status(404).json({ success: false, error: 'Content not found' });
       }
       
-      if (!content.rawContent) {
+      // If we don't have raw content, try to fetch it if it's a webpage or website
+      let textToSummarize = content.rawContent;
+      
+      if (!textToSummarize && content.source && (content.source.startsWith('http') || content.contentType === 'webpage' || content.contentType === 'article')) {
+        try {
+          console.log(`Re-crawling page to get raw content: ${content.source}`);
+          // Analyze the website to get raw content
+          const result = await analyzeWebsite(content.source);
+          
+          if (result && result.fullRawContent) {
+            textToSummarize = result.fullRawContent;
+            
+            // Update the raw content in the database so we don't need to crawl again next time
+            await storage.updateAiKnowledgeContent(id, {
+              rawContent: result.fullRawContent
+            });
+          }
+        } catch (crawlError) {
+          console.error('Error crawling website for re-summarization:', crawlError);
+          // Continue with whatever content we have
+        }
+      }
+      
+      if (!textToSummarize) {
         return res.status(400).json({ 
           success: false, 
           error: 'No raw content available for re-summarization. This content may have been created before raw content storage was implemented.' 
@@ -4942,8 +4965,36 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       // Get OpenAI instance
       const openai = getOpenAI();
       
+      // Customize the prompt based on content type
+      let customPrompt = '';
+      switch (content.contentType) {
+        case 'article':
+          customPrompt = 'Focus on extracting key information, findings, and conclusions from this article about bamboo.';
+          break;
+        case 'social-media':
+          customPrompt = 'Focus on capturing the main message, bamboo-related innovations, or community engagement mentioned in this social media post.';
+          break;
+        case 'event':
+          customPrompt = 'Focus on event details including date, time, location, purpose, target audience, and any bamboo-related activities or demonstrations.';
+          break;
+        case 'webpage':
+          customPrompt = 'Focus on extracting key information about bamboo architecture, techniques, sustainability benefits, and design aspects mentioned on this webpage.';
+          break;
+        case 'book':
+          customPrompt = 'Focus on summarizing the key themes, concepts, and bamboo-related knowledge presented in this book or book excerpt.';
+          break;
+        case 'enthusiast':
+          customPrompt = 'Focus on the expertise, experience, and contributions of this bamboo enthusiast, highlighting their specialization and notable bamboo projects.';
+          break;
+        case 'fact':
+          customPrompt = 'Focus on the scientific or cultural aspects of bamboo mentioned in this content, emphasizing verified facts and data points.';
+          break;
+        default:
+          customPrompt = 'Focus on key points related to bamboo architecture, techniques, sustainability benefits, and design aspects. Include specific details when available.';
+      }
+      
       // Call OpenAI to regenerate the summary
-      const prompt = `You are an expert in bamboo architecture, design, and sustainability. Your task is to summarize the following content about bamboo into a well-structured, informative, and engaging summary. Focus on key points related to bamboo architecture, techniques, sustainability benefits, and design aspects. Include specific details when available.\n\nContent to summarize:\n${content.rawContent}`;
+      const prompt = `You are an expert in bamboo architecture, design, and sustainability. Your task is to summarize the following content about bamboo into a well-structured, informative, and engaging summary. ${customPrompt}\n\nContent to summarize:\n${textToSummarize}`;
       
       const completion = await openai.chat.completions.create({
         model: "gpt-4-0613", // Using a reliable model for content summarization
@@ -4971,7 +5022,7 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       });
       
       // Return the updated content
-      res.json({ success: true, content: updatedContent });
+      res.json({ success: true, content: updatedContent, message: 'Content successfully re-summarized' });
     } catch (error) {
       console.error('Error regenerating content summary:', error);
       res.status(500).json({ 

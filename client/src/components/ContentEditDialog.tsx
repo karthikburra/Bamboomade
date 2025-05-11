@@ -157,14 +157,29 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       if (data.success && data.content) {
         setBodyContent(data.content.content);
         
-        toast({
-          title: 'Content resummarized',
-          description: 'The content has been regenerated from stored raw data.',
-        });
+        // Update all form fields with the latest data
+        setTitle(data.content.title);
+        
+        if (data.message) {
+          toast({
+            title: 'Content resummarized',
+            description: data.message,
+          });
+        } else {
+          toast({
+            title: 'Content resummarized',
+            description: 'The content has been regenerated successfully.',
+          });
+        }
+        
+        // If the content has extracted facts, refresh them
+        if (content?.id) {
+          refetchFacts();
+        }
       } else {
         toast({
           title: 'Warning',
-          description: 'Re-summarization successful but content may not be updated correctly.',
+          description: data.error || 'Re-summarization may not have completed successfully.',
           variant: 'destructive',
         });
       }
@@ -220,8 +235,23 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       return;
     }
     
+    // If this is a web page and we have a source but no raw content,
+    // inform the user that we'll try to re-crawl the page
+    if (!content.rawContent && content.source && 
+        (content.source.startsWith('http') || 
+         content.contentType === 'webpage' || 
+         content.contentType === 'article')) {
+      toast({
+        title: 'Re-crawling content',
+        description: 'No raw content found. Attempting to re-crawl the source URL first.',
+      });
+    }
+    
     setIsResummarizing(true);
     resummarizeContentMutation.mutate(content.id);
+    
+    // Update the UI to show correct indicators
+    queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
   };
 
   const saveFactToDb = async (factContent: string) => {
@@ -380,18 +410,18 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                 </Button>
               )}
               
-              {content?.rawContent && (
+              {/* Show for all content types */}
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={handleResummarizeContent}
                   disabled={isResummarizing || isRefreshing}
                   className="flex items-center gap-1 text-xs sm:text-sm"
+                  title={content?.rawContent ? "Regenerate summary using stored raw content" : "Attempt to re-crawl and regenerate summary"}
                 >
                   <Sparkles className={`h-3 w-3 sm:h-4 sm:w-4 ${isResummarizing ? 'animate-spin' : ''}`} />
                   {isResummarizing ? 'Processing...' : 'Resummarize'}
                 </Button>
-              )}
               
               <Badge variant={status === 'active' ? 'default' : 'secondary'}>
                 {status}
