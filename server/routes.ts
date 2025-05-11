@@ -4841,6 +4841,81 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
 
+  // Endpoint to re-summarize content using stored raw content
+  app.post('/api/ai-knowledge/regenerate-summary', isAdmin, async (req, res) => {
+    const { id } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Content ID is required' });
+    }
+    
+    try {
+      // Get the content with raw data
+      const existingContent = await storage.getAiKnowledgeContentById(id);
+      
+      if (!existingContent) {
+        return res.status(404).json({ error: 'Content not found' });
+      }
+      
+      // Check if there's raw content available for re-summarization
+      if (!existingContent.rawContent) {
+        return res.status(400).json({ error: 'No raw content available for re-summarization. Try refreshing the content first.' });
+      }
+      
+      // Use OpenAI to generate a new summary from the raw content
+      const openai = getOpenAI();
+      if (!openai) {
+        return res.status(500).json({ error: 'OpenAI service unavailable' });
+      }
+      
+      // Send the raw content to OpenAI for summarization
+      const prompt = `Please summarize the following website content into a clear, concise format preserving the most important information:
+
+${existingContent.rawContent}
+
+Please structure the summary in a helpful format with clear headings, bullet points for key information, and maintaining any critical details like dates, locations, or contact information.`;
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: "You are a helpful assistant that summarizes web content accurately and concisely." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048
+      });
+      
+      // Extract the generated summary from the OpenAI response
+      const newSummary = response.choices[0].message.content;
+      
+      // Clean the summary content (remove markdown formatting)
+      // Replace markdown headers
+      let cleanSummary = newSummary.replace(/#+\s+/g, '');
+      // Remove bold and italic formatting
+      cleanSummary = cleanSummary.replace(/\*\*/g, '').replace(/\*/g, '');
+      // Remove bullet points
+      cleanSummary = cleanSummary.replace(/- /g, '');
+      
+      // Update the content in the database with the new summary
+      const updatedContent = await storage.updateAiKnowledgeContent(id, {
+        content: cleanSummary,
+        lastResummarizedAt: new Date()
+      });
+      
+      return res.json({
+        success: true,
+        message: 'Content successfully re-summarized',
+        content: updatedContent
+      });
+      
+    } catch (error: any) {
+      console.error('Re-summarization error:', error);
+      return res.status(500).json({ 
+        error: `Failed to re-summarize content: ${error.message || 'Unknown error'}` 
+      });
+    }
+  });
+
   app.post('/api/ai-knowledge/refresh-website', isAdmin, async (req, res) => {
     const { id, url, extractFacts = false, saveExtractedFacts = true } = req.body;
     

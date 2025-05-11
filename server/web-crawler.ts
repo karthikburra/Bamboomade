@@ -378,6 +378,7 @@ export async function analyzeWebsite(url: string): Promise<{
   title: string;
   contentType: string;
   content: string;
+  fullRawContent: string;
 }> {
   try {
     // Validate the URL
@@ -424,6 +425,7 @@ export async function analyzeWebsite(url: string): Promise<{
         title: extractionResult.title,
         contentType: 'article',
         content: formattedContent,
+        fullRawContent: extractionResult.fullRawContent,
       };
     }
     
@@ -438,6 +440,7 @@ export async function analyzeWebsite(url: string): Promise<{
         title: extractionResult.title,
         contentType: 'social-media',
         content: formattedContent,
+        fullRawContent: extractionResult.fullRawContent,
       };
     }
     
@@ -457,6 +460,7 @@ export async function analyzeWebsite(url: string): Promise<{
         title: extractionResult.title,
         contentType: 'video',
         content: formattedContent,
+        fullRawContent: extractionResult.fullRawContent,
       };
     }
     
@@ -520,6 +524,7 @@ export async function analyzeWebsite(url: string): Promise<{
       title: extractionResult.title,
       contentType: detectedType,
       content: formattedContent,
+      fullRawContent: extractionResult.fullRawContent,
     };
   } catch (error) {
     console.error('Website analysis error:', error);
@@ -898,7 +903,7 @@ export function detectContentType(content: string): 'url' | 'document' | 'event'
   );
   
   if (hasSocialMediaKeywords) {
-    return 'social';
+    return 'social-media';
   }
   
   // Check for video content indicators
