@@ -8,7 +8,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { 
   Loader2, Send, AlertTriangle, ChevronDown,
-  Copy, CheckCircle, Sparkles, Info
+  Copy, CheckCircle, Sparkles, Info, BookOpen,
+  FileText, Globe, MessageSquare, Newspaper, Image,
+  Hash, Check, FileIcon
 } from "lucide-react";
 import { processAiChat } from "@/lib/bamboo-ai";
 import { Link } from "wouter";
@@ -203,14 +205,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
     }
 
     try {
-      const { response, tokensUsed, remainingTokens, citations } = await processAiChat(userMessage.content);
+      const { response, tokensUsed, remainingTokens, citations, documents, contentAnalysis } = await processAiChat(userMessage.content);
+      
+      // Check if this is a document analysis query
+      const hasDocumentContent = documents && documents.length > 0;
+      const hasContentAnalysis = contentAnalysis && (contentAnalysis.summary || 
+                                (contentAnalysis.keyPoints && contentAnalysis.keyPoints.length > 0) || 
+                                (contentAnalysis.topics && contentAnalysis.topics.length > 0));
       
       // Track successful AI response in Google Analytics
       if (typeof window !== 'undefined' && (window as any).gtag) {
         (window as any).gtag('event', 'ai_response_received', {
           'event_category': 'AI_Chat',
-          'event_label': 'Success',
-          'value': tokensUsed || 0 // Track token usage
+          'event_label': hasDocumentContent ? 'Document_Analysis' : 'Regular_Response',
+          'value': tokensUsed || 0, // Track token usage
+          'document_count': documents ? documents.length : 0
         });
       }
       
@@ -218,7 +227,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
         id: `assistant-${Date.now()}`,
         role: "assistant",
         content: response,
-        citations: citations // Store citation information with the message
+        citations: citations, // Store citation information with the message
+        documents: documents, // Store document content information
+        contentAnalysis: contentAnalysis // Store content analysis results
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -434,6 +445,93 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
                   >
                     <p className="whitespace-pre-wrap text-sm sm:text-base">{message.content}</p>
                     
+                    {/* Display document content analysis if available */}
+                    {message.role === "assistant" && message.contentAnalysis && (
+                      <div className="mt-3 sm:mt-4 pt-2 border-t border-zinc-700/50">
+                        {message.contentAnalysis.summary && (
+                          <div className="mb-2">
+                            <p className="text-xs sm:text-sm font-medium text-green-400 mb-1 flex items-center">
+                              <BookOpen size={12} className="mr-1" /> Document Summary:
+                            </p>
+                            <p className="text-[11px] sm:text-xs text-zinc-300">{message.contentAnalysis.summary}</p>
+                          </div>
+                        )}
+                        
+                        {message.contentAnalysis.keyPoints && message.contentAnalysis.keyPoints.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-xs sm:text-sm font-medium text-green-400 mb-1 flex items-center">
+                              <Check size={12} className="mr-1" /> Key Points:
+                            </p>
+                            <ul className="list-disc pl-4 space-y-0.5 text-[11px] sm:text-xs text-zinc-300">
+                              {message.contentAnalysis.keyPoints.map((point, idx) => (
+                                <li key={idx}>{point}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {message.contentAnalysis.topics && message.contentAnalysis.topics.length > 0 && (
+                          <div>
+                            <p className="text-xs sm:text-sm font-medium text-green-400 mb-1 flex items-center">
+                              <Hash size={12} className="mr-1" /> Main Topics:
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {message.contentAnalysis.topics.map((topic, idx) => (
+                                <Badge key={idx} variant="outline" className="bg-zinc-700/30 text-green-300 hover:bg-zinc-700/50 border-zinc-700 text-[9px] sm:text-[10px]">
+                                  {topic}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Display document content if available */}
+                    {message.role === "assistant" && message.documents && message.documents.length > 0 && (
+                      <div className="mt-3 sm:mt-4 pt-2 border-t border-zinc-700/50">
+                        <p className="text-xs sm:text-sm font-medium text-green-400 mb-2 flex items-center">
+                          <FileText size={12} className="mr-1" /> Related Documents:
+                        </p>
+                        <div className="space-y-2">
+                          {message.documents.map((doc, idx) => (
+                            <div key={idx} className="rounded-md border border-zinc-700 bg-zinc-900 p-2 text-[11px] sm:text-xs">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-start">
+                                  {doc.type === 'pdf' && <FileText size={12} className="mr-1.5 mt-0.5 text-amber-500" />}
+                                  {doc.type === 'google-drive' && <FileIcon size={12} className="mr-1.5 mt-0.5 text-blue-500" />}
+                                  {doc.type === 'webpage' && <Globe size={12} className="mr-1.5 mt-0.5 text-purple-500" />}
+                                  {doc.type === 'social' && <MessageSquare size={12} className="mr-1.5 mt-0.5 text-pink-500" />}
+                                  {doc.type === 'article' && <Newspaper size={12} className="mr-1.5 mt-0.5 text-cyan-500" />}
+                                  {doc.type === 'image' && <Image size={12} className="mr-1.5 mt-0.5 text-emerald-500" />}
+                                  <div>
+                                    <a 
+                                      href={doc.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="font-medium text-green-400 hover:underline"
+                                    >
+                                      {doc.title || doc.url.split('/').pop() || 'Document'}
+                                    </a>
+                                    {doc.summary && (
+                                      <p className="mt-1 text-zinc-400">{doc.summary}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                {doc.thumbnailUrl && (
+                                  <img 
+                                    src={doc.thumbnailUrl} 
+                                    alt={doc.title || "Document thumbnail"} 
+                                    className="ml-2 h-10 w-10 rounded object-cover"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     {/* Display citations if available */}
                     {message.role === "assistant" && message.citations && message.citations.length > 0 && (
                       <div className="mt-2 sm:mt-3 pt-2 border-t border-zinc-700/50 text-[10px] sm:text-xs text-zinc-400">
@@ -460,10 +558,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
                                     }
                                   }}
                                 >
-                                  {citation.source}
+                                  {citation.contentType ? (
+                                    <span className="flex items-center">
+                                      {citation.contentType === 'pdf' && <FileText size={10} className="mr-1 text-amber-400" />}
+                                      {citation.contentType === 'google-drive' && <FileIcon size={10} className="mr-1 text-blue-400" />}
+                                      {citation.contentType === 'webpage' && <Globe size={10} className="mr-1 text-purple-400" />}
+                                      {citation.contentType === 'social' && <MessageSquare size={10} className="mr-1 text-pink-400" />}
+                                      {citation.contentType === 'article' && <Newspaper size={10} className="mr-1 text-cyan-400" />}
+                                      {citation.contentType === 'image' && <Image size={10} className="mr-1 text-emerald-400" />}
+                                      {citation.title || citation.source}
+                                    </span>
+                                  ) : (
+                                    citation.source
+                                  )}
                                 </a>
                               ) : (
                                 <span>{citation.source}</span>
+                              )}
+                              {citation.summary && (
+                                <p className="mt-0.5 text-[9px] text-zinc-500">{citation.summary}</p>
                               )}
                             </li>
                           ))}
