@@ -488,17 +488,17 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
           </TabsContent>
           
           <TabsContent value="facts" className="space-y-4 pt-4">
-            {/* Existing Facts Section */}
+            {/* Existing Facts Section - Only shows facts from this specific source */}
             <div className="border rounded-md p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium">Source-Specific Facts</h3>
-                <Badge variant="outline">{existingFacts.length}</Badge>
+                <h3 className="text-lg font-medium">Facts from This Source</h3>
+                <span><Badge variant="outline">{existingFacts.length}</Badge></span>
               </div>
               
               <div className="space-y-4">
                 {existingFacts.length === 0 ? (
                   <div className="text-center py-4 text-muted-foreground">
-                    <p>No source-specific facts yet.</p>
+                    <p>No facts have been extracted from this specific source yet.</p>
                   </div>
                 ) : (
                   existingFacts.map((fact) => (
@@ -508,16 +508,8 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                         <Button 
                           variant="outline"
                           size="sm"
-                          className="text-xs"
-                        >
-                          <Save className="h-3 w-3 mr-1 opacity-50" />
-                          Saved
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          size="sm"
-                          onClick={() => confirmDeleteFact(fact.id)}
                           disabled={isSavingFact}
+                          onClick={() => confirmDeleteFact(fact.id)}
                           className="text-xs border-destructive text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
@@ -535,16 +527,18 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Extract New Facts</h3>
                 {source && source.startsWith('http') && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleRefreshWebsite}
-                    disabled={isRefreshing}
-                    className="flex items-center gap-1"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {isRefreshing ? 'Extracting...' : 'Extract New Facts'}
-                  </Button>
+                  <span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleRefreshWebsite}
+                      disabled={isRefreshing}
+                      className="flex items-center gap-1"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      {isRefreshing ? 'Extracting...' : 'Extract Facts from Source'}
+                    </Button>
+                  </span>
                 )}
               </div>
               
@@ -552,8 +546,12 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                 {extractedFacts.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No new facts extracted yet.</p>
-                    <p className="text-sm">Click "Extract New Facts" to analyze this content for bamboo facts.</p>
+                    <p>No new facts found to extract.</p>
+                    {source && source.startsWith('http') ? (
+                      <p className="text-sm">Click "Extract Facts from Source" to analyze this content for bamboo facts.</p>
+                    ) : (
+                      <p className="text-sm">Enter a valid URL source to extract facts automatically.</p>
+                    )}
                   </div>
                 ) : (
                   extractedFacts.map((fact, index) => (
@@ -563,12 +561,12 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                         <Button 
                           variant="default"
                           size="sm"
-                          onClick={() => saveFact(fact)}
+                          onClick={() => saveFactToDb(fact)}
                           disabled={isExtractingFacts || isSavingFact}
                           className="bg-amber-600 hover:bg-amber-700"
                         >
                           <Plus className="h-4 w-4 mr-1" />
-                          Save Fact
+                          Save to This Source
                         </Button>
                       </div>
                     </div>
