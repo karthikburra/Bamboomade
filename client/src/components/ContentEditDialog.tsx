@@ -484,12 +484,26 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                 <Label htmlFor="content" className="sm:text-right">
                   Content
                 </Label>
-                <Textarea
-                  id="content"
-                  value={bodyContent}
-                  onChange={(e) => setBodyContent(e.target.value)}
-                  className="col-span-1 sm:col-span-3 min-h-[200px] sm:min-h-[300px]"
-                />
+                <div className="col-span-1 sm:col-span-3 space-y-2">
+                  <Textarea
+                    id="content"
+                    value={bodyContent}
+                    onChange={(e) => setBodyContent(e.target.value)}
+                    className="w-full min-h-[200px] sm:min-h-[300px]"
+                  />
+                  {content?.rawContent && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleResummarizeContent}
+                      disabled={isResummarizing}
+                      className="flex items-center gap-1 text-xs sm:text-sm ml-auto"
+                    >
+                      <Sparkles className={`h-3 w-3 sm:h-4 sm:w-4 ${isResummarizing ? 'animate-spin' : ''}`} />
+                      {isResummarizing ? 'Processing...' : 'Resummarize Content'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </TabsContent>
