@@ -52,12 +52,16 @@ import {
   Bookmark,
   MoreHorizontal,
   ThumbsUp,
-  Download,
+  Download as DownloadIcon,
   FileText,
   Calendar,
   Upload,
   Youtube,
   X,
+  File as FileIcon,
+  Building2 as Building2Icon,
+  MapPin as MapPinIcon,
+  Calendar as CalendarIcon,
   Check,
   FileX,
   Database,
@@ -373,6 +377,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             source: 'Knowledge Companion',
             contentType: 'event',
             status: 'active',
+            eventDate: content.date,
+            eventLocation: content.location || null,
+            registrationLink: content.registrationLink || null,
           };
           break;
         case 'blog':
@@ -381,6 +388,35 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             content: content.summary,
             source: 'Knowledge Companion',
             contentType: 'article',
+            status: 'active',
+          };
+          break;
+        case 'document':
+          payload = {
+            title: `Document: ${content.title}`,
+            content: content.summary,
+            source: 'Knowledge Companion',
+            contentType: 'document',
+            status: 'active',
+            mediaUrl: content.downloadLink || null,
+            mediaType: content.fileType || null,
+          };
+          break;
+        case 'project':
+          // Create a structured content with project details
+          const projectDetails = [
+            content.summary,
+            content.location ? `Location: ${content.location}` : '',
+            content.completionDate ? `Completed: ${content.completionDate}` : '',
+            content.architects && content.architects.length > 0 
+              ? `Architects: ${content.architects.join(', ')}` : ''
+          ].filter(Boolean).join('\n\n');
+          
+          payload = {
+            title: `Project: ${content.title}`,
+            content: projectDetails,
+            source: 'Knowledge Companion',
+            contentType: 'project',
             status: 'active',
           };
           break;
@@ -1542,7 +1578,9 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             {/* Information Accordions */}
             {(sourceExtractedData.facts.length > 0 || 
               sourceExtractedData.events.length > 0 || 
-              sourceExtractedData.blogContent.length > 0) && (
+              sourceExtractedData.blogContent.length > 0 ||
+              sourceExtractedData.documents.length > 0 ||
+              sourceExtractedData.projects.length > 0) && (
               <Accordion type="multiple" className="space-y-2 w-full">
                 {/* Facts Accordion */}
                 {sourceExtractedData.facts.length > 0 && (
