@@ -4611,7 +4611,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   
   // Refresh Website Content
   app.post('/api/ai-knowledge/refresh-website', isAdmin, async (req, res) => {
-    const { id, url, extractFacts = false } = req.body;
+    const { id, url, extractFacts = false, saveExtractedFacts = true } = req.body;
     
     if (!id || !url) {
       return res.status(400).json({ error: 'Both id and url are required' });
@@ -4655,18 +4655,25 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         extractedFacts = await extractFactsFromContent(cleanContent, url);
         
         // Save each extracted fact as a separate entry with 'fact' content type
-        for (const factContent of extractedFacts) {
-          if (factContent.length > 10) {
-            const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
-            
-            await storage.createAiKnowledgeContent({
-              title: factTitle,
-              content: factContent + "\n\nSource: " + (url || "Unknown"),
-              contentType: "fact",
-              source: url,
-              status: "active",
-              createdBy: req.session.adminUser.id
-            });
+        if (saveExtractedFacts && extractedFacts.length > 0) {
+          for (const factContent of extractedFacts) {
+            if (factContent.length > 10) {
+              const factTitle = "Bamboo Fact: " + factContent.substring(0, 40) + (factContent.length > 40 ? "..." : "");
+              
+              try {
+                await storage.createAiKnowledgeContent({
+                  title: factTitle,
+                  content: factContent + "\n\nSource: " + (url || "Unknown"),
+                  contentType: "fact",
+                  source: url,
+                  status: "active",
+                  createdBy: req.session.adminUser.id
+                });
+              } catch (err) {
+                console.error("Error saving extracted fact:", err);
+                // Continue with the next fact even if one fails
+              }
+            }
           }
         }
       }

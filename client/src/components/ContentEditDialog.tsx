@@ -128,7 +128,8 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
     refreshWebsiteMutation.mutate({
       id: content?.id,
       url: source,
-      extractFacts: true
+      extractFacts: true,
+      saveExtractedFacts: false
     });
   };
 
