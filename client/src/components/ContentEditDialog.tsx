@@ -149,16 +149,25 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   
   const resummarizeContentMutation = useMutation({
     mutationFn: async (contentId: number) => {
-      return apiRequest('POST', `/api/ai-knowledge/${contentId}/resummarize`);
+      return apiRequest('POST', `/api/ai-knowledge/regenerate-summary`, { id: contentId });
     },
     onSuccess: async (response) => {
       const data = await response.json();
-      setBodyContent(data.content);
       
-      toast({
-        title: 'Content resummarized',
-        description: 'The content has been regenerated from stored raw data.',
-      });
+      if (data.success && data.content) {
+        setBodyContent(data.content.content);
+        
+        toast({
+          title: 'Content resummarized',
+          description: 'The content has been regenerated from stored raw data.',
+        });
+      } else {
+        toast({
+          title: 'Warning',
+          description: 'Re-summarization successful but content may not be updated correctly.',
+          variant: 'destructive',
+        });
+      }
       
       setIsResummarizing(false);
     },
