@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Lightbulb, RefreshCw, Save, Plus } from 'lucide-react';
+import { Lightbulb, RefreshCw, Save, Plus, Trash2 } from 'lucide-react';
 
 interface ContentItem {
   id: number;
@@ -36,7 +36,7 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   const [status, setStatus] = useState('');
   const [activeTab, setActiveTab] = useState('content');
   const [extractedFacts, setExtractedFacts] = useState<string[]>([]);
-  const [existingFacts, setExistingFacts] = useState<string[]>([]);
+  const [existingFacts, setExistingFacts] = useState<Array<{id: number, fact: string}>>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExtractingFacts, setIsExtractingFacts] = useState(false);
   const [isSavingFact, setIsSavingFact] = useState(false);
@@ -187,6 +187,33 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       toast({
         title: 'Error saving fact',
         description: error.message || 'An error occurred while saving the fact.',
+        variant: 'destructive',
+      });
+      setIsSavingFact(false);
+    }
+  };
+  
+  // Delete a fact from the database
+  const deleteFact = async (factId: number) => {
+    try {
+      setIsSavingFact(true);
+      
+      // Delete the fact
+      await apiRequest('DELETE', `/api/bamboo-facts/${factId}`);
+      
+      // Update the UI by removing the deleted fact
+      setExistingFacts(prev => prev.filter(f => f.id !== factId));
+      
+      toast({
+        title: 'Fact deleted',
+        description: 'The fact has been removed.',
+      });
+      
+      setIsSavingFact(false);
+    } catch (error: any) {
+      toast({
+        title: 'Error deleting fact',
+        description: error.message || 'An error occurred while deleting the fact.',
         variant: 'destructive',
       });
       setIsSavingFact(false);
@@ -364,18 +391,27 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                     <p>No source-specific facts yet.</p>
                   </div>
                 ) : (
-                  existingFacts.map((fact, index) => (
-                    <div key={index} className="border rounded-md p-3 bg-amber-950/30">
-                      <p className="mb-2">{fact}</p>
-                      <div className="flex justify-end">
+                  existingFacts.map((fact) => (
+                    <div key={fact.id} className="border rounded-md p-3 bg-amber-950/30">
+                      <p className="mb-2">{fact.fact}</p>
+                      <div className="flex justify-end space-x-2">
                         <Button 
                           variant="outline"
                           size="sm"
-                          disabled={true}
                           className="text-xs"
                         >
                           <Save className="h-3 w-3 mr-1 opacity-50" />
                           Saved
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteFact(fact.id)}
+                          disabled={isSavingFact}
+                          className="text-xs border-destructive text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
                         </Button>
                       </div>
                     </div>

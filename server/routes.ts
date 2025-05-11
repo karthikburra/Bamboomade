@@ -4877,13 +4877,17 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   }
   
   // Helper function to get facts by source content ID
-  async function getFactsBySourceId(sourceContentId: number): Promise<string[]> {
+  async function getFactsBySourceId(sourceContentId: number): Promise<Array<{id: number, fact: string}>> {
     try {
-      const facts = await db.select().from(bambooFacts)
-        .where(eq(bambooFacts.sourceContentId, sourceContentId))
-        .where(eq(bambooFacts.status, 'active'));
+      const facts = await db.select({
+        id: bambooFacts.id,
+        fact: bambooFacts.fact
+      })
+      .from(bambooFacts)
+      .where(eq(bambooFacts.sourceContentId, sourceContentId))
+      .where(eq(bambooFacts.status, 'active'));
       
-      return facts.map(f => f.fact);
+      return facts;
     } catch (error) {
       console.error("Error getting facts by source id:", error);
       return [];
