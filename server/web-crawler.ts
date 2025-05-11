@@ -37,6 +37,8 @@ interface WebsiteExtractionResult {
   title: string;
   contentType: string;
   mainContent: string;
+  // Store the full raw content from all crawled pages
+  fullRawContent: string;
   // Author information for articles
   author?: string;
   publishedDate?: string;
@@ -330,9 +332,15 @@ export async function extractStructuredInformation(
     // Ensure contentType is always set
     extractedData.contentType = 'webpage';
     
+    // Collect and store all raw content from crawled pages
+    const fullRawContent = crawledPages.map(page => {
+      return `PAGE URL: ${page.url}\nPAGE TITLE: ${page.title}\n\nPAGE CONTENT:\n${page.content}\n\n`;
+    }).join('---\n');
+    
     // Format the data as required by our system
     return {
       ...extractedData,
+      fullRawContent,
       originalPages: crawledPages,
     };
   } catch (error) {
