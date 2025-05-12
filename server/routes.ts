@@ -695,6 +695,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔑 Setting session for user ${user.id}`);
       req.session.userId = user.id;
       
+      // Add additional session data for debugging
+      req.session.loginTime = new Date().toISOString();
+      req.session.userEmail = email.toLowerCase();
+      req.session.loginMethod = 'verification_code';
+      
       // Save the session explicitly to ensure it persists
       req.session.save((err) => {
         if (err) {
@@ -706,6 +711,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         console.log(`✅ Session saved successfully for user ${user.id}`);
+        console.log(`📊 Session data: ${JSON.stringify({
+          userId: req.session.userId,
+          userEmail: req.session.userEmail,
+          loginTime: req.session.loginTime,
+          sessionID: req.sessionID
+        })}`);
         
         // Return user details (excluding sensitive fields)
         res.status(200).json({ 
@@ -1099,12 +1110,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔑 Setting session for user ${user.id}`);
       req.session.userId = user.id;
       
+      // Add additional session data for debugging
+      req.session.loginTime = new Date().toISOString();
+      req.session.userEmail = email.toLowerCase();
+      req.session.loginMethod = 'email_verification';
+      
       // Save the session explicitly to ensure it persists
       req.session.save((err) => {
         if (err) {
           console.error("❌ Session save error during email verification:", err);
         } else {
           console.log(`✅ Session saved successfully for user ${user.id}`);
+          console.log(`📊 Session data: ${JSON.stringify({
+            userId: req.session.userId,
+            userEmail: req.session.userEmail,
+            loginTime: req.session.loginTime,
+            sessionID: req.sessionID
+          })}`);
         }
       });
       
