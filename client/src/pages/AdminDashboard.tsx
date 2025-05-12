@@ -1009,62 +1009,94 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                {isUsersLoading ? (
-                  <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
-                    <Loader2 className="h-12 w-12 text-purple-500 mx-auto mb-4 animate-spin" />
-                    <h3 className="text-lg font-medium mb-2">Loading Users</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Please wait while we fetch the user data...
-                    </p>
-                  </div>
-                ) : usersData && usersData.length > 0 ? (
-                  <div className="bg-gray-900 rounded-lg border border-gray-700">
-                    <div className="p-4 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                      <div>
-                        <h3 className="text-lg font-medium">Registered Users</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Showing {usersData.length} registered users
+                {(() => {
+                  // Loading state
+                  if (isUsersLoading) {
+                    return (
+                      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
+                        <Loader2 className="h-12 w-12 text-purple-500 mx-auto mb-4 animate-spin" />
+                        <h3 className="text-lg font-medium mb-2">Loading Users</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Please wait while we fetch the user data...
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative w-full md:w-64">
-                          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                          <Input
-                            type="search"
-                            placeholder="Search by email or username..."
-                            className="pl-9 bg-gray-800 border-gray-700 focus:border-purple-700"
-                            value={userSearchFilter}
-                            onChange={(e) => setUserSearchFilter(e.target.value)}
-                          />
-                        </div>
-                        <Badge variant="outline" className="bg-purple-900/30 text-purple-300 border-purple-700">
-                          {usersData.length} Users
-                        </Badge>
+                    );
+                  }
+                  
+                  // No users state
+                  if (!usersData || usersData.length === 0) {
+                    return (
+                      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
+                        <Users className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No Users Found</h3>
+                        <p className="text-muted-foreground mb-6">
+                          No registered users were found in the system.
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="border-purple-800 text-purple-400 hover:bg-purple-950/50"
+                          onClick={() => setLocation("/admin")}
+                        >
+                          <UserCog className="h-4 w-4 mr-2" />
+                          Go to Legacy Admin Page
+                        </Button>
                       </div>
-                    </div>
-                    <div className="px-4">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="hover:bg-gray-800/50">
-                            <TableHead className="text-purple-300">User ID</TableHead>
-                            <TableHead className="text-purple-300">Email</TableHead>
-                            <TableHead className="text-purple-300">Username</TableHead>
-                            <TableHead className="text-purple-300">Full Name</TableHead>
-                            <TableHead className="text-purple-300">Role</TableHead>
-                            <TableHead className="text-purple-300">Verified</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {usersData
-                            .filter(user => {
-                              if (!userSearchFilter) return true;
-                              const searchTerm = userSearchFilter.toLowerCase();
-                              return (
-                                user.email?.toLowerCase().includes(searchTerm) ||
-                                user.username?.toLowerCase().includes(searchTerm) ||
-                                user.fullName?.toLowerCase().includes(searchTerm)
-                              );
-                            })
+                    );
+                  }
+                  
+                  // Users found - filter them
+                  const filteredUsers = usersData.filter(user => {
+                    if (!userSearchFilter) return true;
+                    const searchTerm = userSearchFilter.toLowerCase();
+                    return (
+                      user.email?.toLowerCase().includes(searchTerm) ||
+                      user.username?.toLowerCase().includes(searchTerm) ||
+                      user.fullName?.toLowerCase().includes(searchTerm)
+                    );
+                  });
+                  
+                  // Display users table
+                  return (
+                    <div className="bg-gray-900 rounded-lg border border-gray-700">
+                      <div className="p-4 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                          <h3 className="text-lg font-medium">Registered Users</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {userSearchFilter 
+                              ? `Showing ${filteredUsers.length} of ${usersData.length} registered users` 
+                              : `Showing all ${usersData.length} registered users`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                          <div className="relative w-full md:w-64">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                            <Input
+                              type="search"
+                              placeholder="Search by email or username..."
+                              className="pl-9 bg-gray-800 border-gray-700 focus:border-purple-700"
+                              value={userSearchFilter}
+                              onChange={(e) => setUserSearchFilter(e.target.value)}
+                            />
+                          </div>
+                          <Badge variant="outline" className="bg-purple-900/30 text-purple-300 border-purple-700">
+                            {filteredUsers.length} / {usersData.length} Users
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="px-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="hover:bg-gray-800/50">
+                              <TableHead className="text-purple-300">User ID</TableHead>
+                              <TableHead className="text-purple-300">Email</TableHead>
+                              <TableHead className="text-purple-300">Username</TableHead>
+                              <TableHead className="text-purple-300">Full Name</TableHead>
+                              <TableHead className="text-purple-300">Role</TableHead>
+                              <TableHead className="text-purple-300">Verified</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {filteredUsers
                             .map((user) => (
                             <TableRow key={user.id} className="hover:bg-gray-800/50">
                               <TableCell className="font-mono text-gray-400">{user.id}</TableCell>
@@ -1093,23 +1125,8 @@ export default function AdminDashboard() {
                       </Table>
                     </div>
                   </div>
-                ) : (
-                  <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
-                    <Users className="h-12 w-12 text-purple-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No Users Found</h3>
-                    <p className="text-muted-foreground mb-6">
-                      No registered users were found in the system.
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="border-purple-800 text-purple-400 hover:bg-purple-950/50"
-                      onClick={() => setLocation("/admin")}
-                    >
-                      <UserCog className="h-4 w-4 mr-2" />
-                      Go to Legacy Admin Page
-                    </Button>
-                  </div>
-                )}
+                  );
+                })()}
               </CardContent>
             </Card>
           </TabsContent>
