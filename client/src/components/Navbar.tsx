@@ -134,6 +134,22 @@ const Navbar: React.FC = () => {
               Login
             </Button>
           )}
+          
+          {user && !isMobile && (
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-green-300 mr-2">
+                {user.email}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-green-600 text-green-300 hover:bg-green-700/20"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </div>
+          )}
 
           {isMobile && (
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>

@@ -41,9 +41,13 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       setIsSendingCode(true);
       setEmail(values.email);
       
+      console.log("Requesting verification code for:", values.email);
+      
       // Request verification code
       const response = await apiRequest("POST", "/api/auth/request-login-code", { email: values.email });
       const data = await response.json();
+      
+      console.log("Response from request-login-code:", data);
       
       if (data.success) {
         setStep("verification");
@@ -51,6 +55,10 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
           title: "Verification Code Sent",
           description: "Please check your email for the verification code.",
         });
+        
+        // In development, use the code logged in the server console
+        // Look for logs like: "Attempting to send verification email to X with code ABCDEF"
+        console.log("Check server logs for the verification code in development mode");
       } else {
         toast({
           title: "Failed to Send Code",
@@ -59,6 +67,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
         });
       }
     } catch (error) {
+      console.error("Error sending verification code:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
@@ -73,13 +82,17 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     try {
       setIsVerifying(true);
       
+      console.log("Verifying code:", verificationCode, "for email:", email);
+      
       // Direct API request to the verify-login endpoint
       const response = await apiRequest("POST", "/api/auth/verify-login", { 
         email, 
         code: verificationCode 
       });
       
+      console.log("Verification response status:", response.status);
       const data = await response.json();
+      console.log("Verification response data:", data);
       
       if (data.success) {
         toast({
@@ -87,10 +100,16 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
           description: "Welcome to BambooMade!",
         });
         
-        // If we reach here, login was successful
-        if (onSuccess) {
-          onSuccess();
-        }
+        // Wait for toast to show before redirecting
+        setTimeout(() => {
+          // Reload the page to ensure everything is fresh
+          window.location.href = '/';
+          
+          // If we reach here, login was successful
+          if (onSuccess) {
+            onSuccess();
+          }
+        }, 1500);
       } else {
         toast({
           title: "Verification Failed",
@@ -100,6 +119,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
         setIsVerifying(false);
       }
     } catch (error) {
+      console.error("Error verifying code:", error);
       toast({
         title: "Verification Failed",
         description: error instanceof Error ? error.message : "Could not verify code. Please try again.",
