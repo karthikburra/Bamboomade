@@ -1343,6 +1343,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
       
+      // Track user login history for persistent tracking across deployments
+      try {
+        const userAgent = req.headers['user-agent'] || '';
+        const ipAddress = req.ip || req.socket.remoteAddress || '';
+        
+        // Extract basic device info from user agent
+        const deviceInfo = {
+          browser: userAgent.includes('Chrome') ? 'Chrome' : 
+                   userAgent.includes('Firefox') ? 'Firefox' : 
+                   userAgent.includes('Safari') ? 'Safari' : 
+                   userAgent.includes('Edge') ? 'Edge' : 'Unknown',
+          os: userAgent.includes('Windows') ? 'Windows' : 
+              userAgent.includes('Mac') ? 'MacOS' : 
+              userAgent.includes('Linux') ? 'Linux' : 
+              userAgent.includes('Android') ? 'Android' : 
+              userAgent.includes('iPhone') || userAgent.includes('iPad') ? 'iOS' : 'Unknown',
+          isMobile: userAgent.includes('Mobile') || userAgent.includes('Android') || 
+                   userAgent.includes('iPhone') || userAgent.includes('iPad')
+        };
+        
+        await storage.createUserLoginHistory({
+          userId: user.id,
+          email: user.email,
+          username: user.username,
+          ipAddress,
+          userAgent,
+          deviceInfo,
+          loginStatus: 'success',
+          isAdmin: user.isAdmin,
+          sessionId: req.sessionID
+        });
+        
+        console.log(`📝 Login history recorded for user ${user.id}`);
+      } catch (historyError) {
+        // Non-critical error - don't fail the login if history tracking fails
+        console.error("⚠️ Failed to record login history:", historyError);
+      }
+      
       // Don't return password in response
       const { password: _, ...userWithoutPassword } = user;
       console.log(`🎉 Login successful for user ${user.id}`);
@@ -1535,7 +1573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/logout", (req, res) => {
+  app.post("/api/auth/logout", async (req, res) => {
     console.log("🚪 Logout request received");
     
     // Check if user is actually logged in
@@ -1545,6 +1583,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     console.log(`🔑 Destroying session for user ${req.session.userId}`);
+    
+    // Record logout in login history if possible
+    try {
+      if (req.sessionID) {
+        await storage.updateUserLogout(req.sessionID);
+        console.log(`📝 Logout recorded in login history for sessionID ${req.sessionID}`);
+      }
+    } catch (historyError) {
+      // Non-critical error - don't fail the logout if history tracking fails
+      console.error("⚠️ Failed to record logout in history:", historyError);
+    }
     
     req.session.destroy((err) => {
       if (err) {
