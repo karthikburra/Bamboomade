@@ -137,6 +137,17 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
   }
+  
+  async getAllUsers(): Promise<User[]> {
+    try {
+      // Order by email for consistent display
+      const allUsers = await db.select().from(users).orderBy(asc(users.email));
+      return allUsers;
+    } catch (error) {
+      console.error("Database error in getAllUsers:", error);
+      return [];
+    }
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {

@@ -4419,7 +4419,8 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     try {
       // Get all users for admin management
       // Note: In a real app with many users, you would implement pagination
-      const users = Array.from((storage as any).users.values()).map((user: User) => {
+      const allUsers = await storage.getAllUsers();
+      const users = allUsers.map(user => {
         // Don't return password in response
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword;
@@ -4506,23 +4507,26 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
-  app.get("/api/admin/users", isAdmin, async (req, res) => {
+  // This is a duplicate route (first one is at line ~4418) - renamed to avoid conflicts
+  app.get("/api/admin/users-with-purchases", isAdmin, async (req, res) => {
     try {
       // Get all users but remove passwords from the response
-      const users = await Promise.all(
-        Array.from(storage.users.values()).map(async (user) => {
+      const allUsers = await storage.getAllUsers();
+      
+      // Process users sequentially to avoid await in .map issues
+      const users = [];
+      for (const user of allUsers) {
           const { password, ...userWithoutPassword } = user;
           
           // Get token purchases for each user
           const tokenPurchases = await storage.getTokenPurchasesByUserId(user.id);
           
-          return {
+          users.push({
             ...userWithoutPassword,
             tokenPurchaseCount: tokenPurchases.length,
-            totalPurchasedTokens: tokenPurchases.reduce((total, purchase) => total + purchase.tokens, 0)
-          };
-        })
-      );
+            totalPurchasedTokens: tokenPurchases.reduce((total, purchase) => total + purchase.amount, 0)
+          });
+      }
       
       res.json(users);
     } catch (error) {
