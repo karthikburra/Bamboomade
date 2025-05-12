@@ -29,10 +29,22 @@ const ProfileEdit: React.FC = () => {
     fullName: string | null;
     phoneNumber: string | null;
     profileImageUrl: string | null;
+    needsProfileCompletion?: boolean;
   }>({
     queryKey: ["/api/auth/me"],
     retry: false,
   });
+  
+  // Show welcome toast for first-time users
+  useEffect(() => {
+    if (user?.needsProfileCompletion) {
+      toast({
+        title: "Welcome to BambooMade!",
+        description: "Please complete your profile to continue. Full name is required.",
+        duration: 6000,
+      });
+    }
+  }, [user, toast]);
   
   // Redirect if not logged in
   useEffect(() => {
@@ -169,6 +181,16 @@ const ProfileEdit: React.FC = () => {
       
       <div className="container max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-green-300 mb-8 text-center">Edit Your Profile</h1>
+        
+        {user?.needsProfileCompletion && (
+          <div className="bg-green-700/20 border border-green-700 rounded-lg p-4 mb-6">
+            <h2 className="text-lg font-semibold text-green-300 mb-2">Welcome to BambooMade!</h2>
+            <p className="text-green-100">
+              Please complete your profile to continue using the platform. 
+              <span className="font-bold"> Full name is required</span>, other fields are optional.
+            </p>
+          </div>
+        )}
         
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader>

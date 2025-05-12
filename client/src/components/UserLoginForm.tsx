@@ -112,13 +112,14 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       if (data.success) {
         toast({
           title: "Login Successful",
-          description: "Welcome to BambooMade!",
+          description: "Welcome to BambooMade! You'll be redirected to complete your profile.",
         });
         
         // Wait for toast to show before redirecting
         setTimeout(() => {
-          // Redirect to the profile edit page after successful login
-          window.location.href = '/profile/edit';
+          // The /api/auth/me endpoint will check if profile needs completion
+          // and App.tsx will handle redirection to profile edit if needed
+          window.location.href = '/';
           
           // If we reach here, login was successful
           if (onSuccess) {

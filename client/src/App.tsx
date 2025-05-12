@@ -92,18 +92,19 @@ function Router() {
   );
 }
 
-// ProfileRedirectChecker handles the user profile check
+// ProfileRedirectChecker component performs check for incomplete profiles and redirects if needed
 function ProfileRedirectChecker({ children }: { children: React.ReactNode }) {
   // Check if user is logged in and needs to complete their profile
   const { data: user, isLoading } = useQuery({
     queryKey: ["/api/auth/me"],
     retry: false,
+    refetchOnWindowFocus: false,
   });
   
   useEffect(() => {
     // If user is logged in and needs to complete their profile, redirect to edit profile page
     if (!isLoading && user && user.needsProfileCompletion && window.location.pathname !== '/profile/edit') {
-      // Skip redirect if we're already on the profile edit page
+      console.log("User needs to complete profile. Redirecting to profile edit page.");
       window.location.href = '/profile/edit';
     }
   }, [user, isLoading]);
