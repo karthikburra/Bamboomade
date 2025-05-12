@@ -51,7 +51,9 @@ import {
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
   SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
-  Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle
+  Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle,
+  History, Activity, UserX, Globe, Timer, Laptop, Smartphone, 
+  Clock8, ClockIcon
 } from "lucide-react";
 import {
   Select,
@@ -160,6 +162,10 @@ export default function AdminDashboard() {
   const [viewSlotsDialogOpen, setViewSlotsDialogOpen] = useState(false);
   const [selectedSlotDate, setSelectedSlotDate] = useState<Date | null>(null);
   const [isAddSlotDialogOpen, setIsAddSlotDialogOpen] = useState(false);
+  
+  // User login history states
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [isUserHistoryDialogOpen, setIsUserHistoryDialogOpen] = useState(false);
   const [isEditSlotDialogOpen, setIsEditSlotDialogOpen] = useState(false);
   
   // Bulk date selection state
