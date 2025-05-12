@@ -4546,6 +4546,88 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Get all deleted users (admin only)
+  app.get("/api/admin/deleted-users", isAdmin, async (req, res) => {
+    try {
+      const deletedUsers = await storage.getAllDeletedUsers();
+      res.json(deletedUsers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch deleted users", error: (error as Error).message });
+    }
+  });
+  
+  // Delete a user (admin only) - soft delete
+  app.post("/api/admin/users/:userId/delete", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Don't allow deleting the main admin account
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (user.email === "info@bamboomade.in") {
+        return res.status(403).json({ message: "The main admin account cannot be deleted" });
+      }
+      
+      // Delete the user (soft delete)
+      const adminUserId = req.session?.userId;
+      if (!adminUserId) {
+        return res.status(401).json({ message: "Admin user ID not found in session" });
+      }
+      
+      const deletedUser = await storage.deleteUser(
+        userId, 
+        adminUserId, 
+        req.body.reason || "Deleted by admin"
+      );
+      
+      res.json({ 
+        message: "User deleted successfully and will be permanently removed after 30 days",
+        deletedUser
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete user", error: (error as Error).message });
+    }
+  });
+  
+  // Restore a deleted user (admin only)
+  app.post("/api/admin/deleted-users/:id/restore", isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid deleted user ID" });
+      }
+      
+      const restoredUser = await storage.restoreDeletedUser(id);
+      
+      res.json({ 
+        message: "User restored successfully",
+        user: restoredUser
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to restore user", error: (error as Error).message });
+    }
+  });
+  
+  // Permanently delete users that have been soft-deleted for 30+ days (admin only)
+  app.post("/api/admin/deleted-users/purge-expired", isAdmin, async (req, res) => {
+    try {
+      const purgedCount = await storage.purgeExpiredDeletedUsers();
+      
+      res.json({ 
+        message: `${purgedCount} expired deleted users have been permanently removed`,
+        purgedCount
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to purge expired users", error: (error as Error).message });
+    }
+  });
+  
   // Get user by ID for admin view
   app.get("/api/admin/users/:userId", isAdmin, async (req, res) => {
     try {

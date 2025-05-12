@@ -247,6 +247,149 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // Deleted User Operations
+  async deleteUser(userId: number, deletedBy: number, reason?: string): Promise<DeletedUser> {
+    try {
+      // 1. Get the user to be deleted
+      const user = await this.getUser(userId);
+      if (!user) {
+        throw new Error(`User with ID ${userId} not found`);
+      }
+      
+      // 2. Create a deleted user record with 30 days expiration
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+      
+      const deletedUserData: InsertDeletedUser = {
+        originalUserId: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName || null,
+        profileImageUrl: user.profileImageUrl || null,
+        phoneNumber: user.phoneNumber || null,
+        role: user.role,
+        isVerified: user.isVerified,
+        tokens: user.tokens,
+        deletedBy: deletedBy,
+        deletionReason: reason || null,
+      };
+      
+      // 3. Insert the deleted user record
+      const [deletedUser] = await db.insert(deletedUsers)
+        .values({
+          ...deletedUserData,
+          scheduledForDeletion: thirtyDaysFromNow,
+        })
+        .returning();
+      
+      // 4. Delete the original user
+      await db.delete(users).where(eq(users.id, userId));
+      
+      return deletedUser;
+    } catch (error) {
+      console.error("Database error in deleteUser:", error);
+      throw error;
+    }
+  }
+  
+  async getAllDeletedUsers(): Promise<DeletedUser[]> {
+    try {
+      return await db.select()
+        .from(deletedUsers)
+        .orderBy(desc(deletedUsers.deletedAt));
+    } catch (error) {
+      console.error("Database error in getAllDeletedUsers:", error);
+      return [];
+    }
+  }
+  
+  async getDeletedUser(id: number): Promise<DeletedUser | undefined> {
+    try {
+      const [deletedUser] = await db.select()
+        .from(deletedUsers)
+        .where(eq(deletedUsers.id, id));
+      return deletedUser;
+    } catch (error) {
+      console.error("Database error in getDeletedUser:", error);
+      return undefined;
+    }
+  }
+  
+  async getDeletedUserByOriginalId(originalUserId: number): Promise<DeletedUser | undefined> {
+    try {
+      const [deletedUser] = await db.select()
+        .from(deletedUsers)
+        .where(eq(deletedUsers.originalUserId, originalUserId));
+      return deletedUser;
+    } catch (error) {
+      console.error("Database error in getDeletedUserByOriginalId:", error);
+      return undefined;
+    }
+  }
+  
+  async restoreDeletedUser(id: number): Promise<User | undefined> {
+    try {
+      // 1. Get the deleted user record
+      const deletedUser = await this.getDeletedUser(id);
+      if (!deletedUser) {
+        throw new Error(`Deleted user with ID ${id} not found`);
+      }
+      
+      // 2. Check if a user with the same username or email already exists
+      const existingUser = await this.getUserByEmail(deletedUser.email);
+      if (existingUser) {
+        throw new Error(`A user with email ${deletedUser.email} already exists`);
+      }
+      
+      // 3. Recreate the user
+      const [restoredUser] = await db.insert(users)
+        .values({
+          username: deletedUser.username,
+          email: deletedUser.email,
+          password: "RESET_REQUIRED", // Force password reset
+          fullName: deletedUser.fullName,
+          profileImageUrl: deletedUser.profileImageUrl,
+          phoneNumber: deletedUser.phoneNumber,
+          role: deletedUser.role,
+          isVerified: deletedUser.isVerified,
+          tokens: deletedUser.tokens,
+          isAdmin: deletedUser.role === "admin",
+        })
+        .returning();
+      
+      // 4. Delete the deleted user record
+      await db.delete(deletedUsers).where(eq(deletedUsers.id, id));
+      
+      return restoredUser;
+    } catch (error) {
+      console.error("Database error in restoreDeletedUser:", error);
+      throw error;
+    }
+  }
+  
+  async purgeExpiredDeletedUsers(): Promise<number> {
+    try {
+      // Get the current date
+      const now = new Date();
+      
+      // Find all users scheduled for deletion before now
+      const expiredUsers = await db.select()
+        .from(deletedUsers)
+        .where(db.sql`${deletedUsers.scheduledForDeletion} < ${now}`);
+      
+      // Delete all expired users
+      if (expiredUsers.length > 0) {
+        await db.delete(deletedUsers)
+          .where(db.sql`${deletedUsers.scheduledForDeletion} < ${now}`);
+      }
+      
+      return expiredUsers.length;
+    } catch (error) {
+      console.error("Database error in purgeExpiredDeletedUsers:", error);
+      return 0;
+    }
+  }
+  
   // Project operations
   async getAllProjects(): Promise<Project[]> {
     try {

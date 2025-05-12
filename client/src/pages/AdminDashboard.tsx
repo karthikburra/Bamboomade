@@ -1744,11 +1744,11 @@ export default function AdminDashboard() {
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    className="h-8 border-gray-700 hover:bg-gray-800"
-                                    onClick={() => handleEditUser(user)}
+                                    className="h-8 border-red-700 hover:bg-red-900/40 text-red-400"
+                                    onClick={() => handleDeleteUser(user)}
                                   >
-                                    <Edit className="h-3.5 w-3.5 mr-1" />
-                                    Edit
+                                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                    Delete
                                   </Button>
                                   {currentUser?.email === 'info@bamboomade.in' && user.email !== 'info@bamboomade.in' && (
                                     <Button 
