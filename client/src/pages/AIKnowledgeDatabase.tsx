@@ -342,9 +342,14 @@ export default function AIKnowledgeDatabase() {
           title: 'Authentication Required',
           description: 'You need to be logged in as an admin to perform this action. Please log in first.',
           variant: 'destructive',
+          action: (
+            <div className="cursor-pointer" onClick={() => navigate('/admin-login')}>
+              Login
+            </div>
+          ),
         });
-        // Optionally redirect to admin login page
-        // navigate('/admin-login');
+        // Give user time to see the toast before redirecting
+        setTimeout(() => navigate('/admin-login'), 3000);
       } else {
         toast({
           title: 'Error Adding Content',
