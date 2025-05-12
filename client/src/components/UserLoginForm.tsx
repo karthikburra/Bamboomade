@@ -73,16 +73,16 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     try {
       setIsVerifying(true);
       
-      loginWithCode({ 
+      // Use the loginWithCode method from useAuth hook
+      await loginWithCode({ 
         email, 
         code: verificationCode 
-      }, {
-        onSuccess: () => {
-          if (onSuccess) {
-            onSuccess();
-          }
-        }
       });
+      
+      // If we reach here, login was successful
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast({
         title: "Verification Failed",
