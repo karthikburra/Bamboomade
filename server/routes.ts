@@ -791,6 +791,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(500).json({ 
+        message: "Login failed", 
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false
+      });
+    }
+  });
+  
+  /**
+   * Verify a token from Supabase magic link
+   * This endpoint is called when a user clicks a magic link sent by Supabase
+   */
+  app.post("/api/auth/verify-token", async (req, res) => {
+    try {
+      console.log("🔑 Token verification attempt");
+      const { token, type } = req.body;
+      
+      if (!token || type !== 'email') {
+        console.log("❌ Missing or invalid token parameters");
+        return res.status(400).json({
+          message: "Invalid verification parameters",
+          success: false
+        });
+      }
+      
+      // Import Supabase service dynamically
+      const { getUserFromToken } = await import('./supabase-service');
+      
+      // Verify the token and get user information
+      console.log(`🔍 Verifying token and extracting user data`);
+      const result = await getUserFromToken(token);
+      
+      if (!result.success || !result.user) {
+        console.error(`❌ Token verification failed: ${result.message || "Unknown reason"}`);
+        return res.status(400).json({
+          message: result.message || "Invalid or expired token",
+          success: false
+        });
+      }
+      
+      const email = result.user.email;
+      
+      if (!email) {
+        console.error(`❌ No email found in token user data`);
+        return res.status(400).json({
+          message: "No email associated with this token",
+          success: false
+        });
+      }
+      
+      console.log(`🔍 Looking up user with email from token: ${email}`);
+      let user = await storage.getUserByEmail(email);
+      
+      // Create the user if they don't exist
+      if (!user) {
+        console.log(`📝 User not found, creating new account with email: ${email}`);
+        
+        // Generate a temporary random username based on email
+        const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
+        
+        // Generate a random password (user won't need to know this)
+        const password = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        user = await storage.createUser({
+          email,
+          username,
+          password: hashedPassword,
+          role: "user",
+          isVerified: true,
+          tokens: 10, // Default tokens for new users
+        });
+        
+        console.log(`✅ Created new verified user from token: ID ${user.id}, Email: ${email}`);
+      } else {
+        // Update existing user as verified
+        console.log(`✅ Updating existing user ${user.id} as verified`);
+        await storage.updateUser(user.id, {
+          isVerified: true
+        });
+      }
+      
+      // Set session for login
+      console.log(`🔑 Setting session for user ${user.id}`);
+      req.session.userId = user.id;
+      
+      // Save the session explicitly
+      req.session.save((err) => {
+        if (err) {
+          console.error("❌ Session save error:", err);
+          return res.status(500).json({
+            message: "Session save error",
+            success: false
+          });
+        }
+        
+        console.log(`✅ Session saved successfully for user ${user.id}`);
+        res.status(200).json({
+          message: "Verification successful",
+          success: true
+        });
+      });
+    } catch (error) {
+      console.error("❌ Login verification error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
         message: "An error occurred during login verification",
         success: false
       });

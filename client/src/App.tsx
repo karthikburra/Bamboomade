@@ -29,6 +29,7 @@ import PaymentFailed from "@/pages/PaymentFailed";
 import OurWorks from "@/pages/OurWorks";
 import AllSessions from "@/pages/AllSessions";
 import ProfileEdit from "@/pages/ProfileEdit";
+import VerifyEmail from "@/pages/VerifyEmail";
 import NotFound from "@/pages/not-found";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
@@ -69,6 +70,7 @@ function Router() {
       <Route path="/payment-failed" component={PaymentFailed} />
       <Route path="/all-sessions" component={AllSessions} />
       <Route path="/view-my-sessions" component={AllSessions} />
+      <Route path="/verify-email/:token" component={VerifyEmail} />
       
       {/* Workshop Detail Pages */}
       <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
