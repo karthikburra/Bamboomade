@@ -51,10 +51,23 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       
       if (data.success) {
         setStep("verification");
-        toast({
-          title: "Verification Code Sent",
-          description: "Please check your email for the verification code.",
-        });
+        
+        // In development mode, we might receive the tempCode directly
+        if (data.tempCode) {
+          // For development, automatically fill in the code
+          setVerificationCode(data.tempCode);
+          
+          toast({
+            title: "Verification Code (Dev Mode)",
+            description: `Your verification code is: ${data.tempCode}`,
+            duration: 10000
+          });
+        } else {
+          toast({
+            title: "Verification Code Sent",
+            description: "Please check your email for the verification code.",
+          });
+        }
       } else {
         toast({
           title: "Failed to Send Code",

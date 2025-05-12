@@ -567,18 +567,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Log verification code being sent for any debugging purposes
-      if (result.verificationCode) {
-        console.log(`✅ Verification code sent to email: ${email}`);
+      // If there's a verification code in the result (for development), include it in the response
+      if (result.verificationCode && process.env.NODE_ENV === 'development') {
+        console.log(`✅ Verification code for testing: ${result.verificationCode}`);
+        res.status(200).json({
+          message: "Verification code sent to your email",
+          success: true,
+          tempCode: result.verificationCode // Only included in development
+        });
+      } else {
+        console.log(`✅ Verification code sent successfully to ${email}`);
+        res.status(200).json({
+          message: "Verification code sent to your email",
+          success: true
+        });
       }
-      
-      console.log(`✅ Verification code sent successfully to ${email}`);
-      
-      // Return only success message without the verification code
-      res.status(200).json({
-        message: "Verification code sent to your email",
-        success: true
-      });
     } catch (error) {
       console.error("❌ Request login code error:", error);
       

@@ -53,8 +53,8 @@ function cleanupExpiredVerifications() {
 setInterval(cleanupExpiredVerifications, 10 * 60 * 1000);
 
 /**
- * Generate and send a verification code via Supabase OTP if available
- * Falls back to custom verification system if Supabase is not configured
+ * Generate and send a verification code via our email service
+ * This bypasses Supabase OTP completely and uses our custom email system
  */
 export async function sendVerificationCode(email: string): Promise<{
   success: boolean;
@@ -80,28 +80,29 @@ export async function sendVerificationCode(email: string): Promise<{
       attempts: 0
     });
     
-    // Skip Supabase OTP as it's not enabled for this project
-    console.log(`📧 Using direct email verification for: ${email}`);
+    console.log(`📧 Sending verification code to: ${email}`);
     
     // Import email service dynamically to avoid circular dependencies
     const { sendLoginVerificationEmail } = await import('./email-service');
     
+    // Try to send the email
+    console.log(`🔑 Attempting to send verification email to: ${email}`);
     const emailSent = await sendLoginVerificationEmail(email, verificationCode);
     
     if (!emailSent) {
-      throw new Error('Failed to send verification email');
+      console.error(`❌ Failed to send verification email to: ${email}`);
+      throw new Error('Failed to send verification email. Please check email configuration.');
     }
     
-    // Store the verification code
-    pendingVerifications.set(email, {
-      email,
-      code: verificationCode,
-      createdAt: new Date(),
-      attempts: 0
-    });
+    console.log(`✅ Verification email sent to: ${email}`);
     
-    console.log(`✅ Custom verification email sent to: ${email}`);
-    return { success: true, message: 'Verification code sent to your email' };
+    // For development or if email service is not configured properly,
+    // return the code directly for testing
+    return { 
+      success: true, 
+      message: 'Verification code sent to your email',
+      verificationCode: process.env.NODE_ENV === 'development' ? verificationCode : undefined
+    };
   } catch (error: any) {
     console.error(`❌ Failed to send verification:`, error);
     

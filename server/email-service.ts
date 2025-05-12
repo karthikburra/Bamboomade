@@ -15,12 +15,18 @@ export function initializeEmailService() {
     if (process.env.EMAIL_PASSWORD) {
       console.log('Initializing email service with real SMTP credentials');
       
-      // Use Gmail SMTP
+      // Use Gmail SMTP with proper configuration
       transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // use SSL
         auth: {
-          user: 'Info@bamboomade.in',
+          user: 'info@bamboomade.in', // Use lowercase for consistent handling
           pass: process.env.EMAIL_PASSWORD, // App password for Gmail
+        },
+        tls: {
+          // Do not fail on invalid certs
+          rejectUnauthorized: false
         }
       });
       
@@ -162,7 +168,7 @@ export async function sendEmail(options: {
   try {
     // Compose email content
     const mailOptions = {
-      from: '"BambooMade" <Info@bamboomade.in>',
+      from: '"BambooMade" <info@bamboomade.in>',
       to: options.to,
       cc: options.cc || 'bamboomade.in@gmail.com',
       subject: options.subject,
