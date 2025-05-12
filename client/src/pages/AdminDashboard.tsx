@@ -224,6 +224,38 @@ export default function AdminDashboard() {
     enabled: activeTab === "users",
   });
   
+  // Fetch all login history
+  const { data: loginHistoryData, isLoading: isLoginHistoryLoading } = useQuery({
+    queryKey: ["/api/admin/login-history"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/login-history");
+      return response.json();
+    },
+    enabled: activeTab === "users",
+  });
+  
+  // Fetch active sessions
+  const { data: activeSessionsData, isLoading: isActiveSessionsLoading } = useQuery({
+    queryKey: ["/api/admin/active-sessions"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/active-sessions");
+      return response.json();
+    },
+    enabled: activeTab === "users",
+    refetchInterval: 60000, // Refresh every 60 seconds
+  });
+  
+  // Fetch specific user login history
+  const { data: userLoginHistoryData, isLoading: isUserLoginHistoryLoading } = useQuery({
+    queryKey: ["/api/admin/login-history", selectedUserId],
+    queryFn: async () => {
+      if (!selectedUserId) return [];
+      const response = await apiRequest("GET", `/api/admin/login-history/${selectedUserId}`);
+      return response.json();
+    },
+    enabled: !!selectedUserId && isUserHistoryDialogOpen,
+  });
+  
   // Add Google Meet link mutation
   const addMeetLinkMutation = useMutation({
     mutationFn: async ({ sessionId, meetLink }: { sessionId: number, meetLink: string }) => {
@@ -1141,6 +1173,7 @@ export default function AdminDashboard() {
                               <TableHead className="text-purple-200 font-medium text-sm py-3">Full Name</TableHead>
                               <TableHead className="text-purple-200 font-medium text-sm py-3">Role</TableHead>
                               <TableHead className="text-purple-200 font-medium text-sm py-3">Verified</TableHead>
+                              <TableHead className="text-purple-200 font-medium text-sm py-3 text-right">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
