@@ -578,6 +578,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
       
+      // Make sure we save the session explicitly
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Failed to save session:", err);
+            reject(err);
+          } else {
+            console.log(`Session saved successfully for user ${user.id}`);
+            resolve();
+          }
+        });
+      });
+      
       // Don't return password in response
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
@@ -1167,8 +1180,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user) {
         req.session.userId = user.id;
         
+        // Make sure we save the session explicitly
+        await new Promise<void>((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) {
+              console.error("Failed to save session:", err);
+              reject(err);
+            } else {
+              console.log(`Session saved successfully for user ${user?.id}`);
+              resolve();
+            }
+          });
+        });
+        
         // Don't return password in response
         const { password, ...userWithoutPassword } = user;
+        
+        console.log(`Login successful for user ${user.email}, session ID set to ${user.id}`);
         res.json(userWithoutPassword);
       } else {
         res.status(500).json({ message: "Failed to create or retrieve user" });
