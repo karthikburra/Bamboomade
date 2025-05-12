@@ -573,8 +573,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log(`✅ Verification code sent successfully to ${email}`);
+      
+      // Return only success message without the verification code
       res.status(200).json({
-        message: "Verification code sent. Please check your email.",
+        message: "Verification code sent to your email",
         success: true
       });
     } catch (error) {
