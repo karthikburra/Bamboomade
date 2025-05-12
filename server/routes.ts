@@ -4546,6 +4546,100 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Toggle admin status - only info@bamboomade.in can do this
+  app.post("/api/admin/toggle-admin/:userId", isAdmin, async (req, res) => {
+    try {
+      const adminEmail = req.session.userEmail;
+      if (adminEmail !== 'info@bamboomade.in') {
+        return res.status(403).json({ 
+          message: "Only the super admin (info@bamboomade.in) can manage admin privileges" 
+        });
+      }
+      
+      const targetUserId = parseInt(req.params.userId);
+      const { makeAdmin } = req.body;
+      
+      if (isNaN(targetUserId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Don't allow changing admin status of the super admin
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (targetUser.email === 'info@bamboomade.in') {
+        return res.status(403).json({ 
+          message: "Cannot change admin status of the super admin account" 
+        });
+      }
+      
+      // Update the user's admin status
+      const updatedUser = await storage.updateUserAdminStatus(targetUserId, makeAdmin);
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = updatedUser;
+      
+      res.json({
+        message: `User admin status ${makeAdmin ? 'granted' : 'revoked'} successfully`,
+        user: userWithoutPassword
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to update admin status", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Reset user password - only info@bamboomade.in can do this
+  app.post("/api/admin/reset-password/:userId", isAdmin, async (req, res) => {
+    try {
+      const adminEmail = req.session.userEmail;
+      if (adminEmail !== 'info@bamboomade.in') {
+        return res.status(403).json({ 
+          message: "Only the super admin (info@bamboomade.in) can reset passwords" 
+        });
+      }
+      
+      const targetUserId = parseInt(req.params.userId);
+      const { newPassword } = req.body;
+      
+      if (isNaN(targetUserId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ 
+          message: "Password must be at least 6 characters long" 
+        });
+      }
+      
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // Update the user's password
+      const updatedUser = await storage.updateUserPassword(targetUserId, hashedPassword);
+      
+      res.json({
+        message: "Password reset successfully",
+        userId: targetUserId,
+        email: targetUser.email
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to reset password", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
   // User login history routes
   app.get("/api/admin/login-history", isAdmin, async (req, res) => {
     try {

@@ -607,6 +607,89 @@ export default function AdminDashboard() {
     
   const cancelledSessions = applyFilters(sessions.filter((s: Session) => 
     s.status === 'cancelled'));
+    
+  // User management functions
+  const users = usersData || [];
+  const currentUser = userData?.user || null;
+
+  // Function to handle editing a user
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsEditUserDialogOpen(true);
+  };
+
+  // Function to handle toggling admin status
+  const handleToggleAdminStatus = (user: User) => {
+    if (confirm(`Are you sure you want to ${user.role === 'admin' ? 'remove' : 'grant'} admin privileges for ${user.email}?`)) {
+      toggleAdminMutation.mutate({
+        userId: user.id,
+        makeAdmin: user.role !== 'admin'
+      });
+    }
+  };
+
+  // Function to handle resetting a user's password
+  const handleResetPassword = (user: User) => {
+    setSelectedUser(user);
+    setNewPassword("");
+    setIsResetPasswordDialogOpen(true);
+  };
+
+  // Mutation for resetting a user's password
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, newPassword }: { userId: number, newPassword: string }) => {
+      const response = await apiRequest("POST", `/api/admin/reset-password/${userId}`, {
+        newPassword
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password Reset",
+        description: `Password has been reset for ${selectedUser?.email}`,
+      });
+      setIsResetPasswordDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to reset password",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Mutation for toggling admin status
+  const toggleAdminMutation = useMutation({
+    mutationFn: async ({ userId, makeAdmin }: { userId: number, makeAdmin: boolean }) => {
+      const response = await apiRequest("POST", `/api/admin/toggle-admin/${userId}`, {
+        makeAdmin
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Admin Status Updated",
+        description: "User permissions have been updated successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update admin status",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Function to refetch users data
+  const refetchUsers = () => {
+    queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+  };
+
+  // Loading states
+  const isLoadingUsers = isUsersLoading;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -2515,6 +2598,186 @@ export default function AdminDashboard() {
                     <Plus className="w-4 h-4 mr-2" /> Add Dates
                   </>
                 )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Reset Password Dialog */}
+        <Dialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle>Reset User Password</DialogTitle>
+              <DialogDescription>
+                Set a new password for {selectedUser?.email}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <div className="flex">
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white flex-grow"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="ml-2 border-gray-700 hover:bg-gray-800 text-amber-400"
+                    onClick={() => {
+                      // Generate a strong random password
+                      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+                      let password = '';
+                      for (let i = 0; i < 12; i++) {
+                        password += chars.charAt(Math.floor(Math.random() * chars.length));
+                      }
+                      setNewPassword(password);
+                    }}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Generate
+                  </Button>
+                </div>
+                {newPassword && (
+                  <div className="mt-2 bg-gray-800 p-2 rounded-md border border-gray-700">
+                    <p className="text-xs text-gray-400 mb-1">New password:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs font-mono text-green-400 bg-green-950/30 p-1 rounded flex-grow">
+                        {newPassword}
+                      </code>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(newPassword);
+                          toast({
+                            title: "Copied!",
+                            description: "Password copied to clipboard",
+                          });
+                        }}
+                        className="h-7 px-2 border-gray-700 text-gray-300"
+                      >
+                        <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-amber-900/30 border border-amber-700 p-3 rounded-md">
+                <div className="flex items-center text-amber-300 mb-2">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  <h4 className="text-sm font-medium">Important Note</h4>
+                </div>
+                <p className="text-xs text-amber-200/80">
+                  This will immediately change the user's password. Make sure to communicate the new password to the user securely.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsResetPasswordDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedUser) return;
+                  resetPasswordMutation.mutate({
+                    userId: selectedUser.id,
+                    newPassword
+                  });
+                }}
+                className="bg-amber-600 hover:bg-amber-700"
+                disabled={!newPassword || resetPasswordMutation.isPending}
+              >
+                {resetPasswordMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Resetting...
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    Reset Password
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Edit User Dialog */}
+        <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+              <DialogDescription>
+                Update user information for {selectedUser?.email}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    placeholder="Username"
+                    defaultValue={selectedUser?.username}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      placeholder="First name"
+                      defaultValue={selectedUser?.firstName || ''}
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      placeholder="Last name"
+                      defaultValue={selectedUser?.lastName || ''}
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Phone number"
+                    defaultValue={selectedUser?.phone || ''}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditUserDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -192,13 +192,35 @@ export class DatabaseStorage implements IStorage {
   
   async updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User | undefined> {
     try {
+      // When setting admin status, also update the role field to maintain consistency
+      const role = isAdmin ? 'admin' : 'user';
+      
       const [updatedUser] = await db.update(users)
-        .set({ isAdmin })
+        .set({ 
+          isAdmin,
+          role
+        })
         .where(eq(users.id, userId))
         .returning();
       return updatedUser;
     } catch (error) {
       console.error("Database error in updateUserAdminStatus:", error);
+      return undefined;
+    }
+  }
+  
+  async updateUserPassword(userId: number, hashedPassword: string): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({ 
+          password: hashedPassword,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Database error in updateUserPassword:", error);
       return undefined;
     }
   }
