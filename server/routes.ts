@@ -401,63 +401,16 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
 // Import WhatsApp bot
 import whatsappBot from "./whatsapp-bot.js";
 
-// Initialize Firebase Admin SDK if Firebase credentials are available
+// Initialize Firebase Admin SDK with minimal configuration
 try {
   if (!admin.apps.length) {
-    // For fallback authentication without Firebase Admin
-    let useFirebaseAdmin = false;
-    
-    // Check if we have all required Firebase credentials
-    if (process.env.VITE_FIREBASE_PROJECT_ID && 
-        process.env.FIREBASE_CLIENT_EMAIL && 
-        process.env.FIREBASE_PRIVATE_KEY) {
-      
-      try {
-        // Format the private key properly - this handles various ways the key might be provided
-        let privateKey = process.env.FIREBASE_PRIVATE_KEY || '';
-        
-        // If the key is JSON-escaped with quotes and newlines
-        if (privateKey.includes('\\n')) {
-          privateKey = privateKey.replace(/\\n/g, '\n');
-        }
-        
-        // If the key is inside quotes
-        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-          privateKey = privateKey.slice(1, -1);
-        }
-        
-        // Check if the key looks like a PEM formatted key
-        if (!privateKey.includes('BEGIN PRIVATE KEY') && !privateKey.includes('END PRIVATE KEY')) {
-          console.error('Private key does not appear to be in proper PEM format');
-        }
-        
-        console.log('Formatted private key (first 20 chars):', privateKey.substring(0, 20) + '...')
-        
-        admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: privateKey
-          })
-        });
-        
-        console.log("Firebase Admin SDK initialized successfully");
-        useFirebaseAdmin = true;
-      } catch (credError) {
-        console.warn("Failed to initialize Firebase Admin with credentials:", credError);
-      }
-    }
-    
-    // If credential initialization failed, use a simpler initialization for development
-    if (!useFirebaseAdmin) {
-      admin.initializeApp({
-        projectId: process.env.VITE_FIREBASE_PROJECT_ID
-      });
-      console.log("Firebase Admin SDK initialized with minimal configuration");
-    }
+    admin.initializeApp({
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID
+    });
+    console.log("Firebase Admin SDK initialized with minimal configuration");
   }
 } catch (error) {
-  console.warn("Firebase Admin initialization failed completely:", error);
+  console.warn("Firebase Admin initialization failed:", error);
   // Continue without Firebase Admin for testing purposes
 }
 
@@ -1148,28 +1101,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Processing Google authentication with token");
       
-      try {
-        // Try to verify with Firebase Admin SDK
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
-        email = decodedToken.email;
-        name = decodedToken.name;
-        picture = decodedToken.picture;
-        console.log("Successfully verified Firebase token");
-      } catch (verifyError) {
-        console.warn("Failed to verify Firebase token:", verifyError);
-        
-        // Fallback to using the user data directly from the client
-        // This is less secure but allows login to work even if token verification fails
-        if (firebaseUser?.email) {
-          console.log("Using fallback authentication method with user data");
-          email = firebaseUser.email;
-          name = firebaseUser.displayName;
-          picture = firebaseUser.photoURL;
-        } else {
-          console.error("No fallback user data available");
-          return res.status(401).json({ 
-            message: "Authentication failed: Could not verify token and no user data provided" 
-          });
+      // Skip token verification in development for simplicity
+      if (process.env.NODE_ENV === 'development' && firebaseUser?.email) {
+        console.log("DEV MODE: Using provided user data without token verification");
+        email = firebaseUser.email;
+        name = firebaseUser.displayName;
+        picture = firebaseUser.photoURL;
+      } else {
+        try {
+          // Try to verify with Firebase Admin SDK
+          const decodedToken = await admin.auth().verifyIdToken(idToken);
+          email = decodedToken.email;
+          name = decodedToken.name;
+          picture = decodedToken.picture;
+          console.log("Successfully verified Firebase token");
+        } catch (verifyError) {
+          console.warn("Failed to verify Firebase token:", verifyError);
+          
+          // Fallback to using the user data directly from the client
+          // This is less secure but allows login to work even if token verification fails
+          if (firebaseUser?.email) {
+            console.log("Using fallback authentication method with user data");
+            email = firebaseUser.email;
+            name = firebaseUser.displayName;
+            picture = firebaseUser.photoURL;
+          } else {
+            console.error("No fallback user data available");
+            return res.status(401).json({ 
+              message: "Authentication failed: Could not verify token and no user data provided" 
+            });
+          }
         }
       }
       

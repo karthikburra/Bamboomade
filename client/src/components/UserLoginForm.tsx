@@ -78,11 +78,24 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
           }
         }
       } catch (error) {
-        toast({
-          title: "Google Login Failed",
-          description: error instanceof Error ? error.message : "Failed to login with Google. Please try again.",
-          variant: "destructive",
-        });
+        console.error("Error handling Google redirect:", error);
+        
+        // Check for unauthorized domain error
+        if (error instanceof Error && 
+            (error.toString().includes('auth/unauthorized-domain') || 
+             error.toString().includes('unauthorized-continue-uri'))) {
+          toast({
+            title: "Domain Not Authorized",
+            description: "This domain isn't authorized in Firebase. Please add your Replit domain to the Firebase Auth 'Authorized domains' list.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Google Login Failed",
+            description: error instanceof Error ? error.message : "Failed to login with Google. Please try again.",
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsGoogleLoading(false);
       }
@@ -100,11 +113,24 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       await signInWithGoogle();
       // We won't reach this point as the redirect happens
     } catch (error) {
-      toast({
-        title: "Google Login Failed",
-        description: error instanceof Error ? error.message : "Failed to login with Google. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error starting Google sign-in:", error);
+      
+      // Check for unauthorized domain error
+      if (error instanceof Error && 
+          (error.toString().includes('auth/unauthorized-domain') || 
+           error.toString().includes('unauthorized-continue-uri'))) {
+        toast({
+          title: "Domain Not Authorized",
+          description: "This domain isn't authorized in Firebase. Please add your Replit domain to the Firebase Auth 'Authorized domains' list.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Google Login Failed",
+          description: error instanceof Error ? error.message : "Failed to login with Google. Please try again.",
+          variant: "destructive",
+        });
+      }
       setIsGoogleLoading(false);
     }
   };
