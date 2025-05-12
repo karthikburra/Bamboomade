@@ -106,6 +106,20 @@ interface Session {
   originalDate?: string;
 }
 
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: 'user' | 'admin';
+  isVerified: boolean;
+  profileCompleted: boolean;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  createdAt: Date;
+  lastLoginAt?: Date;
+}
+
 export default function AdminDashboard() {
   // Get shared resources and utilities
   const { toast } = useToast();
@@ -169,6 +183,12 @@ export default function AdminDashboard() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [isUserHistoryDialogOpen, setIsUserHistoryDialogOpen] = useState(false);
   const [isEditSlotDialogOpen, setIsEditSlotDialogOpen] = useState(false);
+  
+  // User management states
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   
   // Bulk date selection state
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
