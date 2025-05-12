@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedLeaves from "@/components/AnimatedLeaves";
 import ScrollToTop from "@/components/ScrollToTop";
+import DevToolsButton from "@/components/DevToolsButton";
 import { useEffect } from "react";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
@@ -30,6 +31,7 @@ import OurWorks from "@/pages/OurWorks";
 import AllSessions from "@/pages/AllSessions";
 import ProfileEdit from "@/pages/ProfileEdit";
 import VerifyEmail from "@/pages/VerifyEmail";
+import DevTools from "@/pages/DevTools";
 import NotFound from "@/pages/not-found";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
@@ -71,6 +73,7 @@ function Router() {
       <Route path="/all-sessions" component={AllSessions} />
       <Route path="/view-my-sessions" component={AllSessions} />
       <Route path="/verify-email/:token" component={VerifyEmail} />
+      <Route path="/dev-tools" component={DevTools} />
       
       {/* Workshop Detail Pages */}
       <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
@@ -144,6 +147,7 @@ function App() {
                 <Router />
               </main>
               <Footer className="relative" />
+              <DevToolsButton />
             </div>
           </div>
         </ProfileRedirectChecker>
