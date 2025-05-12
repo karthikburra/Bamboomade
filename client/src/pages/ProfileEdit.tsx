@@ -183,7 +183,7 @@ const ProfileEdit: React.FC = () => {
         <h1 className="text-3xl font-bold text-green-300 mb-8 text-center">Edit Your Profile</h1>
         
         {user?.needsProfileCompletion && (
-          <div className="bg-green-700/20 border border-green-700 rounded-lg p-4 mb-6">
+          <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 mb-6 dark">
             <h2 className="text-lg font-semibold text-green-300 mb-2">Welcome to BambooMade!</h2>
             <p className="text-green-100">
               Please complete your profile to continue using the platform. 
@@ -192,10 +192,10 @@ const ProfileEdit: React.FC = () => {
           </div>
         )}
         
-        <Card className="bg-gray-900 border-gray-800">
-          <CardHeader>
+        <Card className="bg-gray-900 border-gray-800 dark">
+          <CardHeader className="border-b border-gray-800">
             <CardTitle className="text-green-300">Personal Information</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-400">
               Update your profile information below. Only your email cannot be changed.
             </CardDescription>
           </CardHeader>
@@ -204,7 +204,7 @@ const ProfileEdit: React.FC = () => {
             <CardContent className="space-y-6">
               {/* Profile Image */}
               <div className="flex flex-col items-center gap-4 mb-8">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-800 border-2 border-green-600 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-900 border-2 border-green-600 flex items-center justify-center shadow-lg shadow-green-900/20">
                   {imagePreview ? (
                     <img 
                       src={imagePreview} 
@@ -212,7 +212,7 @@ const ProfileEdit: React.FC = () => {
                       className="w-full h-full object-cover" 
                     />
                   ) : (
-                    <User className="w-16 h-16 text-gray-500" />
+                    <User className="w-16 h-16 text-gray-600" />
                   )}
                 </div>
                 
@@ -226,7 +226,7 @@ const ProfileEdit: React.FC = () => {
                   />
                   <Label
                     htmlFor="profileImage"
-                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-800 transition-colors cursor-pointer text-white"
+                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-600 transition-colors cursor-pointer text-white shadow-md shadow-green-900/30"
                   >
                     <Upload className="w-4 h-4" />
                     {imagePreview ? "Change Picture" : "Upload Picture"}
@@ -243,7 +243,7 @@ const ProfileEdit: React.FC = () => {
                   type="email"
                   value={user?.email || ""}
                   disabled
-                  className="bg-gray-800 border-gray-700 text-gray-400"
+                  className="bg-gray-900 border-gray-700 text-gray-400 dark"
                 />
                 <p className="text-xs text-gray-500">Email address cannot be changed</p>
               </div>
@@ -259,7 +259,7 @@ const ProfileEdit: React.FC = () => {
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className={`bg-gray-800 border-gray-700 ${!fullName.trim() ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  className={`bg-gray-900 border-gray-700 text-gray-100 dark ${!fullName.trim() ? 'border-red-500 focus:ring-red-500' : 'focus:border-green-500 focus:ring-green-500'}`}
                   required
                 />
                 {!fullName.trim() && (
@@ -278,17 +278,17 @@ const ProfileEdit: React.FC = () => {
                   placeholder="Enter your phone number"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="bg-gray-800 border-gray-700"
+                  className="bg-gray-900 border-gray-700 text-gray-100 dark focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             </CardContent>
             
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex justify-between border-t border-gray-800 pt-6">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate("/")}
-                className="border-green-700 text-green-300 hover:bg-green-900/20"
+                className="border-green-700 text-green-300 hover:bg-green-900/30 dark"
               >
                 Cancel
               </Button>
@@ -296,7 +296,7 @@ const ProfileEdit: React.FC = () => {
               <Button
                 type="submit"
                 disabled={isSaving || isUploading}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-700 hover:bg-green-600 text-white shadow-md shadow-green-900/30 dark"
               >
                 {(isSaving || isUploading) && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
