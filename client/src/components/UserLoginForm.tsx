@@ -182,18 +182,19 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
           </div>
           
           <div className="space-y-4">
-            <FormItem>
-              <FormLabel>Verification Code</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter 6-digit code"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  maxLength={6}
-                  className="text-center tracking-widest text-lg"
-                />
-              </FormControl>
-            </FormItem>
+            <div className="space-y-2">
+              <label htmlFor="verification-code" className="text-sm font-medium">
+                Verification Code
+              </label>
+              <Input
+                id="verification-code"
+                placeholder="Enter 6-digit code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                maxLength={6}
+                className="text-center tracking-widest text-lg"
+              />
+            </div>
             
             <Button 
               onClick={handleVerifyCode} 
