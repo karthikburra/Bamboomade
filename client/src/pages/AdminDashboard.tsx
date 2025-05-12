@@ -640,24 +640,48 @@ export default function AdminDashboard() {
                 setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
               }}
             >
-              <div className="relative overflow-x-auto pb-1">
-                <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-                  <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+              <div className="relative overflow-x-auto pb-2">
+                <TabsList className="bg-gray-800/80 border border-gray-700 rounded-md shadow-md w-full flex flex-wrap sm:flex-nowrap overflow-x-auto">
+                  <TabsTrigger 
+                    value="pending" 
+                    className="flex-1 data-[state=active]:bg-amber-600/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <Clock className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
                     Pending ({pendingSessions.length})
                   </TabsTrigger>
-                  <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                  <TabsTrigger 
+                    value="upcoming" 
+                    className="flex-1 data-[state=active]:bg-cyan-600/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <CalendarClock className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
                     Upcoming ({upcomingSessions.length})
                   </TabsTrigger>
-                  <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                  <TabsTrigger 
+                    value="completed" 
+                    className="flex-1 data-[state=active]:bg-green-600/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
                     Completed ({completedSessions.length})
                   </TabsTrigger>
-                  <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                  <TabsTrigger 
+                    value="cancelled" 
+                    className="flex-1 data-[state=active]:bg-red-600/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <XCircle className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
                     Cancelled ({cancelledSessions.length})
                   </TabsTrigger>
-                  <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                  <TabsTrigger 
+                    value="all" 
+                    className="flex-1 data-[state=active]:bg-gray-700/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <Calendar className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
                     All Sessions
                   </TabsTrigger>
-                  <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
+                  <TabsTrigger 
+                    value="availability" 
+                    className="flex-1 data-[state=active]:bg-purple-600/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <CalendarRange className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
                     Availability
                   </TabsTrigger>
                 </TabsList>
