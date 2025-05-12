@@ -556,7 +556,12 @@ export default function AdminDashboard() {
       </Helmet>
       
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        {/* AdminTabs component at the top of the page, before any headers */}
+        {/* Page header outside of tabs so it's visible on all tabs */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
+        </div>
+        
+        {/* AdminTabs component now below the header */}
         <AdminTabs 
           value={activeTab}
           onTabChange={(value) => {
@@ -571,10 +576,6 @@ export default function AdminDashboard() {
         >
           {/* Sessions Tab - Contains session management */}
           <TabsContent value="sessions" className="space-y-4">
-            {/* Page header moved below tabs */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
-              <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-            </div>
         
             {/* Stats summary only shown on Sessions tab */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
