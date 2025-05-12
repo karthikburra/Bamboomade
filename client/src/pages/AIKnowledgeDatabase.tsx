@@ -297,14 +297,32 @@ export default function AIKnowledgeDatabase() {
   
   const handleAddContent = async (formData: FormData) => {
     try {
+      // Convert FormData to JSON object
+      const contentData = {
+        title: formData.get('title'),
+        content: formData.get('content'),
+        contentType: formData.get('contentType'),
+        source: formData.get('source'),
+        status: formData.get('status'),
+      };
+      
+      console.log("Submitting content:", contentData);
+      
       const response = await fetch('/api/ai-knowledge', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contentData),
       });
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add content');
+        if (response.status === 401) {
+          throw new Error('You must be logged in as an admin to add content. Please log in and try again.');
+        } else {
+          throw new Error(errorData.message || 'Failed to add content');
+        }
       }
       
       const data = await response.json();
@@ -317,11 +335,23 @@ export default function AIKnowledgeDatabase() {
       refetch();
       setIsAddDialogOpen(false);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to add content. Please try again.',
-        variant: 'destructive',
-      });
+      console.error("Error adding content:", error);
+      
+      if (error.message.includes('logged in as an admin')) {
+        toast({
+          title: 'Authentication Required',
+          description: 'You need to be logged in as an admin to perform this action. Please log in first.',
+          variant: 'destructive',
+        });
+        // Optionally redirect to admin login page
+        // navigate('/admin-login');
+      } else {
+        toast({
+          title: 'Error Adding Content',
+          description: error.message || 'Failed to add content. Please try again.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 

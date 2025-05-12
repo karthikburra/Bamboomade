@@ -4046,6 +4046,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(400).json({ message: "Title, content, and contentType are required" });
       }
       
+      // Check if adminUser exists in session
+      if (!req.session.adminUser || !req.session.adminUser.id) {
+        console.error("Admin user not found in session");
+        return res.status(401).json({ message: "Unauthorized - You must be logged in as an admin" });
+      }
+      
       // Create base content object
       const contentData: any = {
         title,
