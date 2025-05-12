@@ -17,6 +17,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUserTokens(userId: number, tokens: number): Promise<User | undefined>;
   updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User | undefined>;
