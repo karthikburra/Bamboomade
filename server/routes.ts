@@ -577,18 +577,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`✅ Verification email sent successfully to ${email}`);
       
-      // Include verification code in development mode for easier testing
-      const isDevelopment = process.env.NODE_ENV === 'development';
+      // No longer including verification code in the response, even in development mode
+      // Real emails should always be used
       const responseData = { 
         message: "Verification code sent. Please check your email.",
         success: true,
         expiresAt
       };
-      
-      // Add verification code to response in development mode only
-      if (isDevelopment) {
-        responseData.devCode = verificationCode;
-      }
       
       res.status(200).json(responseData);
     } catch (error) {
