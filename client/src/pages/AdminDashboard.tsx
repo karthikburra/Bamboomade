@@ -1209,12 +1209,159 @@ export default function AdminDashboard() {
                                     </Badge>
                                   )}
                                 </TableCell>
+                                <TableCell className="text-right">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="hover:bg-purple-900/30 text-purple-300"
+                                    onClick={() => {
+                                      setSelectedUserId(user.id);
+                                      setIsUserHistoryDialogOpen(true);
+                                    }}
+                                  >
+                                    <History className="w-4 h-4 mr-2" />
+                                    Login History
+                                  </Button>
+                                </TableCell>
                               </TableRow>
                             ))}
                         </TableBody>
                       </Table>
                     </div>
                   </div>
+                  );
+                })()}
+              </CardContent>
+            </Card>
+            
+            {/* Active Sessions Card */}
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-green-400" />
+                      Active User Sessions
+                    </CardTitle>
+                    <CardDescription>
+                      Currently active user sessions across all deployments
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {(() => {
+                  // Loading state
+                  if (isActiveSessionsLoading) {
+                    return (
+                      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
+                        <Loader2 className="h-12 w-12 text-green-500 mx-auto mb-4 animate-spin" />
+                        <h3 className="text-lg font-medium mb-2">Loading Active Sessions</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Please wait while we fetch current session data...
+                        </p>
+                      </div>
+                    );
+                  }
+                  
+                  // No active sessions state
+                  if (!activeSessionsData || activeSessionsData.length === 0) {
+                    return (
+                      <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 text-center">
+                        <UserX className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No Active Sessions</h3>
+                        <p className="text-muted-foreground mb-6">
+                          There are no active user sessions right now.
+                        </p>
+                      </div>
+                    );
+                  }
+                  
+                  // Display active sessions
+                  return (
+                    <div className="bg-gray-900/90 rounded-lg border border-gray-700 shadow-md">
+                      <div className="p-5 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                          <h3 className="text-lg font-medium mb-1 flex items-center gap-2">
+                            <Activity className="h-5 w-5 text-green-400" />
+                            Live User Activity
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-green-300">{activeSessionsData.length} active users</span> currently using the system
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-900/30 text-green-200 border-green-800 shadow-sm">
+                            <Activity className="w-3 h-3 mr-1.5" />
+                            Auto-refreshing
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="p-4 overflow-x-auto">
+                        <Table className="border-collapse border-spacing-0">
+                          <TableHeader>
+                            <TableRow className="border-b border-gray-800 bg-gray-900/50">
+                              <TableHead className="text-green-200 font-medium text-sm py-3">User</TableHead>
+                              <TableHead className="text-green-200 font-medium text-sm py-3">Device Info</TableHead>
+                              <TableHead className="text-green-200 font-medium text-sm py-3">Login Time</TableHead>
+                              <TableHead className="text-green-200 font-medium text-sm py-3">Last Active</TableHead>
+                              <TableHead className="text-green-200 font-medium text-sm py-3">Session Duration</TableHead>
+                              <TableHead className="text-green-200 font-medium text-sm py-3">Idle Time</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {activeSessionsData.map((session) => (
+                              <TableRow key={session.id} className="hover:bg-gray-800/40 border-b border-gray-800/50 transition-colors">
+                                <TableCell>
+                                  <div className="font-medium">{session.userEmail}</div>
+                                  <div className="text-xs text-gray-400">User ID: {session.userId}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1.5">
+                                    {session.deviceType === 'mobile' ? (
+                                      <Smartphone className="h-4 w-4 text-blue-400" />
+                                    ) : (
+                                      <Laptop className="h-4 w-4 text-purple-400" />
+                                    )}
+                                    <span className="text-sm">{session.browser || 'Unknown'} on {session.os || 'Unknown'}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-400">IP: {session.ipAddress || 'Unknown'}</div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-mono text-sm">{session.formattedLoginTime}</div>
+                                </TableCell>
+                                <TableCell>
+                                  {session.formattedLastActiveTime ? (
+                                    <div className="font-mono text-sm">{session.formattedLastActiveTime}</div>
+                                  ) : (
+                                    <span className="text-gray-500 italic text-sm">No activity</span>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-blue-900/30 border-blue-800">
+                                    <Clock className="w-3 h-3 mr-1.5" />
+                                    {session.activeDuration} min
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {session.idleTime > 10 ? (
+                                    <Badge className="bg-yellow-900/30 border-yellow-800">
+                                      <Clock8 className="w-3 h-3 mr-1.5" />
+                                      {session.idleTime} min
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-green-900/30 border-green-800">
+                                      <Activity className="w-3 h-3 mr-1.5" />
+                                      Active
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
                   );
                 })()}
               </CardContent>
@@ -2342,6 +2489,113 @@ export default function AdminDashboard() {
                 variant="secondary"
                 onClick={() => setViewSlotsDialogOpen(false)}
                 className="bg-gray-800 hover:bg-gray-700 text-white"
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* User Login History Dialog */}
+        <Dialog open={isUserHistoryDialogOpen} onOpenChange={setIsUserHistoryDialogOpen}>
+          <DialogContent className="sm:max-w-[700px] bg-gray-950 border-gray-800">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <History className="h-5 w-5 text-purple-400" />
+                User Login History
+              </DialogTitle>
+              <DialogDescription>
+                View login sessions for this user across all deployments
+              </DialogDescription>
+            </DialogHeader>
+            
+            {isUserLoginHistoryLoading ? (
+              <div className="p-6 text-center">
+                <Loader2 className="h-8 w-8 animate-spin text-purple-500 mx-auto mb-2" />
+                <p className="text-gray-400">Loading login history...</p>
+              </div>
+            ) : (
+              <>
+                {!userLoginHistoryData || userLoginHistoryData.length === 0 ? (
+                  <div className="p-6 text-center bg-gray-900/50 rounded-lg border border-gray-800">
+                    <Info className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                    <p className="text-gray-300 mb-2">No login history found</p>
+                    <p className="text-gray-400 text-sm">This user hasn't logged in yet or their history is not available.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-auto max-h-[400px]">
+                    <Table className="border-collapse border-spacing-0">
+                      <TableHeader>
+                        <TableRow className="border-b border-gray-800 bg-gray-900/50">
+                          <TableHead className="text-purple-200 font-medium text-sm py-3">Login Time</TableHead>
+                          <TableHead className="text-purple-200 font-medium text-sm py-3">Last Active</TableHead>
+                          <TableHead className="text-purple-200 font-medium text-sm py-3">Logout Time</TableHead>
+                          <TableHead className="text-purple-200 font-medium text-sm py-3">Duration</TableHead>
+                          <TableHead className="text-purple-200 font-medium text-sm py-3">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {userLoginHistoryData.map((session) => (
+                          <TableRow key={session.id} className="hover:bg-gray-800/40 border-b border-gray-800/50 transition-colors">
+                            <TableCell>
+                              <div className="font-medium text-sm">{session.formattedLoginTime}</div>
+                              <div className="text-xs text-gray-400">Session ID: {session.sessionId.substring(0, 8)}...</div>
+                            </TableCell>
+                            <TableCell>
+                              {session.formattedLastActiveTime ? (
+                                <div className="font-mono text-sm text-gray-200">{session.formattedLastActiveTime}</div>
+                              ) : (
+                                <span className="text-gray-500 italic text-sm">No activity</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {session.formattedLogoutTime ? (
+                                <div className="font-mono text-sm text-gray-200">{session.formattedLogoutTime}</div>
+                              ) : (
+                                <span className="text-gray-500 italic text-sm">Still active</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {session.duration ? (
+                                <Badge className="bg-purple-900/30 border-purple-800">
+                                  <Clock className="w-3 h-3 mr-1.5" />
+                                  {session.duration} min
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-blue-900/30 border-blue-800">
+                                  <Activity className="w-3 h-3 mr-1.5" />
+                                  Active
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {session.isActive ? (
+                                <Badge className="bg-green-900/30 text-green-200 border-green-800 shadow-sm">
+                                  <Activity className="w-3 h-3 mr-1.5" />
+                                  Active Now
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-gray-900/30 text-gray-200 border-gray-700 shadow-sm">
+                                  <UserX className="w-3 h-3 mr-1.5" />
+                                  Logged Out
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </>
+            )}
+            
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="border-gray-700 hover:bg-gray-800"
+                onClick={() => setIsUserHistoryDialogOpen(false)}
               >
                 Close
               </Button>
