@@ -8,6 +8,9 @@ let transporter: nodemailer.Transporter | null = null;
 /**
  * Initialize the email service with SMTP configuration
  * This can use Gmail, or any other SMTP service
+ * 
+ * NOTE: SendGrid is now the primary email service provider (see sendgrid-service.ts)
+ * This email service is used as a fallback if SendGrid is unavailable
  */
 export function initializeEmailService() {
   try {

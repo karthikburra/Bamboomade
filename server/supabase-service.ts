@@ -82,11 +82,34 @@ export async function sendVerificationCode(email: string): Promise<{
     
     console.log(`📧 Sending verification code to: ${email}`);
     
-    // Import email service dynamically to avoid circular dependencies
+    // First try with SendGrid (more reliable)
+    try {
+      // Import SendGrid service dynamically
+      const { sendVerificationCodeEmailWithSendGrid } = await import('./sendgrid-service');
+      
+      console.log(`🔑 Attempting to send verification email via SendGrid to: ${email}`);
+      const sendgridResult = await sendVerificationCodeEmailWithSendGrid(email, verificationCode);
+      
+      if (sendgridResult) {
+        console.log(`✅ SendGrid verification email sent successfully to: ${email}`);
+        // If SendGrid works, we don't need to try the fallback
+        return { 
+          success: true, 
+          message: 'Verification code sent to your email',
+          ...(process.env.NODE_ENV === 'development' ? { verificationCode } : {})
+        };
+      }
+    } catch (sendgridError) {
+      console.error(`❌ SendGrid email error:`, sendgridError);
+      // Continue to fallback if SendGrid fails
+      console.log(`⚠️ SendGrid failed, falling back to standard email service`);
+    }
+    
+    // Fallback to regular email service if SendGrid fails
     const { sendLoginVerificationEmail } = await import('./email-service');
     
-    // Try to send the email
-    console.log(`🔑 Attempting to send verification email to: ${email}`);
+    // Try to send the email with fallback method
+    console.log(`🔑 Attempting to send verification email via fallback to: ${email}`);
     const emailSent = await sendLoginVerificationEmail(email, verificationCode);
     
     if (!emailSent) {
