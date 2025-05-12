@@ -1658,7 +1658,7 @@ export default function AdminDashboard() {
                         <TableHeader className="bg-gray-800">
                           <TableRow className="hover:bg-gray-800/50 border-gray-700">
                             <TableHead className="text-gray-300">User</TableHead>
-                            <TableHead className="text-gray-300">Email</TableHead>
+                            <TableHead className="text-gray-300">Contact Info</TableHead>
                             <TableHead className="text-gray-300">Role</TableHead>
                             <TableHead className="text-gray-300">Status</TableHead>
                             <TableHead className="text-gray-300 text-right">Actions</TableHead>
@@ -1668,29 +1668,67 @@ export default function AdminDashboard() {
                           {users?.map((user) => (
                             <TableRow key={user.id} className="hover:bg-gray-800/50 border-gray-700">
                               <TableCell className="font-medium">
-                                <div className="flex items-center">
-                                  <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white mr-2">
-                                    {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white overflow-hidden border border-amber-500/40">
+                                    {user.profileImageUrl ? (
+                                      <img 
+                                        src={user.profileImageUrl} 
+                                        alt={`${user.username || 'User'}'s profile`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      user.username ? user.username.charAt(0).toUpperCase() : '?'
+                                    )}
                                   </div>
-                                  <span>{user.username}</span>
+                                  <div className="flex flex-col">
+                                    {(user.firstName || user.lastName) && (
+                                      <span className="font-medium text-amber-400">
+                                        {[user.firstName, user.lastName].filter(Boolean).join(' ')}
+                                      </span>
+                                    )}
+                                    <span>{user.username}</span>
+                                    <span className="text-xs text-gray-500">ID: {user.id}</span>
+                                  </div>
                                 </div>
                               </TableCell>
-                              <TableCell>{user.email}</TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <Mail className="h-3.5 w-3.5 text-gray-400" />
+                                    <span>{user.email}</span>
+                                  </div>
+                                  {user.phone && (
+                                    <div className="flex items-center gap-1.5">
+                                      <Phone className="h-3.5 w-3.5 text-gray-400" />
+                                      <span>{user.phone}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
                               <TableCell>
                                 <Badge 
                                   variant={user.role === 'admin' ? 'destructive' : 'outline'} 
-                                  className={user.role === 'admin' ? 'bg-red-800 text-white' : 'bg-gray-800 text-gray-300'}
+                                  className={user.role === 'admin' ? 'bg-amber-700 text-white' : 'bg-gray-800 text-gray-300'}
                                 >
                                   {user.role === 'admin' ? 'Admin' : 'User'}
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                <Badge 
-                                  variant={user.isVerified ? 'default' : 'outline'} 
-                                  className={user.isVerified ? 'bg-green-800 text-white' : 'bg-gray-800 text-gray-300'}
-                                >
-                                  {user.isVerified ? 'Verified' : 'Unverified'}
-                                </Badge>
+                                <div className="flex flex-col gap-1.5">
+                                  <Badge 
+                                    variant={user.isVerified ? 'default' : 'outline'} 
+                                    className={user.isVerified ? 'bg-green-800 text-white' : 'bg-gray-800 text-gray-300'}
+                                  >
+                                    {user.isVerified ? 'Verified' : 'Unverified'}
+                                  </Badge>
+                                  
+                                  <Badge
+                                    variant={user.profileCompleted ? 'default' : 'outline'}
+                                    className={user.profileCompleted ? 'bg-blue-700 text-white' : 'bg-gray-800 text-gray-300'}
+                                  >
+                                    {user.profileCompleted ? 'Complete' : 'Incomplete'}
+                                  </Badge>
+                                </div>
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
