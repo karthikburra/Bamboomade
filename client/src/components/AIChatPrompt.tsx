@@ -41,28 +41,28 @@ const AIChatPrompt: React.FC = () => {
 
   return (
     <div className="fixed bottom-4 left-0 right-0 mx-auto w-full z-50 px-4">
-      <div className="relative bg-zinc-900/95 border-2 border-primary/30 rounded-xl shadow-xl py-2 px-4 max-w-7xl mx-auto backdrop-blur-sm overflow-hidden">
+      <div className="relative bg-zinc-900/95 border-2 border-primary/30 rounded-xl shadow-xl py-2.5 px-4 max-w-7xl mx-auto backdrop-blur-sm overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/90 via-zinc-800/90 to-primary/30 animate-gradient-x"></div>
         <div className="relative z-10">
           <div className="flex items-center">
             <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-2">
-              <Sparkles className="w-3 h-3 text-primary-foreground" />
+              <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
-            <h3 className="text-xs font-medium text-white">Did you know?</h3>
+            <h3 className="text-sm font-medium text-white">Did you know?</h3>
           </div>
           
-          <div className="text-xs text-zinc-200 min-h-[32px] transition-all duration-500 ease-in-out py-1.5">
+          <div className="text-sm text-zinc-200 min-h-[40px] transition-all duration-500 ease-in-out py-2">
             <p className={`transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'} line-clamp-2`}>
               {bambooFacts[currentFactIndex]}
             </p>
           </div>
           
-          <div className="flex justify-center -mt-1">
-            <div className="flex gap-1">
+          <div className="flex justify-center mt-0.5">
+            <div className="flex gap-1.5">
               {bambooFacts.map((_, index) => (
                 <div 
                   key={index} 
-                  className={`w-1 h-1 rounded-full transition-all duration-300 ${
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
                     index === currentFactIndex 
                       ? "bg-primary" 
                       : "bg-zinc-600"
