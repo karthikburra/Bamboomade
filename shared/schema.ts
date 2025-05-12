@@ -14,6 +14,10 @@ export const users = pgTable("users", {
   isVerified: boolean("is_verified").notNull().default(false),
   verificationCode: text("verification_code"),
   verificationCodeExpires: timestamp("verification_code_expires"),
+  // Profile fields
+  fullName: text("full_name"),
+  profileImageUrl: text("profile_image_url"),
+  phoneNumber: text("phone_number"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -25,6 +29,13 @@ export const insertUserSchema = createInsertSchema(users).pick({
   isVerified: true,
   verificationCode: true,
   verificationCodeExpires: true,
+});
+
+// Schema for updating profile information
+export const updateProfileSchema = createInsertSchema(users).pick({
+  fullName: true,
+  profileImageUrl: true,
+  phoneNumber: true,
 });
 
 // Project schema for gallery items
