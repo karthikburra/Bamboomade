@@ -59,6 +59,21 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
         // In development, use the code logged in the server console
         // Look for logs like: "Attempting to send verification email to X with code ABCDEF"
         console.log("Check server logs for the verification code in development mode");
+        
+        // Display verification code if in development mode
+        // This helps with testing
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('.replit.')) {
+          const codeMatch = data.devCode || data.message.match(/code (\w+)/i);
+          if (codeMatch) {
+            const extractedCode = Array.isArray(codeMatch) ? codeMatch[1] : data.devCode;
+            toast({
+              title: "DEV MODE: Verification Code",
+              description: `Use this code for testing: ${extractedCode}`,
+              variant: "default",
+              duration: 15000, // Show for 15 seconds
+            });
+          }
+        }
       } else {
         toast({
           title: "Failed to Send Code",

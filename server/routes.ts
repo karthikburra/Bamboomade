@@ -576,11 +576,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log(`✅ Verification email sent successfully to ${email}`);
-      res.status(200).json({ 
+      
+      // Include verification code in development mode for easier testing
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      const responseData = { 
         message: "Verification code sent. Please check your email.",
         success: true,
         expiresAt
-      });
+      };
+      
+      // Add verification code to response in development mode only
+      if (isDevelopment) {
+        responseData.devCode = verificationCode;
+      }
+      
+      res.status(200).json(responseData);
     } catch (error) {
       console.error("❌ Request login code error:", error);
       
