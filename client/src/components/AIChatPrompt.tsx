@@ -1,81 +1,76 @@
-import React, { useState } from "react";
-import { useLocation } from "wouter";
-import { Send, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState, useEffect } from "react";
+import { Sparkles } from "lucide-react";
 
 const AIChatPrompt: React.FC = () => {
-  const [question, setQuestion] = useState("");
-  const [, setLocation] = useLocation();
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+  
+  // Collection of bamboo facts
+  const bambooFacts = [
+    "Bamboo is one of the fastest-growing plants on Earth, with some species growing up to 91 cm (3 ft) in a single day.",
+    "Bamboo is technically a grass, not a tree, making it part of the Poaceae family.",
+    "There are over 1,500 species of bamboo growing across the world in various climates.",
+    "Bamboo can sequester up to 70% more carbon per hectare than hardwood forests.",
+    "Bamboo requires no pesticides or fertilizers to grow, making it naturally sustainable.",
+    "Bamboo has a higher tensile strength than steel, making it excellent for construction.",
+    "One hectare of bamboo can yield 60 tonnes of material annually, compared to 20 tonnes for most trees.",
+    "Bamboo releases 35% more oxygen into the atmosphere than equivalent tree species.",
+    "The oldest bamboo crafts discovered date back to 7,000 years ago in China.",
+    "India is the second-largest bamboo producer globally, after China.",
+    "The National Bamboo Mission aims to promote the bamboo sector in India through area-based farming.",
+    "Bamboo can be used to create over 1,500 different products, from furniture to textiles.",
+  ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (question.trim()) {
-      // Store the question in sessionStorage to pre-fill it in the chat interface
-      sessionStorage.setItem("initialQuestion", question.trim());
-      // Redirect to AI chat page
-      setLocation("/ai-chat");
-    }
-  };
+  // Change the fact every 4 seconds with fade effect
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      // Fade out
+      setIsVisible(false);
+      
+      // Change fact after fade out animation completes
+      setTimeout(() => {
+        setCurrentFactIndex((prevIndex) => (prevIndex + 1) % bambooFacts.length);
+        // Fade in
+        setIsVisible(true);
+      }, 300);
+    }, 4000);
+    
+    // Clean up the interval when component unmounts
+    return () => clearInterval(intervalId);
+  }, [bambooFacts.length]);
 
   return (
     <div className="fixed bottom-4 left-0 right-0 mx-auto w-full z-50 px-4">
       <div className="relative bg-zinc-900/95 border-2 border-primary/30 rounded-xl shadow-xl py-3 px-4 max-w-7xl mx-auto backdrop-blur-sm overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/90 via-zinc-800/90 to-primary/30 animate-gradient-x"></div>
         <div className="relative z-10">
-        <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-          <div className="flex items-center mb-2 md:mb-0 md:w-auto">
+          <div className="flex items-center">
             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center mr-2.5">
               <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
-            <h3 className="text-sm font-medium text-white">Ask BambooMade AI</h3>
+            <h3 className="text-sm font-medium text-white">Did you know?</h3>
           </div>
           
-          <form onSubmit={handleSubmit} className="flex gap-2 flex-grow">
-            <div className="relative flex-grow">
-              <Input
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ask about bamboo architecture or sustainability..."
-                className="flex-grow pr-10 rounded-full bg-zinc-800/80 border-2 border-primary/30 h-9 text-sm text-white placeholder:text-zinc-400 focus-visible:ring-primary/40 focus-visible:border-primary/60 shadow-md"
-              />
-              <Button 
-                type="submit" 
-                size="icon" 
-                disabled={!question.trim()} 
-                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full h-7 w-7 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary shadow-md border border-primary/50"
-              >
-                <Send size={14} className="text-primary-foreground" />
-              </Button>
-            </div>
-          </form>
-        </div>
-        
-        <div className="mt-2 text-xs">
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              className="px-2 py-0.5 text-[10px] rounded-full border border-primary/40 bg-gradient-to-r from-zinc-800 to-primary/10 text-zinc-100 hover:from-zinc-700 hover:to-primary/20 hover:text-white hover:border-primary/50 transition-all hover:shadow-md hover:shadow-primary/10 animate-pulse animation-delay-100 opacity-80 hover:opacity-100"
-              onClick={() => setQuestion("Tell me about the National Bamboo Mission")}
-            >
-              National Bamboo Mission
-            </button>
-            <button
-              type="button"
-              className="px-2 py-0.5 text-[10px] rounded-full border border-primary/40 bg-gradient-to-r from-zinc-800 to-primary/10 text-zinc-100 hover:from-zinc-700 hover:to-primary/20 hover:text-white hover:border-primary/50 transition-all hover:shadow-md hover:shadow-primary/10 animate-pulse animation-delay-300 opacity-80 hover:opacity-100"
-              onClick={() => setQuestion("What are the popular bamboo species for construction?")}
-            >
-              Bamboo Species
-            </button>
-            <button
-              type="button"
-              className="px-2 py-0.5 text-[10px] rounded-full border border-primary/40 bg-gradient-to-r from-zinc-800 to-primary/10 text-zinc-100 hover:from-zinc-700 hover:to-primary/20 hover:text-white hover:border-primary/50 transition-all hover:shadow-md hover:shadow-primary/10 animate-pulse animation-delay-500 opacity-80 hover:opacity-100"
-              onClick={() => setQuestion("Are there any upcoming bamboo events or workshops?")}
-            >
-              Future Bamboo Events
-            </button>
+          <div className="mt-2 text-sm text-zinc-200 p-1 min-h-[48px] transition-all duration-500 ease-in-out">
+            <p className={`transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+              {bambooFacts[currentFactIndex]}
+            </p>
           </div>
-        </div>
+          
+          <div className="mt-1 flex justify-center">
+            <div className="flex gap-1.5">
+              {bambooFacts.map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                    index === currentFactIndex 
+                      ? "bg-primary" 
+                      : "bg-zinc-600"
+                  }`}
+                ></div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

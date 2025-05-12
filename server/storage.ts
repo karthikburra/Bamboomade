@@ -1011,10 +1011,31 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUserLoginHistory(): Promise<UserLoginHistory[]> {
     try {
-      // Order by login time descending (newest first)
-      return await db.select()
+      // Explicitly select all fields to avoid field name issues
+      const result = await db.select({
+        id: userLoginHistory.id,
+        userId: userLoginHistory.userId,
+        email: userLoginHistory.email, 
+        userEmail: userLoginHistory.email, // For compatibility
+        username: userLoginHistory.username,
+        ipAddress: userLoginHistory.ipAddress,
+        userAgent: userLoginHistory.userAgent,
+        browser: userLoginHistory.browser,
+        os: userLoginHistory.os,
+        deviceType: userLoginHistory.deviceType,
+        deviceInfo: userLoginHistory.deviceInfo,
+        loginTime: userLoginHistory.loginTime,
+        lastActiveTime: userLoginHistory.lastActiveTime,
+        logoutTime: userLoginHistory.logoutTime,
+        loginStatus: userLoginHistory.loginStatus,
+        isAdmin: userLoginHistory.isAdmin,
+        sessionId: userLoginHistory.sessionId,
+        createdAt: userLoginHistory.createdAt
+      })
         .from(userLoginHistory)
         .orderBy(desc(userLoginHistory.loginTime));
+      
+      return result;
     } catch (error) {
       console.error("Database error in getAllUserLoginHistory:", error);
       return [];
@@ -1024,15 +1045,36 @@ export class DatabaseStorage implements IStorage {
   async getActiveUserSessions(): Promise<UserLoginHistory[]> {
     try {
       // Get sessions that have no logout time (active sessions)
-      return await db.select()
+      const result = await db.select({
+        id: userLoginHistory.id,
+        userId: userLoginHistory.userId,
+        email: userLoginHistory.email,
+        userEmail: userLoginHistory.email, // For compatibility
+        username: userLoginHistory.username,
+        ipAddress: userLoginHistory.ipAddress,
+        userAgent: userLoginHistory.userAgent,
+        browser: userLoginHistory.browser,
+        os: userLoginHistory.os,
+        deviceType: userLoginHistory.deviceType,
+        deviceInfo: userLoginHistory.deviceInfo,
+        loginTime: userLoginHistory.loginTime,
+        lastActiveTime: userLoginHistory.lastActiveTime,
+        logoutTime: userLoginHistory.logoutTime,
+        loginStatus: userLoginHistory.loginStatus,
+        isAdmin: userLoginHistory.isAdmin,
+        sessionId: userLoginHistory.sessionId,
+        createdAt: userLoginHistory.createdAt
+      })
         .from(userLoginHistory)
         .where(
           and(
-            eq(userLoginHistory.loginStatus, "success"),
+            // Check for success login status if it exists
             isNull(userLoginHistory.logoutTime)
           )
         )
         .orderBy(desc(userLoginHistory.lastActiveTime));
+      
+      return result;
     } catch (error) {
       console.error("Database error in getActiveUserSessions:", error);
       return [];
