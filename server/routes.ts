@@ -552,70 +552,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Found existing user: ID ${user.id}, Email: ${email}`);
       }
       
-      try {
-        // Import Supabase service dynamically to avoid circular dependencies
-        const { sendMagicLink } = await import('./supabase-service');
-        
-        // Try to send magic link via Supabase
-        console.log(`📧 Attempting to send Supabase magic link to ${email}`);
-        const magicLinkResult = await sendMagicLink(email);
-        
-        if (magicLinkResult.success) {
-          console.log(`✅ Supabase magic link sent successfully to ${email}`);
-          return res.status(200).json({
-            message: "Verification email sent. Please check your inbox for a login link.",
-            success: true
-          });
-        }
-        
-        console.error(`❌ Failed to send Supabase magic link: ${magicLinkResult.message}`);
-        console.log(`📧 Falling back to verification code email for ${email}`);
-      } catch (supabaseError) {
-        console.error("❌ Supabase magic link error:", supabaseError);
-        console.log(`📧 Continuing with fallback verification code method`);
+      // Import Supabase service for verification code sending
+      const { sendVerificationCode } = await import('./supabase-service');
+      
+      // Generate and send a verification code via Supabase service
+      console.log(`📧 Sending verification code to ${email}`);
+      const result = await sendVerificationCode(email);
+      
+      if (!result.success) {
+        console.error(`❌ Failed to send verification code: ${result.message}`);
+        return res.status(500).json({
+          message: result.message || "Failed to send verification code. Please try again later.",
+          success: false
+        });
       }
       
-      // FALLBACK: If Supabase is unavailable or fails, use regular verification code
-      const verificationCode = generateVerificationCode();
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-      
-      // Update the user with the verification code
-      console.log(`📝 Updating user ${user.id} with verification code`);
-      await storage.updateUser(user.id, {
-        verificationCode,
-        verificationCodeExpires: expiresAt
-      });
-      
-      // Send verification email
-      console.log(`📧 Sending verification email to ${email}`);
-      const emailSent = await sendVerificationEmail(email, verificationCode);
-      
-      if (!emailSent) {
-        console.error(`❌ Failed to send verification email to ${email}`);
-        console.log(`💡 Though email failed, continuing to allow login flow`);
-      } else {
-        console.log(`✅ Verification email sent successfully to ${email}`);
+      // If the email is admin/dev and we have the verification code, include it in response
+      if (result.verificationCode) {
+        console.log(`✅ Verification code for special email sent: ${result.verificationCode}`);
+        return res.status(200).json({
+          message: "Verification code sent to your email",
+          success: true,
+          tempAdminCode: result.verificationCode // Only for admin/dev testing
+        });
       }
       
-      // Allow specific emails to see the verification code directly
-      const isWhitelistedEmail = (
-        email.toLowerCase() === 'info@bamboomade.in' || 
-        email.toLowerCase().includes('karthik')
-      );
-      
-      const responseData = { 
+      console.log(`✅ Verification code sent successfully to ${email}`);
+      res.status(200).json({
         message: "Verification code sent. Please check your email.",
-        success: true,
-        expiresAt
-      };
-      
-      // Show code for whitelisted emails or in development mode
-      if (isWhitelistedEmail || process.env.NODE_ENV === 'development') {
-        responseData.tempCode = verificationCode;
-        console.log(`🔑 Temporary verification code for ${email}: ${verificationCode}`);
-      }
-      
-      res.status(200).json(responseData);
+        success: true
+      });
     } catch (error) {
       console.error("❌ Request login code error:", error);
       
@@ -636,7 +602,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   /**
    * Verify a login code for email-only authentication
    * This endpoint verifies the code and logs the user in if valid
-   * Works with both Supabase OTP verification and our custom code system
    */
   app.post("/api/auth/verify-login", async (req, res) => {
     try {
@@ -652,105 +617,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log(`🔍 Looking up user with email: ${email}`);
-      const user = await storage.getUserByEmail(email);
+      let user = await storage.getUserByEmail(email);
       
       if (!user) {
-        console.log(`❌ User not found with email: ${email}`);
-        return res.status(404).json({ 
-          message: "User not found",
-          success: false 
-        });
+        console.log(`📝 User not found, will create after verification`);
+      } else {
+        console.log(`✅ User found: ID ${user.id}, Email: ${email}`);
       }
       
-      console.log(`✅ User found: ID ${user.id}, Email: ${email}`);
+      // Import Supabase service for code verification
+      const { verifyCode } = await import('./supabase-service');
       
-      try {
-        // Try to verify with Supabase OTP first
-        const { verifyOtp } = await import('./supabase-service');
-        console.log(`🔑 Attempting Supabase OTP verification for ${email}`);
-        
-        const supabaseResult = await verifyOtp(email, code);
-        
-        if (supabaseResult.success) {
-          console.log(`✅ Supabase verification successful for user ${user.id}`);
-          
-          // Mark the user as verified in our database
-          if (!user.isVerified) {
-            await storage.updateUser(user.id, {
-              isVerified: true
-            });
-          }
-          
-          // Automatically log the user in
-          console.log(`🔑 Setting session for user ${user.id} after Supabase verification`);
-          req.session.userId = user.id;
-          
-          // Save the session explicitly
-          req.session.save((err) => {
-            if (err) {
-              console.error("❌ Session save error:", err);
-            } else {
-              console.log(`✅ Session saved successfully for user ${user.id}`);
-            }
-          });
-          
-          console.log(`🎉 Supabase login verification successful for user ${user.id}`);
-          return res.status(200).json({ 
-            message: "Login successful",
-            success: true,
-            user: {
-              id: user.id,
-              email: user.email,
-              username: user.username,
-              role: user.role,
-              tokens: user.tokens,
-              isAdmin: user.isAdmin,
-              isVerified: true
-            }
-          });
-        }
-        
-        console.log(`⚠️ Supabase verification failed, falling back to code verification: ${supabaseResult.message}`);
-      } catch (supabaseError) {
-        console.error("❌ Supabase verification error:", supabaseError);
-        console.log(`⚠️ Continuing with fallback verification method`);
-      }
+      // Verify the code
+      console.log(`🔐 Verifying code for email: ${email}`);
+      const result = await verifyCode(email, code);
       
-      // Fallback to our verification code system
-      console.log(`🔐 Checking verification code: ${code} vs stored: ${user.verificationCode}`);
-      if (user.verificationCode !== code) {
-        console.log(`❌ Invalid verification code for user ${user.id}`);
-        return res.status(400).json({ 
-          message: "Invalid verification code",
-          success: false 
-        });
-      }
-      
-      if (user.verificationCodeExpires && new Date(user.verificationCodeExpires) < new Date()) {
-        console.log(`⏰ Verification code expired for user ${user.id}. Expired at: ${user.verificationCodeExpires}`);
-        return res.status(400).json({ 
-          message: "Verification code has expired. Please request a new one",
-          expired: true,
+      if (!result.success) {
+        console.error(`❌ Invalid verification code for ${email}: ${result.message}`);
+        return res.status(400).json({
+          message: result.message || "Invalid verification code",
           success: false
         });
       }
       
-      // Mark the user as verified if not already
-      if (!user.isVerified) {
-        console.log(`✅ Updating user ${user.id} as verified`);
-        await storage.updateUser(user.id, {
-          isVerified: true
+      console.log(`✅ Verification successful for email: ${email}`);
+      
+      // Create a new user if they don't exist
+      if (!user) {
+        console.log(`📝 Creating new account for verified email: ${email}`);
+        
+        // Generate a temporary username from email prefix
+        const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
+        
+        // Generate a random secure password (user won't need to know this)
+        const password = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Create the user account
+        user = await storage.createUser({
+          email,
+          username,
+          password: hashedPassword,
+          role: "user",
+          isVerified: true,
+          tokens: 10, // Default tokens for new users
+          profileComplete: false
         });
+        
+        console.log(`✅ Created new user account for ${email} with ID: ${user.id}`);
+      } else {
+        // Mark the user as verified if not already
+        if (!user.isVerified) {
+          console.log(`✅ Updating user ${user.id} as verified`);
+          await storage.updateUser(user.id, {
+            isVerified: true
+          });
+        }
       }
       
-      // Reset the verification code after successful verification
-      console.log(`🔄 Clearing verification code for user ${user.id}`);
-      await storage.updateUser(user.id, {
-        verificationCode: null,
-        verificationCodeExpires: null
-      });
-      
-      // Automatically log the user in
+      // Set session for the authenticated user
       console.log(`🔑 Setting session for user ${user.id}`);
       req.session.userId = user.id;
       
@@ -758,27 +683,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.save((err) => {
         if (err) {
           console.error("❌ Session save error during login verification:", err);
-          console.error(`Error name: ${err.name}`);
-          console.error(`Error message: ${err.message}`);
-          console.error(`Error stack: ${err.stack}`);
-        } else {
-          console.log(`✅ Session saved successfully for user ${user.id}`);
+          return res.status(500).json({
+            message: "Session error. Please try again.",
+            success: false
+          });
         }
-      });
-      
-      console.log(`🎉 Login verification successful for user ${user.id}`);
-      res.status(200).json({ 
-        message: "Login successful",
-        success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          role: user.role,
-          tokens: user.tokens,
-          isAdmin: user.isAdmin,
-          isVerified: true
-        }
+        
+        console.log(`✅ Session saved successfully for user ${user.id}`);
+        
+        // Return user details (excluding sensitive fields)
+        res.status(200).json({ 
+          message: "Login successful",
+          success: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+            tokens: user.tokens,
+            isAdmin: user.isAdmin || false,
+            isVerified: true,
+            profileComplete: user.profileComplete || false
+          }
+        });
       });
     } catch (error) {
       console.error("❌ Login verification error:", error);
