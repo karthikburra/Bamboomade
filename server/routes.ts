@@ -742,19 +742,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("🔑 Login attempt:", { email: req.body.email });
       const { email, password } = req.body;
       
       if (!email || !password) {
+        console.log("❌ Missing required fields:", { email: !!email, password: !!password });
         return res.status(400).json({ message: "Email and password are required" });
       }
       
+      console.log(`🔍 Looking up user with email: ${email}`);
       const user = await storage.getUserByEmail(email);
+      
       if (!user) {
+        console.log(`❌ User not found with email: ${email}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
+      console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
+      
       // Check if user's email is verified (except for admin users which are auto-verified)
       if (!user.isAdmin && !user.isVerified) {
+        console.log(`❌ User ${user.id} email is not verified`);
         return res.status(403).json({ 
           message: "Email not verified. Please verify your email before logging in.",
           needsVerification: true,
@@ -766,28 +774,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let isValidPassword = false;
       
       // First try bcrypt (for users created/updated with bcrypt)
+      console.log(`🔐 Validating password for user ${user.id}`);
       try {
         isValidPassword = await bcrypt.compare(password, user.password);
+        console.log(`Result of bcrypt validation: ${isValidPassword}`);
       } catch (e) {
+        console.log(`⚠️ Bcrypt validation failed, trying legacy check: ${e}`);
         // If bcrypt fails (likely not a bcrypt hash), fall back to legacy check
         isValidPassword = user.password === password;
+        console.log(`Result of legacy password check: ${isValidPassword}`);
         
         // If password matches with legacy check, update to bcrypt
         if (isValidPassword) {
-          // Update password to bcrypt hash for future logins
-          user.password = await bcrypt.hash(password, 10);
+          console.log(`🔄 Upgrading legacy password to bcrypt for user ${user.id}`);
+          const hashedPassword = await bcrypt.hash(password, 10);
+          await storage.updateUser(user.id, { password: hashedPassword });
+          console.log(`✅ Password upgraded to bcrypt for user ${user.id}`);
         }
       }
       
       if (!isValidPassword) {
+        console.log(`❌ Invalid password for user ${user.id}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
       // Set user in session (simplified auth)
+      console.log(`🔑 Setting session for user ${user.id}`);
       req.session.userId = user.id;
       
       // If user is admin, also set admin session
       if (user.isAdmin) {
+        console.log(`👑 User ${user.id} is an admin, setting admin session`);
         req.session.adminUser = {
           email: user.email,
           isAdmin: true,
@@ -796,13 +813,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Make sure we save the session explicitly
+      console.log(`💾 Saving session for user ${user.id}`);
       await new Promise<void>((resolve, reject) => {
         req.session.save((err) => {
           if (err) {
-            console.error("Failed to save session:", err);
+            console.error("❌ Failed to save session:", err);
             reject(err);
           } else {
-            console.log(`Session saved successfully for user ${user.id}`);
+            console.log(`✅ Session saved successfully for user ${user.id}`);
             resolve();
           }
         });
@@ -810,29 +828,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Don't return password in response
       const { password: _, ...userWithoutPassword } = user;
+      console.log(`🎉 Login successful for user ${user.id}`);
       res.json(userWithoutPassword);
     } catch (error) {
-      res.status(500).json({ message: "Login failed", error: (error as Error).message });
+      console.error("❌ Login error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
+        message: "Login failed", 
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
   app.get("/api/auth/me", async (req, res) => {
     try {
+      console.log("🔍 Checking current user session");
       const userId = req.session.userId;
+      
       if (!userId) {
+        console.log("❌ No user ID in session");
         return res.status(401).json({ message: "Not authenticated" });
       }
       
+      console.log(`🔍 Looking up user with ID: ${userId}`);
       const user = await storage.getUser(userId);
+      
       if (!user) {
+        console.log(`❌ User not found with ID: ${userId}`);
         return res.status(404).json({ message: "User not found" });
       }
       
+      console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
+      
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
+      console.log(`✅ Returning user data for ${user.id}`);
       res.json(userWithoutPassword);
     } catch (error) {
-      res.status(500).json({ message: "Failed to get user data", error: (error as Error).message });
+      console.error("❌ Error retrieving user data:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
+        message: "Failed to get user data", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
     }
   });
 
@@ -861,11 +913,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/auth/logout", (req, res) => {
+    console.log("🚪 Logout request received");
+    
+    // Check if user is actually logged in
+    if (!req.session.userId) {
+      console.log("⚠️ Logout attempt with no active session");
+      return res.status(200).json({ message: "No active session to logout" });
+    }
+    
+    console.log(`🔑 Destroying session for user ${req.session.userId}`);
+    
     req.session.destroy((err) => {
       if (err) {
-        return res.status(500).json({ message: "Failed to logout", error: err.message });
+        console.error("❌ Error destroying session:", err);
+        console.error(`Error name: ${err.name}`);
+        console.error(`Error message: ${err.message}`);
+        console.error(`Error stack: ${err.stack}`);
+        return res.status(500).json({ 
+          message: "Failed to logout", 
+          error: err.message,
+          success: false
+        });
       }
-      res.json({ message: "Logged out successfully" });
+      
+      console.log("✅ Session destroyed successfully");
+      res.json({ 
+        message: "Logged out successfully",
+        success: true
+      });
     });
   });
 
