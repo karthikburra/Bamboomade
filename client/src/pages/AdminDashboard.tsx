@@ -149,6 +149,8 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState("");
   const [userSearchFilter, setUserSearchFilter] = useState("");
   
+  // User management state will be defined later
+  
   // Reschedule session state
   const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
   const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
