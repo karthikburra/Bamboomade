@@ -1679,11 +1679,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         // Force session save to ensure it's stored before sending response
-        req.session.save((err) => {
+        req.session.save(async (err) => {
           if (err) {
             console.error("Admin login: Error saving session:", err);
           } else {
             console.log("Admin login: Session saved successfully");
+            
+            // Track admin login history for persistent tracking across deployments
+            try {
+              const userAgent = req.headers['user-agent'] || '';
+              const ipAddress = req.ip || req.socket.remoteAddress || '';
+              
+              // Extract basic device info from user agent
+              const deviceInfo = {
+                browser: userAgent.includes('Chrome') ? 'Chrome' : 
+                         userAgent.includes('Firefox') ? 'Firefox' : 
+                         userAgent.includes('Safari') ? 'Safari' : 
+                         userAgent.includes('Edge') ? 'Edge' : 'Unknown',
+                os: userAgent.includes('Windows') ? 'Windows' : 
+                    userAgent.includes('Mac') ? 'MacOS' : 
+                    userAgent.includes('Linux') ? 'Linux' : 
+                    userAgent.includes('Android') ? 'Android' : 
+                    userAgent.includes('iPhone') || userAgent.includes('iPad') ? 'iOS' : 'Unknown',
+                isMobile: userAgent.includes('Mobile') || userAgent.includes('Android') || 
+                         userAgent.includes('iPhone') || userAgent.includes('iPad')
+              };
+              
+              await storage.createUserLoginHistory({
+                userId: user.id,
+                email: user.email,
+                username: user.username,
+                ipAddress,
+                userAgent,
+                deviceInfo,
+                loginStatus: 'success',
+                isAdmin: true,
+                sessionId: req.sessionID
+              });
+              
+              console.log(`📝 Admin login history recorded for user ${user.id}`);
+            } catch (historyError) {
+              // Non-critical error - don't fail the login if history tracking fails
+              console.error("⚠️ Failed to record admin login history:", historyError);
+            }
           }
           
           res.json({ 
@@ -1702,12 +1740,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/auth/admin-logout", (req, res) => {
-    if (req.session.adminUser) {
-      delete req.session.adminUser;
+  app.post("/api/auth/admin-logout", async (req, res) => {
+    try {
+      if (req.session.adminUser) {
+        // Update login history with logout time if possible
+        try {
+          if (req.sessionID) {
+            await storage.updateUserLogout(req.sessionID);
+            console.log(`📝 Admin logout recorded in login history for sessionID ${req.sessionID}`);
+          }
+        } catch (historyError) {
+          // Non-critical error - don't fail the logout if history tracking fails
+          console.error("⚠️ Failed to record admin logout in history:", historyError);
+        }
+        
+        delete req.session.adminUser;
+      }
+      
+      res.json({ message: "Admin logged out successfully" });
+    } catch (error) {
+      console.error("Admin logout error:", error);
+      res.status(500).json({ message: "Error during admin logout", success: false });
     }
-    
-    res.json({ message: "Admin logged out successfully" });
   });
   
   app.get("/api/auth/admin-check", (req, res) => {
@@ -4478,6 +4532,153 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       res.json(users);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users", error: (error as Error).message });
+    }
+  });
+  
+  // User login history routes
+  app.get("/api/admin/login-history", isAdmin, async (req, res) => {
+    try {
+      console.log(`Admin login history request from ${req.session.adminUser?.email}`);
+      
+      const allLoginHistory = await storage.getAllUserLoginHistory();
+      
+      // Transform data to include formatted dates for easier display
+      const formattedHistory = allLoginHistory.map(record => ({
+        ...record,
+        formattedLoginTime: new Date(record.loginTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }),
+        formattedLastActiveTime: record.lastActiveTime ? new Date(record.lastActiveTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata', 
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        formattedLogoutTime: record.logoutTime ? new Date(record.logoutTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        duration: record.logoutTime ? 
+          Math.round((new Date(record.logoutTime).getTime() - new Date(record.loginTime).getTime()) / 60000) : 
+          null, // Duration in minutes if session is complete
+        isActive: !record.logoutTime
+      }));
+      
+      res.json(formattedHistory);
+    } catch (error) {
+      console.error("Failed to get login history:", error);
+      res.status(500).json({ message: "Failed to get login history", error: (error as Error).message });
+    }
+  });
+  
+  // Get login history for a specific user
+  app.get("/api/admin/login-history/:userId", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      console.log(`Admin login history request for user ${userId} from ${req.session.adminUser?.email}`);
+      
+      const userLoginHistory = await storage.getUserLoginHistory(userId);
+      
+      // Transform data to include formatted dates for easier display
+      const formattedHistory = userLoginHistory.map(record => ({
+        ...record,
+        formattedLoginTime: new Date(record.loginTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }),
+        formattedLastActiveTime: record.lastActiveTime ? new Date(record.lastActiveTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        formattedLogoutTime: record.logoutTime ? new Date(record.logoutTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        duration: record.logoutTime ? 
+          Math.round((new Date(record.logoutTime).getTime() - new Date(record.loginTime).getTime()) / 60000) : 
+          null, // Duration in minutes if session is complete
+        isActive: !record.logoutTime
+      }));
+      
+      res.json(formattedHistory);
+    } catch (error) {
+      console.error(`Failed to get login history for user ${req.params.userId}:`, error);
+      res.status(500).json({ message: "Failed to get user login history", error: (error as Error).message });
+    }
+  });
+  
+  // Get currently active sessions
+  app.get("/api/admin/active-sessions", isAdmin, async (req, res) => {
+    try {
+      console.log(`Admin active sessions request from ${req.session.adminUser?.email}`);
+      
+      const activeSessions = await storage.getActiveUserSessions();
+      
+      // Transform data to include formatted dates for easier display
+      const formattedSessions = activeSessions.map(record => ({
+        ...record,
+        formattedLoginTime: new Date(record.loginTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }),
+        formattedLastActiveTime: record.lastActiveTime ? new Date(record.lastActiveTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        activeDuration: Math.round((new Date().getTime() - new Date(record.loginTime).getTime()) / 60000), // Duration in minutes
+        // Calculate idle time in minutes if last active time is available
+        idleTime: record.lastActiveTime ? 
+          Math.round((new Date().getTime() - new Date(record.lastActiveTime).getTime()) / 60000) : 
+          null
+      }));
+      
+      res.json(formattedSessions);
+    } catch (error) {
+      console.error("Failed to get active sessions:", error);
+      res.status(500).json({ message: "Failed to get active sessions", error: (error as Error).message });
     }
   });
   
