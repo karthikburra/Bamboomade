@@ -68,10 +68,8 @@ const Navbar: React.FC = () => {
     { href: "/ai-chat", label: "AI Chat", isBeta: true },
   ];
   
-  // Add profile link if user is logged in
-  const userLinks = user ? [
-    { href: "/profile", label: "Profile", icon: User }
-  ] : [];
+  // User links removed as profile is now accessible via the dropdown menu
+  const userLinks = [];
 
   const isActive = (path: string) => location === path;
 
