@@ -163,7 +163,7 @@ const ProfileEdit: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto px-4 py-12 flex justify-center items-center min-h-[70vh]">
+      <div className="container max-w-4xl mx-auto px-4 py-12 flex justify-center items-center min-h-[70vh] dark bg-gray-950">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-green-500" />
           <p className="text-green-300">Loading profile...</p>
@@ -179,133 +179,135 @@ const ProfileEdit: React.FC = () => {
         <meta name="description" content="Update your BambooMade profile information" />
       </Helmet>
       
-      <div className="container max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-green-300 mb-8 text-center">Edit Your Profile</h1>
-        
-        {user?.needsProfileCompletion && (
-          <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 mb-6 dark">
-            <h2 className="text-lg font-semibold text-green-300 mb-2">Welcome to BambooMade!</h2>
-            <p className="text-green-100">
-              Please complete your profile to continue using the platform. 
-              <span className="font-bold"> Full name is required</span>, other fields are optional.
-            </p>
-          </div>
-        )}
-        
-        <Card className="bg-gray-900 border-gray-800 dark">
-          <CardHeader className="border-b border-gray-800">
-            <CardTitle className="text-green-300">Personal Information</CardTitle>
-            <CardDescription className="text-gray-400">
-              Update your profile information below. Only your email cannot be changed.
-            </CardDescription>
-          </CardHeader>
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 to-black pt-6 dark">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold text-green-300 mb-8 text-center">Edit Your Profile</h1>
           
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-6">
-              {/* Profile Image */}
-              <div className="flex flex-col items-center gap-4 mb-8">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-900 border-2 border-green-600 flex items-center justify-center shadow-lg shadow-green-900/20">
-                  {imagePreview ? (
-                    <img 
-                      src={imagePreview} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover" 
+          {user?.needsProfileCompletion && (
+            <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 mb-6 dark">
+              <h2 className="text-lg font-semibold text-green-300 mb-2">Welcome to BambooMade!</h2>
+              <p className="text-green-100">
+                Please complete your profile to continue using the platform. 
+                <span className="font-bold"> Full name is required</span>, other fields are optional.
+              </p>
+            </div>
+          )}
+          
+          <Card className="bg-gray-900 border-gray-800 dark shadow-xl shadow-black/30">
+            <CardHeader className="border-b border-gray-800">
+              <CardTitle className="text-green-300">Personal Information</CardTitle>
+              <CardDescription className="text-gray-400">
+                Update your profile information below. Only your email cannot be changed.
+              </CardDescription>
+            </CardHeader>
+          
+            <form onSubmit={handleSubmit}>
+              <CardContent className="space-y-6">
+                {/* Profile Image */}
+                <div className="flex flex-col items-center gap-4 mb-8">
+                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-900 border-2 border-green-600 flex items-center justify-center shadow-lg shadow-green-900/20">
+                    {imagePreview ? (
+                      <img 
+                        src={imagePreview} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <User className="w-16 h-16 text-gray-600" />
+                    )}
+                  </div>
+                  
+                  <div className="relative">
+                    <Input
+                      id="profileImage"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
                     />
-                  ) : (
-                    <User className="w-16 h-16 text-gray-600" />
+                    <Label
+                      htmlFor="profileImage"
+                      className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-600 transition-colors cursor-pointer text-white shadow-md shadow-green-900/30"
+                    >
+                      <Upload className="w-4 h-4" />
+                      {imagePreview ? "Change Picture" : "Upload Picture"}
+                    </Label>
+                    <p className="text-center text-xs text-gray-500 mt-2">(optional)</p>
+                  </div>
+                </div>
+                
+                {/* Email (readonly) */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-green-300">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={user?.email || ""}
+                    disabled
+                    className="bg-gray-900 border-gray-700 text-gray-400 dark"
+                  />
+                  <p className="text-xs text-gray-500">Email address cannot be changed</p>
+                </div>
+                
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-green-300">
+                    Full Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className={`bg-gray-900 border-gray-700 text-gray-100 dark ${!fullName.trim() ? 'border-red-500 focus:ring-red-500' : 'focus:border-green-500 focus:ring-green-500'}`}
+                    required
+                  />
+                  {!fullName.trim() && (
+                    <p className="text-xs text-red-500">Full name is required</p>
                   )}
                 </div>
                 
-                <div className="relative">
-                  <Input
-                    id="profileImage"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
-                  <Label
-                    htmlFor="profileImage"
-                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-green-700 hover:bg-green-600 transition-colors cursor-pointer text-white shadow-md shadow-green-900/30"
-                  >
-                    <Upload className="w-4 h-4" />
-                    {imagePreview ? "Change Picture" : "Upload Picture"}
+                {/* Phone Number */}
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber" className="text-green-300">
+                    Phone Number <span className="text-gray-500 text-xs">(optional)</span>
                   </Label>
-                  <p className="text-center text-xs text-gray-500 mt-2">(optional)</p>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="bg-gray-900 border-gray-700 text-gray-100 dark focus:border-green-500 focus:ring-green-500"
+                  />
                 </div>
-              </div>
+              </CardContent>
               
-              {/* Email (readonly) */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-green-300">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={user?.email || ""}
-                  disabled
-                  className="bg-gray-900 border-gray-700 text-gray-400 dark"
-                />
-                <p className="text-xs text-gray-500">Email address cannot be changed</p>
-              </div>
-              
-              {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-green-300">
-                  Full Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className={`bg-gray-900 border-gray-700 text-gray-100 dark ${!fullName.trim() ? 'border-red-500 focus:ring-red-500' : 'focus:border-green-500 focus:ring-green-500'}`}
-                  required
-                />
-                {!fullName.trim() && (
-                  <p className="text-xs text-red-500">Full name is required</p>
-                )}
-              </div>
-              
-              {/* Phone Number */}
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-green-300">
-                  Phone Number <span className="text-gray-500 text-xs">(optional)</span>
-                </Label>
-                <Input
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="bg-gray-900 border-gray-700 text-gray-100 dark focus:border-green-500 focus:ring-green-500"
-                />
-              </div>
-            </CardContent>
-            
-            <CardFooter className="flex justify-between border-t border-gray-800 pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/")}
-                className="border-green-700 text-green-300 hover:bg-green-900/30 dark"
-              >
-                Cancel
-              </Button>
-              
-              <Button
-                type="submit"
-                disabled={isSaving || isUploading}
-                className="bg-green-700 hover:bg-green-600 text-white shadow-md shadow-green-900/30 dark"
-              >
-                {(isSaving || isUploading) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {isUploading ? "Uploading..." : isSaving ? "Saving..." : "Save Changes"}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+              <CardFooter className="flex justify-between border-t border-gray-800 pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/")}
+                  className="border-green-700 text-green-300 hover:bg-green-900/30 dark"
+                >
+                  Cancel
+                </Button>
+                
+                <Button
+                  type="submit"
+                  disabled={isSaving || isUploading}
+                  className="bg-green-700 hover:bg-green-600 text-white shadow-md shadow-green-900/30 dark"
+                >
+                  {(isSaving || isUploading) && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isUploading ? "Uploading..." : isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </div>
       </div>
     </>
   );
