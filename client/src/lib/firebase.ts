@@ -49,9 +49,19 @@ export const handleGoogleRedirect = async (): Promise<User | null> => {
     // Get ID token
     const idToken = await user.getIdToken();
     
-    // Send the token to our backend to create or update the user
+    // Extract basic user info for fallback authentication
+    const userData = {
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL
+    };
+    
+    console.log("Google authentication successful, sending data to backend");
+    
+    // Send the token and user data to our backend to create or update the user
     await apiRequest("POST", "/api/auth/google", {
-      idToken
+      idToken,
+      user: userData
     });
     
     return user;
