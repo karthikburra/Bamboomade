@@ -485,6 +485,42 @@ const upload = multer({
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Development mode endpoint for debugging session state
+  if (process.env.NODE_ENV === 'development') {
+    app.get("/api/debug/session", (req, res) => {
+      console.log("🔎 Debug session endpoint called");
+      
+      // Only available in development mode
+      const sessionInfo = {
+        sessionID: req.sessionID || 'none',
+        hasSession: !!req.session,
+        sessionKeys: req.session ? Object.keys(req.session) : [],
+        cookie: req.session?.cookie ? {
+          maxAge: req.session.cookie.maxAge,
+          expires: req.session.cookie.expires,
+          secure: req.session.cookie.secure,
+          httpOnly: req.session.cookie.httpOnly,
+          domain: req.session.cookie.domain,
+          path: req.session.cookie.path,
+        } : 'no cookie',
+        // Safe session info that doesn't expose sensitive data
+        userId: req.session?.userId || 'none',
+        userEmail: req.session?.userEmail || 'none',
+        loginTime: req.session?.loginTime || 'none',
+        loginMethod: req.session?.loginMethod || 'none'
+      };
+      
+      res.json({
+        message: "Debug session information",
+        sessionInfo,
+        headers: {
+          cookie: req.headers.cookie || 'none',
+          host: req.headers.host,
+          userAgent: req.headers['user-agent'],
+        }
+      });
+    });
+  }
   // Serve uploaded files
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   // Email confirmations and Google Sheets integration have been removed as requested
@@ -1341,6 +1377,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("🔍 Checking current user session");
       const userId = req.session.userId;
+      
+      // Debug session information
+      console.log(`📊 Session debug info:`, {
+        sessionID: req.sessionID || 'none',
+        hasSession: !!req.session,
+        sessionKeys: req.session ? Object.keys(req.session) : [],
+        userId: req.session?.userId || 'none',
+        userEmail: req.session?.userEmail || 'none',
+        loginTime: req.session?.loginTime || 'none',
+        cookie: req.session?.cookie ? {
+          maxAge: req.session.cookie.maxAge,
+          expires: req.session.cookie.expires,
+          secure: req.session.cookie.secure,
+          httpOnly: req.session.cookie.httpOnly
+        } : 'no cookie'
+      });
       
       if (!userId) {
         console.log("❌ No user ID in session");

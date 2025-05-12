@@ -260,6 +260,13 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="space-y-6">
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-amber-100/10 border border-amber-300/30 rounded-md p-2 mb-4">
+          <div className="text-amber-500 text-xs font-medium flex items-center justify-center">
+            <span className="mr-1">🧪</span> Development Mode Active
+          </div>
+        </div>
+      )}
       {step === "email" ? (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmitEmail)} className="space-y-4">
@@ -314,7 +321,8 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
               />
               
               {process.env.NODE_ENV === 'development' && (
-                <div className="flex justify-center mt-2">
+                <div className="flex flex-col items-center mt-2">
+                  <div className="text-amber-500 text-xs mb-1">🧪 Development Mode Active</div>
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -322,7 +330,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
                     onClick={() => setVerificationCode('123456')}
                     type="button"
                   >
-                    Use Development Code
+                    Use Master Code (123456)
                   </Button>
                 </div>
               )}
