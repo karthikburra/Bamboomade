@@ -8,7 +8,8 @@ import {
   availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot,
   aiKnowledgeContent, type AiKnowledgeContent, type InsertAiKnowledgeContent,
   dashboardSnapshots, type DashboardSnapshot, type InsertDashboardSnapshot,
-  userLoginHistory, type UserLoginHistory, type InsertUserLoginHistory
+  userLoginHistory, type UserLoginHistory, type InsertUserLoginHistory,
+  deletedUsers, type DeletedUser, type InsertDeletedUser
 } from "@shared/schema";
 import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { db } from './db';
@@ -23,6 +24,14 @@ export interface IStorage {
   updateUserTokens(userId: number, tokens: number): Promise<User | undefined>;
   updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User | undefined>;
   updateUser(userId: number, updates: Partial<User>): Promise<User | undefined>;
+  
+  // Deleted user operations
+  deleteUser(userId: number, deletedBy: number, reason?: string): Promise<DeletedUser>;
+  getAllDeletedUsers(): Promise<DeletedUser[]>;
+  getDeletedUser(id: number): Promise<DeletedUser | undefined>;
+  getDeletedUserByOriginalId(originalUserId: number): Promise<DeletedUser | undefined>;
+  restoreDeletedUser(id: number): Promise<User | undefined>;
+  purgeExpiredDeletedUsers(): Promise<number>; // Returns count of permanently deleted users
   
   // Project operations
   getAllProjects(): Promise<Project[]>;

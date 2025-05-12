@@ -352,3 +352,38 @@ export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory)
 
 export type UserLoginHistory = typeof userLoginHistory.$inferSelect;
 export type InsertUserLoginHistory = z.infer<typeof insertUserLoginHistorySchema>;
+
+// Deleted users table for 30-day retention before permanent deletion
+export const deletedUsers = pgTable("deleted_users", {
+  id: serial("id").primaryKey(),
+  originalUserId: integer("original_user_id").notNull(),
+  username: text("username").notNull(),
+  email: text("email").notNull(),
+  fullName: text("full_name"),
+  profileImageUrl: text("profile_image_url"),
+  phoneNumber: text("phone_number"),
+  role: text("role").notNull(),
+  isVerified: boolean("is_verified").notNull(),
+  tokens: integer("tokens").notNull(),
+  deletedAt: timestamp("deleted_at").notNull().defaultNow(),
+  scheduledForDeletion: timestamp("scheduled_for_deletion").notNull(),
+  deletedBy: integer("deleted_by"), // ID of admin who deleted the user
+  deletionReason: text("deletion_reason"),
+});
+
+export const insertDeletedUserSchema = createInsertSchema(deletedUsers).pick({
+  originalUserId: true,
+  username: true,
+  email: true,
+  fullName: true,
+  profileImageUrl: true,
+  phoneNumber: true,
+  role: true,
+  isVerified: true,
+  tokens: true,
+  deletedBy: true,
+  deletionReason: true,
+});
+
+export type DeletedUser = typeof deletedUsers.$inferSelect;
+export type InsertDeletedUser = z.infer<typeof insertDeletedUserSchema>;
