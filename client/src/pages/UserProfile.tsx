@@ -60,22 +60,29 @@ interface Session {
 interface LoginHistory {
   id: number;
   userId: number;
-  sessionId: string;
-  email: string;
-  username: string;
+  sessionId?: string;
+  userEmail?: string; // from database
+  email?: string; // for code compatibility
+  username?: string;
   ipAddress?: string;
   userAgent?: string;
   loginTime: string;
-  lastActiveTime: string;
+  lastActiveTime?: string;
   logoutTime?: string;
+  // Individual device fields from database
+  browser?: string;
+  os?: string;
+  deviceType?: string;
+  // Combined device info from our schema
   deviceInfo?: {
     browser?: string;
     os?: string;
     device?: string;
     isMobile?: boolean;
   };
-  loginStatus: string;
-  isAdmin: boolean;
+  loginStatus?: string;
+  isAdmin?: boolean;
+  createdAt?: string;
 }
 
 // Interface for user data
@@ -554,20 +561,26 @@ export default function UserProfile() {
                                 })}
                               </TableCell>
                               <TableCell className="text-gray-400">
-                                {login.deviceInfo?.device || 'Unknown'}{' '}
-                                {login.deviceInfo?.os && `(${login.deviceInfo.os})`}
-                                {login.deviceInfo?.isMobile && (
+                                {/* Use either deviceType from DB or device from deviceInfo */}
+                                {login.deviceType || login.deviceInfo?.device || 'Desktop'}{' '}
+                                {/* Use either os from DB or from deviceInfo */}
+                                {(login.os || login.deviceInfo?.os) && 
+                                  `(${login.os || login.deviceInfo?.os})`
+                                }
+                                {/* Show mobile icon if it's a mobile device */}
+                                {(login.deviceType === 'Mobile' || login.deviceInfo?.isMobile) ? (
                                   <Smartphone className="h-4 w-4 inline-block ml-1 text-gray-500" />
-                                )}
-                                {!login.deviceInfo?.isMobile && (
+                                ) : (
                                   <Laptop className="h-4 w-4 inline-block ml-1 text-gray-500" />
                                 )}
                               </TableCell>
                               <TableCell className="text-gray-400">
-                                {login.deviceInfo?.browser || 'Unknown'}
+                                {/* Use either browser from DB or from deviceInfo */}
+                                {login.browser || login.deviceInfo?.browser || 'Unknown'}
                               </TableCell>
                               <TableCell className="text-right">
-                                {login.loginStatus === 'success' ? (
+                                {/* Default to success if not specified */}
+                                {(!login.loginStatus || login.loginStatus === 'success') ? (
                                   <Badge className="bg-green-800/30 text-green-400 border-green-800">
                                     <CheckCircle className="h-3 w-3 mr-1" /> Success
                                   </Badge>
