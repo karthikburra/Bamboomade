@@ -4,7 +4,8 @@ import { useLocation } from "wouter";
 import { 
   X, Filter, RefreshCcw, Search, Trash2, Edit, Copy, ExternalLink, 
   AlertTriangle, AlertCircle, Save, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
-  UploadCloud, CheckCircle, Clock, ThumbsUp, ThumbsDown, Bell, Loader2, Eye, Sparkles
+  UploadCloud, CheckCircle, Clock, ThumbsUp, ThumbsDown, Bell, Loader2, Eye, Sparkles,
+  Lock, RefreshCw
 } from "lucide-react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -298,13 +299,32 @@ export default function AIKnowledgeDatabase() {
   const handleAddContent = async (formData: FormData) => {
     try {
       // Convert FormData to JSON object
-      const contentData = {
+      const contentType = formData.get('contentType');
+      const contentData: any = {
         title: formData.get('title'),
         content: formData.get('content'),
-        contentType: formData.get('contentType'),
+        contentType: contentType,
         source: formData.get('source'),
         status: formData.get('status'),
       };
+      
+      // Add event-specific fields if content type is "event"
+      if (contentType === "event") {
+        contentData.eventDate = null; // Default to null, would need a datepicker
+        contentData.eventLocation = formData.get('eventLocation') || null;
+        contentData.registrationLink = formData.get('registrationLink') || null;
+      }
+      
+      // Add enthusiast-specific fields if content type is "enthusiast"
+      if (contentType === "enthusiast") {
+        contentData.contactEmail = formData.get('contactEmail') || null;
+        contentData.contactPhone = formData.get('contactPhone') || null;
+        contentData.linkedinUrl = formData.get('linkedinUrl') || null;
+        contentData.instagramUrl = formData.get('instagramUrl') || null;
+        contentData.twitterUrl = formData.get('twitterUrl') || null;
+        contentData.facebookUrl = formData.get('facebookUrl') || null;
+        contentData.personalWebsite = formData.get('personalWebsite') || null;
+      }
       
       console.log("Submitting content:", contentData);
       
@@ -411,7 +431,15 @@ export default function AIKnowledgeDatabase() {
     <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-amber-400">AI Knowledge Database</h1>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => navigate("/admin-login")}
+            variant="outline"
+            className="border-gray-700 text-gray-300 hover:border-amber-600 hover:bg-gray-800 hover:text-amber-400"
+          >
+            <Lock className="mr-2 h-4 w-4" />
+            Admin Login
+          </Button>
           <Button 
             onClick={() => navigate("/admin-ai-knowledge-chat")}
             variant="outline"
@@ -1737,7 +1765,23 @@ export default function AIKnowledgeDatabase() {
               
               <div className="grid gap-2">
                 <label htmlFor="contentType" className="text-sm font-medium text-gray-300">Content Type</label>
-                <Select name="contentType" defaultValue="webpage">
+                <Select 
+                  name="contentType" 
+                  defaultValue="webpage" 
+                  onValueChange={(value) => {
+                    // Show/hide content type specific fields
+                    const eventFields = document.getElementById('event-fields');
+                    const enthusiastFields = document.getElementById('enthusiast-fields');
+                    
+                    if (eventFields) {
+                      eventFields.className = value === 'event' ? 'event-fields' : 'event-fields hidden';
+                    }
+                    
+                    if (enthusiastFields) {
+                      enthusiastFields.className = value === 'enthusiast' ? 'enthusiast-fields' : 'enthusiast-fields hidden';
+                    }
+                  }}
+                >
                   <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                     <SelectValue placeholder="Select content type" />
                   </SelectTrigger>
@@ -1790,6 +1834,70 @@ export default function AIKnowledgeDatabase() {
                     <SelectItem value="pending">Pending</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              {/* Conditional fields for Events */}
+              <div className="event-fields hidden" id="event-fields">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-4 mt-4">
+                  <h3 className="text-amber-400 font-medium">Event Details</h3>
+                  
+                  <div className="grid gap-2">
+                    <label htmlFor="eventLocation" className="text-sm font-medium text-gray-300">Event Location</label>
+                    <Input
+                      id="eventLocation"
+                      name="eventLocation"
+                      placeholder="Enter event location"
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <label htmlFor="registrationLink" className="text-sm font-medium text-gray-300">Registration Link</label>
+                    <Input
+                      id="registrationLink"
+                      name="registrationLink"
+                      placeholder="Enter registration URL"
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Conditional fields for Enthusiasts */}
+              <div className="enthusiast-fields hidden" id="enthusiast-fields">
+                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 space-y-4 mt-4">
+                  <h3 className="text-amber-400 font-medium">Enthusiast Contact Details</h3>
+                  
+                  <div className="grid gap-2">
+                    <label htmlFor="contactEmail" className="text-sm font-medium text-gray-300">Email</label>
+                    <Input
+                      id="contactEmail"
+                      name="contactEmail"
+                      placeholder="Enter contact email"
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <label htmlFor="contactPhone" className="text-sm font-medium text-gray-300">Phone</label>
+                    <Input
+                      id="contactPhone"
+                      name="contactPhone"
+                      placeholder="Enter contact phone"
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <label htmlFor="personalWebsite" className="text-sm font-medium text-gray-300">Website</label>
+                    <Input
+                      id="personalWebsite"
+                      name="personalWebsite"
+                      placeholder="Enter website URL"
+                      className="bg-gray-800 border-gray-700 text-white"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             
