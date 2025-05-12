@@ -697,6 +697,7 @@ export default function AdminDashboard() {
       });
       setIsDeleteUserDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/deleted-users"] });
     },
     onError: (error: any) => {
       toast({
@@ -707,6 +708,71 @@ export default function AdminDashboard() {
     }
   });
 
+  // Restore deleted user mutation
+  const restoreUserMutation = useMutation({
+    mutationFn: async (deletedUserId: number) => {
+      const response = await apiRequest(
+        "POST",
+        `/api/admin/deleted-users/${deletedUserId}/restore`
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to restore user");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate cache to refetch users
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/deleted-users"] });
+      
+      toast({
+        title: "User restored successfully",
+        description: "The user has been restored and can now log in again.",
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error restoring user",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Purge expired deleted users mutation
+  const purgeExpiredUsersMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest(
+        "POST",
+        "/api/admin/deleted-users/purge-expired"
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to purge expired users");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Invalidate cache to refetch deleted users
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/deleted-users"] });
+      
+      toast({
+        title: "Expired users purged",
+        description: `${data.purgedCount} expired users have been permanently deleted.`,
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error purging expired users",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
   // Mutation for toggling admin status
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, makeAdmin }: { userId: number, makeAdmin: boolean }) => {

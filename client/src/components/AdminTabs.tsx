@@ -38,6 +38,9 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       case "users":
         navigate("/admin-dashboard?tab=users");
         break;
+      case "deleted-users":
+        navigate("/admin-dashboard?tab=deleted-users");
+        break;
       case "summary":
         // Check if already on AdminDashboard, no need to redirect then
         if (location !== "/admin-dashboard") {
