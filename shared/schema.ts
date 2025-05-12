@@ -11,6 +11,9 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("user"),
   tokens: integer("tokens").notNull().default(10),
   isAdmin: boolean("is_admin").notNull().default(false),
+  isVerified: boolean("is_verified").notNull().default(false),
+  verificationCode: text("verification_code"),
+  verificationCodeExpires: timestamp("verification_code_expires"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -18,6 +21,9 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   role: true,
+  isVerified: true,
+  verificationCode: true,
+  verificationCodeExpires: true,
 });
 
 // Project schema for gallery items

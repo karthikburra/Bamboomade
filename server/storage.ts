@@ -20,6 +20,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserTokens(userId: number, tokens: number): Promise<User | undefined>;
   updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User | undefined>;
+  updateUser(userId: number, updates: Partial<User>): Promise<User | undefined>;
   
   // Project operations
   getAllProjects(): Promise<Project[]>;
@@ -143,7 +144,10 @@ export class DatabaseStorage implements IStorage {
         password: insertUser.password,
         email: insertUser.email,
         role: insertUser.role || 'user',
-        isAdmin: insertUser.role === 'admin'
+        isAdmin: insertUser.role === 'admin',
+        isVerified: insertUser.isVerified !== undefined ? insertUser.isVerified : false,
+        verificationCode: insertUser.verificationCode,
+        verificationCodeExpires: insertUser.verificationCodeExpires
       }).returning();
       return user;
     } catch (error) {
@@ -174,6 +178,19 @@ export class DatabaseStorage implements IStorage {
       return updatedUser;
     } catch (error) {
       console.error("Database error in updateUserAdminStatus:", error);
+      return undefined;
+    }
+  }
+  
+  async updateUser(userId: number, updates: Partial<User>): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set(updates)
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Database error in updateUser:", error);
       return undefined;
     }
   }

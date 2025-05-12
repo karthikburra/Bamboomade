@@ -520,15 +520,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isAdminUser = userData.email.toLowerCase() === "info@bamboomade.in";
       if (isAdminUser) {
         userData.role = "admin";
+        userData.isVerified = true; // Admin users are automatically verified
+      } else {
+        // Generate verification code
+        const { generateVerificationCode } = await import('./supabase-service');
+        const verificationCode = generateVerificationCode(6);
+        
+        // Set verification fields
+        userData.isVerified = false;
+        userData.verificationCode = verificationCode;
+        userData.verificationCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       }
       
       const user = await storage.createUser(userData);
       
+      // If not admin, send verification email
+      if (!isAdminUser) {
+        const { sendVerificationEmail } = await import('./supabase-service');
+        const emailSent = await sendVerificationEmail(userData.email, userData.verificationCode!);
+        
+        if (!emailSent) {
+          console.error("Failed to send verification email to:", userData.email);
+          // Continue with registration but inform the user
+          return res.status(201).json({ 
+            message: "Account created, but verification email could not be sent. Please contact support.",
+            needsVerification: true,
+            email: userData.email
+          });
+        }
+      }
+      
       // Don't return password in response
-      const { password, ...userWithoutPassword } = user;
-      res.status(201).json(userWithoutPassword);
+      const { password, verificationCode, ...userWithoutSensitiveData } = user;
+      
+      res.status(201).json({
+        ...userWithoutSensitiveData,
+        message: isAdminUser 
+          ? "Admin account created successfully" 
+          : "Account created. Please check your email for a verification code.",
+        needsVerification: !isAdminUser
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to create user", error: (error as Error).message });
+    }
+  });
+  
+  // Email verification route
+  app.post("/api/auth/verify-email", async (req, res) => {
+    try {
+      const { email, code } = req.body;
+      
+      if (!email || !code) {
+        return res.status(400).json({ message: "Email and verification code are required" });
+      }
+      
+      // Find the user
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (user.isVerified) {
+        return res.status(400).json({ message: "Email is already verified" });
+      }
+      
+      // Check if the verification code matches and hasn't expired
+      if (user.verificationCode !== code) {
+        return res.status(400).json({ message: "Invalid verification code" });
+      }
+      
+      if (user.verificationCodeExpires && new Date(user.verificationCodeExpires) < new Date()) {
+        return res.status(400).json({ 
+          message: "Verification code has expired. Please request a new one",
+          expired: true
+        });
+      }
+      
+      // Mark the user as verified
+      await storage.updateUser(user.id, {
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpires: null
+      });
+      
+      // If this is their first successful verification, give them bonus tokens
+      if (!user.isVerified) {
+        await storage.createTokenPurchase({
+          userId: user.id,
+          amount: 10, // Bonus tokens for new users
+          paymentId: "signup_bonus",
+          paymentMethod: "free",
+        });
+      }
+      
+      // Automatically log the user in
+      req.session.userId = user.id;
+      // Save the session explicitly to ensure it persists
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error during email verification:", err);
+        }
+      });
+      
+      res.status(200).json({ 
+        message: "Email verified successfully. You are now logged in.",
+        verified: true
+      });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "An error occurred during email verification" });
+    }
+  });
+  
+  // Resend verification code
+  app.post("/api/auth/resend-verification", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Find the user
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (user.isVerified) {
+        return res.status(400).json({ message: "Email is already verified" });
+      }
+      
+      // Generate a new verification code
+      const { generateVerificationCode, sendVerificationEmail } = await import('./supabase-service');
+      const verificationCode = generateVerificationCode(6);
+      
+      // Update the user's verification code
+      await storage.updateUser(user.id, {
+        verificationCode,
+        verificationCodeExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      });
+      
+      // Send verification email using Supabase
+      const emailSent = await sendVerificationEmail(email, verificationCode);
+      
+      if (!emailSent) {
+        console.error("Failed to resend verification email to:", email);
+        return res.status(500).json({ message: "Failed to send verification email, please try again" });
+      }
+      
+      res.status(200).json({ message: "Verification code resent. Please check your email." });
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      res.status(500).json({ message: "An error occurred while resending verification code" });
     }
   });
 
