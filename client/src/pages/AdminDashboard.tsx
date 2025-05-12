@@ -617,9 +617,17 @@ export default function AdminDashboard() {
   const currentUser = userData?.user || null;
 
   // Function to handle editing a user
+  // This function is kept for historical reasons but no longer used in the UI
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
     setIsEditUserDialogOpen(true);
+  };
+  
+  // Function to handle deleting a user (with confirmation dialog)
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setDeleteReason("");
+    setIsDeleteUserDialogOpen(true);
   };
 
   // Function to handle toggling admin status
