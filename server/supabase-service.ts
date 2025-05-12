@@ -18,30 +18,46 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
  */
 export async function sendVerificationEmail(email: string, code: string): Promise<boolean> {
   try {
-    const { error } = await supabase.auth.admin.createUser({
-      email,
-      email_confirm: false,
-      user_metadata: { 
-        verification_code: code,
-        verification_created_at: new Date().toISOString(),
+    const nodemailer = await import('nodemailer');
+    
+    // Create a transporter using environment variables for SMTP settings
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER || 'info@bamboomade.in',
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
-
-    if (error) {
-      console.error("Error creating user for verification:", error);
-      return false;
-    }
-
-    // Send a magic link that contains the verification code in the URL
-    const { error: magicLinkError } = await supabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${process.env.APP_URL || ''}/verify-email?code=${code}`,
+    
+    // Create email template
+    const emailSubject = "Verify your BambooMade account";
+    const emailTemplate = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <h2 style="color: #333; text-align: center;">Verify Your Email Address</h2>
+        <p>Thank you for registering with BambooMade. Please use the verification code below to complete your registration:</p>
+        <div style="background-color: #f7f7f7; padding: 15px; text-align: center; font-size: 24px; letter-spacing: 5px; font-weight: bold; margin: 20px 0;">
+          ${code}
+        </div>
+        <p>This code will expire in 24 hours.</p>
+        <p>If you didn't create an account with us, please ignore this email.</p>
+        <div style="margin-top: 30px; text-align: center; color: #777; font-size: 12px;">
+          <p>© 2025 BambooMade. All rights reserved.</p>
+          <p>Banjara Hills, Hyderabad | Info@bamboomade.in</p>
+        </div>
+      </div>
+    `;
+    
+    // Send the email
+    const info = await transporter.sendMail({
+      from: '"BambooMade" <info@bamboomade.in>',
+      to: email,
+      subject: emailSubject,
+      html: emailTemplate,
     });
-
-    if (magicLinkError) {
-      console.error("Error sending verification email:", magicLinkError);
-      return false;
-    }
-
+    
+    console.log(`Verification email sent to ${email}: ${info.messageId}`);
     return true;
   } catch (error) {
     console.error("Exception sending verification email:", error);
