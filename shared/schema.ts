@@ -315,3 +315,40 @@ export const insertBambooFactSchema = createInsertSchema(bambooFacts).pick({
 
 export type BambooFact = typeof bambooFacts.$inferSelect;
 export type InsertBambooFact = z.infer<typeof insertBambooFactSchema>;
+
+// User login history for tracking user activity across deployments
+export const userLoginHistory = pgTable("user_login_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  email: text("email").notNull(),
+  username: text("username").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  loginTime: timestamp("login_time").notNull().defaultNow(),
+  lastActiveTime: timestamp("last_active_time").notNull().defaultNow(),
+  logoutTime: timestamp("logout_time"),
+  deviceInfo: json("device_info").$type<{
+    browser?: string;
+    os?: string;
+    device?: string;
+    isMobile?: boolean;
+  }>(),
+  loginStatus: text("login_status").notNull().default("success"), // success, failed, expired
+  isAdmin: boolean("is_admin").notNull().default(false),
+  sessionId: text("session_id"),
+});
+
+export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory).pick({
+  userId: true,
+  email: true,
+  username: true,
+  ipAddress: true,
+  userAgent: true,
+  deviceInfo: true,
+  loginStatus: true,
+  isAdmin: true,
+  sessionId: true,
+});
+
+export type UserLoginHistory = typeof userLoginHistory.$inferSelect;
+export type InsertUserLoginHistory = z.infer<typeof insertUserLoginHistorySchema>;

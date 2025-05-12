@@ -7,7 +7,8 @@ import {
   tokenPurchases, type TokenPurchase, type InsertTokenPurchase,
   availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot,
   aiKnowledgeContent, type AiKnowledgeContent, type InsertAiKnowledgeContent,
-  dashboardSnapshots, type DashboardSnapshot, type InsertDashboardSnapshot
+  dashboardSnapshots, type DashboardSnapshot, type InsertDashboardSnapshot,
+  userLoginHistory, type UserLoginHistory, type InsertUserLoginHistory
 } from "@shared/schema";
 import { eq, and, asc, desc } from 'drizzle-orm';
 import { db } from './db';
@@ -77,6 +78,14 @@ export interface IStorage {
   getDashboardSnapshotByDate(date: string): Promise<DashboardSnapshot | undefined>;
   getAllDashboardSnapshots(): Promise<DashboardSnapshot[]>;
   saveDashboardSnapshot(snapshot: InsertDashboardSnapshot): Promise<DashboardSnapshot>;
+  
+  // User Login History operations
+  createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory>;
+  getUserLoginHistory(userId: number): Promise<UserLoginHistory[]>;
+  getAllUserLoginHistory(): Promise<UserLoginHistory[]>;
+  getActiveUserSessions(): Promise<UserLoginHistory[]>;
+  updateUserLoginActivity(sessionId: string): Promise<UserLoginHistory | undefined>;
+  updateUserLogout(sessionId: string): Promise<UserLoginHistory | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -758,6 +767,87 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in saveDashboardSnapshot:", error);
       throw error;
+    }
+  }
+  // User Login History operations
+  async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
+    try {
+      const [loginRecord] = await db.insert(userLoginHistory)
+        .values(loginData)
+        .returning();
+      return loginRecord;
+    } catch (error) {
+      console.error("Database error in createUserLoginHistory:", error);
+      throw error;
+    }
+  }
+
+  async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
+    try {
+      // Order by login time descending (newest first)
+      return await db.select()
+        .from(userLoginHistory)
+        .where(eq(userLoginHistory.userId, userId))
+        .orderBy(desc(userLoginHistory.loginTime));
+    } catch (error) {
+      console.error("Database error in getUserLoginHistory:", error);
+      return [];
+    }
+  }
+
+  async getAllUserLoginHistory(): Promise<UserLoginHistory[]> {
+    try {
+      // Order by login time descending (newest first)
+      return await db.select()
+        .from(userLoginHistory)
+        .orderBy(desc(userLoginHistory.loginTime));
+    } catch (error) {
+      console.error("Database error in getAllUserLoginHistory:", error);
+      return [];
+    }
+  }
+
+  async getActiveUserSessions(): Promise<UserLoginHistory[]> {
+    try {
+      // Get sessions that have no logout time (active sessions)
+      return await db.select()
+        .from(userLoginHistory)
+        .where(eq(userLoginHistory.loginStatus, "success"))
+        .orderBy(desc(userLoginHistory.lastActiveTime));
+    } catch (error) {
+      console.error("Database error in getActiveUserSessions:", error);
+      return [];
+    }
+  }
+
+  async updateUserLoginActivity(sessionId: string): Promise<UserLoginHistory | undefined> {
+    try {
+      // Update the last active time for a session
+      const [updatedSession] = await db.update(userLoginHistory)
+        .set({ lastActiveTime: new Date() })
+        .where(eq(userLoginHistory.sessionId, sessionId))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateUserLoginActivity:", error);
+      return undefined;
+    }
+  }
+
+  async updateUserLogout(sessionId: string): Promise<UserLoginHistory | undefined> {
+    try {
+      // Update the logout time for a session
+      const [updatedSession] = await db.update(userLoginHistory)
+        .set({ 
+          logoutTime: new Date(),
+          lastActiveTime: new Date() 
+        })
+        .where(eq(userLoginHistory.sessionId, sessionId))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateUserLogout:", error);
+      return undefined;
     }
   }
 }
