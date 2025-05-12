@@ -10,7 +10,7 @@ import {
   dashboardSnapshots, type DashboardSnapshot, type InsertDashboardSnapshot,
   userLoginHistory, type UserLoginHistory, type InsertUserLoginHistory
 } from "@shared/schema";
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { eq, and, asc, desc, isNull } from 'drizzle-orm';
 import { db } from './db';
 
 export interface IStorage {
@@ -812,7 +812,12 @@ export class DatabaseStorage implements IStorage {
       // Get sessions that have no logout time (active sessions)
       return await db.select()
         .from(userLoginHistory)
-        .where(eq(userLoginHistory.loginStatus, "success"))
+        .where(
+          and(
+            eq(userLoginHistory.loginStatus, "success"),
+            isNull(userLoginHistory.logoutTime)
+          )
+        )
         .orderBy(desc(userLoginHistory.lastActiveTime));
     } catch (error) {
       console.error("Database error in getActiveUserSessions:", error);
