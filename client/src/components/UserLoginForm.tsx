@@ -51,24 +51,10 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       
       if (data.success) {
         setStep("verification");
-        
-        // Display verification code that was returned (for testing purposes)
-        if (data.tempAdminCode) {
-          // Saved for auto-fill to make testing easier
-          setVerificationCode(data.tempAdminCode);
-          
-          toast({
-            title: "Verification Code",
-            description: `Your verification code is: ${data.tempAdminCode}`,
-            variant: "default",
-            duration: 60000, // Show for 1 minute
-          });
-        } else {
-          toast({
-            title: "Verification Code Sent",
-            description: "Please check your email for the verification code.",
-          });
-        }
+        toast({
+          title: "Verification Code Sent",
+          description: "Please check your email for the verification code.",
+        });
       } else {
         toast({
           title: "Failed to Send Code",
@@ -217,21 +203,14 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
               <label htmlFor="verification-code" className="text-sm font-medium">
                 Verification Code
               </label>
-              <div className="flex flex-col items-center">
-                <Input
-                  id="verification-code"
-                  placeholder="Enter 6-digit code"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  maxLength={6}
-                  className="text-center tracking-widest text-lg font-bold"
-                />
-                {verificationCode && (
-                  <div className="text-sm mt-2 p-2 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md w-full text-center">
-                    Verification code: <span className="font-bold">{verificationCode}</span>
-                  </div>
-                )}
-              </div>
+              <Input
+                id="verification-code"
+                placeholder="Enter 6-digit code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                maxLength={6}
+                className="text-center tracking-widest text-lg font-medium"
+              />
             </div>
             
             <Button 

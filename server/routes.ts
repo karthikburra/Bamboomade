@@ -567,14 +567,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // If the email is admin/dev and we have the verification code, include it in response
+      // Log verification code being sent for any debugging purposes
       if (result.verificationCode) {
-        console.log(`✅ Verification code for special email sent: ${result.verificationCode}`);
-        return res.status(200).json({
-          message: "Verification code sent to your email",
-          success: true,
-          tempAdminCode: result.verificationCode // Only for admin/dev testing
-        });
+        console.log(`✅ Verification code sent to email: ${email}`);
       }
       
       console.log(`✅ Verification code sent successfully to ${email}`);

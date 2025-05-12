@@ -72,27 +72,13 @@ export async function sendVerificationCode(email: string): Promise<{
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
   
   try {
-    // Special handling for admin email and development emails containing 'karthik'
-    // Just return the code directly for easy testing
-    const isAdminEmail = email.toLowerCase() === 'info@bamboomade.in';
-    const isDevEmail = email.toLowerCase().includes('karthik');
-    
-    if (isAdminEmail || isDevEmail) {
-      console.log(`🔑 Generated verification code for special email (${email}): ${verificationCode}`);
-      
-      pendingVerifications.set(email, {
-        email,
-        code: verificationCode,
-        createdAt: new Date(),
-        attempts: 0
-      });
-      
-      return {
-        success: true,
-        message: 'Verification code generated (displayed directly for testing)',
-        verificationCode
-      };
-    }
+    // Store the verification code for all emails
+    pendingVerifications.set(email, {
+      email,
+      code: verificationCode,
+      createdAt: new Date(),
+      attempts: 0
+    });
     
     // First try Supabase OTP if available
     if (supabase) {
@@ -118,9 +104,9 @@ export async function sendVerificationCode(email: string): Promise<{
     console.log(`🔄 Falling back to custom verification for: ${email}`);
     
     // Import email service dynamically to avoid circular dependencies
-    const { sendVerificationCodeEmail } = await import('./email-service');
+    const { sendLoginVerificationEmail } = await import('./email-service');
     
-    const emailSent = await sendVerificationCodeEmail(email, verificationCode);
+    const emailSent = await sendLoginVerificationEmail(email, verificationCode);
     
     if (!emailSent) {
       throw new Error('Failed to send verification email');

@@ -215,6 +215,55 @@ export async function sendEmail(options: {
 /**
  * Send a verification code email for account registration
  */
+export async function sendLoginVerificationEmail(
+  email: string,
+  code: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: email,
+    subject: "Your BambooMade Login Code",
+    text: `
+Hello,
+
+Your login verification code for BambooMade is:
+
+${code}
+
+This code will expire in 15 minutes.
+
+If you didn't request this code, please ignore this email.
+
+Regards,
+BambooMade Team
+    `,
+    html: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <div style="background-color: #1E3A29; padding: 20px; text-align: center;">
+    <h2 style="color: #ffffff; margin: 0;">BambooMade</h2>
+  </div>
+  <div style="padding: 20px; border: 1px solid #e5e5e5; border-top: none;">
+    <h3>Your Login Verification Code</h3>
+    <p>Hello,</p>
+    <p>You requested to log in to BambooMade. Please use the verification code below:</p>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+      ${code}
+    </div>
+    
+    <p>This code will expire in 15 minutes.</p>
+    <p>If you didn't request this code, please ignore this email.</p>
+    
+    <p>Regards,<br>BambooMade Team</p>
+  </div>
+  <div style="margin-top: 30px; text-align: center; color: #777; font-size: 12px;">
+    <p>© 2025 BambooMade. All rights reserved.</p>
+    <p>Banjara Hills, Hyderabad | Info@bamboomade.in</p>
+  </div>
+</div>
+    `
+  });
+}
+
 export async function sendRegistrationVerificationEmail(
   email: string,
   code: string
