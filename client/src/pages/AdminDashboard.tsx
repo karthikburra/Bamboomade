@@ -1094,28 +1094,33 @@ export default function AdminDashboard() {
                   
                   // Display users table
                   return (
-                    <div className="bg-gray-900 rounded-lg border border-gray-700">
-                      <div className="p-4 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="bg-gray-900/90 rounded-lg border border-gray-700 shadow-md">
+                      <div className="p-5 border-b border-gray-700 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                          <h3 className="text-lg font-medium">Registered Users</h3>
+                          <h3 className="text-lg font-medium mb-1 flex items-center gap-2">
+                            <Users className="h-5 w-5 text-purple-400" />
+                            Registered Users
+                          </h3>
                           <p className="text-sm text-muted-foreground">
-                            {userSearchFilter 
-                              ? `Showing ${filteredUsers.length} of ${usersData.length} registered users` 
-                              : `Showing all ${usersData.length} registered users`}
+                            <span className={userSearchFilter ? "text-purple-300" : "text-gray-400"}>
+                              {userSearchFilter 
+                                ? `Showing ${filteredUsers.length} of ${usersData.length} registered users` 
+                                : `Showing all ${usersData.length} registered users`}
+                            </span>
                           </p>
                         </div>
                         <div className="flex items-center gap-3 w-full md:w-auto">
                           <div className="relative w-full md:w-64">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                             <Input
                               type="search"
                               placeholder="Search by email or username..."
-                              className="pl-9 bg-gray-800 border-gray-700 focus:border-purple-700"
+                              className="pl-10 bg-gray-800/90 border-gray-700 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-colors"
                               value={userSearchFilter}
                               onChange={(e) => setUserSearchFilter(e.target.value)}
                             />
                           </div>
-                          <Badge variant="outline" className="bg-purple-900/30 text-purple-300 border-purple-700">
+                          <Badge variant="outline" className="bg-purple-900/30 text-purple-300 border-purple-700 shadow-sm">
                             {filteredUsers.length} / {usersData.length} Users
                           </Badge>
                         </div>
