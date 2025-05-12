@@ -57,19 +57,29 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       onValueChange={handleTabChange}
       className="space-y-6"
     >
-      <div className="relative overflow-x-auto pb-1">
-        <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+      <div className="relative overflow-x-auto pb-2">
+        <TabsList className="bg-gray-800/80 border border-gray-700 w-full flex flex-wrap sm:flex-nowrap overflow-x-auto rounded-md shadow-md">
           {/* Dashboard Summary tab removed */}
-          <TabsTrigger value="sessions" className="data-[state=active]:bg-green-700 text-sm whitespace-nowrap">
+          <TabsTrigger 
+            value="sessions" 
+            className="flex-1 data-[state=active]:bg-green-700/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+          >
             <Calendar className="w-4 h-4 mr-2" />
             Session Management
           </TabsTrigger>
 
-          <TabsTrigger value="database" className="data-[state=active]:bg-amber-600 text-sm whitespace-nowrap">
+          <TabsTrigger 
+            value="database" 
+            className="flex-1 data-[state=active]:bg-amber-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+          >
             <Database className="w-4 h-4 mr-2" />
             Knowledge Database
           </TabsTrigger>
-          <TabsTrigger value="users" className="data-[state=active]:bg-purple-600 text-sm whitespace-nowrap">
+          
+          <TabsTrigger 
+            value="users" 
+            className="flex-1 data-[state=active]:bg-purple-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+          >
             <Users className="w-4 h-4 mr-2" />
             User Management
           </TabsTrigger>
