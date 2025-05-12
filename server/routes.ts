@@ -5347,6 +5347,43 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       });
     }
   });
+  
+  // Get a user's login history
+  app.get("/api/users/:userId/login-history", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // For security, only allow users to see their own login history or admins to see any login history
+      const isAdminUser = req.session?.adminUser !== undefined;
+      const isOwnProfile = req.session?.userId === userId;
+      
+      if (!isAdminUser && !isOwnProfile) {
+        return res.status(403).json({ message: "You don't have permission to view this user's login history" });
+      }
+      
+      // Get login history for this user
+      const loginHistory = await storage.getUserLoginHistory(userId);
+      
+      res.json({
+        success: true,
+        loginHistory,
+        totalLogins: loginHistory.length
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch user login history", 
+        error: (error as Error).message 
+      });
+    }
+  });
 
   app.get("/api/available-slots", async (req, res) => {
     try {

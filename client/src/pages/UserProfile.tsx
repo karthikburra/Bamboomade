@@ -29,7 +29,7 @@ import {
   User, Phone, Mail, CalendarClock, Clock, 
   Video, Calendar, FileText, CheckCircle, XCircle,
   ArrowLeftRight, Ban, Timer, AlertTriangle, Laptop, 
-  Smartphone, ExternalLink
+  Smartphone, ExternalLink, MapPin, Shield, LogIn, History
 } from "lucide-react";
 import { LoadingSpinner } from "../components/ui/loading-spinner";
 
@@ -54,6 +54,28 @@ interface Session {
   rescheduledDate?: string;
   rescheduledBy?: string;
   cancellationReason?: string;
+}
+
+// Interface for login history
+interface LoginHistory {
+  id: number;
+  userId: number;
+  sessionId: string;
+  email: string;
+  username: string;
+  ipAddress?: string;
+  userAgent?: string;
+  loginTime: string;
+  lastActiveTime: string;
+  logoutTime?: string;
+  deviceInfo?: {
+    browser?: string;
+    os?: string;
+    device?: string;
+    isMobile?: boolean;
+  };
+  loginStatus: string;
+  isAdmin: boolean;
 }
 
 // Interface for user data
@@ -97,6 +119,16 @@ export default function UserProfile() {
     queryKey: [`/api/users/${userId}/sessions`],
     enabled: !isNaN(userId),
   });
+  
+  // Fetch user login history
+  const {
+    data: loginHistoryData,
+    isLoading: isLoadingLoginHistory,
+    error: loginHistoryError
+  } = useQuery({
+    queryKey: [`/api/users/${userId}/login-history`],
+    enabled: !isNaN(userId),
+  });
 
   // Get user's full name
   const getFullName = (user: UserData) => {
@@ -137,9 +169,9 @@ export default function UserProfile() {
   };
 
   // Show loading state
-  if (isLoadingUser || isLoadingSessions) {
+  if (isLoadingUser || isLoadingSessions || isLoadingLoginHistory) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 bg-gray-950 text-gray-100">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <LoadingSpinner size="lg" />
           <p className="mt-4 text-gray-400">Loading user profile...</p>
