@@ -53,7 +53,8 @@ import {
   SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
   Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle,
   History, Activity, UserX, Globe, Timer, Laptop, Smartphone, 
-  Clock8, ClockIcon
+  Clock8, ClockIcon, RefreshCw, Shield, ShieldOff, KeyRound, Lock,
+  RefreshCcw
 } from "lucide-react";
 import {
   Select,
@@ -67,6 +68,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
+import { LoadingSpinner } from "../components/ui/loading-spinner";
 
 
 interface TimeSlotWithStatus {
@@ -1522,16 +1524,144 @@ export default function AdminDashboard() {
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4">
             <Card className="bg-gray-900 border-gray-800">
-              <CardHeader>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>
-                  Manage users and their permissions
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle className="text-xl font-bold">User Management</CardTitle>
+                  <CardDescription>
+                    Manage users and their permissions
+                  </CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => refetchUsers()}
+                  className="bg-gray-800 hover:bg-gray-700 text-white border-gray-700"
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Refresh
+                </Button>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <p className="text-gray-400 mb-4">User management will be implemented in a future update.</p>
-                </div>
+                {isLoadingUsers ? (
+                  <div className="flex justify-center items-center py-12">
+                    <LoadingSpinner size="md" />
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="rounded-md border border-gray-800 overflow-hidden">
+                      <Table className="w-full">
+                        <TableHeader className="bg-gray-800">
+                          <TableRow className="hover:bg-gray-800/50 border-gray-700">
+                            <TableHead className="text-gray-300">User</TableHead>
+                            <TableHead className="text-gray-300">Email</TableHead>
+                            <TableHead className="text-gray-300">Role</TableHead>
+                            <TableHead className="text-gray-300">Status</TableHead>
+                            <TableHead className="text-gray-300 text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users?.map((user) => (
+                            <TableRow key={user.id} className="hover:bg-gray-800/50 border-gray-700">
+                              <TableCell className="font-medium">
+                                <div className="flex items-center">
+                                  <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white mr-2">
+                                    {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                                  </div>
+                                  <span>{user.username}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{user.email}</TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant={user.role === 'admin' ? 'destructive' : 'outline'} 
+                                  className={user.role === 'admin' ? 'bg-red-800 text-white' : 'bg-gray-800 text-gray-300'}
+                                >
+                                  {user.role === 'admin' ? 'Admin' : 'User'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge 
+                                  variant={user.isVerified ? 'default' : 'outline'} 
+                                  className={user.isVerified ? 'bg-green-800 text-white' : 'bg-gray-800 text-gray-300'}
+                                >
+                                  {user.isVerified ? 'Verified' : 'Unverified'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-8 border-gray-700 hover:bg-gray-800"
+                                    onClick={() => handleEditUser(user)}
+                                  >
+                                    <Edit className="h-3.5 w-3.5 mr-1" />
+                                    Edit
+                                  </Button>
+                                  {currentUser?.email === 'info@bamboomade.in' && user.email !== 'info@bamboomade.in' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className={`h-8 ${user.role === 'admin' ? 'border-red-700 text-red-400 hover:bg-red-900/30' : 'border-green-700 text-green-400 hover:bg-green-900/30'}`}
+                                      onClick={() => handleToggleAdminStatus(user)}
+                                    >
+                                      {user.role === 'admin' ? (
+                                        <>
+                                          <ShieldOff className="h-3.5 w-3.5 mr-1" />
+                                          Remove Admin
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Shield className="h-3.5 w-3.5 mr-1" />
+                                          Make Admin
+                                        </>
+                                      )}
+                                    </Button>
+                                  )}
+                                  {currentUser?.email === 'info@bamboomade.in' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-8 border-gray-700 hover:bg-gray-800 text-amber-400"
+                                      onClick={() => handleResetPassword(user)}
+                                    >
+                                      <KeyRound className="h-3.5 w-3.5 mr-1" />
+                                      Reset Password
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {(!users || users.length === 0) && (
+                            <TableRow className="hover:bg-gray-800/50 border-gray-700">
+                              <TableCell colSpan={5} className="text-center py-6 text-gray-400">
+                                No users found
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    <div className="bg-gray-800/50 rounded-md p-4 border border-gray-700">
+                      <h3 className="text-lg font-semibold mb-3 text-white">Admin Permissions</h3>
+                      <p className="text-gray-300 text-sm mb-2">
+                        <span className="text-amber-400 font-medium">info@bamboomade.in</span> has super-admin privileges to:
+                      </p>
+                      <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-2">
+                        <li>Grant or remove admin rights to other users</li>
+                        <li>Reset any user's password</li>
+                        <li>Access all system features and data</li>
+                      </ul>
+                      <div className="mt-4 p-3 bg-gray-900 rounded-md border border-gray-700">
+                        <p className="text-xs text-gray-400">
+                          Note: Regular admin users can manage content and sessions, but only <span className="text-amber-400 font-medium">info@bamboomade.in</span> can manage other admins.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
