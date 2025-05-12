@@ -107,6 +107,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
         toast({
           title: "Login Successful",
           description: "Welcome to BambooMade! You'll be redirected to complete your profile.",
+          duration: 3000
         });
         
         // Wait for toast to show before redirecting
@@ -121,19 +122,29 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
           }
         }, 1500);
       } else {
+        console.error("Verification failed with error message:", data.message);
         toast({
           title: "Verification Failed",
           description: data.message || "Could not verify code. Please try again.",
           variant: "destructive",
+          duration: 5000
         });
         setIsVerifying(false);
       }
     } catch (error) {
       console.error("Error verifying code:", error);
+      
+      let errorMessage = "Could not verify code. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error("Error details:", error);
+      }
+      
       toast({
         title: "Verification Failed",
-        description: error instanceof Error ? error.message : "Could not verify code. Please try again.",
+        description: errorMessage,
         variant: "destructive",
+        duration: 5000
       });
       setIsVerifying(false);
     }
