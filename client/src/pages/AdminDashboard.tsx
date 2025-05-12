@@ -51,7 +51,7 @@ import {
   CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
   X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
   SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog, CalendarIcon,
-  Info, Database, Copy, BarChart3, Users
+  Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle
 } from "lucide-react";
 import {
   Select,
@@ -578,40 +578,52 @@ export default function AdminDashboard() {
           <TabsContent value="sessions" className="space-y-4">
         
             {/* Stats summary only shown on Sessions tab */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-              <Card className="bg-gray-900 border-gray-800">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
+              <Card className="bg-gray-900/70 border-gray-800 shadow-md hover:shadow-lg transition-all duration-200">
                 <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                  <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
+                  <CardTitle className="text-sm sm:text-base text-gray-100">Total Sessions</CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                  <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
+                  <p className="text-xl sm:text-3xl font-bold text-white flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-gray-400" />
+                    {sessions.length}
+                  </p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-amber-900/20 border-amber-900">
+              <Card className="bg-amber-900/30 border-amber-800/60 shadow-md hover:shadow-lg transition-all duration-200">
                 <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                  <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
+                  <CardTitle className="text-sm sm:text-base text-amber-100">Pending</CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                  <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
+                  <p className="text-xl sm:text-3xl font-bold text-amber-200 flex items-center">
+                    <Clock className="w-5 h-5 mr-2 text-amber-400/70" />
+                    {pendingSessions.length}
+                  </p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-green-900/20 border-green-900">
+              <Card className="bg-green-900/30 border-green-800/60 shadow-md hover:shadow-lg transition-all duration-200">
                 <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                  <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
+                  <CardTitle className="text-sm sm:text-base text-green-100">Upcoming</CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                  <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
+                  <p className="text-xl sm:text-3xl font-bold text-green-200 flex items-center">
+                    <CalendarClock className="w-5 h-5 mr-2 text-green-400/70" />
+                    {upcomingSessions.length}
+                  </p>
                 </CardContent>
               </Card>
               
-              <Card className="bg-red-900/20 border-red-900">
+              <Card className="bg-red-900/30 border-red-800/60 shadow-md hover:shadow-lg transition-all duration-200">
                 <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-                  <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
+                  <CardTitle className="text-sm sm:text-base text-red-100">Cancelled</CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-                  <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
+                  <p className="text-xl sm:text-3xl font-bold text-red-200 flex items-center">
+                    <XCircle className="w-5 h-5 mr-2 text-red-400/70" />
+                    {cancelledSessions.length}
+                  </p>
                 </CardContent>
               </Card>
             </div>
