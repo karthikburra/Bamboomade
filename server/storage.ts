@@ -946,9 +946,27 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
+      // Map old field names to match current database structure
+      const mappedData: any = {
+        userId: loginData.userId,
+        userEmail: loginData.email,
+        // Optional fields that might not be in the database yet
+        username: loginData.username || 'unknown',
+        ipAddress: loginData.ipAddress,
+        sessionId: loginData.sessionId
+      };
+      
+      // Extract browser, OS from deviceInfo if available
+      if (loginData.deviceInfo) {
+        mappedData.browser = loginData.deviceInfo.browser;
+        mappedData.os = loginData.deviceInfo.os;
+        mappedData.deviceType = loginData.deviceInfo.device;
+      }
+      
       const [loginRecord] = await db.insert(userLoginHistory)
-        .values(loginData)
+        .values(mappedData)
         .returning();
+      
       return loginRecord;
     } catch (error) {
       console.error("Database error in createUserLoginHistory:", error);
@@ -965,6 +983,7 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(userLoginHistory.loginTime));
     } catch (error) {
       console.error("Database error in getUserLoginHistory:", error);
+      // Return empty array to prevent UI errors
       return [];
     }
   }

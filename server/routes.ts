@@ -5348,6 +5348,52 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Create sample login history (temporary development endpoint)
+  app.get("/api/create-sample-login/:userId", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Create a sample login history entry
+      const sampleLogin = {
+        userId: userId,
+        email: user.email,
+        username: user.username,
+        ipAddress: "127.0.0.1",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        deviceInfo: {
+          browser: "Chrome",
+          os: "Windows",
+          device: "Desktop",
+          isMobile: false
+        },
+        loginStatus: "success",
+        isAdmin: user.isAdmin,
+        sessionId: `test-session-${Date.now()}`
+      };
+      
+      const loginRecord = await storage.createUserLoginHistory(sampleLogin);
+      
+      res.json({
+        success: true,
+        message: "Sample login record created",
+        loginRecord
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to create sample login", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Get a user's login history
   app.get("/api/users/:userId/login-history", async (req, res) => {
     try {
