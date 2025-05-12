@@ -119,14 +119,8 @@ const LoginTester = () => {
       if (data.success) {
         toast({
           title: "Verification Code Sent",
-          description: data.tempCode 
-            ? `Development code: ${data.tempCode}` 
-            : "Verification code sent to your email"
+          description: "Verification code sent to your email"
         });
-        
-        if (data.tempCode) {
-          setVerificationCode(data.tempCode);
-        }
       } else {
         toast({
           title: "Error",

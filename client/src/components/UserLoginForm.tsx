@@ -61,27 +61,13 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       if (data.success) {
         setStep("verification");
         
-        // In development mode, we might receive the tempCode directly
-        if (data.tempCode) {
-          console.log("🔑 Development mode - received verification code:", data.tempCode);
-          
-          // For development, automatically fill in the code
-          setVerificationCode(data.tempCode);
-          
-          toast({
-            title: "Verification Code (Dev Mode)",
-            description: `Your verification code is: ${data.tempCode}`,
-            duration: 10000
-          });
-        } else {
-          console.log("📨 Verification code sent to email (not shown in response)");
-          
-          toast({
-            title: "Verification Code Sent",
-            description: "Please check your email for the verification code.",
-            duration: 5000
-          });
-        }
+        console.log("📨 Verification code sent to email");
+        
+        toast({
+          title: "Verification Code Sent",
+          description: "Please check your email for the verification code.",
+          duration: 5000
+        });
       } else {
         console.error("❌ Failed to send code:", data.message);
         
@@ -207,27 +193,13 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
       console.log("📥 Resend response data:", data);
       
       if (data.success) {
-        // In development mode, we might receive the tempCode directly
-        if (data.tempCode) {
-          console.log("🔑 Development mode - received new verification code:", data.tempCode);
-          
-          // For development, automatically fill in the code
-          setVerificationCode(data.tempCode);
-          
-          toast({
-            title: "Verification Code Resent (Dev Mode)",
-            description: `Your new verification code is: ${data.tempCode}`,
-            duration: 10000
-          });
-        } else {
-          console.log("📨 New verification code sent to email");
-          
-          toast({
-            title: "Verification Code Resent",
-            description: "Please check your email for the new verification code.",
-            duration: 5000
-          });
-        }
+        console.log("📨 New verification code sent to email");
+        
+        toast({
+          title: "Verification Code Resent",
+          description: "Please check your email for the new verification code.",
+          duration: 5000
+        });
       } else {
         console.error("❌ Failed to resend code:", data.message);
         
@@ -260,13 +232,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="space-y-6">
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-amber-100/10 border border-amber-300/30 rounded-md p-2 mb-4">
-          <div className="text-amber-500 text-xs font-medium flex items-center justify-center">
-            <span className="mr-1">🧪</span> Development Mode Active
-          </div>
-        </div>
-      )}
+
       {step === "email" ? (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmitEmail)} className="space-y-4">
@@ -320,20 +286,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
                 className="text-center tracking-widest text-lg font-medium"
               />
               
-              {process.env.NODE_ENV === 'development' && (
-                <div className="flex flex-col items-center mt-2">
-                  <div className="text-amber-500 text-xs mb-1">🧪 Development Mode Active</div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs h-7 px-2 text-slate-500"
-                    onClick={() => setVerificationCode('123456')}
-                    type="button"
-                  >
-                    Use Master Code (123456)
-                  </Button>
-                </div>
-              )}
+
             </div>
             
             <Button 
