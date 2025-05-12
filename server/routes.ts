@@ -5186,6 +5186,86 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   });
 
   // API endpoint to get available time slots for bookings
+  // Get user profile by ID (for all logged-in users)
+  app.get("/api/users/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = user;
+      
+      // For security, only return limited user information for non-admins
+      const isAdminUser = req.session?.adminUser !== undefined;
+      
+      if (!isAdminUser) {
+        // Return only basic profile info for regular users
+        const safeUserData = {
+          id: userWithoutPassword.id,
+          username: userWithoutPassword.username,
+          email: userWithoutPassword.email,
+          firstName: userWithoutPassword.firstName,
+          lastName: userWithoutPassword.lastName,
+          profileImageUrl: userWithoutPassword.profileImageUrl,
+          isVerified: userWithoutPassword.isVerified,
+          role: userWithoutPassword.role,
+          createdAt: userWithoutPassword.createdAt,
+        };
+        return res.json(safeUserData);
+      }
+      
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch user", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Get user's sessions (for all logged-in users)
+  app.get("/api/users/:userId/sessions", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // For security, only allow users to see their own sessions or admins to see any sessions
+      const isAdminUser = req.session?.adminUser !== undefined;
+      const isOwnProfile = req.session?.userId === userId;
+      
+      if (!isAdminUser && !isOwnProfile) {
+        return res.status(403).json({ message: "You don't have permission to view this user's sessions" });
+      }
+      
+      // Get all sessions by user email
+      const sessions = await storage.getProjectGuidancesByEmail(user.email);
+      
+      res.json({
+        success: true,
+        sessions
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch user sessions", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   app.get("/api/available-slots", async (req, res) => {
     try {
       // Check if we're requesting slots for rescheduling a specific session

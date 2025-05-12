@@ -84,7 +84,7 @@ export default function UserProfile() {
     isLoading: isLoadingUser,
     error: userError
   } = useQuery({
-    queryKey: [`/api/admin/users/${userId}`],
+    queryKey: [`/api/users/${userId}`],
     enabled: !isNaN(userId),
   });
 
@@ -94,7 +94,7 @@ export default function UserProfile() {
     isLoading: isLoadingSessions,
     error: sessionsError
   } = useQuery({
-    queryKey: [`/api/admin/users/${userId}/sessions`],
+    queryKey: [`/api/users/${userId}/sessions`],
     enabled: !isNaN(userId),
   });
 
