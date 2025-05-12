@@ -670,6 +670,31 @@ export default function AdminDashboard() {
       });
     }
   });
+  
+  // Mutation for deleting a user (soft delete with 30-day retention)
+  const deleteUserMutation = useMutation({
+    mutationFn: async ({ userId, reason }: { userId: number, reason: string }) => {
+      const response = await apiRequest("POST", `/api/admin/users/${userId}/delete`, {
+        reason
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "User Deleted",
+        description: `User ${selectedUser?.email} has been moved to the deleted users list and will be permanently removed after 30 days.`,
+      });
+      setIsDeleteUserDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete user",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Mutation for toggling admin status
   const toggleAdminMutation = useMutation({
@@ -2766,6 +2791,72 @@ export default function AdminDashboard() {
                   <>
                     <KeyRound className="mr-2 h-4 w-4" />
                     Reset Password
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Delete User Dialog */}
+        <Dialog open={isDeleteUserDialogOpen} onOpenChange={setIsDeleteUserDialogOpen}>
+          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogHeader>
+              <DialogTitle>Delete User Account</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the account for {selectedUser?.email}?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="delete-reason">Reason for deletion (optional)</Label>
+                <Textarea
+                  id="delete-reason"
+                  placeholder="Enter reason for deletion"
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="bg-gray-800 border-gray-700 text-white resize-none h-24"
+                />
+              </div>
+              
+              <div className="bg-red-900/30 border border-red-700 p-3 rounded-md">
+                <div className="flex items-center text-red-300 mb-2">
+                  <AlertTriangle className="h-5 w-5 mr-2" />
+                  <h4 className="text-sm font-medium">Important Information</h4>
+                </div>
+                <p className="text-xs text-red-200/80">
+                  This action will move the user account to a deleted users list where it will be stored for 30 days before being permanently deleted. During this period, an admin can restore the account if needed.
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteUserDialogOpen(false)}
+                className="border-gray-700 text-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedUser) return;
+                  deleteUserMutation.mutate({
+                    userId: selectedUser.id,
+                    reason: deleteReason
+                  });
+                }}
+                className="bg-red-600 hover:bg-red-700"
+                disabled={deleteUserMutation.isPending}
+              >
+                {deleteUserMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete User
                   </>
                 )}
               </Button>
