@@ -10,10 +10,9 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
+// Updated form schema with only email
 const registerFormSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
@@ -24,7 +23,6 @@ interface UserRegisterFormProps {
 
 const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
-  const [isVerifying, setIsVerifying] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState("");
@@ -32,17 +30,15 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      username: "",
       email: "",
-      password: "",
     },
   });
   
   const { mutate: register, isPending } = useMutation({
     mutationFn: async (data: RegisterFormValues) => {
-      return apiRequest("POST", "/api/auth/register", {
-        ...data,
-        role: "user", // Default role for new users
+      // Call the new simplified registration endpoint
+      return apiRequest("POST", "/api/auth/register-with-email", {
+        email: data.email,
       });
     },
     onSuccess: (response) => {
@@ -52,7 +48,7 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
       setVerificationSent(true);
       
       toast({
-        title: "Registration Started",
+        title: "Verification Code Sent",
         description: "A verification code has been sent to your email. Please check your inbox and enter the code below.",
       });
     },
@@ -142,23 +138,9 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
   return (
     <div className="space-y-6">
       {!verificationSent ? (
-        // Step 1: Show registration form
+        // Step 1: Show email-only registration form
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="johndoe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
             <FormField
               control={form.control}
               name="email"
@@ -173,20 +155,6 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
             <div className="text-xs text-muted-foreground">
               By registering, you'll receive 10 free tokens to use with BambooMade AI.
             </div>
@@ -195,10 +163,10 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
+                  Sending Code...
                 </>
               ) : (
-                "Register with Email"
+                "Continue with Email"
               )}
             </Button>
           </form>
@@ -251,6 +219,16 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
                 disabled={isResending}
               >
                 {isResending ? 'Resending...' : 'Resend Code'}
+              </Button>
+            </div>
+            
+            <div className="text-xs text-center">
+              <Button 
+                variant="link" 
+                className="h-auto p-0 text-xs" 
+                onClick={() => setVerificationSent(false)}
+              >
+                Use a different email
               </Button>
             </div>
           </div>

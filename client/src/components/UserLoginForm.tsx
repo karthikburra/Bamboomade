@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,13 +8,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
 
-const loginFormSchema = z.object({
+const emailFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type LoginFormValues = z.infer<typeof loginFormSchema>;
+type EmailFormValues = z.infer<typeof emailFormSchema>;
 
 interface UserLoginFormProps {
   onSuccess?: () => void;
@@ -22,72 +22,202 @@ interface UserLoginFormProps {
 
 const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
-  const { login, isLoginPending } = useAuth();
+  const { loginWithCode, isLoginPending } = useAuth();
+  const [step, setStep] = useState<"email" | "verification">("email");
+  const [email, setEmail] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
+  const form = useForm<EmailFormValues>({
+    resolver: zodResolver(emailFormSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
   
-  const onSubmit = (values: LoginFormValues) => {
-    login(values, {
-      onSuccess: () => {
-        if (onSuccess) {
-          onSuccess();
-        }
+  const onSubmitEmail = async (values: EmailFormValues) => {
+    try {
+      setIsSendingCode(true);
+      setEmail(values.email);
+      
+      // Request verification code
+      const response = await apiRequest("POST", "/api/auth/request-login-code", { email: values.email });
+      const data = await response.json();
+      
+      if (data.success) {
+        setStep("verification");
+        toast({
+          title: "Verification Code Sent",
+          description: "Please check your email for the verification code.",
+        });
+      } else {
+        toast({
+          title: "Failed to Send Code",
+          description: data.message || "Could not send verification code. Please try again.",
+          variant: "destructive",
+        });
       }
-    });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+  
+  const handleVerifyCode = async () => {
+    try {
+      setIsVerifying(true);
+      
+      loginWithCode({ 
+        email, 
+        code: verificationCode 
+      }, {
+        onSuccess: () => {
+          if (onSuccess) {
+            onSuccess();
+          }
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Verification Failed",
+        description: error instanceof Error ? error.message : "Could not verify code. Please try again.",
+        variant: "destructive",
+      });
+      setIsVerifying(false);
+    }
+  };
+  
+  const handleResendCode = async () => {
+    try {
+      setIsSendingCode(true);
+      
+      // Request verification code again
+      const response = await apiRequest("POST", "/api/auth/request-login-code", { email });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Verification Code Resent",
+          description: "Please check your email for the new verification code.",
+        });
+      } else {
+        toast({
+          title: "Failed to Resend Code",
+          description: data.message || "Could not resend verification code. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input placeholder="your.email@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      {step === "email" ? (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmitEmail)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="your.email@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button type="submit" className="w-full" disabled={isSendingCode}>
+              {isSendingCode ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending Code...
+                </>
+              ) : (
+                "Continue with Email"
+              )}
+            </Button>
+          </form>
+        </Form>
+      ) : (
+        // Verification code step
+        <div className="space-y-4">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-medium">Verify Your Email</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              We've sent a verification code to <span className="font-medium">{email}</span>
+            </p>
+          </div>
           
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <Button type="submit" className="w-full" disabled={isLoginPending}>
-            {isLoginPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging in...
-              </>
-            ) : (
-              "Login with Email"
-            )}
-          </Button>
-        </form>
-      </Form>
-      
-
+          <div className="space-y-4">
+            <FormItem>
+              <FormLabel>Verification Code</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter 6-digit code"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  maxLength={6}
+                  className="text-center tracking-widest text-lg"
+                />
+              </FormControl>
+            </FormItem>
+            
+            <Button 
+              onClick={handleVerifyCode} 
+              className="w-full" 
+              disabled={isVerifying || !verificationCode}
+            >
+              {isVerifying ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Login"
+              )}
+            </Button>
+            
+            <div className="text-xs text-center text-muted-foreground mt-4">
+              Didn't receive the code? 
+              <Button 
+                variant="link" 
+                className="h-auto p-0 text-xs" 
+                onClick={handleResendCode}
+                disabled={isSendingCode}
+              >
+                {isSendingCode ? 'Resending...' : 'Resend Code'}
+              </Button>
+            </div>
+            
+            <div className="text-xs text-center">
+              <Button 
+                variant="link" 
+                className="h-auto p-0 text-xs" 
+                onClick={() => setStep("email")}
+              >
+                Use a different email
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
