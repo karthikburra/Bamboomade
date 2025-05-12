@@ -4,6 +4,7 @@ import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Card,
   CardContent,
@@ -104,6 +105,7 @@ interface Session {
 }
 
 export default function AllSessions() {
+  const { user, isAuthenticated } = useAuth();
   const [emailFilter, setEmailFilter] = useState("");
   const [isFiltering, setIsFiltering] = useState(false);
   const [copiedLinks, setCopiedLinks] = useState<{ [key: number]: boolean }>({});
@@ -307,6 +309,17 @@ export default function AllSessions() {
     }
   }, [selectedDate]);
   
+  // Pre-fill email from user account when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user?.email) {
+      setEmailFilter(user.email);
+      // If we're on the view-my-sessions page, automatically filter
+      if (isUserView) {
+        setIsFiltering(true);
+      }
+    }
+  }, [isAuthenticated, user, isUserView]);
+  
   // Reschedule session mutation
   const { mutate: rescheduleSession, isPending: isRescheduling } = useMutation({
     mutationFn: async () => {
@@ -479,14 +492,19 @@ export default function AllSessions() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <Input
                   type="email"
                   placeholder="Enter your email address"
                   value={emailFilter}
                   onChange={(e) => setEmailFilter(e.target.value)}
-                  className="bg-gray-800 border-gray-700"
+                  className={`bg-gray-800 border-gray-700 pr-10 ${isAuthenticated && user?.email ? 'border-green-600' : ''}`}
                 />
+                {isAuthenticated && user?.email && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  </div>
+                )}
               </div>
               <Button 
                 className="bg-green-600 hover:bg-green-700"
