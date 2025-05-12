@@ -1735,6 +1735,15 @@ export default function AdminDashboard() {
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
+                                    className="h-8 border-gray-700 hover:bg-gray-800 text-blue-400"
+                                    onClick={() => navigate(`/user-profile/${user.id}`)}
+                                  >
+                                    <User className="h-3.5 w-3.5 mr-1" />
+                                    View Profile
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
                                     className="h-8 border-gray-700 hover:bg-gray-800"
                                     onClick={() => handleEditUser(user)}
                                   >

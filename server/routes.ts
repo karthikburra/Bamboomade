@@ -4546,6 +4546,59 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Get user by ID for admin view
+  app.get("/api/admin/users/:userId", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = user;
+      
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch user", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Get all sessions for a specific user
+  app.get("/api/admin/users/:userId/sessions", isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get all sessions by user email
+      const sessions = await storage.getProjectGuidancesByEmail(user.email);
+      
+      res.json({
+        success: true,
+        sessions
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to fetch user sessions", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
   // Toggle admin status - only info@bamboomade.in can do this
   app.post("/api/admin/toggle-admin/:userId", isAdmin, async (req, res) => {
     try {
