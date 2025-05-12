@@ -691,6 +691,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
+      // Check if user's email is verified (except for admin users which are auto-verified)
+      if (!user.isAdmin && !user.isVerified) {
+        return res.status(403).json({ 
+          message: "Email not verified. Please verify your email before logging in.",
+          needsVerification: true,
+          email: user.email
+        });
+      }
+      
       // For existing users migrating to bcrypt, we temporarily check both
       let isValidPassword = false;
       

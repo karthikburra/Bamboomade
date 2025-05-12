@@ -87,6 +87,25 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
     },
   });
   
+  const { mutate: resendCode, isPending: isResending } = useMutation({
+    mutationFn: async (email: string) => {
+      return apiRequest("POST", "/api/auth/resend-verification", { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Verification Code Resent",
+        description: "A new verification code has been sent to your email.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to Resend Code",
+        description: error instanceof Error ? error.message : "Could not resend verification code. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+  
   const onSubmit = (values: RegisterFormValues) => {
     register(values);
   };
@@ -105,6 +124,19 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
       email: registeredEmail,
       code: verificationCode
     });
+  };
+  
+  const handleResendCode = () => {
+    if (!registeredEmail) {
+      toast({
+        title: "Email Required",
+        description: "Cannot resend verification code without an email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    resendCode(registeredEmail);
   };
 
   return (
@@ -211,7 +243,15 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
             </Button>
             
             <div className="text-xs text-center text-muted-foreground mt-4">
-              Didn't receive the code? <Button variant="link" className="h-auto p-0 text-xs" onClick={() => register(form.getValues())}>Resend Code</Button>
+              Didn't receive the code? 
+              <Button 
+                variant="link" 
+                className="h-auto p-0 text-xs" 
+                onClick={() => handleResendCode()}
+                disabled={isResending}
+              >
+                {isResending ? 'Resending...' : 'Resend Code'}
+              </Button>
             </div>
           </div>
         </div>
