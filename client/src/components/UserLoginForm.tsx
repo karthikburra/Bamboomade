@@ -2,15 +2,12 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { signInWithGoogle, handleGoogleRedirect } from "@/lib/firebase";
-import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
 
 const loginFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -26,6 +23,7 @@ interface UserLoginFormProps {
 const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { login, isLoginPending, googleLogin, handleRedirect } = useAuth();
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -35,30 +33,14 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     },
   });
   
-  const { mutate: login, isPending } = useMutation({
-    mutationFn: async (data: LoginFormValues) => {
-      return apiRequest("POST", "/api/auth/login", data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Login Successful",
-        description: "Welcome back to BambooMade!",
-      });
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-    onError: (error) => {
-      toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "Invalid credentials. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-  
   const onSubmit = (values: LoginFormValues) => {
-    login(values);
+    login(values, {
+      onSuccess: () => {
+        if (onSuccess) {
+          onSuccess();
+        }
+      }
+    });
   };
   
   // Check for Google redirect result on component mount
@@ -66,16 +48,10 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     async function checkGoogleRedirect() {
       try {
         setIsGoogleLoading(true);
-        const user = await handleGoogleRedirect();
+        const success = await handleRedirect();
         
-        if (user) {
-          toast({
-            title: "Login Successful",
-            description: "Welcome to BambooMade!",
-          });
-          if (onSuccess) {
-            onSuccess();
-          }
+        if (success && onSuccess) {
+          onSuccess();
         }
       } catch (error) {
         console.error("Error handling Google redirect:", error);
@@ -110,7 +86,7 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     try {
       setIsGoogleLoading(true);
       // This will redirect the user to Google's sign-in page
-      await signInWithGoogle();
+      await googleLogin();
       // We won't reach this point as the redirect happens
     } catch (error) {
       console.error("Error starting Google sign-in:", error);
@@ -167,8 +143,8 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
             )}
           />
           
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? (
+          <Button type="submit" className="w-full" disabled={isLoginPending}>
+            {isLoginPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Logging in...
