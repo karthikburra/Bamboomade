@@ -27,6 +27,7 @@ import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailed from "@/pages/PaymentFailed";
 import OurWorks from "@/pages/OurWorks";
 import AllSessions from "@/pages/AllSessions";
+import ProfileEdit from "@/pages/ProfileEdit";
 import NotFound from "@/pages/not-found";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/admin-ai-knowledge-chat" component={AdminAIKnowledgeChat} />
       <Route path="/dev-admin-login" component={DevAdminLogin} />
       <Route path="/login" component={Login} />
+      <Route path="/profile/edit" component={ProfileEdit} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
       <Route path="/payment-success" component={PaymentSuccessPage} />
       <Route path="/payment-failed" component={PaymentFailed} />

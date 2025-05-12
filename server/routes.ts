@@ -1222,6 +1222,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Update user profile
+  app.post("/api/profile/update", async (req, res) => {
+    try {
+      console.log("🔄 Profile update request received");
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        console.log("❌ No user ID in session");
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const { fullName, phoneNumber, profileImageUrl } = req.body;
+      console.log(`🔄 Updating profile for user ID: ${userId}`);
+      console.log(`Profile data: fullName=${fullName}, phoneNumber=${phoneNumber}, imageUrl=${profileImageUrl ? 'provided' : 'not provided'}`);
+      
+      const updatedUser = await storage.updateUser(userId, {
+        fullName,
+        phoneNumber,
+        profileImageUrl
+      });
+      
+      if (!updatedUser) {
+        console.log("❌ User not found for profile update");
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      console.log(`✅ Profile updated for user: ${updatedUser.username}`);
+      return res.json({ message: "Profile updated successfully" });
+    } catch (error) {
+      console.error("❌ Error updating profile:", error);
+      
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      return res.status(500).json({ 
+        message: "Failed to update profile", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Handle profile image upload
+  app.post("/api/profile/upload-image", upload.single("profileImage"), async (req, res) => {
+    try {
+      console.log("📷 Profile image upload request received");
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        console.log("❌ No user ID in session");
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      if (!req.file) {
+        console.log("❌ No image file provided");
+        return res.status(400).json({ message: "No image file provided" });
+      }
+      
+      // Generate relative path for the uploaded file
+      const imageUrl = `/uploads/${req.file.filename}`;
+      console.log(`🖼️ Profile image uploaded: ${imageUrl}`);
+      
+      return res.json({ 
+        message: "Profile image uploaded successfully",
+        imageUrl
+      });
+    } catch (error) {
+      console.error("❌ Error uploading profile image:", error);
+      
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      return res.status(500).json({ 
+        message: "Failed to upload profile image", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
 
   app.get("/api/project-guidance/my-sessions", async (req, res) => {
     try {

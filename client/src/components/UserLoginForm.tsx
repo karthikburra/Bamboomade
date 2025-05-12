@@ -117,8 +117,8 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
         
         // Wait for toast to show before redirecting
         setTimeout(() => {
-          // Reload the page to ensure everything is fresh
-          window.location.href = '/';
+          // Redirect to the profile edit page after successful login
+          window.location.href = '/profile/edit';
           
           // If we reach here, login was successful
           if (onSuccess) {
