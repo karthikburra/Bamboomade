@@ -32,6 +32,7 @@ import {
   generateGoogleCalendarLink,
   sendVerificationCodeEmail
 } from "./email-service";
+import { sendVerificationEmail, generateVerificationCode } from "./verification-utils";
 // Web crawler and document analyzer
 import { 
   analyzeWebsite, 
