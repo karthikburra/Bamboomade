@@ -1707,11 +1707,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               await storage.createUserLoginHistory({
                 userId: user.id,
-                email: user.email,
-                username: user.username,
+                userEmail: user.email,
+                username: user.username || 'admin',
                 ipAddress,
                 userAgent,
-                deviceInfo,
+                deviceInfo: {
+                  browser: deviceInfo.browser,
+                  os: deviceInfo.os,
+                  device: deviceInfo.isMobile ? 'mobile' : 'desktop',
+                  isMobile: deviceInfo.isMobile
+                },
                 loginStatus: 'success',
                 isAdmin: true,
                 sessionId: req.sessionID
