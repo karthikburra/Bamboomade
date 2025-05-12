@@ -523,8 +523,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userData.isVerified = true; // Admin users are automatically verified
       } else {
         // Generate verification code
-        const { generateVerificationCode } = await import('./supabase-service');
-        const verificationCode = generateVerificationCode(6);
+        // Simple function to generate a verification code without dependencies
+        const generateCode = (length: number = 6) => {
+          const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          let code = '';
+          for (let i = 0; i < length; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          return code;
+        };
+        
+        const verificationCode = generateCode(6);
         
         // Set verification fields
         userData.isVerified = false;
@@ -536,8 +545,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If not admin, send verification email
       if (!isAdminUser) {
-        const { sendVerificationEmail } = await import('./supabase-service');
-        const emailSent = await sendVerificationEmail(userData.email, userData.verificationCode!);
+        const { sendRegistrationVerificationEmail } = await import('./email-service');
+        const emailSent = await sendRegistrationVerificationEmail(userData.email, userData.verificationCode!);
         
         if (!emailSent) {
           console.error("Failed to send verification email to:", userData.email);
@@ -561,6 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         needsVerification: !isAdminUser
       });
     } catch (error) {
+      console.error("Registration error:", error);
       res.status(500).json({ message: "Failed to create user", error: (error as Error).message });
     }
   });
@@ -654,8 +664,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate a new verification code
-      const { generateVerificationCode, sendVerificationEmail } = await import('./supabase-service');
-      const verificationCode = generateVerificationCode(6);
+      // Simple function to generate a verification code
+      const generateCode = (length: number = 6) => {
+        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let code = '';
+        for (let i = 0; i < length; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+      
+      const verificationCode = generateCode(6);
       
       // Update the user's verification code
       await storage.updateUser(user.id, {
@@ -663,8 +682,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         verificationCodeExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
       });
       
-      // Send verification email using Supabase
-      const emailSent = await sendVerificationEmail(email, verificationCode);
+      // Send verification email
+      const { sendRegistrationVerificationEmail } = await import('./email-service');
+      const emailSent = await sendRegistrationVerificationEmail(email, verificationCode);
       
       if (!emailSent) {
         console.error("Failed to resend verification email to:", email);
