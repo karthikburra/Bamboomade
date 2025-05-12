@@ -1,12 +1,13 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AnimatedLeaves from "@/components/AnimatedLeaves";
 import ScrollToTop from "@/components/ScrollToTop";
+import { useEffect } from "react";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
 import Contact from "@/pages/Contact";
@@ -91,6 +92,25 @@ function Router() {
   );
 }
 
+// ProfileRedirectChecker handles the user profile check
+function ProfileRedirectChecker({ children }: { children: React.ReactNode }) {
+  // Check if user is logged in and needs to complete their profile
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["/api/auth/me"],
+    retry: false,
+  });
+  
+  useEffect(() => {
+    // If user is logged in and needs to complete their profile, redirect to edit profile page
+    if (!isLoading && user && user.needsProfileCompletion && window.location.pathname !== '/profile/edit') {
+      // Skip redirect if we're already on the profile edit page
+      window.location.href = '/profile/edit';
+    }
+  }, [user, isLoading]);
+  
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -111,17 +131,19 @@ function App() {
             `}
           </script>
         </Helmet>
-        <div className="flex min-h-screen flex-col relative dark">
-          <AnimatedLeaves />
-          <div className="relative">
-            <Navbar />
-            <main className="flex-1">
-              <ScrollToTop />
-              <Router />
-            </main>
-            <Footer className="relative" />
+        <ProfileRedirectChecker>
+          <div className="flex min-h-screen flex-col relative dark">
+            <AnimatedLeaves />
+            <div className="relative">
+              <Navbar />
+              <main className="flex-1">
+                <ScrollToTop />
+                <Router />
+              </main>
+              <Footer className="relative" />
+            </div>
           </div>
-        </div>
+        </ProfileRedirectChecker>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

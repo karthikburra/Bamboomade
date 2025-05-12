@@ -1202,10 +1202,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
       
+      // Check if profile is complete (has fullName)
+      const needsProfileCompletion = !user.fullName;
+      
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
       console.log(`✅ Returning user data for ${user.id}`);
-      res.json(userWithoutPassword);
+      res.json({
+        ...userWithoutPassword,
+        needsProfileCompletion
+      });
     } catch (error) {
       console.error("❌ Error retrieving user data:", error);
       
