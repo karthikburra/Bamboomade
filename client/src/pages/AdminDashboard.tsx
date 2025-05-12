@@ -1125,44 +1125,53 @@ export default function AdminDashboard() {
                           </Badge>
                         </div>
                       </div>
-                      <div className="px-4">
-                        <Table>
+                      <div className="p-4 overflow-x-auto">
+                        <Table className="border-collapse border-spacing-0">
                           <TableHeader>
-                            <TableRow className="hover:bg-gray-800/50">
-                              <TableHead className="text-purple-300">User ID</TableHead>
-                              <TableHead className="text-purple-300">Email</TableHead>
-                              <TableHead className="text-purple-300">Username</TableHead>
-                              <TableHead className="text-purple-300">Full Name</TableHead>
-                              <TableHead className="text-purple-300">Role</TableHead>
-                              <TableHead className="text-purple-300">Verified</TableHead>
+                            <TableRow className="border-b border-gray-800 bg-gray-900/50">
+                              <TableHead className="text-purple-200 font-medium text-sm py-3">User ID</TableHead>
+                              <TableHead className="text-purple-200 font-medium text-sm py-3">Email</TableHead>
+                              <TableHead className="text-purple-200 font-medium text-sm py-3">Username</TableHead>
+                              <TableHead className="text-purple-200 font-medium text-sm py-3">Full Name</TableHead>
+                              <TableHead className="text-purple-200 font-medium text-sm py-3">Role</TableHead>
+                              <TableHead className="text-purple-200 font-medium text-sm py-3">Verified</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {filteredUsers
-                            .map((user) => (
-                            <TableRow key={user.id} className="hover:bg-gray-800/50">
-                              <TableCell className="font-mono text-gray-400">{user.id}</TableCell>
-                              <TableCell className="font-medium">{user.email}</TableCell>
-                              <TableCell>{user.username}</TableCell>
-                              <TableCell>{user.fullName || "—"}</TableCell>
-                              <TableCell>
-                                <Badge variant={user.isAdmin ? "default" : "secondary"} className={user.isAdmin ? "bg-purple-900 hover:bg-purple-800" : ""}>
-                                  {user.isAdmin ? "Admin" : user.role || "User"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {user.isVerified ? (
-                                  <Badge variant="outline" className="bg-green-900/30 text-green-300 border-green-700">
-                                    <Check className="mr-1 h-3 w-3" /> Verified
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="bg-yellow-900/30 text-yellow-300 border-yellow-700">
-                                    <AlertCircle className="mr-1 h-3 w-3" /> Pending
-                                  </Badge>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                            {filteredUsers.map((user) => (
+                              <TableRow key={user.id} className="hover:bg-gray-800/40 border-b border-gray-800/50 transition-colors">
+                                <TableCell className="font-mono text-sm text-gray-400">{user.id}</TableCell>
+                                <TableCell className="font-medium">{user.email}</TableCell>
+                                <TableCell>{user.username}</TableCell>
+                                <TableCell>{user.fullName || <span className="text-gray-500 italic">Not provided</span>}</TableCell>
+                                <TableCell>
+                                  {user.isAdmin ? (
+                                    <Badge className="bg-purple-900/50 text-purple-200 border-purple-800 shadow-sm">
+                                      <UserCog className="w-3 h-3 mr-1.5" />
+                                      Admin
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-blue-900/50 text-blue-200 border-blue-800 shadow-sm">
+                                      <User className="w-3 h-3 mr-1.5" />
+                                      {user.role || "User"}
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {user.isVerified ? (
+                                    <Badge className="bg-green-900/50 text-green-200 border-green-800 shadow-sm">
+                                      <CheckCircle className="w-3 h-3 mr-1.5" />
+                                      Verified
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="bg-yellow-900/30 text-yellow-200 border-yellow-800 shadow-sm">
+                                      <AlertCircle className="w-3 h-3 mr-1.5" /> 
+                                      Pending
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
                         </TableBody>
                       </Table>
                     </div>
