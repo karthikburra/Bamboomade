@@ -8,17 +8,27 @@ import { sendRegistrationVerificationEmail } from './email-service';
  */
 export async function sendVerificationEmail(email: string, code: string): Promise<boolean> {
   try {
+    console.log(`Attempting to send verification email to ${email} with code ${code}`);
+    
     const result = await sendRegistrationVerificationEmail(email, code);
     
     if (result) {
-      console.log(`Verification email sent successfully to ${email}`);
+      console.log(`✅ Verification email sent successfully to ${email}`);
     } else {
-      console.error(`Failed to send verification email to ${email}`);
+      console.error(`❌ Failed to send verification email to ${email}`);
     }
     
     return result;
   } catch (error) {
-    console.error("Exception sending verification email:", error);
+    console.error("❌ Exception sending verification email:", error);
+    
+    // Add more detailed error information
+    if (error instanceof Error) {
+      console.error(`Error name: ${error.name}`);
+      console.error(`Error message: ${error.message}`);
+      console.error(`Error stack: ${error.stack}`);
+    }
+    
     return false;
   }
 }

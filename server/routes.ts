@@ -569,29 +569,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email verification route
   app.post("/api/auth/verify-email", async (req, res) => {
     try {
+      console.log("📧 Email verification attempt:", req.body);
       const { email, code } = req.body;
       
       if (!email || !code) {
+        console.log("❌ Missing required fields:", { email: !!email, code: !!code });
         return res.status(400).json({ message: "Email and verification code are required" });
       }
       
       // Find the user
+      console.log(`🔍 Looking up user with email: ${email}`);
       const user = await storage.getUserByEmail(email);
       
       if (!user) {
+        console.log(`❌ User not found with email: ${email}`);
         return res.status(404).json({ message: "User not found" });
       }
       
+      console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
+      
       if (user.isVerified) {
+        console.log(`ℹ️ User ${user.id} is already verified`);
         return res.status(400).json({ message: "Email is already verified" });
       }
       
       // Check if the verification code matches and hasn't expired
+      console.log(`🔐 Checking verification code: ${code} vs stored: ${user.verificationCode}`);
       if (user.verificationCode !== code) {
+        console.log(`❌ Invalid verification code for user ${user.id}`);
         return res.status(400).json({ message: "Invalid verification code" });
       }
       
       if (user.verificationCodeExpires && new Date(user.verificationCodeExpires) < new Date()) {
+        console.log(`⏰ Verification code expired for user ${user.id}. Expired at: ${user.verificationCodeExpires}`);
         return res.status(400).json({ 
           message: "Verification code has expired. Please request a new one",
           expired: true
@@ -599,6 +609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Mark the user as verified
+      console.log(`✅ Updating user ${user.id} as verified`);
       await storage.updateUser(user.id, {
         isVerified: true,
         verificationCode: null,
@@ -607,6 +618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If this is their first successful verification, give them bonus tokens
       if (!user.isVerified) {
+        console.log(`🎁 Adding bonus tokens for new user ${user.id}`);
         await storage.createTokenPurchase({
           userId: user.id,
           amount: 10, // Bonus tokens for new users
@@ -616,20 +628,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Automatically log the user in
+      console.log(`🔑 Setting session for user ${user.id}`);
       req.session.userId = user.id;
+      
       // Save the session explicitly to ensure it persists
       req.session.save((err) => {
         if (err) {
-          console.error("Session save error during email verification:", err);
+          console.error("❌ Session save error during email verification:", err);
+        } else {
+          console.log(`✅ Session saved successfully for user ${user.id}`);
         }
       });
       
+      console.log(`🎉 Email verification successful for user ${user.id}`);
       res.status(200).json({ 
         message: "Email verified successfully. You are now logged in.",
         verified: true
       });
     } catch (error) {
-      console.error("Email verification error:", error);
+      console.error("❌ Email verification error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
       res.status(500).json({ message: "An error occurred during email verification" });
     }
   });
@@ -637,55 +662,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Resend verification code
   app.post("/api/auth/resend-verification", async (req, res) => {
     try {
+      console.log("🔄 Resend verification request:", req.body);
       const { email } = req.body;
       
       if (!email) {
+        console.log("❌ Missing required field: email");
         return res.status(400).json({ message: "Email is required" });
       }
       
       // Find the user
+      console.log(`🔍 Looking up user with email: ${email}`);
       const user = await storage.getUserByEmail(email);
       
       if (!user) {
+        console.log(`❌ User not found with email: ${email}`);
         return res.status(404).json({ message: "User not found" });
       }
       
+      console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
+      
       if (user.isVerified) {
+        console.log(`ℹ️ User ${user.id} is already verified`);
         return res.status(400).json({ message: "Email is already verified" });
       }
       
-      // Generate a new verification code
-      // Simple function to generate a verification code
-      const generateCode = (length: number = 6) => {
-        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let code = '';
-        for (let i = 0; i < length; i++) {
-          code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return code;
-      };
+      // Use the verification-utils function instead of defining it inline
+      console.log(`🔐 Generating new verification code for user ${user.id}`);
+      const { generateVerificationCode } = await import('./verification-utils');
+      const verificationCode = generateVerificationCode(6);
+      console.log(`Generated code: ${verificationCode}`);
       
-      const verificationCode = generateCode(6);
+      // Set expiration time (24 hours from now)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      console.log(`⏰ Code will expire at: ${expiresAt.toISOString()}`);
       
       // Update the user's verification code
+      console.log(`📝 Updating user ${user.id} with new verification code`);
       await storage.updateUser(user.id, {
         verificationCode,
-        verificationCodeExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        verificationCodeExpires: expiresAt
       });
       
       // Send verification email
+      console.log(`📧 Sending verification email to ${email}`);
       const { sendVerificationEmail } = await import('./verification-utils');
       const emailSent = await sendVerificationEmail(email, verificationCode);
       
       if (!emailSent) {
-        console.error("Failed to resend verification email to:", email);
-        return res.status(500).json({ message: "Failed to send verification email, please try again" });
+        console.error(`❌ Failed to send verification email to ${email}`);
+        return res.status(500).json({ 
+          message: "Failed to send verification email. Please try again later.",
+          success: false
+        });
       }
       
-      res.status(200).json({ message: "Verification code resent. Please check your email." });
+      console.log(`✅ Verification email sent successfully to ${email}`);
+      res.status(200).json({ 
+        message: "Verification code resent. Please check your email.",
+        email: email,
+        success: true,
+        expiresAt: expiresAt
+      });
     } catch (error) {
-      console.error("Resend verification error:", error);
-      res.status(500).json({ message: "An error occurred while resending verification code" });
+      console.error("❌ Resend verification error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
+        message: "An error occurred while resending verification code",
+        success: false
+      });
     }
   });
 
