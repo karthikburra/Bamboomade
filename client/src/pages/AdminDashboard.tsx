@@ -54,7 +54,7 @@ import {
   Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle,
   History, Activity, UserX, Globe, Timer, Laptop, Smartphone, 
   Clock8, ClockIcon, RefreshCw, Shield, ShieldOff, KeyRound, Lock,
-  RefreshCcw
+  RefreshCcw, Image as ImageIcon
 } from "lucide-react";
 import {
   Select,
@@ -2718,17 +2718,63 @@ export default function AdminDashboard() {
         
         {/* Edit User Dialog */}
         <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
-          <DialogContent className="bg-gray-900 border-gray-800 text-white">
+          <DialogContent className="bg-gray-900 border-gray-800 text-white sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
+              <DialogTitle className="text-xl flex items-center gap-2">
+                <UserCog className="h-5 w-5 text-amber-500" />
+                Edit User
+              </DialogTitle>
               <DialogDescription>
                 Update user information for {selectedUser?.email}
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4 space-y-4">
-              <div className="grid gap-4">
+
+            <div className="py-4 space-y-6">
+              {/* User profile image and creation date */}
+              <div className="flex flex-col items-center space-y-3 border-b border-gray-800 pb-5">
+                <div className="w-24 h-24 rounded-full bg-gray-800 flex items-center justify-center text-4xl font-bold text-white border-2 border-amber-500/50 overflow-hidden">
+                  {selectedUser?.profileImageUrl ? (
+                    <img 
+                      src={selectedUser.profileImageUrl} 
+                      alt={`${selectedUser.username || 'User'}'s profile`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    selectedUser?.username?.charAt(0).toUpperCase() || '?'
+                  )}
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-medium">{selectedUser?.username || 'User'}</h3>
+                  <p className="text-sm text-gray-400">{selectedUser?.email}</p>
+                </div>
+                {selectedUser?.createdAt && (
+                  <p className="text-xs text-gray-500">
+                    Joined on {new Date(selectedUser.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                )}
+                {selectedUser?.lastLoginAt && (
+                  <p className="text-xs text-gray-500">
+                    Last login: {new Date(selectedUser.lastLoginAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                )}
+              </div>
+              
+              {/* User info form */}
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username" className="text-sm font-medium">
+                    Username
+                  </Label>
                   <Input
                     id="username"
                     placeholder="Username"
@@ -2736,9 +2782,10 @@ export default function AdminDashboard() {
                     className="bg-gray-800 border-gray-700 text-white"
                   />
                 </div>
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
                     <Input
                       id="firstName"
                       placeholder="First name"
@@ -2747,7 +2794,7 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
                     <Input
                       id="lastName"
                       placeholder="Last name"
@@ -2756,8 +2803,12 @@ export default function AdminDashboard() {
                     />
                   </div>
                 </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone" className="text-sm font-medium">
+                    <Phone className="h-3.5 w-3.5 inline-block mr-1.5" />
+                    Phone Number
+                  </Label>
                   <Input
                     id="phone"
                     placeholder="Phone number"
@@ -2765,8 +2816,38 @@ export default function AdminDashboard() {
                     className="bg-gray-800 border-gray-700 text-white"
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="profileImageUrl" className="text-sm font-medium">
+                    <ImageIcon className="h-3.5 w-3.5 inline-block mr-1.5" />
+                    Profile Image URL
+                  </Label>
+                  <Input
+                    id="profileImageUrl"
+                    placeholder="https://example.com/avatar.jpg"
+                    defaultValue={selectedUser?.profileImageUrl || ''}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
+                  <p className="text-xs text-gray-500 italic">Enter a URL to an image (JPG, PNG, etc.)</p>
+                </div>
+              </div>
+              
+              {/* Status badges */}
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Badge className={selectedUser?.isVerified ? "bg-green-700" : "bg-gray-700"}>
+                  {selectedUser?.isVerified ? "Email Verified" : "Not Verified"}
+                </Badge>
+                
+                <Badge className={selectedUser?.role === 'admin' ? "bg-amber-700" : "bg-gray-700"}>
+                  {selectedUser?.role === 'admin' ? "Admin" : "User"}
+                </Badge>
+                
+                <Badge className={selectedUser?.profileCompleted ? "bg-blue-700" : "bg-gray-700"}>
+                  {selectedUser?.profileCompleted ? "Profile Complete" : "Profile Incomplete"}
+                </Badge>
               </div>
             </div>
+            
             <DialogFooter>
               <Button
                 variant="outline"
@@ -2777,6 +2858,65 @@ export default function AdminDashboard() {
               </Button>
               <Button
                 className="bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  if (!selectedUser) return;
+                  
+                  const username = (document.getElementById('username') as HTMLInputElement)?.value;
+                  const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value;
+                  const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value;
+                  const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+                  const profileImageUrl = (document.getElementById('profileImageUrl') as HTMLInputElement)?.value;
+                  
+                  // Update user mutation
+                  const updateUserMutation = {
+                    mutationFn: async (userData: {
+                      userId: number;
+                      updates: {
+                        username?: string;
+                        firstName?: string;
+                        lastName?: string;
+                        phone?: string;
+                        profileImageUrl?: string;
+                      };
+                    }) => {
+                      const response = await apiRequest(
+                        "PATCH",
+                        `/api/admin/users/${userData.userId}`,
+                        userData.updates
+                      );
+                      return response.json();
+                    },
+                    onSuccess: () => {
+                      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+                      toast({
+                        title: "User Updated",
+                        description: `User ${selectedUser.email} has been updated successfully.`,
+                      });
+                      setIsEditUserDialogOpen(false);
+                    },
+                    onError: (error: any) => {
+                      toast({
+                        title: "Failed to update user",
+                        description: error.message || "Something went wrong. Please try again.",
+                        variant: "destructive"
+                      });
+                    }
+                  };
+                  
+                  // Call the mutation
+                  updateUserMutation.mutationFn({
+                    userId: selectedUser.id,
+                    updates: {
+                      username,
+                      firstName: firstName || undefined,
+                      lastName: lastName || undefined,
+                      phone: phone || undefined,
+                      profileImageUrl: profileImageUrl || undefined
+                    }
+                  })
+                  .then(updateUserMutation.onSuccess)
+                  .catch(updateUserMutation.onError);
+                }}
               >
                 <Save className="mr-2 h-4 w-4" />
                 Save Changes

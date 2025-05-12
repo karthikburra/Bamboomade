@@ -4640,6 +4640,73 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Update user information
+  app.patch("/api/admin/users/:userId", isAdmin, async (req, res) => {
+    try {
+      const adminEmail = req.session.userEmail;
+      if (adminEmail !== 'info@bamboomade.in' && !req.body.updates) {
+        return res.status(403).json({ 
+          message: "Only the super admin (info@bamboomade.in) can update users" 
+        });
+      }
+      
+      const targetUserId = parseInt(req.params.userId);
+      const updates = req.body;
+      
+      if (isNaN(targetUserId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Only allow admin to modify these fields
+      const allowedFields = ['username', 'firstName', 'lastName', 'phone', 'profileImageUrl'];
+      const filteredUpdates = Object.keys(updates)
+        .filter(key => allowedFields.includes(key))
+        .reduce((obj, key) => {
+          obj[key] = updates[key];
+          return obj;
+        }, {});
+      
+      if (Object.keys(filteredUpdates).length === 0) {
+        return res.status(400).json({ message: "No valid fields to update" });
+      }
+      
+      // Extra check for profile completeness
+      let profileCompleted = targetUser.profileCompleted;
+      if (!targetUser.profileCompleted) {
+        // If user has first name, last name, and phone, mark profile as completed
+        if (
+          (filteredUpdates.firstName || targetUser.firstName) && 
+          (filteredUpdates.lastName || targetUser.lastName) && 
+          (filteredUpdates.phone || targetUser.phone)
+        ) {
+          profileCompleted = true;
+          filteredUpdates.profileCompleted = true;
+        }
+      }
+      
+      // Update the user
+      const updatedUser = await storage.updateUser(targetUserId, filteredUpdates);
+      
+      // Don't return password in response
+      const { password, ...userWithoutPassword } = updatedUser;
+      
+      res.json({
+        message: "User updated successfully",
+        user: userWithoutPassword
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        message: "Failed to update user", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
   // User login history routes
   app.get("/api/admin/login-history", isAdmin, async (req, res) => {
     try {
