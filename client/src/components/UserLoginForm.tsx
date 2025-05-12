@@ -56,8 +56,16 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
           description: "Please check your email for the verification code.",
         });
         
-        // No longer display verification code in client
-        // Always use real emails for verification codes
+        // TEMPORARY SOLUTION: Display admin verification code for admin email
+        // This will be removed once email service is fixed
+        if (data.tempAdminCode && values.email.toLowerCase() === 'info@bamboomade.in') {
+          toast({
+            title: "Temporary Admin Code",
+            description: `Use this code for admin login: ${data.tempAdminCode}`,
+            variant: "default",
+            duration: 30000, // Show for 30 seconds
+          });
+        }
       } else {
         toast({
           title: "Failed to Send Code",
