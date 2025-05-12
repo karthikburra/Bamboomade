@@ -976,11 +976,32 @@ export class DatabaseStorage implements IStorage {
 
   async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
     try {
-      // Order by login time descending (newest first)
-      return await db.select()
+      // Explicitly select all fields to avoid field name issues
+      const result = await db.select({
+        id: userLoginHistory.id,
+        userId: userLoginHistory.userId,
+        email: userLoginHistory.email,
+        userEmail: userLoginHistory.email, // For compatibility 
+        username: userLoginHistory.username,
+        ipAddress: userLoginHistory.ipAddress,
+        userAgent: userLoginHistory.userAgent,
+        browser: userLoginHistory.browser,
+        os: userLoginHistory.os,
+        deviceType: userLoginHistory.deviceType,
+        deviceInfo: userLoginHistory.deviceInfo,
+        loginTime: userLoginHistory.loginTime,
+        lastActiveTime: userLoginHistory.lastActiveTime,
+        logoutTime: userLoginHistory.logoutTime,
+        loginStatus: userLoginHistory.loginStatus,
+        isAdmin: userLoginHistory.isAdmin,
+        sessionId: userLoginHistory.sessionId,
+        createdAt: userLoginHistory.createdAt
+      })
         .from(userLoginHistory)
         .where(eq(userLoginHistory.userId, userId))
         .orderBy(desc(userLoginHistory.loginTime));
+      
+      return result;
     } catch (error) {
       console.error("Database error in getUserLoginHistory:", error);
       // Return empty array to prevent UI errors

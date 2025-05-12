@@ -1369,6 +1369,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: user.username,
           ipAddress,
           userAgent,
+          browser: deviceInfo.browser,
+          os: deviceInfo.os,
+          deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
           deviceInfo,
           loginStatus: 'success',
           isAdmin: user.isAdmin,
@@ -1707,10 +1710,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               await storage.createUserLoginHistory({
                 userId: user.id,
-                userEmail: user.email,
+                email: user.email,
                 username: user.username || 'admin',
                 ipAddress,
                 userAgent,
+                browser: deviceInfo.browser,
+                os: deviceInfo.os,
+                deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
                 deviceInfo: {
                   browser: deviceInfo.browser,
                   os: deviceInfo.os,
@@ -5368,6 +5374,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         username: user.username,
         ipAddress: "127.0.0.1",
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        browser: "Chrome",
+        os: "Windows",
+        deviceType: "Desktop",
         deviceInfo: {
           browser: "Chrome",
           os: "Windows",
