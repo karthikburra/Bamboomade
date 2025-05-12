@@ -80,6 +80,17 @@ const ProfileEdit: React.FC = () => {
     setIsSaving(true);
     
     try {
+      // Validate fullName is not empty (required field)
+      if (!fullName.trim()) {
+        toast({
+          title: "Full Name Required",
+          description: "Please enter your full name to continue.",
+          variant: "destructive",
+        });
+        setIsSaving(false);
+        return;
+      }
+      
       let profileImageUrl = user?.profileImageUrl || null;
       
       // Upload image if selected
@@ -198,6 +209,7 @@ const ProfileEdit: React.FC = () => {
                     <Upload className="w-4 h-4" />
                     {imagePreview ? "Change Picture" : "Upload Picture"}
                   </Label>
+                  <p className="text-center text-xs text-gray-500 mt-2">(optional)</p>
                 </div>
               </div>
               
@@ -216,20 +228,28 @@ const ProfileEdit: React.FC = () => {
               
               {/* Full Name */}
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-green-300">Full Name</Label>
+                <Label htmlFor="fullName" className="text-green-300">
+                  Full Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="fullName"
                   type="text"
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="bg-gray-800 border-gray-700"
+                  className={`bg-gray-800 border-gray-700 ${!fullName.trim() ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  required
                 />
+                {!fullName.trim() && (
+                  <p className="text-xs text-red-500">Full name is required</p>
+                )}
               </div>
               
               {/* Phone Number */}
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-green-300">Phone Number</Label>
+                <Label htmlFor="phoneNumber" className="text-green-300">
+                  Phone Number <span className="text-gray-500 text-xs">(optional)</span>
+                </Label>
                 <Input
                   id="phoneNumber"
                   type="tel"

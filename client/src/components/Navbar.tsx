@@ -152,7 +152,7 @@ const Navbar: React.FC = () => {
                 <Button variant="ghost" size="sm" className="relative flex items-center gap-2 h-9 rounded-full px-2 text-sm text-green-300 hover:bg-green-700/20">
                   <Avatar className="h-8 w-8 border border-green-700">
                     <AvatarImage 
-                      src={user.profileImageUrl || undefined} 
+                      src={user.profileImageUrl ? `/uploads/${user.profileImageUrl.split('/').pop()}` : undefined}
                       alt={user.fullName || user.username} 
                     />
                     <AvatarFallback className="bg-green-800 text-green-100">
@@ -255,7 +255,7 @@ const Navbar: React.FC = () => {
                       <div className="flex items-center space-x-3 px-1 py-2">
                         <Avatar className="h-10 w-10 border border-green-700">
                           <AvatarImage 
-                            src={user.profileImageUrl || undefined} 
+                            src={user.profileImageUrl ? `/uploads/${user.profileImageUrl.split('/').pop()}` : undefined}
                             alt={user.fullName || user.username} 
                           />
                           <AvatarFallback className="bg-green-800 text-green-100">
