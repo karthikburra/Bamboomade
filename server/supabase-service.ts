@@ -80,28 +80,8 @@ export async function sendVerificationCode(email: string): Promise<{
       attempts: 0
     });
     
-    // First try Supabase OTP if available
-    if (supabase) {
-      console.log(`🔑 Attempting to send OTP via Supabase to: ${email}`);
-      
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        }
-      });
-      
-      if (error) {
-        console.error(`❌ Supabase OTP error:`, error);
-        throw new Error(`Supabase OTP failed: ${error.message}`);
-      }
-      
-      console.log(`✅ Supabase OTP sent successfully to: ${email}`);
-      return { success: true, message: 'Verification code sent to your email' };
-    }
-    
-    // Fallback to custom email verification system
-    console.log(`🔄 Falling back to custom verification for: ${email}`);
+    // Skip Supabase OTP as it's not enabled for this project
+    console.log(`📧 Using direct email verification for: ${email}`);
     
     // Import email service dynamically to avoid circular dependencies
     const { sendLoginVerificationEmail } = await import('./email-service');

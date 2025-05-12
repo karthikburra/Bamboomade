@@ -589,9 +589,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error(`Error stack: ${error.stack}`);
       }
       
+      // Check if it's likely an email sending issue
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('email') || errorMessage.includes('send')) {
+        console.log("🚨 Email sending issue detected - check EMAIL_PASSWORD environment variable");
+      }
+      
       res.status(500).json({ 
-        message: "An error occurred while requesting login code",
-        success: false
+        message: "Could not send verification code. Please try again later.",
+        success: false,
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       });
     }
   });
