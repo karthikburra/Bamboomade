@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import crypto from "crypto";
 
 // Extend session interface to include admin user type
 declare module 'express-session' {
@@ -505,6 +506,329 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // User routes
+  /**
+   * Request a login code for email-only authentication
+   * This endpoint generates and sends a verification code to the user's email
+   */
+  app.post("/api/auth/request-login-code", async (req, res) => {
+    try {
+      console.log("📧 Login code request received");
+      const { email } = req.body;
+      
+      if (!email) {
+        console.log("❌ Missing required email");
+        return res.status(400).json({ 
+          message: "Email is required", 
+          success: false 
+        });
+      }
+      
+      console.log(`🔍 Looking up user with email: ${email}`);
+      let user = await storage.getUserByEmail(email);
+      
+      // If user doesn't exist, create a new unverified user account
+      if (!user) {
+        console.log(`📝 User not found, creating new account with email: ${email}`);
+        
+        // Generate a temporary random username based on email
+        const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
+        
+        // Generate a random password (user won't need to know this)
+        const password = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        user = await storage.createUser({
+          email,
+          username,
+          password: hashedPassword,
+          role: "user",
+          isVerified: false,
+          tokens: 10, // Default tokens for new users
+        });
+        
+        console.log(`✅ Created new user: ID ${user.id}, Email: ${email}`);
+      } else {
+        console.log(`✅ Found existing user: ID ${user.id}, Email: ${email}`);
+      }
+      
+      // Generate verification code
+      const verificationCode = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      
+      // Update the user with the new verification code
+      console.log(`📝 Updating user ${user.id} with verification code`);
+      await storage.updateUser(user.id, {
+        verificationCode,
+        verificationCodeExpires: expiresAt
+      });
+      
+      // Send verification email
+      console.log(`📧 Sending verification email to ${email}`);
+      const emailSent = await sendVerificationEmail(email, verificationCode);
+      
+      if (!emailSent) {
+        console.error(`❌ Failed to send verification email to ${email}`);
+        return res.status(500).json({ 
+          message: "Failed to send verification code. Please try again later.",
+          success: false
+        });
+      }
+      
+      console.log(`✅ Verification email sent successfully to ${email}`);
+      res.status(200).json({ 
+        message: "Verification code sent. Please check your email.",
+        success: true,
+        expiresAt
+      });
+    } catch (error) {
+      console.error("❌ Request login code error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
+        message: "An error occurred while requesting login code",
+        success: false
+      });
+    }
+  });
+  
+  /**
+   * Verify a login code for email-only authentication
+   * This endpoint verifies the code and logs the user in if valid
+   */
+  app.post("/api/auth/verify-login", async (req, res) => {
+    try {
+      console.log("🔑 Login verification attempt");
+      const { email, code } = req.body;
+      
+      if (!email || !code) {
+        console.log("❌ Missing required fields:", { email: !!email, code: !!code });
+        return res.status(400).json({ 
+          message: "Email and verification code are required",
+          success: false 
+        });
+      }
+      
+      console.log(`🔍 Looking up user with email: ${email}`);
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        console.log(`❌ User not found with email: ${email}`);
+        return res.status(404).json({ 
+          message: "User not found",
+          success: false 
+        });
+      }
+      
+      console.log(`✅ User found: ID ${user.id}, Email: ${email}`);
+      
+      // Check if the verification code matches and hasn't expired
+      console.log(`🔐 Checking verification code: ${code} vs stored: ${user.verificationCode}`);
+      if (user.verificationCode !== code) {
+        console.log(`❌ Invalid verification code for user ${user.id}`);
+        return res.status(400).json({ 
+          message: "Invalid verification code",
+          success: false 
+        });
+      }
+      
+      if (user.verificationCodeExpires && new Date(user.verificationCodeExpires) < new Date()) {
+        console.log(`⏰ Verification code expired for user ${user.id}. Expired at: ${user.verificationCodeExpires}`);
+        return res.status(400).json({ 
+          message: "Verification code has expired. Please request a new one",
+          expired: true,
+          success: false
+        });
+      }
+      
+      // Mark the user as verified if not already
+      if (!user.isVerified) {
+        console.log(`✅ Updating user ${user.id} as verified`);
+        await storage.updateUser(user.id, {
+          isVerified: true
+        });
+      }
+      
+      // Reset the verification code after successful verification
+      console.log(`🔄 Clearing verification code for user ${user.id}`);
+      await storage.updateUser(user.id, {
+        verificationCode: null,
+        verificationCodeExpires: null
+      });
+      
+      // Automatically log the user in
+      console.log(`🔑 Setting session for user ${user.id}`);
+      req.session.userId = user.id;
+      
+      // Save the session explicitly to ensure it persists
+      req.session.save((err) => {
+        if (err) {
+          console.error("❌ Session save error during login verification:", err);
+          console.error(`Error name: ${err.name}`);
+          console.error(`Error message: ${err.message}`);
+          console.error(`Error stack: ${err.stack}`);
+        } else {
+          console.log(`✅ Session saved successfully for user ${user.id}`);
+        }
+      });
+      
+      console.log(`🎉 Login verification successful for user ${user.id}`);
+      res.status(200).json({ 
+        message: "Login successful",
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          tokens: user.tokens,
+          isAdmin: user.isAdmin,
+          isVerified: true
+        }
+      });
+    } catch (error) {
+      console.error("❌ Login verification error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
+        message: "An error occurred during login verification",
+        success: false
+      });
+    }
+  });
+  
+  /**
+   * Register with email only (no username/password required)
+   * This endpoint creates a new user with the provided email and sends a verification code
+   */
+  app.post("/api/auth/register-with-email", async (req, res) => {
+    try {
+      console.log("📝 Email-only registration attempt");
+      const { email } = req.body;
+      
+      if (!email) {
+        console.log("❌ Missing required email");
+        return res.status(400).json({ 
+          message: "Email is required",
+          success: false 
+        });
+      }
+      
+      // Check if user already exists
+      console.log(`🔍 Checking if email exists: ${email}`);
+      const existingUser = await storage.getUserByEmail(email);
+      
+      if (existingUser) {
+        console.log(`ℹ️ User already exists with email: ${email}`);
+        
+        // Instead of returning an error, just send a new verification code
+        // This makes the registration and login flows essentially the same
+        
+        // Generate verification code
+        const verificationCode = generateVerificationCode();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+        
+        // Update the user with the new verification code
+        console.log(`📝 Updating existing user ${existingUser.id} with verification code`);
+        await storage.updateUser(existingUser.id, {
+          verificationCode,
+          verificationCodeExpires: expiresAt
+        });
+        
+        // Send verification email
+        console.log(`📧 Sending verification email to ${email}`);
+        const emailSent = await sendVerificationEmail(email, verificationCode);
+        
+        if (!emailSent) {
+          console.error(`❌ Failed to send verification email to ${email}`);
+          return res.status(500).json({ 
+            message: "Failed to send verification code. Please try again later.",
+            success: false
+          });
+        }
+        
+        console.log(`✅ Verification email sent successfully to ${email}`);
+        return res.status(200).json({ 
+          message: "Verification code sent. Please check your email.",
+          success: true,
+          expiresAt
+        });
+      }
+      
+      // Create new user with auto-generated username and password
+      console.log(`📝 Creating new user with email: ${email}`);
+      
+      // Generate a temporary random username based on email
+      const username = email.split('@')[0] + Math.floor(Math.random() * 1000);
+      
+      // Generate a random password (user won't need to know this)
+      const password = crypto.randomBytes(16).toString('hex');
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Generate verification code
+      const verificationCode = generateVerificationCode();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+      
+      // Create the user
+      const user = await storage.createUser({
+        email,
+        username,
+        password: hashedPassword,
+        role: "user",
+        isVerified: false,
+        verificationCode,
+        verificationCodeExpires: expiresAt,
+        tokens: 10, // Default tokens for new users
+      });
+      
+      console.log(`✅ Created new user: ID ${user.id}, Email: ${email}`);
+      
+      // Send verification email
+      console.log(`📧 Sending verification email to ${email}`);
+      const emailSent = await sendVerificationEmail(email, verificationCode);
+      
+      if (!emailSent) {
+        console.error(`❌ Failed to send verification email to ${email}`);
+        return res.status(500).json({ 
+          message: "Failed to send verification code. Please try again later.",
+          success: false
+        });
+      }
+      
+      console.log(`✅ Verification email sent successfully to ${email}`);
+      res.status(200).json({ 
+        message: "Account created! Verification code sent. Please check your email.",
+        success: true,
+        expiresAt
+      });
+    } catch (error) {
+      console.error("❌ Email-only registration error:", error);
+      
+      // Add more detailed error information
+      if (error instanceof Error) {
+        console.error(`Error name: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      
+      res.status(500).json({ 
+        message: "An error occurred during registration",
+        success: false
+      });
+    }
+  });
+  
   app.post("/api/auth/register", validateRequest(insertUserSchema), async (req, res) => {
     try {
       const existingUser = await storage.getUserByEmail(req.body.email);
