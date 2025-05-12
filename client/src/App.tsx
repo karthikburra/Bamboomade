@@ -33,6 +33,7 @@ import ProfileEdit from "@/pages/ProfileEdit";
 import VerifyEmail from "@/pages/VerifyEmail";
 import DevTools from "@/pages/DevTools";
 import NotFound from "@/pages/not-found";
+import UserProfile from "@/pages/UserProfile";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
 import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWorkshop";
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/view-my-sessions" component={AllSessions} />
       <Route path="/verify-email/:token" component={VerifyEmail} />
       <Route path="/dev-tools" component={DevTools} />
+      <Route path="/user-profile/:id" component={UserProfile} />
       
       {/* Workshop Detail Pages */}
       <Route path="/workshops/bond-with-bamboo" component={BondWithBambooWorkshop} />
