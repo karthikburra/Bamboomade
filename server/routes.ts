@@ -674,8 +674,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Send verification email
-      const { sendRegistrationVerificationEmail } = await import('./email-service');
-      const emailSent = await sendRegistrationVerificationEmail(email, verificationCode);
+      const { sendVerificationEmail } = await import('./verification-utils');
+      const emailSent = await sendVerificationEmail(email, verificationCode);
       
       if (!emailSent) {
         console.error("Failed to resend verification email to:", email);
