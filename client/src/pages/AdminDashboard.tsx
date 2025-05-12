@@ -138,7 +138,7 @@ export default function AdminDashboard() {
   
   // Active tab state - Dashboard Summary tab removed
   const [activeTab, setActiveTab] = useState(
-    tabParam && ["sessions", "knowledge", "users"].includes(tabParam) 
+    tabParam && ["sessions", "knowledge", "users", "deleted-users"].includes(tabParam) 
       ? tabParam 
       : "sessions"
   );
@@ -248,6 +248,17 @@ export default function AdminDashboard() {
     },
     // Only fetch users data when on the users tab
     enabled: activeTab === "users",
+  });
+  
+  // Query for deleted users
+  const { data: deletedUsersData, isLoading: isDeletedUsersLoading } = useQuery({
+    queryKey: ["/api/admin/deleted-users"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/deleted-users");
+      return response.json();
+    },
+    // Only fetch deleted users data when on the deleted-users tab
+    enabled: activeTab === "deleted-users",
   });
   
   // Fetch all login history
