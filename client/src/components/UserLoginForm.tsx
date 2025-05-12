@@ -73,15 +73,31 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
     try {
       setIsVerifying(true);
       
-      // Use the loginWithCode method from useAuth hook
-      await loginWithCode({ 
+      // Direct API request to the verify-login endpoint
+      const response = await apiRequest("POST", "/api/auth/verify-login", { 
         email, 
         code: verificationCode 
       });
       
-      // If we reach here, login was successful
-      if (onSuccess) {
-        onSuccess();
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome to BambooMade!",
+        });
+        
+        // If we reach here, login was successful
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        toast({
+          title: "Verification Failed",
+          description: data.message || "Could not verify code. Please try again.",
+          variant: "destructive",
+        });
+        setIsVerifying(false);
       }
     } catch (error) {
       toast({

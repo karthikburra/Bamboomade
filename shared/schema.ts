@@ -21,6 +21,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   email: true,
   role: true,
+  tokens: true,
   isVerified: true,
   verificationCode: true,
   verificationCodeExpires: true,
