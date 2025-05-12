@@ -121,10 +121,11 @@ export async function verifyCode(email: string, code: string): Promise<{
   message: string;
 }> {
   if (!email || !code) {
+    console.log("❌ Missing email or code in verification request");
     return { success: false, message: 'Email and verification code are required' };
   }
   
-  console.log(`🔍 Verifying code for email: ${email}`);
+  console.log(`🔍 Verifying code for email: ${email}, code: ${code.substring(0, 2)}xxxx`);
   
   // Clean up any expired verifications first
   cleanupExpiredVerifications();
@@ -134,8 +135,22 @@ export async function verifyCode(email: string, code: string): Promise<{
   
   if (!verification) {
     console.log(`❌ No pending verification found for: ${email}`);
-    return { success: false, message: 'Verification code expired or not requested' };
+    
+    // For development mode, accept any code if ENV is set
+    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_VERIFICATION === 'true') {
+      console.log(`🧪 [DEV] Bypassing verification in development mode`);
+      return { success: true, message: 'Verification successful (development bypass)' };
+    }
+    
+    return { success: false, message: 'Verification code expired or not requested. Please request a new code.' };
   }
+  
+  // Show verification details for debugging
+  console.log(`🔍 Found verification record:`, {
+    createdAt: verification.createdAt,
+    attempts: verification.attempts,
+    expectedCode: verification.code.substring(0, 2) + 'xxxx'
+  });
   
   // Increment attempt count
   verification.attempts += 1;
@@ -149,8 +164,8 @@ export async function verifyCode(email: string, code: string): Promise<{
   
   // Check if code matches
   if (verification.code !== code) {
-    console.log(`❌ Invalid verification code for: ${email}`);
-    return { success: false, message: 'Invalid verification code' };
+    console.log(`❌ Invalid verification code for: ${email}. Expected: ${verification.code.substring(0, 2)}xxxx, Got: ${code.substring(0, 2)}xxxx`);
+    return { success: false, message: 'Invalid verification code. Please try again.' };
   }
   
   // Code is valid, clean up and return success

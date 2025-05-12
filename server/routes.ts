@@ -635,6 +635,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import Supabase service for code verification
       const { verifyCode } = await import('./supabase-service');
       
+      // If we're in development mode and a special bypass code is used, skip verification
+      if (process.env.NODE_ENV === 'development' && code === '123456') {
+        console.log(`🧪 [DEV MODE] Using master bypass code for ${email}`);
+        return res.status(200).json({
+          message: "Verification successful (development bypass)",
+          success: true
+        });
+      }
+      
       // Verify the code
       console.log(`🔐 Verifying code for email: ${email}`);
       const result = await verifyCode(email, code);

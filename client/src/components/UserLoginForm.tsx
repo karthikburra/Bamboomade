@@ -312,6 +312,20 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
                 maxLength={6}
                 className="text-center tracking-widest text-lg font-medium"
               />
+              
+              {process.env.NODE_ENV === 'development' && (
+                <div className="flex justify-center mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs h-7 px-2 text-slate-500"
+                    onClick={() => setVerificationCode('123456')}
+                    type="button"
+                  >
+                    Use Development Code
+                  </Button>
+                </div>
+              )}
             </div>
             
             <Button 

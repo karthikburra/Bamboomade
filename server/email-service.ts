@@ -247,23 +247,27 @@ BambooMade Team
   <div style="background-color: #1E3A29; padding: 20px; text-align: center;">
     <h2 style="color: #ffffff; margin: 0;">BambooMade</h2>
   </div>
-  <div style="padding: 20px; border: 1px solid #e5e5e5; border-top: none;">
-    <h3>Your Login Verification Code</h3>
+  <div style="padding: 20px; border: 1px solid #e5e5e5; border-top: none; background-color: #f8f8f8;">
+    <h3 style="color: #1E3A29; margin-top: 0;">Your Login Verification Code</h3>
     <p>Hello,</p>
     <p>You requested to log in to BambooMade. Please use the verification code below:</p>
     
-    <div style="background-color: #f5f5f5; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+    <div style="background-color: #ffffff; padding: 20px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; border: 2px solid #2e7d32; border-radius: 8px; color: #2e7d32;">
       ${code}
     </div>
     
-    <p>This code will expire in 15 minutes.</p>
+    <p><strong>Important:</strong> This code will expire in 15 minutes.</p>
     <p>If you didn't request this code, please ignore this email.</p>
     
-    <p>Regards,<br>BambooMade Team</p>
+    <div style="margin-top: 20px; padding: 15px; background-color: #f0f7f0; border-radius: 8px;">
+      <p style="margin: 0; color: #1E3A29;"><strong>Need help?</strong> Contact us at <a href="mailto:info@bamboomade.in" style="color: #2e7d32;">info@bamboomade.in</a></p>
+    </div>
+    
+    <p style="margin-top: 20px;">Regards,<br>BambooMade Team</p>
   </div>
   <div style="margin-top: 30px; text-align: center; color: #777; font-size: 12px;">
     <p>© 2025 BambooMade. All rights reserved.</p>
-    <p>Banjara Hills, Hyderabad | Info@bamboomade.in</p>
+    <p>Banjara Hills, Hyderabad | <a href="mailto:info@bamboomade.in" style="color: #2e7d32;">info@bamboomade.in</a></p>
   </div>
 </div>
     `
