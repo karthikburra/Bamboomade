@@ -183,14 +183,14 @@ export default function UserProfile() {
   // Show error state
   if (userError || !userData) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 bg-gray-950 text-gray-100">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
           <AlertTriangle className="h-16 w-16 text-amber-500 mb-4" />
           <h2 className="text-2xl font-bold mb-2">User Not Found</h2>
           <p className="text-gray-400 mb-6">
             The user you're looking for doesn't exist or you don't have permission to view this profile.
           </p>
-          <Button onClick={() => window.history.back()} variant="outline">
+          <Button onClick={() => window.history.back()} variant="outline" className="border-gray-700 hover:bg-gray-800">
             Go Back
           </Button>
         </div>
@@ -201,8 +201,11 @@ export default function UserProfile() {
   const user: UserData = userData.user || userData;
   const sessions: Session[] = sessionsData?.sessions || [];
 
+  const loginHistory: LoginHistory[] = loginHistoryData?.loginHistory || [];
+  const totalLogins = loginHistoryData?.totalLogins || 0;
+
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 bg-gray-950 text-gray-100">
       <Helmet>
         <title>{getFullName(user)} • User Profile • BambooMade</title>
       </Helmet>
@@ -211,7 +214,7 @@ export default function UserProfile() {
         <div className="flex items-center gap-3">
           <Button 
             variant="outline" 
-            className="border-gray-700 text-gray-300"
+            className="border-gray-700 text-gray-300 hover:bg-gray-800"
             onClick={() => window.history.back()}
           >
             Back
@@ -310,6 +313,15 @@ export default function UserProfile() {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
+                      <LogIn className="h-4 w-4 text-gray-400" />
+                      <div className="flex flex-col">
+                        <span>Login Count</span>
+                        <span className="text-gray-400">
+                          {totalLogins} logins
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-gray-400" />
                       <div className="flex flex-col">
                         <span>User ID</span>
@@ -365,12 +377,19 @@ export default function UserProfile() {
                 <CalendarClock className="h-4 w-4 mr-2" />
                 Booked Sessions
               </TabsTrigger>
+              <TabsTrigger 
+                value="login-history" 
+                className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white"
+              >
+                <History className="h-4 w-4 mr-2" />
+                Login History
+              </TabsTrigger>
               {user.role === 'admin' && (
                 <TabsTrigger 
                   value="admin" 
                   className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white"
                 >
-                  <User className="h-4 w-4 mr-2" />
+                  <Shield className="h-4 w-4 mr-2" />
                   Admin Access
                 </TabsTrigger>
               )}
@@ -483,6 +502,83 @@ export default function UserProfile() {
                               </TableRow>
                             );
                           })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Login History Tab Content */}
+            <TabsContent value="login-history" className="space-y-4">
+              <Card className="bg-gray-900 border-gray-800">
+                <CardHeader>
+                  <CardTitle>Login History</CardTitle>
+                  <CardDescription>
+                    View all login sessions for this user
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loginHistoryError ? (
+                    <div className="p-4 rounded-md bg-gray-800/50 text-red-400 text-sm">
+                      <p>Error loading login history. {(loginHistoryError as Error).message}</p>
+                    </div>
+                  ) : loginHistory.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400">
+                      <History className="h-10 w-10 mx-auto mb-3 text-gray-500" />
+                      <p className="mb-2">No login history found for this user</p>
+                      <p className="text-sm">Login data will be displayed here once the user has signed in.</p>
+                    </div>
+                  ) : (
+                    <div className="border rounded-md border-gray-800">
+                      <Table>
+                        <TableHeader className="bg-gray-800/50">
+                          <TableRow>
+                            <TableHead className="text-gray-400">Date & Time</TableHead>
+                            <TableHead className="text-gray-400">Device</TableHead>
+                            <TableHead className="text-gray-400">Browser</TableHead>
+                            <TableHead className="text-gray-400 text-right">Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {loginHistory.map((login) => (
+                            <TableRow key={login.id} className="border-gray-800">
+                              <TableCell className="font-medium text-gray-300">
+                                {new Date(login.loginTime).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </TableCell>
+                              <TableCell className="text-gray-400">
+                                {login.deviceInfo?.device || 'Unknown'}{' '}
+                                {login.deviceInfo?.os && `(${login.deviceInfo.os})`}
+                                {login.deviceInfo?.isMobile && (
+                                  <Smartphone className="h-4 w-4 inline-block ml-1 text-gray-500" />
+                                )}
+                                {!login.deviceInfo?.isMobile && (
+                                  <Laptop className="h-4 w-4 inline-block ml-1 text-gray-500" />
+                                )}
+                              </TableCell>
+                              <TableCell className="text-gray-400">
+                                {login.deviceInfo?.browser || 'Unknown'}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {login.loginStatus === 'success' ? (
+                                  <Badge className="bg-green-800/30 text-green-400 border-green-800">
+                                    <CheckCircle className="h-3 w-3 mr-1" /> Success
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-red-800/30 text-red-400 border-red-800">
+                                    <XCircle className="h-3 w-3 mr-1" /> Failed
+                                  </Badge>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
                     </div>
