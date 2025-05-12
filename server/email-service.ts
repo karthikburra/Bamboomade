@@ -194,6 +194,13 @@ export async function sendEmail(options: {
       return true;
     } catch (sendError) {
       console.error('Error sending email through SMTP:', sendError);
+      
+      // In development mode, consider email as "sent" to allow testing without valid credentials
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DEV MODE] Treating failed email as successful for development purposes');
+        return true;
+      }
+      
       return false;
     }
   } catch (error) {
