@@ -523,17 +523,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userData.isVerified = true; // Admin users are automatically verified
       } else {
         // Generate verification code
-        // Simple function to generate a verification code without dependencies
-        const generateCode = (length: number = 6) => {
-          const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-          let code = '';
-          for (let i = 0; i < length; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-          }
-          return code;
-        };
-        
-        const verificationCode = generateCode(6);
+        const { generateVerificationCode } = await import('./verification-utils');
+        const verificationCode = generateVerificationCode(6);
         
         // Set verification fields
         userData.isVerified = false;
@@ -545,8 +536,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If not admin, send verification email
       if (!isAdminUser) {
-        const { sendRegistrationVerificationEmail } = await import('./email-service');
-        const emailSent = await sendRegistrationVerificationEmail(userData.email, userData.verificationCode!);
+        const { sendVerificationEmail } = await import('./verification-utils');
+        const emailSent = await sendVerificationEmail(userData.email, userData.verificationCode!);
         
         if (!emailSent) {
           console.error("Failed to send verification email to:", userData.email);
