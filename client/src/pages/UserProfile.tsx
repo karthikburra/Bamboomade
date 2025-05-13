@@ -38,7 +38,7 @@ interface Session {
   id: number;
   studentName: string;
   email: string;
-  phone: string;
+  phoneNumber?: string;
   date: string;
   topic: string;
   notes: string;
@@ -162,12 +162,8 @@ export default function UserProfile() {
   const getFullName = (user: UserData) => {
     if (!user) return 'User';
     
-    if (user.firstName && user.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    } else if (user.firstName) {
-      return user.firstName;
-    } else if (user.lastName) {
-      return user.lastName;
+    if (user.fullName) {
+      return user.fullName;
     }
     return user.username || 'User';
   };
@@ -322,12 +318,12 @@ export default function UserProfile() {
                       </div>
                       <span className="text-zinc-200 font-medium">{user?.email || 'No email address'}</span>
                     </div>
-                    {user?.phone ? (
+                    {user?.phoneNumber ? (
                       <div className="flex items-center gap-2 text-sm">
                         <div className="bg-zinc-700/70 p-1.5 rounded-full">
                           <Phone className="h-3.5 w-3.5 text-primary/80" />
                         </div>
-                        <span className="text-zinc-200 font-medium">{user.phone}</span>
+                        <span className="text-zinc-200 font-medium">{user.phoneNumber}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-sm opacity-60">
