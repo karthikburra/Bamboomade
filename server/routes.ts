@@ -261,7 +261,7 @@ function formatInIST(date: Date, formatStr: string): string {
 }
 
 // Function to check if a time slot is already booked
-async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promise<boolean> {
+async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailToExclude?: string): Promise<boolean> {
   // Get all sessions to check for conflicts
   const allSessions = await storage.getAllProjectGuidances();
   
@@ -282,7 +282,8 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       // CRITICAL: Use formatInIST for consistent time zone handling
       time: formatInIST(sessionDate, "HH:mm"),
       status: s.status || 'unknown',
-      paymentConfirmed: s.paymentConfirmed
+      paymentConfirmed: s.paymentConfirmed,
+      email: s.email
     };
   });
   
@@ -290,7 +291,7 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
   console.log(`Sessions on ${targetDateStr}:`, sessionsOnThisDate);
   
   // For detailed logging
-  console.log(`Checking time slot conflict for ${targetDateStr} ${targetTimeStr}, excluding sessionId ${sessionIdToExclude || 'none'}`);
+  console.log(`Checking time slot conflict for ${targetDateStr} ${targetTimeStr}, excluding sessionId ${sessionIdToExclude || 'none'} and email ${emailToExclude || 'none'}`);
   
   // IMPROVED: Check if the time is a half-hour booking (like 13:30)
   const isHalfHourBooking = targetTimeStr.endsWith(":30");
@@ -335,6 +336,16 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       return false;
     }
     
+    // NEW: If pending session is from the same email, don't count it as a conflict
+    // This allows users to retry booking if they abandoned payment
+    if (emailToExclude && 
+        session.status === 'pending' && 
+        !session.paymentConfirmed &&
+        session.email.toLowerCase() === emailToExclude.toLowerCase()) {
+      console.log(`Skipping pending session ${session.id} from same email (${emailToExclude})`);
+      return false;
+    }
+    
     // IMPROVED: Better date handling with proper parsing
     let sessionDate: Date;
     try {
@@ -361,7 +372,7 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
         return true;
       }
       
-      // UPDATED: Consider ALL pending sessions as booked (not just recent ones)
+      // UPDATED: Consider pending sessions as booked, except for those from the same email
       if (session.status === 'pending') {
         console.log(`Conflict detected: Pending session ${session.id} is reserving ${targetDateStr} ${targetTimeStr}`);
         return true;
@@ -372,7 +383,10 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
     if (isHalfHourBooking && sessionDateStr === targetDateStr) {
       if (hourToCheck.includes(sessionTimeStr)) {
         // This half-hour booking conflicts with a full-hour booking
-        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
+        // Skip pending sessions from the same email
+        if (session.paymentConfirmed || session.status === 'confirmed' || 
+            (session.status === 'pending' && 
+             (!emailToExclude || session.email.toLowerCase() !== emailToExclude.toLowerCase()))) {
           console.log(`Half-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
         }
@@ -389,7 +403,10 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number): Promis
       // If session is at XX:30 and conflicts with our target time at YY:00
       if (sessionMinute === 30 && 
           (sessionHour === targetHour || sessionHour + 1 === targetHour)) {
-        if (session.paymentConfirmed || session.status === 'confirmed' || session.status === 'pending') {
+        // Skip pending sessions from the same email
+        if (session.paymentConfirmed || session.status === 'confirmed' || 
+            (session.status === 'pending' && 
+             (!emailToExclude || session.email.toLowerCase() !== emailToExclude.toLowerCase()))) {
           console.log(`Full-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
         }
