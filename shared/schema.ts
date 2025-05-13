@@ -319,27 +319,27 @@ export type InsertBambooFact = z.infer<typeof insertBambooFactSchema>;
 // User login history for tracking user activity across deployments
 export const userLoginHistory = pgTable("user_login_history", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  email: text("userEmail").notNull(),
-  username: text("username").notNull(), // Need to add this to DB
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"), // Need to add this to DB
-  loginTime: timestamp("loginTime").notNull().defaultNow(),
-  lastActiveTime: timestamp("lastActiveTime").notNull().defaultNow(),
-  logoutTime: timestamp("logoutTime"),
+  userId: integer("user_id").notNull(),
+  email: text("user_email").notNull(),
+  username: text("username").notNull(),
+  ipAddress: text("ip_address"),
+  useragent: text("useragent"), // Changed from userAgent to match DB column
+  loginTime: timestamp("login_time").notNull().defaultNow(),
+  lastActiveTime: timestamp("last_active_time").notNull().defaultNow(),
+  logoutTime: timestamp("logout_time"),
   browser: text("browser"),
   os: text("os"),
-  deviceType: text("deviceType"),
-  deviceInfo: json("deviceInfo").$type<{
+  deviceType: text("device_type"),
+  deviceInfo: json("device_info").$type<{
     browser?: string;
     os?: string;
     device?: string;
     isMobile?: boolean;
-  }>(), // Need to add this to DB
-  loginStatus: text("loginStatus").notNull().default("success"), // Need to add this to DB
-  isAdmin: boolean("isAdmin").notNull().default(false), // Need to add this to DB
-  sessionId: text("sessionId"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  }>(),
+  loginStatus: text("login_status").notNull().default("success"),
+  isAdmin: boolean("is_admin").notNull().default(false),
+  sessionId: text("session_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory).pick({
@@ -347,7 +347,7 @@ export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory)
   email: true,
   username: true,
   ipAddress: true,
-  userAgent: true,
+  useragent: true, // Changed from userAgent to match the field name
   browser: true,
   os: true,
   deviceType: true,

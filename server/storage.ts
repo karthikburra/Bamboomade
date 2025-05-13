@@ -946,23 +946,25 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
-      // Map old field names to match current database structure
+      // Create properly mapped data to match database column names
       const mappedData: any = {
-        userId: loginData.userId,
-        userEmail: loginData.email,
-        // Optional fields that might not be in the database yet
+        user_id: loginData.userId,
+        user_email: loginData.email,
         username: loginData.username || 'unknown',
-        ipAddress: loginData.ipAddress,
-        sessionId: loginData.sessionId
+        ip_address: loginData.ipAddress,
+        useragent: loginData.useragent, // Updated from userAgent to useragent
+        browser: loginData.browser,
+        os: loginData.os,
+        device_type: loginData.deviceType,
+        device_info: loginData.deviceInfo, 
+        login_status: loginData.loginStatus,
+        is_admin: loginData.isAdmin,
+        session_id: loginData.sessionId,
+        login_time: new Date(), // Explicitly capture current time
+        last_active_time: new Date() // Set last active time to now
       };
       
-      // Extract browser, OS from deviceInfo if available
-      if (loginData.deviceInfo) {
-        mappedData.browser = loginData.deviceInfo.browser;
-        mappedData.os = loginData.deviceInfo.os;
-        mappedData.deviceType = loginData.deviceInfo.device;
-      }
-      
+      // Insert the record with proper column mapping
       const [loginRecord] = await db.insert(userLoginHistory)
         .values(mappedData)
         .returning();
