@@ -101,6 +101,20 @@ interface UserData {
   profileCompleted?: boolean;
 }
 
+// Interface for API responses
+interface UserProfileResponse {
+  user: UserData;
+}
+
+interface SessionsResponse {
+  sessions: Session[];
+}
+
+interface LoginHistoryResponse {
+  loginHistory: LoginHistory[];
+  totalLogins: number;
+}
+
 export default function UserProfile() {
   const { id } = useParams();
   const userId = parseInt(id as string);
@@ -113,7 +127,7 @@ export default function UserProfile() {
     isLoading: isLoadingUser,
     error: userError,
     refetch: refetchUserData
-  } = useQuery({
+  } = useQuery<UserProfileResponse>({
     queryKey: [`/api/users/${userId}`],
     enabled: !isNaN(userId),
     refetchInterval: 10000, // Refetch every 10 seconds to ensure we have latest data
@@ -124,7 +138,7 @@ export default function UserProfile() {
     data: sessionsData, 
     isLoading: isLoadingSessions,
     error: sessionsError
-  } = useQuery({
+  } = useQuery<SessionsResponse>({
     queryKey: [`/api/users/${userId}/sessions`],
     enabled: !isNaN(userId),
   });
@@ -134,7 +148,7 @@ export default function UserProfile() {
     data: loginHistoryData,
     isLoading: isLoadingLoginHistory,
     error: loginHistoryError
-  } = useQuery({
+  } = useQuery<LoginHistoryResponse>({
     queryKey: [`/api/users/${userId}/login-history`],
     enabled: !isNaN(userId),
   });
@@ -212,14 +226,14 @@ export default function UserProfile() {
     );
   }
 
-  const user: UserData = userData.user || userData;
+  const user = userData?.user || {} as UserData;
   const sessions: Session[] = sessionsData?.sessions || [];
 
   const loginHistory: LoginHistory[] = loginHistoryData?.loginHistory || [];
   const totalLogins = loginHistoryData?.totalLogins || 0;
 
   return (
-    <div className="container mx-auto p-6 bg-gray-950 text-gray-100">
+    <div className="container mx-auto p-6 bg-zinc-950 text-zinc-100 min-h-screen">
       <Helmet>
         <title>{getFullName(user)} • User Profile • BambooMade</title>
       </Helmet>
@@ -228,12 +242,24 @@ export default function UserProfile() {
         <div className="flex items-center gap-3">
           <Button 
             variant="outline" 
-            className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
             onClick={() => window.history.back()}
           >
             Back
           </Button>
           <h1 className="text-2xl font-bold">User Profile</h1>
+          <button 
+            onClick={refreshUserData} 
+            className="ml-3 p-1.5 rounded-full bg-zinc-800/50 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-primary"
+            title="Refresh user data"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -373,30 +399,33 @@ export default function UserProfile() {
                 </div>
 
                 {sessions.length > 0 && (
-                  <div className="bg-gray-800/50 rounded-md p-4 space-y-3">
-                    <h3 className="text-sm font-medium text-gray-300">Sessions Summary</h3>
+                  <div className="bg-zinc-800/60 rounded-md p-4 space-y-3 hover:bg-zinc-800/80 transition-colors duration-200 shadow-sm">
+                    <h3 className="text-sm font-medium text-white/80 flex items-center">
+                      <CalendarClock className="h-4 w-4 mr-2 text-primary/70" />
+                      Sessions Summary
+                    </h3>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-gray-800 rounded-md p-3 text-center">
+                      <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
                         <div className="text-2xl font-bold text-white">{sessions.length}</div>
-                        <div className="text-xs text-gray-400">Total Sessions</div>
+                        <div className="text-xs text-zinc-400">Total Sessions</div>
                       </div>
-                      <div className="bg-gray-800 rounded-md p-3 text-center">
-                        <div className="text-2xl font-bold text-green-500">
+                      <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
+                        <div className="text-2xl font-bold text-green-500/90">
                           {sessions.filter(s => s.status === 'completed').length}
                         </div>
-                        <div className="text-xs text-gray-400">Completed</div>
+                        <div className="text-xs text-zinc-400">Completed</div>
                       </div>
-                      <div className="bg-gray-800 rounded-md p-3 text-center">
-                        <div className="text-2xl font-bold text-amber-500">
+                      <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
+                        <div className="text-2xl font-bold text-amber-500/90">
                           {sessions.filter(s => s.status === 'pending').length}
                         </div>
-                        <div className="text-xs text-gray-400">Pending</div>
+                        <div className="text-xs text-zinc-400">Pending</div>
                       </div>
-                      <div className="bg-gray-800 rounded-md p-3 text-center">
-                        <div className="text-2xl font-bold text-red-500">
+                      <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
+                        <div className="text-2xl font-bold text-red-500/90">
                           {sessions.filter(s => s.status === 'cancelled').length}
                         </div>
-                        <div className="text-xs text-gray-400">Cancelled</div>
+                        <div className="text-xs text-zinc-400">Cancelled</div>
                       </div>
                     </div>
                   </div>
@@ -410,17 +439,17 @@ export default function UserProfile() {
         <div className="lg:col-span-8 space-y-6">
           {/* Tabs for different sections */}
           <Tabs defaultValue="sessions" className="w-full">
-            <TabsList className="bg-gray-800 border-gray-700 p-1">
+            <TabsList className="bg-zinc-800/70 border border-zinc-700/50 p-1 rounded-lg shadow-sm">
               <TabsTrigger 
                 value="sessions" 
-                className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white"
+                className="data-[state=active]:bg-primary/20 text-zinc-300 data-[state=active]:text-white hover:bg-zinc-700/50 transition-colors rounded-md"
               >
                 <CalendarClock className="h-4 w-4 mr-2" />
                 Booked Sessions
               </TabsTrigger>
               <TabsTrigger 
                 value="login-history" 
-                className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white"
+                className="data-[state=active]:bg-primary/20 text-zinc-300 data-[state=active]:text-white hover:bg-zinc-700/50 transition-colors rounded-md"
               >
                 <History className="h-4 w-4 mr-2" />
                 Login History
@@ -428,7 +457,7 @@ export default function UserProfile() {
               {user.role === 'admin' && (
                 <TabsTrigger 
                   value="admin" 
-                  className="data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white"
+                  className="data-[state=active]:bg-primary/20 text-zinc-300 data-[state=active]:text-white hover:bg-zinc-700/50 transition-colors rounded-md"
                 >
                   <Shield className="h-4 w-4 mr-2" />
                   Admin Access
@@ -438,17 +467,20 @@ export default function UserProfile() {
 
             {/* Sessions Tab Content */}
             <TabsContent value="sessions" className="space-y-4">
-              <Card className="bg-gray-900 border-gray-800">
+              <Card className="bg-zinc-900 border-zinc-800 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Session History</CardTitle>
-                  <CardDescription>
-                    View all sessions booked by this user
+                  <CardTitle className="text-white flex items-center">
+                    <CalendarClock className="h-5 w-5 mr-2 text-primary/80" />
+                    Session History
+                  </CardTitle>
+                  <CardDescription className="text-zinc-400">
+                    View all project guidance sessions booked by this user
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {sessions.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-600" />
+                    <div className="text-center py-12 text-zinc-400 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+                      <Calendar className="h-12 w-12 mx-auto mb-4 text-zinc-600" />
                       <p className="text-lg font-medium mb-2">No Sessions Found</p>
                       <p>This user hasn't booked any guidance sessions yet.</p>
                     </div>
