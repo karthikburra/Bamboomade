@@ -343,6 +343,8 @@ export const userLoginHistory = pgTable("user_login_history", {
   isAdmin: boolean("isadmin").notNull().default(false),
   sessionId: text("sessionId"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
+  // Track if this login is from a returning user (already had previous successful logins)
+  isReturningUser: boolean("isreturninguser").default(false),
 });
 
 export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory).pick({
@@ -358,6 +360,7 @@ export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory)
   loginStatus: true,
   isAdmin: true,
   sessionId: true,
+  isReturningUser: true,
 });
 
 export type UserLoginHistory = typeof userLoginHistory.$inferSelect;

@@ -1381,23 +1381,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isMobile: userAgent.includes('Mobile') || userAgent.includes('Android') || 
                    userAgent.includes('iPhone') || userAgent.includes('iPad')
         };
+
+        // Check if this is a returning user by looking up previous login history
+        console.log(`🔍 Checking if ${user.email} has previous successful logins`);
+        const previousLogins = await storage.getUserLoginHistory(user.id);
+        const successfulPreviousLogins = previousLogins.filter(login => login.loginStatus === 'success');
+        const isReturningUser = successfulPreviousLogins.length > 0;
         
+        console.log(`${isReturningUser ? '🔄' : '🆕'} User ${user.email} is a ${isReturningUser ? 'returning' : 'first-time'} user`);
+        
+        // Create login history record
         await storage.createUserLoginHistory({
           userId: user.id,
           email: user.email,
           username: user.username || 'unknown',
           ipAddress,
-          useragent: userAgent, // Changed from userAgent to useragent
+          useragent: userAgent,
           browser: deviceInfo.browser,
           os: deviceInfo.os,
           deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
           deviceInfo,
           loginStatus: 'success',
           isAdmin: user.isAdmin,
-          sessionId: req.sessionID
+          sessionId: req.sessionID,
+          // Add a field to track if this is a returning user
+          isReturningUser: isReturningUser
         });
         
-        console.log(`📝 Login history recorded for user ${user.id}`);
+        console.log(`📝 Login history recorded for user ${user.id} (${isReturningUser ? 'returning' : 'new'})`);
       } catch (historyError) {
         // Non-critical error - don't fail the login if history tracking fails
         console.error("⚠️ Failed to record login history:", historyError);
