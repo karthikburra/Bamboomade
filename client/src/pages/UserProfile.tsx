@@ -160,6 +160,8 @@ export default function UserProfile() {
 
   // Get user's full name
   const getFullName = (user: UserData) => {
+    if (!user) return 'User';
+    
     if (user.firstName && user.lastName) {
       return `${user.firstName} ${user.lastName}`;
     } else if (user.firstName) {
@@ -167,7 +169,7 @@ export default function UserProfile() {
     } else if (user.lastName) {
       return user.lastName;
     }
-    return user.username;
+    return user.username || 'User';
   };
 
   // Format session date and time for display
@@ -235,7 +237,7 @@ export default function UserProfile() {
   return (
     <div className="container mx-auto p-6 bg-zinc-950 text-zinc-100 min-h-screen">
       <Helmet>
-        <title>{getFullName(user)} • User Profile • BambooMade</title>
+        <title>{user ? `${getFullName(user)} • User Profile • BambooMade` : 'User Profile • BambooMade'}</title>
       </Helmet>
 
       <div className="flex flex-wrap items-center justify-between mb-6">
@@ -270,10 +272,10 @@ export default function UserProfile() {
             <CardHeader className="relative pb-0">
               <div className="flex flex-col items-center">
                 <div className="w-28 h-28 rounded-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-white border-2 border-primary/70 overflow-hidden shadow-md">
-                  {user.profileImageUrl ? (
+                  {user?.profileImageUrl ? (
                     <img 
                       src={user.profileImageUrl} 
-                      alt={`${user.username}'s profile`}
+                      alt={`${user.username || 'User'}'s profile`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         // If image fails to load, show the fallback
@@ -282,26 +284,26 @@ export default function UserProfile() {
                       }}
                     />
                   ) : (
-                    <span className="animate-pulse">{user.username.charAt(0).toUpperCase()}</span>
+                    <span className="animate-pulse">{(user?.username || 'U').charAt(0).toUpperCase()}</span>
                   )}
-                  <span className={`hidden ${!user.profileImageUrl ? 'flex' : ''} text-4xl font-bold items-center justify-center`}>
-                    {user.username.charAt(0).toUpperCase()}
+                  <span className={`hidden ${!user?.profileImageUrl ? 'flex' : ''} text-4xl font-bold items-center justify-center`}>
+                    {(user?.username || 'U').charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <CardTitle className="mt-4 text-xl text-center text-white">
-                  {getFullName(user)}
+                  {user?.firstName || user?.lastName ? getFullName(user) : (user?.username || 'User')}
                 </CardTitle>
                 <CardDescription className="text-center text-zinc-400">
-                  @{user.username}
+                  {user?.username ? `@${user.username}` : ''}
                 </CardDescription>
                 <div className="flex flex-wrap gap-2 mt-2 justify-center">
-                  <Badge className={user.isVerified ? "bg-green-600/80 text-white" : "bg-zinc-700 text-white"}>
-                    {user.isVerified ? "Verified" : "Not Verified"}
+                  <Badge className={user?.isVerified ? "bg-green-600/80 text-white" : "bg-zinc-700 text-white"}>
+                    {user?.isVerified ? "Verified" : "Not Verified"}
                   </Badge>
-                  <Badge className={user.role === 'admin' ? "bg-amber-600/80 text-white" : "bg-zinc-700 text-white"}>
-                    {user.role === 'admin' ? "Admin" : "User"}
+                  <Badge className={user?.role === 'admin' ? "bg-amber-600/80 text-white" : "bg-zinc-700 text-white"}>
+                    {user?.role === 'admin' ? "Admin" : "User"}
                   </Badge>
-                  {user.profileCompleted !== undefined && (
+                  {user?.profileCompleted !== undefined && (
                     <Badge className={user.profileCompleted ? "bg-blue-600/80 text-white" : "bg-zinc-700 text-white"}>
                       {user.profileCompleted ? "Profile Complete" : "Profile Incomplete"}
                     </Badge>
@@ -318,9 +320,9 @@ export default function UserProfile() {
                       <div className="bg-zinc-700/70 p-1.5 rounded-full">
                         <Mail className="h-3.5 w-3.5 text-primary/80" />
                       </div>
-                      <span className="text-zinc-200 font-medium">{user.email}</span>
+                      <span className="text-zinc-200 font-medium">{user?.email || 'No email address'}</span>
                     </div>
-                    {user.phone ? (
+                    {user?.phone ? (
                       <div className="flex items-center gap-2 text-sm">
                         <div className="bg-zinc-700/70 p-1.5 rounded-full">
                           <Phone className="h-3.5 w-3.5 text-primary/80" />
@@ -348,15 +350,15 @@ export default function UserProfile() {
                       <div className="flex flex-col">
                         <span className="text-zinc-200 font-medium">Account Created</span>
                         <span className="text-zinc-400">
-                          {new Date(user.createdAt).toLocaleDateString('en-US', {
+                          {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'
-                          })}
+                          }) : 'Not available'}
                         </span>
                       </div>
                     </div>
-                    {user.lastLoginAt && (
+                    {user?.lastLoginAt && (
                       <div className="flex items-center gap-2">
                         <div className="bg-zinc-700/70 p-1.5 rounded-full">
                           <Clock className="h-3.5 w-3.5 text-primary/80" />
@@ -382,7 +384,7 @@ export default function UserProfile() {
                       <div className="flex flex-col">
                         <span className="text-zinc-200 font-medium">Login Count</span>
                         <span className="text-zinc-400">
-                          {totalLogins} logins
+                          {totalLogins || 0} logins
                         </span>
                       </div>
                     </div>
@@ -392,13 +394,13 @@ export default function UserProfile() {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-zinc-200 font-medium">User ID</span>
-                        <span className="text-zinc-400">{user.id}</span>
+                        <span className="text-zinc-400">{user?.id || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {sessions.length > 0 && (
+                {Array.isArray(sessions) && sessions.length > 0 && (
                   <div className="bg-zinc-800/60 rounded-md p-4 space-y-3 hover:bg-zinc-800/80 transition-colors duration-200 shadow-sm">
                     <h3 className="text-sm font-medium text-white/80 flex items-center">
                       <CalendarClock className="h-4 w-4 mr-2 text-primary/70" />
@@ -411,19 +413,19 @@ export default function UserProfile() {
                       </div>
                       <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
                         <div className="text-2xl font-bold text-green-500/90">
-                          {sessions.filter(s => s.status === 'completed').length}
+                          {sessions.filter(s => s?.status === 'completed').length}
                         </div>
                         <div className="text-xs text-zinc-400">Completed</div>
                       </div>
                       <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
                         <div className="text-2xl font-bold text-amber-500/90">
-                          {sessions.filter(s => s.status === 'pending').length}
+                          {sessions.filter(s => s?.status === 'pending').length}
                         </div>
                         <div className="text-xs text-zinc-400">Pending</div>
                       </div>
                       <div className="bg-zinc-800/80 border border-zinc-700/30 rounded-md p-3 text-center shadow-sm">
                         <div className="text-2xl font-bold text-red-500/90">
-                          {sessions.filter(s => s.status === 'cancelled').length}
+                          {sessions.filter(s => s?.status === 'cancelled').length}
                         </div>
                         <div className="text-xs text-zinc-400">Cancelled</div>
                       </div>
