@@ -2077,6 +2077,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin endpoint to manually verify QR code payments
+  app.post("/api/admin/verify-qr-payment", isAdmin, async (req, res) => {
+    try {
+      const { orderId, paymentId, sessionId, manualVerificationNotes } = req.body;
+      
+      if (!req.session.adminUser) {
+        return res.status(401).json({ 
+          success: false,
+          message: "Unauthorized. Admin access required." 
+        });
+      }
+      
+      // Validate that we have either orderId or sessionId
+      if (!orderId && !sessionId) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Either order ID or session ID is required" 
+        });
+      }
+      
+      if (!paymentId) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Payment ID is required" 
+        });
+      }
+      
+      // Find session either by direct ID or by parsing the Razorpay order ID
+      let session: any = null;
+      
+      if (sessionId) {
+        // Direct session ID provided
+        session = await storage.getProjectGuidance(parseInt(sessionId));
+      } else if (orderId) {
+        // Try to find session from order ID
+        session = await storage.findProjectGuidanceByOrderId(orderId);
+      }
+      
+      if (!session) {
+        return res.status(404).json({ 
+          success: false,
+          message: "Session not found. Please verify the order ID or session ID." 
+        });
+      }
+      
+      // Check if session is already paid
+      if (session.paymentConfirmed) {
+        return res.status(400).json({ 
+          success: false,
+          message: "This session is already marked as paid",
+          session: session
+        });
+      }
+      
+      // Log the manual verification
+      console.log(`Manual QR payment verification by admin ${req.session.adminUser.email}:`, {
+        orderId,
+        paymentId,
+        sessionId: session.id,
+        studentName: session.studentName,
+        email: session.email,
+        date: session.date,
+        notes: manualVerificationNotes || "No notes provided"
+      });
+      
+      // Update payment status in the database
+      const updatedSession = await storage.updateProjectGuidancePayment(
+        session.id, 
+        paymentId || `manual_${Date.now()}`
+      );
+      
+      if (!updatedSession) {
+        return res.status(500).json({ 
+          success: false,
+          message: "Failed to update payment status" 
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "Payment manually verified successfully",
+        session: updatedSession
+      });
+    } catch (error) {
+      console.error("Manual payment verification error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to manually verify payment", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
   // Admin endpoint to cancel a session with full refund
   app.post("/api/admin/cancel-session", isAdmin, async (req, res) => {
     try {
