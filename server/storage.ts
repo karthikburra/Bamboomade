@@ -976,20 +976,20 @@ export class DatabaseStorage implements IStorage {
   async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query to avoid field name mapping issues
-      const result = await db.execute(
-        `SELECT id, user_id as "userId", user_email as "email", username, 
-        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
-        device_info as "deviceInfo", login_time as "loginTime", 
-        last_active_time as "lastActiveTime", logout_time as "logoutTime",
-        login_status as "loginStatus", is_admin as "isAdmin", 
-        session_id as "sessionId", created_at as "createdAt"
+      const result = await db.execute<UserLoginHistory[]>(
+        `SELECT id, "userId", email, username, 
+        "ipAddress", useragent, browser, os, "deviceType",
+        "deviceInfo", "loginTime", 
+        "lastActiveTime", "logoutTime",
+        "loginStatus", "isAdmin", 
+        "sessionId", "createdAt"
         FROM user_login_history
-        WHERE user_id = $1
-        ORDER BY login_time DESC;`,
+        WHERE "userId" = $1
+        ORDER BY "loginTime" DESC;`,
         [userId]
       );
       
-      return result;
+      return result.rows as unknown as UserLoginHistory[];
     } catch (error) {
       console.error("Database error in getUserLoginHistory:", error);
       // Return empty array to prevent UI errors
@@ -1000,19 +1000,18 @@ export class DatabaseStorage implements IStorage {
   async getAllUserLoginHistory(): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query to avoid field name mapping issues
-      const result = await db.execute(
-        `SELECT id, user_id as "userId", user_email as "email", 
-        user_email as "userEmail", username, 
-        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
-        device_info as "deviceInfo", login_time as "loginTime", 
-        last_active_time as "lastActiveTime", logout_time as "logoutTime",
-        login_status as "loginStatus", is_admin as "isAdmin", 
-        session_id as "sessionId", created_at as "createdAt"
+      const result = await db.execute<UserLoginHistory[]>(
+        `SELECT id, "userId", email, email as "userEmail", username, 
+        "ipAddress", useragent, browser, os, "deviceType",
+        "deviceInfo", "loginTime", 
+        "lastActiveTime", "logoutTime",
+        "loginStatus", "isAdmin", 
+        "sessionId", "createdAt"
         FROM user_login_history
-        ORDER BY login_time DESC;`
+        ORDER BY "loginTime" DESC;`
       );
       
-      return result;
+      return result.rows as unknown as UserLoginHistory[];
     } catch (error) {
       console.error("Database error in getAllUserLoginHistory:", error);
       return [];
@@ -1022,20 +1021,19 @@ export class DatabaseStorage implements IStorage {
   async getActiveUserSessions(): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query to avoid field name mapping issues
-      const result = await db.execute(
-        `SELECT id, user_id as "userId", user_email as "email", 
-        user_email as "userEmail", username, 
-        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
-        device_info as "deviceInfo", login_time as "loginTime", 
-        last_active_time as "lastActiveTime", logout_time as "logoutTime",
-        login_status as "loginStatus", is_admin as "isAdmin", 
-        session_id as "sessionId", created_at as "createdAt"
+      const result = await db.execute<UserLoginHistory[]>(
+        `SELECT id, "userId", email, email as "userEmail", username, 
+        "ipAddress", useragent, browser, os, "deviceType",
+        "deviceInfo", "loginTime", 
+        "lastActiveTime", "logoutTime",
+        "loginStatus", "isAdmin", 
+        "sessionId", "createdAt"
         FROM user_login_history
-        WHERE logout_time IS NULL
-        ORDER BY last_active_time DESC;`
+        WHERE "logoutTime" IS NULL
+        ORDER BY "lastActiveTime" DESC;`
       );
       
-      return result;
+      return result.rows as unknown as UserLoginHistory[];
     } catch (error) {
       console.error("Database error in getActiveUserSessions:", error);
       return [];
