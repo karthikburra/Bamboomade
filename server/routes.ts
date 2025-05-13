@@ -379,10 +379,22 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
         return true;
       }
       
-      // If it's a pending session without payment, it's not a conflict
+      // NEW: Allow a 10-minute window for payment processing
+      // Pending sessions temporarily block the slot for 10 minutes
       if (session.status === 'pending' && !session.paymentConfirmed) {
-        console.log(`Not a conflict: Pending session ${session.id} without payment confirmation at ${targetDateStr} ${targetTimeStr}`);
-        return false;
+        // Check if the session was created within the last 10 minutes
+        const creationTime = new Date(session.createdAt);
+        const currentTime = new Date();
+        const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
+        
+        // If the session is less than 10 minutes old, treat it as a conflict
+        if (minutesSinceCreation <= 10) {
+          console.log(`Temporary conflict: Recent pending session ${session.id} is reserving slot at ${targetDateStr} ${targetTimeStr} for ${minutesSinceCreation.toFixed(1)} minutes`);
+          return true;
+        } else {
+          console.log(`Not a conflict: Pending session ${session.id} expired after 10 minutes at ${targetDateStr} ${targetTimeStr}`);
+          return false;
+        }
       }
     }
     
@@ -396,10 +408,21 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
           return true;
         }
         
-        // If it's a pending session without payment, don't consider it a conflict
+        // NEW: Allow a 10-minute window for payment processing for half-hour bookings
         if (session.status === 'pending' && !session.paymentConfirmed) {
-          console.log(`Not a half-hour conflict: Pending session ${session.id} without payment at ${sessionTimeStr}`);
-          return false;
+          // Check if the session was created within the last 10 minutes
+          const creationTime = new Date(session.createdAt);
+          const currentTime = new Date();
+          const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
+          
+          // If the session is less than 10 minutes old, treat it as a conflict
+          if (minutesSinceCreation <= 10) {
+            console.log(`Temporary half-hour conflict: Recent pending session ${session.id} at ${sessionTimeStr} for ${minutesSinceCreation.toFixed(1)} minutes`);
+            return true;
+          } else {
+            console.log(`Not a half-hour conflict: Pending session ${session.id} expired after 10 minutes at ${sessionTimeStr}`);
+            return false;
+          }
         }
       }
     }
@@ -5962,8 +5985,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             confirmedSessionCount++;
           }
           
-          // Still track pending sessions separately for debugging
+          // Handle pending sessions
           if (isPending) {
+            // Track all pending sessions for debugging regardless of age
             if (!pendingSlots[sessionDateStr]) {
               pendingSlots[sessionDateStr] = [];
             }
@@ -5971,6 +5995,27 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             if (!pendingSlots[sessionDateStr].includes(sessionTimeStr)) {
               pendingSlots[sessionDateStr].push(sessionTimeStr);
               pendingSessionCount++;
+            }
+            
+            // NEW: Add to booked slots if pending session is less than 10 minutes old
+            // This gives a 10-minute window for users to complete payment
+            const creationTime = new Date(session.createdAt);
+            const currentTime = new Date();
+            const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
+            
+            if (minutesSinceCreation <= 10) {
+              console.log(`Temporarily blocking slot for recent pending session ${session.id} at ${sessionDateStr} ${sessionTimeStr} (${minutesSinceCreation.toFixed(1)} minutes old)`);
+              
+              // Add to bookedSlots map for the 10-minute window
+              if (!bookedSlots[sessionDateStr]) {
+                bookedSlots[sessionDateStr] = [];
+              }
+              
+              if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+                bookedSlots[sessionDateStr].push(sessionTimeStr);
+              }
+            } else {
+              console.log(`Not blocking slot for expired pending session ${session.id} at ${sessionDateStr} ${sessionTimeStr} (${minutesSinceCreation.toFixed(1)} minutes old)`);
             }
           }
           
