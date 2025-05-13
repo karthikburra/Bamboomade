@@ -111,10 +111,12 @@ export default function UserProfile() {
   const { 
     data: userData, 
     isLoading: isLoadingUser,
-    error: userError
+    error: userError,
+    refetch: refetchUserData
   } = useQuery({
     queryKey: [`/api/users/${userId}`],
     enabled: !isNaN(userId),
+    refetchInterval: 10000, // Refetch every 10 seconds to ensure we have latest data
   });
 
   // Fetch user sessions
@@ -136,6 +138,11 @@ export default function UserProfile() {
     queryKey: [`/api/users/${userId}/login-history`],
     enabled: !isNaN(userId),
   });
+  
+  // Manually trigger refresh of user data
+  const refreshUserData = () => {
+    refetchUserData();
+  };
 
   // Get user's full name
   const getFullName = (user: UserData) => {
@@ -233,35 +240,43 @@ export default function UserProfile() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* User Profile Sidebar */}
         <div className="lg:col-span-4">
-          <Card className="bg-gray-900 border-gray-800">
+          <Card className="bg-zinc-900 border-zinc-800 shadow-lg">
             <CardHeader className="relative pb-0">
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-gray-800 flex items-center justify-center text-3xl font-bold text-white border-2 border-amber-500/50 overflow-hidden">
+                <div className="w-28 h-28 rounded-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-white border-2 border-primary/70 overflow-hidden shadow-md">
                   {user.profileImageUrl ? (
                     <img 
                       src={user.profileImageUrl} 
                       alt={`${user.username}'s profile`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // If image fails to load, show the fallback
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                      }}
                     />
                   ) : (
-                    user.username.charAt(0).toUpperCase()
+                    <span className="animate-pulse">{user.username.charAt(0).toUpperCase()}</span>
                   )}
+                  <span className={`hidden ${!user.profileImageUrl ? 'flex' : ''} text-4xl font-bold items-center justify-center`}>
+                    {user.username.charAt(0).toUpperCase()}
+                  </span>
                 </div>
-                <CardTitle className="mt-4 text-xl text-center">
+                <CardTitle className="mt-4 text-xl text-center text-white">
                   {getFullName(user)}
                 </CardTitle>
-                <CardDescription className="text-center">
-                  {user.username}
+                <CardDescription className="text-center text-zinc-400">
+                  @{user.username}
                 </CardDescription>
                 <div className="flex flex-wrap gap-2 mt-2 justify-center">
-                  <Badge className={user.isVerified ? "bg-green-700" : "bg-gray-700"}>
+                  <Badge className={user.isVerified ? "bg-green-600/80 text-white" : "bg-zinc-700 text-white"}>
                     {user.isVerified ? "Verified" : "Not Verified"}
                   </Badge>
-                  <Badge className={user.role === 'admin' ? "bg-amber-700" : "bg-gray-700"}>
+                  <Badge className={user.role === 'admin' ? "bg-amber-600/80 text-white" : "bg-zinc-700 text-white"}>
                     {user.role === 'admin' ? "Admin" : "User"}
                   </Badge>
                   {user.profileCompleted !== undefined && (
-                    <Badge className={user.profileCompleted ? "bg-blue-700" : "bg-gray-700"}>
+                    <Badge className={user.profileCompleted ? "bg-blue-600/80 text-white" : "bg-zinc-700 text-white"}>
                       {user.profileCompleted ? "Profile Complete" : "Profile Incomplete"}
                     </Badge>
                   )}
@@ -270,30 +285,43 @@ export default function UserProfile() {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-4">
-                <div className="bg-gray-800/50 rounded-md p-4 space-y-3">
-                  <h3 className="text-sm font-medium text-gray-300">Contact Information</h3>
-                  <div className="space-y-2">
+                <div className="bg-zinc-800/60 rounded-md p-4 space-y-3 hover:bg-zinc-800/80 transition-colors duration-200 shadow-sm">
+                  <h3 className="text-sm font-medium text-white/80">Contact Information</h3>
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                      <span>{user.email}</span>
+                      <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                        <Mail className="h-3.5 w-3.5 text-primary/80" />
+                      </div>
+                      <span className="text-zinc-200 font-medium">{user.email}</span>
                     </div>
-                    {user.phone && (
+                    {user.phone ? (
                       <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-4 w-4 text-gray-400" />
-                        <span>{user.phone}</span>
+                        <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                          <Phone className="h-3.5 w-3.5 text-primary/80" />
+                        </div>
+                        <span className="text-zinc-200 font-medium">{user.phone}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm opacity-60">
+                        <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                          <Phone className="h-3.5 w-3.5 text-zinc-400/80" />
+                        </div>
+                        <span className="text-zinc-400 italic">No phone number added</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="bg-gray-800/50 rounded-md p-4 space-y-3">
-                  <h3 className="text-sm font-medium text-gray-300">Account Information</h3>
-                  <div className="space-y-2 text-sm">
+                <div className="bg-zinc-800/60 rounded-md p-4 space-y-3 hover:bg-zinc-800/80 transition-colors duration-200 shadow-sm">
+                  <h3 className="text-sm font-medium text-white/80">Account Information</h3>
+                  <div className="space-y-3 text-sm">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
+                      <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                        <Calendar className="h-3.5 w-3.5 text-primary/80" />
+                      </div>
                       <div className="flex flex-col">
-                        <span>Account Created</span>
-                        <span className="text-gray-400">
+                        <span className="text-zinc-200 font-medium">Account Created</span>
+                        <span className="text-zinc-400">
                           {new Date(user.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -304,10 +332,12 @@ export default function UserProfile() {
                     </div>
                     {user.lastLoginAt && (
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
+                        <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                          <Clock className="h-3.5 w-3.5 text-primary/80" />
+                        </div>
                         <div className="flex flex-col">
-                          <span>Last Login</span>
-                          <span className="text-gray-400">
+                          <span className="text-zinc-200 font-medium">Last Login</span>
+                          <span className="text-zinc-400">
                             {new Date(user.lastLoginAt).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
@@ -320,19 +350,23 @@ export default function UserProfile() {
                       </div>
                     )}
                     <div className="flex items-center gap-2">
-                      <LogIn className="h-4 w-4 text-gray-400" />
+                      <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                        <LogIn className="h-3.5 w-3.5 text-primary/80" />
+                      </div>
                       <div className="flex flex-col">
-                        <span>Login Count</span>
-                        <span className="text-gray-400">
+                        <span className="text-zinc-200 font-medium">Login Count</span>
+                        <span className="text-zinc-400">
                           {totalLogins} logins
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-400" />
+                      <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                        <User className="h-3.5 w-3.5 text-primary/80" />
+                      </div>
                       <div className="flex flex-col">
-                        <span>User ID</span>
-                        <span className="text-gray-400">{user.id}</span>
+                        <span className="text-zinc-200 font-medium">User ID</span>
+                        <span className="text-zinc-400">{user.id}</span>
                       </div>
                     </div>
                   </div>
