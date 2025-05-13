@@ -290,12 +290,8 @@ export default function AdminDashboard() {
       const response = await apiRequest("GET", `/api/admin/login-history/${selectedUserId}`);
       const data = await response.json();
       
-      // Handle both response formats - array or object with loginHistory property
-      if (Array.isArray(data)) {
-        console.log(`Normalized array response from login history endpoint for user ${selectedUserId}`);
-        return { loginHistory: data, totalLogins: data.length };
-      } else if (data && data.loginHistory) {
-        console.log(`Received structured response from login history endpoint for user ${selectedUserId}`);
+      // All endpoints now return a standardized response format
+      if (data && data.loginHistory) {
         return data;
       } else {
         console.log(`Unexpected response format from login history endpoint for user ${selectedUserId}`);
@@ -3317,10 +3313,7 @@ export default function AdminDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(Array.isArray(userLoginHistoryData) 
-                          ? userLoginHistoryData 
-                          : (userLoginHistoryData.loginHistory || [])
-                        ).map((session) => (
+                        {userLoginHistoryData.loginHistory.map((session) => (
                           <TableRow key={session.id} className="hover:bg-gray-800/40 border-b border-gray-800/50 transition-colors">
                             <TableCell>
                               <div className="font-medium text-sm">{session.formattedLoginTime}</div>
