@@ -157,15 +157,8 @@ export default function UserProfile() {
     enabled: !isNaN(userId),
   });
   
-  // Fetch user account details including creation date and login count
-  const {
-    data: accountDetailsData,
-    isLoading: isLoadingAccountDetails,
-    error: accountDetailsError
-  } = useQuery<AccountDetailsResponse>({
-    queryKey: [`/api/users/${userId}/account-details`],
-    enabled: !isNaN(userId),
-  });
+  // Note: Account details are now included directly in the user object from /api/users/:userId
+  // No need for a separate API call
   
   // Manually trigger refresh of user data
   const refreshUserData = () => {
@@ -209,7 +202,7 @@ export default function UserProfile() {
   };
 
   // Show loading state
-  if (isLoadingUser || isLoadingSessions || isLoadingLoginHistory || isLoadingAccountDetails) {
+  if (isLoadingUser || isLoadingSessions || isLoadingLoginHistory) {
     return (
       <div className="container mx-auto p-6 bg-gray-950 text-gray-100">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
