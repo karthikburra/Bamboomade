@@ -946,52 +946,57 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
-      // Match database column names exactly as they appear in the database
-      const [loginRecord] = await db.insert(userLoginHistory)
-        .values({
-          // user_id -> userId (camelCase column in DB)
-          userId: loginData.userId, 
-          userEmail: loginData.email,
-          username: loginData.username || 'unknown',
-          ipAddress: loginData.ipAddress,
-          useragent: loginData.useragent,
-          browser: loginData.browser,
-          os: loginData.os,
-          deviceType: loginData.deviceType,
-          deviceinfo: loginData.deviceInfo,
-          loginstatus: loginData.loginStatus,
-          isadmin: loginData.isAdmin,
-          sessionId: loginData.sessionId,
-          loginTime: new Date(),
-          lastActiveTime: new Date()
-        })
-        .returning();
+      // Use a direct SQL query to avoid column name mapping issues
+      const result = await db.$queryRaw`
+        INSERT INTO user_login_history 
+        (user_id, user_email, username, ip_address, useragent, browser, os, device_type, 
+         device_info, login_status, is_admin, session_id, login_time, last_active_time)
+        VALUES 
+        (${loginData.userId}, ${loginData.email}, ${loginData.username || 'unknown'}, 
+         ${loginData.ipAddress}, ${loginData.useragent}, ${loginData.browser}, 
+         ${loginData.os}, ${loginData.deviceType}, ${JSON.stringify(loginData.deviceInfo)}, 
+         ${loginData.loginStatus}, ${loginData.isAdmin}, ${loginData.sessionId}, 
+         NOW(), NOW())
+        RETURNING *
+      `;
+      
+      // Cast the result to expected type
+      const loginRecord = result[0] as UserLoginHistory;
       
       return loginRecord;
     } catch (error) {
       console.error("Database error in createUserLoginHistory:", error);
-      // Return a minimal object to prevent UI errors
-      return {} as UserLoginHistory;
+      // Return a minimal object to prevent UI errors, 
+      // but ensure essential fields are included
+      return {
+        id: 0,
+        userId: loginData.userId,
+        email: loginData.email,
+        username: loginData.username || 'unknown',
+        loginTime: new Date(),
+        lastActiveTime: new Date(),
+        createdAt: new Date(),
+        isAdmin: loginData.isAdmin || false,
+      } as UserLoginHistory;
     }
   }
 
   async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query to avoid field name mapping issues
-      const result = await db.execute<UserLoginHistory[]>(
-        `SELECT id, "userId", "userEmail" as email, username, 
-        "ipAddress", useragent, browser, os, "deviceType",
-        deviceinfo as "deviceInfo", "loginTime", 
-        "lastActiveTime", "logoutTime",
-        loginstatus as "loginStatus", isadmin as "isAdmin", 
-        "sessionId", "createdAt"
+      const result = await db.$queryRaw`
+        SELECT id, user_id AS "userId", user_email as "email", username, 
+        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
+        device_info as "deviceInfo", login_time as "loginTime", 
+        last_active_time as "lastActiveTime", logout_time as "logoutTime",
+        login_status as "loginStatus", is_admin as "isAdmin", 
+        session_id as "sessionId", created_at as "createdAt"
         FROM user_login_history
-        WHERE "userId" = $1
-        ORDER BY "loginTime" DESC`,
-        [userId]
-      );
+        WHERE user_id = ${userId}
+        ORDER BY login_time DESC
+      `;
       
-      return result.rows as unknown as UserLoginHistory[];
+      return result as UserLoginHistory[];
     } catch (error) {
       console.error("Database error in getUserLoginHistory:", error);
       // Return empty array to prevent UI errors

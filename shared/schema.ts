@@ -319,27 +319,28 @@ export type InsertBambooFact = z.infer<typeof insertBambooFactSchema>;
 // User login history for tracking user activity across deployments
 export const userLoginHistory = pgTable("user_login_history", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  email: text("user_email").notNull(),
+  // Match exact column names as they appear in the database (camelCase)
+  userId: integer("userId").notNull(),
+  email: text("userEmail").notNull(),
   username: text("username").notNull(),
-  ipAddress: text("ip_address"),
-  useragent: text("useragent"), // Changed from userAgent to match DB column
-  loginTime: timestamp("login_time").notNull().defaultNow(),
-  lastActiveTime: timestamp("last_active_time").notNull().defaultNow(),
-  logoutTime: timestamp("logout_time"),
+  ipAddress: text("ipAddress"),
+  useragent: text("useragent"),
+  loginTime: timestamp("loginTime").notNull().defaultNow(),
+  lastActiveTime: timestamp("lastActiveTime").notNull().defaultNow(),
+  logoutTime: timestamp("logoutTime"),
   browser: text("browser"),
   os: text("os"),
-  deviceType: text("device_type"),
-  deviceInfo: json("device_info").$type<{
+  deviceType: text("deviceType"),
+  deviceInfo: json("deviceinfo").$type<{
     browser?: string;
     os?: string;
     device?: string;
     isMobile?: boolean;
   }>(),
-  loginStatus: text("login_status").notNull().default("success"),
-  isAdmin: boolean("is_admin").notNull().default(false),
-  sessionId: text("session_id"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  loginStatus: text("loginstatus").notNull().default("success"),
+  isAdmin: boolean("isadmin").notNull().default(false),
+  sessionId: text("sessionId"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
 
 export const insertUserLoginHistorySchema = createInsertSchema(userLoginHistory).pick({
