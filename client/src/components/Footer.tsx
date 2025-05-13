@@ -140,12 +140,14 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
             &copy; {new Date().getFullYear()} BambooMade. All rights reserved.
           </p>
           <div className="mt-4 text-center">
-            <Link 
+            <a 
               href="/admin-login" 
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-primary-500 hover:text-primary-400 opacity-60 hover:opacity-100"
             >
               Admin
-            </Link>
+            </a>
           </div>
         </div>
       </div>
