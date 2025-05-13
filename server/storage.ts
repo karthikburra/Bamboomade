@@ -946,10 +946,10 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
-      // Insert using camelCase field names directly matching the schema
+      // Match database column names (camelCase) exactly
       const [loginRecord] = await db.insert(userLoginHistory)
         .values({
-          userId: loginData.userId,
+          userId: loginData.userId, 
           userEmail: loginData.email,
           username: loginData.username || 'unknown',
           ipAddress: loginData.ipAddress,
