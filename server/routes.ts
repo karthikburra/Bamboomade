@@ -5320,10 +5320,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           createdAt: userWithExtraInfo.createdAt,
           profileCompleted: userWithExtraInfo.profileCompleted
         };
-        return res.json(safeUserData);
+        return res.json({ user: safeUserData });
       }
       
-      res.json(userWithExtraInfo);
+      // Wrap user data in a 'user' property to match the UserProfileResponse interface
+      res.json({ user: userWithExtraInfo });
     } catch (error) {
       console.error("Error in /api/users/:userId:", error);
       res.status(500).json({ 
