@@ -4580,10 +4580,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         // Get login count for this user
         const loginCount = await storage.getUserLoginCount(user.id);
         
-        // Check if user is a returning user (has multiple successful logins)
+        // Check if user is a returning user (has previous successful logins)
         const loginHistory = await storage.getUserLoginHistory(user.id);
         const successfulLogins = loginHistory.filter(login => login.loginStatus === 'success');
-        const isReturningUser = successfulLogins.length > 1; // More than 1 successful login
+        // Consider a user returning if they have AT LEAST one previous successful login
+        // This matches the logic in the login process
+        const isReturningUser = successfulLogins.length > 0;
         
         usersWithLoginInfo.push({
           ...userWithoutPassword,
