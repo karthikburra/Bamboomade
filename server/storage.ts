@@ -1008,10 +1008,12 @@ export class DatabaseStorage implements IStorage {
   
   async getUserLoginCount(userId: number): Promise<number> {
     try {
+      // Only count successful logins where verification was completed
       const result = await db.$queryRaw`
         SELECT COUNT(*) as login_count
         FROM user_login_history
         WHERE "userId" = ${userId}
+          AND loginstatus = 'success'
       `;
       
       // The result will be an array with one object containing the count
