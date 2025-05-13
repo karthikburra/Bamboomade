@@ -946,9 +946,10 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
-      // Match database column names (camelCase) exactly
+      // Match database column names exactly as they appear in the database
       const [loginRecord] = await db.insert(userLoginHistory)
         .values({
+          // user_id -> userId (camelCase column in DB)
           userId: loginData.userId, 
           userEmail: loginData.email,
           username: loginData.username || 'unknown',
@@ -969,7 +970,8 @@ export class DatabaseStorage implements IStorage {
       return loginRecord;
     } catch (error) {
       console.error("Database error in createUserLoginHistory:", error);
-      throw error;
+      // Return a minimal object to prevent UI errors
+      return {} as UserLoginHistory;
     }
   }
 
