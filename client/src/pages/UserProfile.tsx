@@ -27,10 +27,10 @@ import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { 
   User, Phone, Mail, CalendarClock, Clock, 
-  Video, Calendar, FileText, CheckCircle, XCircle,
+  Video, Calendar, FileText, CheckCircle, XCircle, 
   ArrowLeftRight, Ban, Timer, AlertTriangle, Laptop, 
   Smartphone, ExternalLink, MapPin, Shield, LogIn, History,
-  Activity, LogOut
+  Activity, LogOut, UserPlus
 } from "lucide-react";
 import { LoadingSpinner } from "../components/ui/loading-spinner";
 
@@ -83,6 +83,7 @@ interface LoginHistory {
   };
   loginStatus?: string;
   isAdmin?: boolean;
+  isReturningUser?: boolean;
   createdAt?: string;
 }
 
@@ -633,6 +634,7 @@ export default function UserProfile() {
                             <TableHead className="text-gray-400">Browser</TableHead>
                             <TableHead className="text-gray-400">IP Address</TableHead>
                             <TableHead className="text-gray-400">Verification</TableHead>
+                            <TableHead className="text-gray-400">User Type</TableHead>
                             <TableHead className="text-gray-400 text-right">Status</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -677,6 +679,17 @@ export default function UserProfile() {
                                 ) : (
                                   <Badge className="bg-red-800/30 text-red-400 border-red-800">
                                     <XCircle className="h-3 w-3 mr-1" /> Unverified
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {login.isReturningUser ? (
+                                  <Badge className="bg-amber-800/30 text-amber-400 border-amber-800">
+                                    <History className="h-3 w-3 mr-1" /> Returning
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-purple-800/30 text-purple-400 border-purple-800">
+                                    <UserPlus className="h-3 w-3 mr-1" /> First-time
                                   </Badge>
                                 )}
                               </TableCell>
