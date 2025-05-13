@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet";
 import { useToast } from "../hooks/use-toast";
 import { apiRequest } from "../lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { format } from "date-fns";
 import {
   Card,
@@ -119,6 +119,7 @@ export default function UserProfile() {
   const { id } = useParams();
   const userId = parseInt(id as string);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("info");
 
   // Fetch user data
@@ -220,7 +221,7 @@ export default function UserProfile() {
           <p className="text-gray-400 mb-6">
             The user you're looking for doesn't exist or you don't have permission to view this profile.
           </p>
-          <Button onClick={() => window.history.back()} variant="outline" className="border-gray-700 hover:bg-gray-800">
+          <Button onClick={() => setLocation('/admin-dashboard')} variant="outline" className="border-gray-700 hover:bg-gray-800">
             Go Back
           </Button>
         </div>
@@ -245,7 +246,7 @@ export default function UserProfile() {
           <Button 
             variant="outline" 
             className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-            onClick={() => window.history.back()}
+            onClick={() => setLocation('/admin-dashboard')}
           >
             Back
           </Button>
