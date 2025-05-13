@@ -2501,7 +2501,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if this time slot is already booked
-      const isBooked = await isTimeSlotBooked(parsedDate);
+      // Pass email to exclude pending sessions from the same email
+      console.log(`Checking if time slot is booked with email exclusion: ${email}`);
+      const isBooked = await isTimeSlotBooked(parsedDate, undefined, email);
       if (isBooked) {
         return res.status(400).json({
           message: "Time slot conflict",
@@ -2705,7 +2707,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if this time slot is already booked (excluding the current session)
-      const isBooked = await isTimeSlotBooked(parsedDate, selectedSession.id);
+      // Also pass email to exclude pending sessions from the same email
+      console.log(`Checking for time slot conflicts for rescheduling (email: ${email}, sessionId: ${selectedSession.id})`);
+      const isBooked = await isTimeSlotBooked(parsedDate, selectedSession.id, email);
       if (isBooked) {
         return res.status(400).json({
           message: "Time slot conflict",
