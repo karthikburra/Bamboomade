@@ -1859,7 +1859,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: session.id,
           studentName: session.studentName,
           email: session.email,
-          phone: session.phone,
+          phoneNumber: session.phone, // Map database 'phone' field to 'phoneNumber' for frontend consistency
           date: session.date,
           formattedDate: formatInIST(sessionDate, "MMMM d, yyyy"),
           formattedTime: formatInIST(sessionDate, "HH:mm"),
