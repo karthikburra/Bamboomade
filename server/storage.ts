@@ -946,27 +946,24 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
-      // Create properly mapped data to match database column names
-      const mappedData: any = {
-        user_id: loginData.userId,
-        user_email: loginData.email,
-        username: loginData.username || 'unknown',
-        ip_address: loginData.ipAddress,
-        useragent: loginData.useragent, // Updated from userAgent to useragent
-        browser: loginData.browser,
-        os: loginData.os,
-        device_type: loginData.deviceType,
-        device_info: loginData.deviceInfo, 
-        login_status: loginData.loginStatus,
-        is_admin: loginData.isAdmin,
-        session_id: loginData.sessionId,
-        login_time: new Date(), // Explicitly capture current time
-        last_active_time: new Date() // Set last active time to now
-      };
-      
-      // Insert the record with proper column mapping
+      // Insert using camelCase field names directly matching the schema
       const [loginRecord] = await db.insert(userLoginHistory)
-        .values(mappedData)
+        .values({
+          userId: loginData.userId,
+          email: loginData.email,
+          username: loginData.username || 'unknown',
+          ipAddress: loginData.ipAddress,
+          useragent: loginData.useragent,
+          browser: loginData.browser,
+          os: loginData.os,
+          deviceType: loginData.deviceType,
+          deviceInfo: loginData.deviceInfo,
+          loginStatus: loginData.loginStatus,
+          isAdmin: loginData.isAdmin,
+          sessionId: loginData.sessionId,
+          loginTime: new Date(),
+          lastActiveTime: new Date()
+        })
         .returning();
       
       return loginRecord;
@@ -978,29 +975,19 @@ export class DatabaseStorage implements IStorage {
 
   async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
     try {
-      // Explicitly select all fields to avoid field name issues
-      const result = await db.select({
-        id: userLoginHistory.id,
-        userId: userLoginHistory.userId,
-        email: userLoginHistory.email,
-        username: userLoginHistory.username,
-        ipAddress: userLoginHistory.ipAddress,
-        useragent: userLoginHistory.useragent,
-        browser: userLoginHistory.browser,
-        os: userLoginHistory.os,
-        deviceType: userLoginHistory.deviceType,
-        deviceInfo: userLoginHistory.deviceInfo,
-        loginTime: userLoginHistory.loginTime,
-        lastActiveTime: userLoginHistory.lastActiveTime,
-        logoutTime: userLoginHistory.logoutTime,
-        loginStatus: userLoginHistory.loginStatus,
-        isAdmin: userLoginHistory.isAdmin,
-        sessionId: userLoginHistory.sessionId,
-        createdAt: userLoginHistory.createdAt
-      })
-        .from(userLoginHistory)
-        .where(eq(userLoginHistory.userId, userId))
-        .orderBy(desc(userLoginHistory.loginTime));
+      // Use raw SQL query to avoid field name mapping issues
+      const result = await db.execute(
+        `SELECT id, user_id as "userId", user_email as "email", username, 
+        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
+        device_info as "deviceInfo", login_time as "loginTime", 
+        last_active_time as "lastActiveTime", logout_time as "logoutTime",
+        login_status as "loginStatus", is_admin as "isAdmin", 
+        session_id as "sessionId", created_at as "createdAt"
+        FROM user_login_history
+        WHERE user_id = $1
+        ORDER BY login_time DESC;`,
+        [userId]
+      );
       
       return result;
     } catch (error) {
@@ -1012,29 +999,18 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUserLoginHistory(): Promise<UserLoginHistory[]> {
     try {
-      // Explicitly select all fields to avoid field name issues
-      const result = await db.select({
-        id: userLoginHistory.id,
-        userId: userLoginHistory.userId,
-        email: userLoginHistory.email, 
-        userEmail: userLoginHistory.email, // For compatibility
-        username: userLoginHistory.username,
-        ipAddress: userLoginHistory.ipAddress,
-        useragent: userLoginHistory.useragent,
-        browser: userLoginHistory.browser,
-        os: userLoginHistory.os,
-        deviceType: userLoginHistory.deviceType,
-        deviceInfo: userLoginHistory.deviceInfo,
-        loginTime: userLoginHistory.loginTime,
-        lastActiveTime: userLoginHistory.lastActiveTime,
-        logoutTime: userLoginHistory.logoutTime,
-        loginStatus: userLoginHistory.loginStatus,
-        isAdmin: userLoginHistory.isAdmin,
-        sessionId: userLoginHistory.sessionId,
-        createdAt: userLoginHistory.createdAt
-      })
-        .from(userLoginHistory)
-        .orderBy(desc(userLoginHistory.loginTime));
+      // Use raw SQL query to avoid field name mapping issues
+      const result = await db.execute(
+        `SELECT id, user_id as "userId", user_email as "email", 
+        user_email as "userEmail", username, 
+        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
+        device_info as "deviceInfo", login_time as "loginTime", 
+        last_active_time as "lastActiveTime", logout_time as "logoutTime",
+        login_status as "loginStatus", is_admin as "isAdmin", 
+        session_id as "sessionId", created_at as "createdAt"
+        FROM user_login_history
+        ORDER BY login_time DESC;`
+      );
       
       return result;
     } catch (error) {
@@ -1045,34 +1021,19 @@ export class DatabaseStorage implements IStorage {
 
   async getActiveUserSessions(): Promise<UserLoginHistory[]> {
     try {
-      // Get sessions that have no logout time (active sessions)
-      const result = await db.select({
-        id: userLoginHistory.id,
-        userId: userLoginHistory.userId,
-        email: userLoginHistory.email,
-        username: userLoginHistory.username,
-        ipAddress: userLoginHistory.ipAddress,
-        useragent: userLoginHistory.useragent,
-        browser: userLoginHistory.browser,
-        os: userLoginHistory.os,
-        deviceType: userLoginHistory.deviceType,
-        deviceInfo: userLoginHistory.deviceInfo,
-        loginTime: userLoginHistory.loginTime,
-        lastActiveTime: userLoginHistory.lastActiveTime,
-        logoutTime: userLoginHistory.logoutTime,
-        loginStatus: userLoginHistory.loginStatus,
-        isAdmin: userLoginHistory.isAdmin,
-        sessionId: userLoginHistory.sessionId,
-        createdAt: userLoginHistory.createdAt
-      })
-        .from(userLoginHistory)
-        .where(
-          and(
-            // Check for success login status if it exists
-            isNull(userLoginHistory.logoutTime)
-          )
-        )
-        .orderBy(desc(userLoginHistory.lastActiveTime));
+      // Use raw SQL query to avoid field name mapping issues
+      const result = await db.execute(
+        `SELECT id, user_id as "userId", user_email as "email", 
+        user_email as "userEmail", username, 
+        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
+        device_info as "deviceInfo", login_time as "loginTime", 
+        last_active_time as "lastActiveTime", logout_time as "logoutTime",
+        login_status as "loginStatus", is_admin as "isAdmin", 
+        session_id as "sessionId", created_at as "createdAt"
+        FROM user_login_history
+        WHERE logout_time IS NULL
+        ORDER BY last_active_time DESC;`
+      );
       
       return result;
     } catch (error) {
