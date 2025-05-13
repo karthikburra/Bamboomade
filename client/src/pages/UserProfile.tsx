@@ -270,7 +270,7 @@ export default function UserProfile() {
                 <div className="w-28 h-28 rounded-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-white border-2 border-primary/70 overflow-hidden shadow-md">
                   {user?.profileImageUrl ? (
                     <img 
-                      src={user.profileImageUrl} 
+                      src={user.profileImageUrl.startsWith('/uploads/') ? user.profileImageUrl : `/uploads/${user.profileImageUrl.split('/').pop()}`} 
                       alt={`${user.username || 'User'}'s profile`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
