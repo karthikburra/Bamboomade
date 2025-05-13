@@ -25,6 +25,7 @@ import {
 } from "@/lib/bamboo-ai";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield, ShieldCheck, CheckCircle, XCircle, CalendarClock, Mail, Phone, FileEdit, Info } from "lucide-react";
+import ManualQRPaymentDialog from "./ManualQRPaymentDialog";
 import {
   Table,
   TableBody,
@@ -341,10 +342,13 @@ const AdminDashboard: React.FC = () => {
                                     Paid
                                   </Badge>
                                 ) : (
-                                  <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100">
-                                    <CalendarClock className="h-3 w-3 mr-1" />
-                                    Pending
-                                  </Badge>
+                                  <div className="flex flex-col space-y-2">
+                                    <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 w-fit">
+                                      <CalendarClock className="h-3 w-3 mr-1" />
+                                      Pending
+                                    </Badge>
+                                    <ManualQRPaymentDialog sessionId={session.id} />
+                                  </div>
                                 )}
                               </TableCell>
                             </TableRow>
