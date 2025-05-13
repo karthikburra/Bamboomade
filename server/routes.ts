@@ -5436,6 +5436,54 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
   });
 
   // Get a user's login history
+  // API endpoint to get user account details including creation date and login count
+  app.get("/api/users/:userId/account-details", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // For security, only allow users to see their own account details or admins to see any user's details
+      const isAdminUser = req.session?.adminUser !== undefined;
+      const isOwnProfile = req.session?.userId === userId;
+      
+      if (!isAdminUser && !isOwnProfile) {
+        return res.status(403).json({ message: "You don't have permission to view this user's account details" });
+      }
+      
+      // Get account details for this user
+      const accountDetails = await storage.getUserAccountDetails(userId);
+      
+      // Format the creation date for display in IST timezone
+      const formattedCreationDate = accountDetails.createdAt 
+        ? new Date(accountDetails.createdAt).toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          })
+        : 'Not available';
+      
+      res.json({
+        createdAt: accountDetails.createdAt,
+        formattedCreationDate,
+        loginCount: accountDetails.loginCount
+      });
+    } catch (error) {
+      console.error("Error in /api/users/:userId/account-details:", error);
+      res.status(500).json({ message: "Failed to fetch user account details" });
+    }
+  });
+
   app.get("/api/users/:userId/login-history", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);

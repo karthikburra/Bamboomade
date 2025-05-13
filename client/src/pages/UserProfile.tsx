@@ -114,6 +114,12 @@ interface LoginHistoryResponse {
   totalLogins: number;
 }
 
+interface AccountDetailsResponse {
+  createdAt: string | null;
+  formattedCreationDate: string;
+  loginCount: number;
+}
+
 export default function UserProfile() {
   const { id } = useParams();
   const userId = parseInt(id as string);
@@ -150,6 +156,16 @@ export default function UserProfile() {
     error: loginHistoryError
   } = useQuery<LoginHistoryResponse>({
     queryKey: [`/api/users/${userId}/login-history`],
+    enabled: !isNaN(userId),
+  });
+  
+  // Fetch user account details including creation date and login count
+  const {
+    data: accountDetailsData,
+    isLoading: isLoadingAccountDetails,
+    error: accountDetailsError
+  } = useQuery<AccountDetailsResponse>({
+    queryKey: [`/api/users/${userId}/account-details`],
     enabled: !isNaN(userId),
   });
   
