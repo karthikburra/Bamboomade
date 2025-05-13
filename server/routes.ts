@@ -5698,10 +5698,15 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         console.log("Sample record fields:", Object.keys(formattedHistory[0]));
       }
       
+      // Get the actual login count from database - this ensures accurate count
+      // even if we're paginating or filtering the login history
+      const loginCount = await storage.getUserLoginCount(userId);
+      console.log(`Total login count for user ${userId} from database: ${loginCount}`);
+      
       // Return in the format expected by the UserProfile component
       res.json({
         loginHistory: formattedHistory,
-        totalLogins: formattedHistory.length
+        totalLogins: loginCount
       });
     } catch (error) {
       console.error(`Failed to get login history for user ${req.params.userId}:`, error);
