@@ -118,6 +118,8 @@ interface User {
   profileImageUrl?: string;
   createdAt: Date;
   lastLoginAt?: Date;
+  isReturningUser?: boolean;
+  loginCount?: number;
 }
 
 export default function AdminDashboard() {
