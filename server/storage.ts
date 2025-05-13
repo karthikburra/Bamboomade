@@ -458,6 +458,31 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
+  
+  // Find project guidance sessions by Razorpay order ID
+  async findProjectGuidanceByOrderId(orderId: string): Promise<ProjectGuidance | undefined> {
+    try {
+      // Extract session ID from our custom order ID format if present
+      // Format: BAMBOO_sessionId_timestamp
+      let sessionId = null;
+      const orderIdParts = orderId.split('_');
+      
+      // Check for our specific format
+      if (orderIdParts[0] === 'BAMBOO' && orderIdParts.length >= 3 && orderIdParts[1] !== 'RANDOM') {
+        // The session ID is the second part (index 1)
+        sessionId = orderIdParts[1];
+        
+        if (sessionId && !isNaN(parseInt(sessionId))) {
+          return await this.getProjectGuidance(parseInt(sessionId));
+        }
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error("Database error in findProjectGuidanceByOrderId:", error);
+      return undefined;
+    }
+  }
 
   async createProjectGuidance(insertSession: InsertProjectGuidance): Promise<ProjectGuidance> {
     try {
