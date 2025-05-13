@@ -952,13 +952,13 @@ export class DatabaseStorage implements IStorage {
       const result = await db.$queryRaw`
         INSERT INTO user_login_history 
         ("userId", "userEmail", username, "ipAddress", useragent, browser, os, "deviceType", 
-         deviceinfo, loginstatus, isadmin, "sessionId", "loginTime", "lastActiveTime")
+         deviceinfo, loginstatus, isadmin, "sessionId", "loginTime", "lastActiveTime", "isreturninguser")
         VALUES 
         (${loginData.userId}, ${loginData.email}, ${loginData.username || 'unknown'}, 
          ${loginData.ipAddress}, ${loginData.useragent}, ${loginData.browser}, 
          ${loginData.os}, ${loginData.deviceType}, ${JSON.stringify(loginData.deviceInfo)}, 
          ${loginData.loginStatus}, ${loginData.isAdmin}, ${loginData.sessionId}, 
-         NOW(), NOW())
+         NOW(), NOW(), ${loginData.isReturningUser || false})
         RETURNING *
       `;
       
@@ -980,6 +980,7 @@ export class DatabaseStorage implements IStorage {
         lastActiveTime: new Date(),
         createdAt: new Date(),
         isAdmin: loginData.isAdmin || false,
+        isReturningUser: loginData.isReturningUser || false,
       } as UserLoginHistory;
     }
   }
@@ -992,7 +993,7 @@ export class DatabaseStorage implements IStorage {
         "ipAddress", useragent, browser, os, "deviceType",
         deviceinfo as "deviceInfo", "loginTime", "lastActiveTime", "logoutTime",
         loginstatus as "loginStatus", isadmin as "isAdmin", 
-        "sessionId", "createdAt"
+        "sessionId", "createdAt", "isreturninguser" as "isReturningUser"
         FROM user_login_history
         WHERE "userId" = ${userId}
         ORDER BY "loginTime" DESC
@@ -1056,7 +1057,7 @@ export class DatabaseStorage implements IStorage {
         deviceinfo as "deviceInfo", "loginTime", 
         "lastActiveTime", "logoutTime",
         loginstatus as "loginStatus", isadmin as "isAdmin", 
-        "sessionId", "createdAt"
+        "sessionId", "createdAt", "isreturninguser" as "isReturningUser"
         FROM user_login_history
         ORDER BY "loginTime" DESC;`
       );
