@@ -5003,10 +5003,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         isActive: !record.logoutTime
       }));
       
+      // Get the total number of successful logins from all users
+      const totalSuccessfulLogins = await storage.getTotalSuccessfulLogins();
+      console.log(`Total successful logins across all users: ${totalSuccessfulLogins}`);
+      
       // Return in a structured format for consistency with other endpoints
       res.json({
         loginHistory: formattedHistory,
-        totalLogins: formattedHistory.length
+        totalLogins: totalSuccessfulLogins
       });
     } catch (error) {
       console.error("Failed to get login history:", error);
