@@ -113,9 +113,9 @@ interface User {
   role: 'user' | 'admin';
   isVerified: boolean;
   profileCompleted: boolean;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  profileImageUrl?: string;
   createdAt: Date;
   lastLoginAt?: Date;
 }
@@ -1793,9 +1793,9 @@ export default function AdminDashboard() {
                                     )}
                                   </div>
                                   <div className="flex flex-col">
-                                    {(user.firstName || user.lastName) && (
+                                    {user.fullName && (
                                       <span className="font-medium text-amber-400">
-                                        {[user.firstName, user.lastName].filter(Boolean).join(' ')}
+                                        {user.fullName}
                                       </span>
                                     )}
                                     <span>{user.username}</span>
@@ -1809,10 +1809,10 @@ export default function AdminDashboard() {
                                     <Mail className="h-3.5 w-3.5 text-gray-400" />
                                     <span>{user.email}</span>
                                   </div>
-                                  {user.phone && (
+                                  {user.phoneNumber && (
                                     <div className="flex items-center gap-1.5">
                                       <Phone className="h-3.5 w-3.5 text-gray-400" />
-                                      <span>{user.phone}</span>
+                                      <span>{user.phoneNumber}</span>
                                     </div>
                                   )}
                                 </div>
