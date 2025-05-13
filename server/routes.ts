@@ -4671,9 +4671,17 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Get all sessions by user email
-      const sessions = await storage.getProjectGuidancesByEmail(user.email);
+      const rawSessions = await storage.getProjectGuidancesByEmail(user.email);
+      
+      // Map database 'phone' field to 'phoneNumber' for client consistency
+      const sessions = rawSessions.map(session => ({
+        ...session,
+        phoneNumber: session.phone
+      }));
+
+
       
       res.json({
         success: true,
@@ -5346,9 +5354,17 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(403).json({ message: "You don't have permission to view this user's sessions" });
       }
       
+
       // Get all sessions by user email
-      const sessions = await storage.getProjectGuidancesByEmail(user.email);
+      const rawSessions = await storage.getProjectGuidancesByEmail(user.email);
       
+      // Map database 'phone' field to 'phoneNumber' for client consistency
+      const sessions = rawSessions.map(session => ({
+        ...session,
+        phoneNumber: session.phone
+      }));
+
+
       res.json({
         success: true,
         sessions
