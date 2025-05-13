@@ -4899,7 +4899,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         isActive: !record.logoutTime
       }));
       
-      res.json(formattedHistory);
+      // Return in a structured format for consistency with other endpoints
+      res.json({
+        loginHistory: formattedHistory,
+        totalLogins: formattedHistory.length
+      });
     } catch (error) {
       console.error("Failed to get login history:", error);
       res.status(500).json({ message: "Failed to get login history", error: (error as Error).message });
@@ -4954,7 +4958,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         isActive: !record.logoutTime
       }));
       
-      res.json(formattedHistory);
+      // Return in a structured format for consistency with other endpoints
+      res.json({
+        loginHistory: formattedHistory,
+        totalLogins: formattedHistory.length
+      });
     } catch (error) {
       console.error(`Failed to get login history for user ${req.params.userId}:`, error);
       res.status(500).json({ message: "Failed to get user login history", error: (error as Error).message });

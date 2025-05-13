@@ -3298,8 +3298,7 @@ export default function AdminDashboard() {
             ) : (
               <>
                 {!userLoginHistoryData || 
-                  (Array.isArray(userLoginHistoryData) && userLoginHistoryData.length === 0) ||
-                  (userLoginHistoryData.loginHistory && userLoginHistoryData.loginHistory.length === 0) ? (
+                  (!userLoginHistoryData.loginHistory || userLoginHistoryData.loginHistory.length === 0) ? (
                   <div className="p-6 text-center bg-gray-900/50 rounded-lg border border-gray-800">
                     <Info className="h-8 w-8 text-purple-500 mx-auto mb-2" />
                     <p className="text-gray-300 mb-2">No login history found</p>
