@@ -18,6 +18,8 @@ export const users = pgTable("users", {
   fullName: text("full_name"),
   profileImageUrl: text("profile_image_url"),
   phoneNumber: text("phone_number"),
+  // Add account creation timestamp
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
