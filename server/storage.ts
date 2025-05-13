@@ -985,7 +985,7 @@ export class DatabaseStorage implements IStorage {
         "sessionId", "createdAt"
         FROM user_login_history
         WHERE "userId" = $1
-        ORDER BY "loginTime" DESC;`,
+        ORDER BY "loginTime" DESC`,
         [userId]
       );
       

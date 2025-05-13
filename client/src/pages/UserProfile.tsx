@@ -292,7 +292,7 @@ export default function UserProfile() {
                   </span>
                 </div>
                 <CardTitle className="mt-4 text-xl text-center text-white">
-                  {user?.firstName || user?.lastName ? getFullName(user) : (user?.username || 'User')}
+                  {user?.fullName ? user.fullName : (user?.username || 'User')}
                 </CardTitle>
                 <CardDescription className="text-center text-zinc-400">
                   {user?.username ? `@${user.username}` : ''}
