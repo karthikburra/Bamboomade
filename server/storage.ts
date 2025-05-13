@@ -1020,7 +1020,7 @@ export class DatabaseStorage implements IStorage {
         userEmail: userLoginHistory.email, // For compatibility
         username: userLoginHistory.username,
         ipAddress: userLoginHistory.ipAddress,
-        userAgent: userLoginHistory.userAgent,
+        useragent: userLoginHistory.useragent,
         browser: userLoginHistory.browser,
         os: userLoginHistory.os,
         deviceType: userLoginHistory.deviceType,

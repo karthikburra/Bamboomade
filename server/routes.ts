@@ -1713,7 +1713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 email: user.email,
                 username: user.username || 'admin',
                 ipAddress,
-                userAgent,
+                useragent: userAgent,
                 browser: deviceInfo.browser,
                 os: deviceInfo.os,
                 deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
