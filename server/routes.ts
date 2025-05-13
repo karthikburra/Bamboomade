@@ -4570,13 +4570,29 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Get all users for admin management
       // Note: In a real app with many users, you would implement pagination
       const allUsers = await storage.getAllUsers();
-      const users = allUsers.map(user => {
+      
+      // Process users sequentially to add login count and returning status
+      const usersWithLoginInfo = [];
+      for (const user of allUsers) {
         // Don't return password in response
         const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
+        
+        // Get login count for this user
+        const loginCount = await storage.getUserLoginCount(user.id);
+        
+        // Check if user is a returning user (has multiple successful logins)
+        const loginHistory = await storage.getUserLoginHistory(user.id);
+        const successfulLogins = loginHistory.filter(login => login.loginStatus === 'success');
+        const isReturningUser = successfulLogins.length > 1; // More than 1 successful login
+        
+        usersWithLoginInfo.push({
+          ...userWithoutPassword,
+          loginCount,
+          isReturningUser
+        });
+      }
       
-      res.json(users);
+      res.json(usersWithLoginInfo);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users", error: (error as Error).message });
     }

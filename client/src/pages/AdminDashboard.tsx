@@ -1806,6 +1806,7 @@ export default function AdminDashboard() {
                             <TableHead className="text-gray-300">Contact Info</TableHead>
                             <TableHead className="text-gray-300">Role</TableHead>
                             <TableHead className="text-gray-300">Status</TableHead>
+                            <TableHead className="text-gray-300">User Type</TableHead>
                             <TableHead className="text-gray-300 text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
