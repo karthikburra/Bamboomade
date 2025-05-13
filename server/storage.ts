@@ -950,16 +950,16 @@ export class DatabaseStorage implements IStorage {
       const [loginRecord] = await db.insert(userLoginHistory)
         .values({
           userId: loginData.userId,
-          email: loginData.email,
+          userEmail: loginData.email,
           username: loginData.username || 'unknown',
           ipAddress: loginData.ipAddress,
           useragent: loginData.useragent,
           browser: loginData.browser,
           os: loginData.os,
           deviceType: loginData.deviceType,
-          deviceInfo: loginData.deviceInfo,
-          loginStatus: loginData.loginStatus,
-          isAdmin: loginData.isAdmin,
+          deviceinfo: loginData.deviceInfo,
+          loginstatus: loginData.loginStatus,
+          isadmin: loginData.isAdmin,
           sessionId: loginData.sessionId,
           loginTime: new Date(),
           lastActiveTime: new Date()
@@ -977,11 +977,11 @@ export class DatabaseStorage implements IStorage {
     try {
       // Use raw SQL query to avoid field name mapping issues
       const result = await db.execute<UserLoginHistory[]>(
-        `SELECT id, "userId", email, username, 
+        `SELECT id, "userId", "userEmail" as email, username, 
         "ipAddress", useragent, browser, os, "deviceType",
-        "deviceInfo", "loginTime", 
+        deviceinfo as "deviceInfo", "loginTime", 
         "lastActiveTime", "logoutTime",
-        "loginStatus", "isAdmin", 
+        loginstatus as "loginStatus", isadmin as "isAdmin", 
         "sessionId", "createdAt"
         FROM user_login_history
         WHERE "userId" = $1
@@ -1001,11 +1001,11 @@ export class DatabaseStorage implements IStorage {
     try {
       // Use raw SQL query to avoid field name mapping issues
       const result = await db.execute<UserLoginHistory[]>(
-        `SELECT id, "userId", email, email as "userEmail", username, 
+        `SELECT id, "userId", "userEmail", "userEmail" as email, username, 
         "ipAddress", useragent, browser, os, "deviceType",
-        "deviceInfo", "loginTime", 
+        deviceinfo as "deviceInfo", "loginTime", 
         "lastActiveTime", "logoutTime",
-        "loginStatus", "isAdmin", 
+        loginstatus as "loginStatus", isadmin as "isAdmin", 
         "sessionId", "createdAt"
         FROM user_login_history
         ORDER BY "loginTime" DESC;`
@@ -1022,11 +1022,11 @@ export class DatabaseStorage implements IStorage {
     try {
       // Use raw SQL query to avoid field name mapping issues
       const result = await db.execute<UserLoginHistory[]>(
-        `SELECT id, "userId", email, email as "userEmail", username, 
+        `SELECT id, "userId", "userEmail", "userEmail" as email, username, 
         "ipAddress", useragent, browser, os, "deviceType",
-        "deviceInfo", "loginTime", 
+        deviceinfo as "deviceInfo", "loginTime", 
         "lastActiveTime", "logoutTime",
-        "loginStatus", "isAdmin", 
+        loginstatus as "loginStatus", isadmin as "isAdmin", 
         "sessionId", "createdAt"
         FROM user_login_history
         WHERE "logoutTime" IS NULL
