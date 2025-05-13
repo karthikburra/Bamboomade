@@ -93,7 +93,7 @@ interface Session {
   formattedTime: string;
   date: string;
   email: string; // Used for web search functionality
-  phone: string;
+  phoneNumber: string; // Updated from phone to phoneNumber for consistency
   topic: string;
   notes: string;
   duration: number;
@@ -595,7 +595,7 @@ export default function AdminDashboard() {
         formattedTime,
         date: session.date,
         email: session.email,
-        phone: session.phone,
+        phoneNumber: session.phoneNumber,
         topic: session.topic,
         notes: session.notes || "",
         duration: session.duration,
@@ -1160,7 +1160,7 @@ export default function AdminDashboard() {
                                       </Button>
                                     </div>
                                     <div className="flex items-center text-xs text-gray-300">
-                                      <Phone className="w-3 h-3 mr-1" /> {session.phone}
+                                      <Phone className="w-3 h-3 mr-1" /> {session.phoneNumber}
                                     </div>
                                   </TableCell>
                                   <TableCell>
