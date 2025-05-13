@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { Loader2, User, Upload } from "lucide-react";
 
 const ProfileEdit: React.FC = () => {
   const [location, navigate] = useLocation();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   
   const [fullName, setFullName] = useState("");
@@ -140,6 +141,9 @@ const ProfileEdit: React.FC = () => {
       const data = await response.json();
       
       if (response.ok) {
+        // Invalidate the user data query to refresh it immediately
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+        
         toast({
           title: "Profile Updated",
           description: "Your profile has been updated successfully!",
