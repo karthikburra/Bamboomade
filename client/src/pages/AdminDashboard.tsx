@@ -286,9 +286,21 @@ export default function AdminDashboard() {
   const { data: userLoginHistoryData, isLoading: isUserLoginHistoryLoading } = useQuery({
     queryKey: ["/api/admin/login-history", selectedUserId],
     queryFn: async () => {
-      if (!selectedUserId) return [];
+      if (!selectedUserId) return { loginHistory: [], totalLogins: 0 };
       const response = await apiRequest("GET", `/api/admin/login-history/${selectedUserId}`);
-      return response.json();
+      const data = await response.json();
+      
+      // Handle both response formats - array or object with loginHistory property
+      if (Array.isArray(data)) {
+        console.log(`Normalized array response from login history endpoint for user ${selectedUserId}`);
+        return { loginHistory: data, totalLogins: data.length };
+      } else if (data && data.loginHistory) {
+        console.log(`Received structured response from login history endpoint for user ${selectedUserId}`);
+        return data;
+      } else {
+        console.log(`Unexpected response format from login history endpoint for user ${selectedUserId}`);
+        return { loginHistory: [], totalLogins: 0 };
+      }
     },
     enabled: !!selectedUserId && isUserHistoryDialogOpen,
   });
@@ -3285,7 +3297,9 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <>
-                {!userLoginHistoryData || userLoginHistoryData.length === 0 ? (
+                {!userLoginHistoryData || 
+                  (Array.isArray(userLoginHistoryData) && userLoginHistoryData.length === 0) ||
+                  (userLoginHistoryData.loginHistory && userLoginHistoryData.loginHistory.length === 0) ? (
                   <div className="p-6 text-center bg-gray-900/50 rounded-lg border border-gray-800">
                     <Info className="h-8 w-8 text-purple-500 mx-auto mb-2" />
                     <p className="text-gray-300 mb-2">No login history found</p>
@@ -3304,7 +3318,10 @@ export default function AdminDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {userLoginHistoryData.map((session) => (
+                        {(Array.isArray(userLoginHistoryData) 
+                          ? userLoginHistoryData 
+                          : (userLoginHistoryData.loginHistory || [])
+                        ).map((session) => (
                           <TableRow key={session.id} className="hover:bg-gray-800/40 border-b border-gray-800/50 transition-colors">
                             <TableCell>
                               <div className="font-medium text-sm">{session.formattedLoginTime}</div>
