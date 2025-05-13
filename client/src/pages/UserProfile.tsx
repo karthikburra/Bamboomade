@@ -211,7 +211,7 @@ export default function UserProfile() {
   };
 
   // Show loading state
-  if (isLoadingUser || isLoadingSessions || isLoadingLoginHistory) {
+  if (isLoadingUser || isLoadingSessions || isLoadingLoginHistory || isLoadingAccountDetails) {
     return (
       <div className="container mx-auto p-6 bg-gray-950 text-gray-100">
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -245,6 +245,13 @@ export default function UserProfile() {
 
   const loginHistory: LoginHistory[] = loginHistoryData?.loginHistory || [];
   const totalLogins = loginHistoryData?.totalLogins || 0;
+  
+  // Extract account details
+  const accountCreationDate = accountDetailsData?.formattedCreationDate || 
+                             (user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                               year: 'numeric', month: 'long', day: 'numeric'
+                             }) : 'Not available');
+  const loginCount = accountDetailsData?.loginCount || 0;
 
   return (
     <div className="container mx-auto p-6 bg-zinc-950 text-zinc-100 min-h-screen">
@@ -362,11 +369,18 @@ export default function UserProfile() {
                       <div className="flex flex-col">
                         <span className="text-zinc-200 font-medium">Account Created</span>
                         <span className="text-zinc-400">
-                          {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          }) : 'Not available'}
+                          {accountCreationDate}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                        <LogIn className="h-3.5 w-3.5 text-primary/80" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-zinc-200 font-medium">Login Count</span>
+                        <span className="text-zinc-400">
+                          {loginCount} {loginCount === 1 ? 'time' : 'times'}
                         </span>
                       </div>
                     </div>
