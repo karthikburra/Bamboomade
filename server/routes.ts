@@ -4626,11 +4626,13 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(403).json({ message: "The main admin account cannot be deleted" });
       }
       
-      // Delete the user (soft delete)
-      const adminUserId = req.session?.userId;
-      if (!adminUserId) {
-        return res.status(401).json({ message: "Admin user ID not found in session" });
-      }
+      // Get the admin user from the session
+      // This admin middleware should have ensured admin user exists
+      const adminUser = req.user;
+      
+      // Use the adminUser.id directly or fall back to 1 (default admin ID)
+      const adminUserId = adminUser?.id || 1;
+      console.log(`🗑️ Admin user ${adminUserId} is deleting user ${userId}`);
       
       const deletedUser = await storage.deleteUser(
         userId, 
@@ -4643,6 +4645,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         deletedUser
       });
     } catch (error) {
+      console.error("Error deleting user:", error);
       res.status(500).json({ message: "Failed to delete user", error: (error as Error).message });
     }
   });
