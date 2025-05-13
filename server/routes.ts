@@ -4627,12 +4627,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       }
       
       // Get the admin user from the session
-      // This admin middleware should have ensured admin user exists
-      const adminUser = req.user;
+      // The isAdmin middleware ensures adminUser exists in the session
+      const adminUser = req.session.adminUser;
       
       // Use the adminUser.id directly or fall back to 1 (default admin ID)
       const adminUserId = adminUser?.id || 1;
-      console.log(`🗑️ Admin user ${adminUserId} is deleting user ${userId}`);
+      console.log(`🗑️ Admin user ${adminUserId} (${adminUser?.email}) is deleting user ${userId}`);
       
       const deletedUser = await storage.deleteUser(
         userId, 
