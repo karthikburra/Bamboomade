@@ -29,7 +29,8 @@ import {
   User, Phone, Mail, CalendarClock, Clock, 
   Video, Calendar, FileText, CheckCircle, XCircle,
   ArrowLeftRight, Ban, Timer, AlertTriangle, Laptop, 
-  Smartphone, ExternalLink, MapPin, Shield, LogIn, History
+  Smartphone, ExternalLink, MapPin, Shield, LogIn, History,
+  Activity, LogOut
 } from "lucide-react";
 import { LoadingSpinner } from "../components/ui/loading-spinner";
 
@@ -630,6 +631,8 @@ export default function UserProfile() {
                             <TableHead className="text-gray-400">Date & Time</TableHead>
                             <TableHead className="text-gray-400">Device</TableHead>
                             <TableHead className="text-gray-400">Browser</TableHead>
+                            <TableHead className="text-gray-400">IP Address</TableHead>
+                            <TableHead className="text-gray-400">Verification</TableHead>
                             <TableHead className="text-gray-400 text-right">Status</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -663,15 +666,28 @@ export default function UserProfile() {
                                 {/* Use either browser from DB or from deviceInfo */}
                                 {login.browser || login.deviceInfo?.browser || 'Unknown'}
                               </TableCell>
-                              <TableCell className="text-right">
-                                {/* Default to success if not specified */}
+                              <TableCell className="text-gray-400 text-xs">
+                                {login.ipAddress || 'Not recorded'}
+                              </TableCell>
+                              <TableCell>
                                 {(!login.loginStatus || login.loginStatus === 'success') ? (
                                   <Badge className="bg-green-800/30 text-green-400 border-green-800">
-                                    <CheckCircle className="h-3 w-3 mr-1" /> Success
+                                    <CheckCircle className="h-3 w-3 mr-1" /> Verified
                                   </Badge>
                                 ) : (
                                   <Badge className="bg-red-800/30 text-red-400 border-red-800">
-                                    <XCircle className="h-3 w-3 mr-1" /> Failed
+                                    <XCircle className="h-3 w-3 mr-1" /> Unverified
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {login.logoutTime ? (
+                                  <Badge className="bg-gray-700/30 text-gray-400 border-gray-700">
+                                    <LogOut className="h-3 w-3 mr-1" /> Logged out
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-blue-800/30 text-blue-400 border-blue-800">
+                                    <Activity className="h-3 w-3 mr-1" /> Active
                                   </Badge>
                                 )}
                               </TableCell>
