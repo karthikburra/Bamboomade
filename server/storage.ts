@@ -1078,7 +1078,7 @@ export class DatabaseStorage implements IStorage {
         deviceinfo as "deviceInfo", "loginTime", 
         "lastActiveTime", "logoutTime",
         loginstatus as "loginStatus", isadmin as "isAdmin", 
-        "sessionId", "createdAt"
+        "sessionId", "createdAt", "isreturninguser" as "isReturningUser"
         FROM user_login_history
         WHERE "logoutTime" IS NULL
         ORDER BY "lastActiveTime" DESC;`
