@@ -3008,36 +3008,28 @@ export default function AdminDashboard() {
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
-                    <Input
-                      id="firstName"
-                      placeholder="First name"
-                      defaultValue={selectedUser?.firstName || ''}
-                      className="bg-gray-800 border-gray-700 text-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      placeholder="Last name"
-                      defaultValue={selectedUser?.lastName || ''}
-                      className="bg-gray-800 border-gray-700 text-white"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium">
+                    <User className="h-3.5 w-3.5 inline-block mr-1.5" />
+                    Full Name
+                  </Label>
+                  <Input
+                    id="fullName"
+                    placeholder="Full name"
+                    defaultValue={selectedUser?.fullName || ''}
+                    className="bg-gray-800 border-gray-700 text-white"
+                  />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium">
+                  <Label htmlFor="phoneNumber" className="text-sm font-medium">
                     <Phone className="h-3.5 w-3.5 inline-block mr-1.5" />
                     Phone Number
                   </Label>
                   <Input
-                    id="phone"
+                    id="phoneNumber"
                     placeholder="Phone number"
-                    defaultValue={selectedUser?.phone || ''}
+                    defaultValue={selectedUser?.phoneNumber || ''}
                     className="bg-gray-800 border-gray-700 text-white"
                   />
                 </div>
@@ -3087,9 +3079,8 @@ export default function AdminDashboard() {
                   if (!selectedUser) return;
                   
                   const username = (document.getElementById('username') as HTMLInputElement)?.value;
-                  const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value;
-                  const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value;
-                  const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+                  const fullName = (document.getElementById('fullName') as HTMLInputElement)?.value;
+                  const phoneNumber = (document.getElementById('phoneNumber') as HTMLInputElement)?.value;
                   const profileImageUrl = (document.getElementById('profileImageUrl') as HTMLInputElement)?.value;
                   
                   // Update user mutation
@@ -3098,9 +3089,8 @@ export default function AdminDashboard() {
                       userId: number;
                       updates: {
                         username?: string;
-                        firstName?: string;
-                        lastName?: string;
-                        phone?: string;
+                        fullName?: string;
+                        phoneNumber?: string;
                         profileImageUrl?: string;
                       };
                     }) => {
@@ -3133,9 +3123,8 @@ export default function AdminDashboard() {
                     userId: selectedUser.id,
                     updates: {
                       username,
-                      firstName: firstName || undefined,
-                      lastName: lastName || undefined,
-                      phone: phone || undefined,
+                      fullName: fullName || undefined,
+                      phoneNumber: phoneNumber || undefined,
                       profileImageUrl: profileImageUrl || undefined
                     }
                   })
