@@ -1013,24 +1013,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post("/api/auth/register", validateRequest(insertUserSchema), async (req, res) => {
     try {
+      // Check if a user with this email already exists
+      console.log(`🔍 Checking if email already exists: ${req.body.email}`);
       const existingUser = await storage.getUserByEmail(req.body.email);
+      
       if (existingUser) {
-        return res.status(400).json({ message: "User with this email already exists" });
+        console.log(`⚠️ User with email ${req.body.email} already exists with ID: ${existingUser.id}`);
+        return res.status(400).json({ 
+          message: "User with this email already exists. Please log in instead.",
+          existingUser: true
+        });
       }
       
       // Hash the password before storing
       const userData = { ...req.body };
       userData.password = await bcrypt.hash(userData.password, 10);
+      console.log(`🔐 Password hashed for new user with email: ${userData.email}`);
+      
+      // Explicitly set creation date for tracking new users
+      userData.createdAt = new Date();
+      console.log(`📅 Setting account creation date: ${userData.createdAt.toISOString()}`);
       
       // Check if this is the admin email
       const isAdminUser = userData.email.toLowerCase() === "info@bamboomade.in";
       if (isAdminUser) {
+        console.log(`👑 Admin email detected: ${userData.email}`);
         userData.role = "admin";
         userData.isVerified = true; // Admin users are automatically verified
       } else {
         // Generate verification code
         const { generateVerificationCode } = await import('./verification-utils');
         const verificationCode = generateVerificationCode(6);
+        console.log(`🔑 Generated verification code for new user: ${verificationCode}`);
         
         // Set verification fields
         userData.isVerified = false;
@@ -1038,6 +1052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userData.verificationCodeExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       }
       
+      console.log(`👤 Creating new user with email: ${userData.email}`);
       const user = await storage.createUser(userData);
       
       // If not admin, send verification email
@@ -1271,8 +1286,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByEmail(email);
       
       if (!user) {
-        console.log(`❌ User not found with email: ${email}`);
-        return res.status(401).json({ message: "Invalid credentials" });
+        console.log(`❌ User not found with email: ${email}. Prompting to create an account.`);
+        return res.status(401).json({ 
+          message: "No account found with this email. Please register first.",
+          newUser: true,
+          email
+        });
       }
       
       console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
