@@ -5449,14 +5449,51 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       }
       
       // Get login history for this user
-      const loginHistory = await storage.getUserLoginHistory(userId);
+      const userLoginHistory = await storage.getUserLoginHistory(userId);
       
+      // Format login history with needed fields for display
+      const formattedHistory = userLoginHistory.map(record => ({
+        ...record,
+        formattedLoginTime: new Date(record.loginTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }),
+        formattedLastActiveTime: record.lastActiveTime ? new Date(record.lastActiveTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        formattedLogoutTime: record.logoutTime ? new Date(record.logoutTime).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        }) : null,
+        duration: record.logoutTime ? 
+          Math.round((new Date(record.logoutTime).getTime() - new Date(record.loginTime).getTime()) / 60000) : 
+          null, // Duration in minutes if session is complete
+        isActive: !record.logoutTime
+      }));
+      
+      // Return in the format expected by the UserProfile component
       res.json({
-        success: true,
-        loginHistory,
-        totalLogins: loginHistory.length
+        loginHistory: formattedHistory,
+        totalLogins: formattedHistory.length
       });
     } catch (error) {
+      console.error(`Failed to get login history for user ${req.params.userId}:`, error);
       res.status(500).json({ 
         message: "Failed to fetch user login history", 
         error: (error as Error).message 
