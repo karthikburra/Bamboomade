@@ -98,6 +98,8 @@ interface UserData {
   createdAt: string;
   lastLoginAt?: string;
   profileCompleted?: boolean;
+  accountCreationDate?: string; // Added field from basic profile endpoint
+  totalLogins?: number; // Added field from basic profile endpoint
 }
 
 // Interface for API responses
@@ -114,11 +116,7 @@ interface LoginHistoryResponse {
   totalLogins: number;
 }
 
-interface AccountDetailsResponse {
-  createdAt: string | null;
-  formattedCreationDate: string;
-  loginCount: number;
-}
+// Account details now included directly in user response
 
 export default function UserProfile() {
   const { id } = useParams();
@@ -246,12 +244,12 @@ export default function UserProfile() {
   const loginHistory: LoginHistory[] = loginHistoryData?.loginHistory || [];
   const totalLogins = loginHistoryData?.totalLogins || 0;
   
-  // Extract account details
-  const accountCreationDate = accountDetailsData?.formattedCreationDate || 
+  // Extract account details from user object
+  const accountCreationDate = user?.accountCreationDate ||
                              (user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
                                year: 'numeric', month: 'long', day: 'numeric'
                              }) : 'Not available');
-  const loginCount = accountDetailsData?.loginCount || 0;
+  const loginCount = user?.totalLogins || 0;
 
   return (
     <div className="container mx-auto p-6 bg-zinc-950 text-zinc-100 min-h-screen">

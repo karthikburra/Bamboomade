@@ -5437,6 +5437,51 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
 
   // Get a user's login history
   // API endpoint to get user account details including creation date and login count
+  // Endpoint for basic public user account details
+  app.get("/api/users/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Include basic account metrics in the user profile response
+      // to avoid permission issues when viewing other user profiles
+      const accountDetails = await storage.getUserAccountDetails(userId);
+      
+      // Format the creation date for display in IST timezone
+      const formattedCreationDate = accountDetails.createdAt 
+        ? new Date(accountDetails.createdAt).toLocaleString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'Not available';
+      
+      // Clone user and remove sensitive fields
+      const safeUser = { ...user };
+      delete safeUser.password;
+      delete safeUser.verificationCode;
+      delete safeUser.verificationCodeExpires;
+      
+      // Include the account metrics directly in the user object
+      safeUser.accountCreationDate = formattedCreationDate;
+      safeUser.totalLogins = accountDetails.loginCount;
+      
+      res.json({ user: safeUser });
+    } catch (error) {
+      console.error("Error in /api/users/:userId:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Detailed account details for authenticated users only
   app.get("/api/users/:userId/account-details", async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
