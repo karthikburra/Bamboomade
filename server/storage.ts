@@ -91,6 +91,8 @@ export interface IStorage {
   // User Login History operations
   createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory>;
   getUserLoginHistory(userId: number): Promise<UserLoginHistory[]>;
+  getUserLoginCount(userId: number): Promise<number>;
+  getUserAccountDetails(userId: number): Promise<{ createdAt: Date | null, loginCount: number }>;
   getAllUserLoginHistory(): Promise<UserLoginHistory[]>;
   getActiveUserSessions(): Promise<UserLoginHistory[]>;
   updateUserLoginActivity(sessionId: string): Promise<UserLoginHistory | undefined>;
@@ -1001,6 +1003,45 @@ export class DatabaseStorage implements IStorage {
       console.error("Database error in getUserLoginHistory:", error);
       // Return empty array to prevent UI errors
       return [];
+    }
+  }
+  
+  async getUserLoginCount(userId: number): Promise<number> {
+    try {
+      const result = await db.$queryRaw`
+        SELECT COUNT(*) as login_count
+        FROM user_login_history
+        WHERE "userId" = ${userId}
+      `;
+      
+      // The result will be an array with one object containing the count
+      const countResult = result as [{ login_count: number }];
+      return parseInt(countResult[0].login_count.toString()) || 0;
+    } catch (error) {
+      console.error("Database error in getUserLoginCount:", error);
+      return 0;
+    }
+  }
+  
+  async getUserAccountDetails(userId: number): Promise<{ createdAt: Date | null, loginCount: number }> {
+    try {
+      // Get the user's creation date
+      const user = await this.getUser(userId);
+      const createdAt = user?.createdAt || null;
+      
+      // Get the login count
+      const loginCount = await this.getUserLoginCount(userId);
+      
+      return {
+        createdAt,
+        loginCount
+      };
+    } catch (error) {
+      console.error("Database error in getUserAccountDetails:", error);
+      return {
+        createdAt: null,
+        loginCount: 0
+      };
     }
   }
 
