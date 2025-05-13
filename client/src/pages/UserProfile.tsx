@@ -90,9 +90,8 @@ interface UserData {
   id: number;
   username: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
+  fullName?: string;
+  phoneNumber?: string;
   profileImageUrl?: string;
   isVerified: boolean;
   role: string;

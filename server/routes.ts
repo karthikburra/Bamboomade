@@ -5290,27 +5290,34 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
       
+      // Add profile completion status for UI
+      const userWithExtraInfo = {
+        ...userWithoutPassword,
+        profileCompleted: Boolean(userWithoutPassword.fullName && userWithoutPassword.profileImageUrl)
+      };
+      
       // For security, only return limited user information for non-admins
       const isAdminUser = req.session?.adminUser !== undefined;
       
       if (!isAdminUser) {
         // Return only basic profile info for regular users
         const safeUserData = {
-          id: userWithoutPassword.id,
-          username: userWithoutPassword.username,
-          email: userWithoutPassword.email,
-          firstName: userWithoutPassword.firstName,
-          lastName: userWithoutPassword.lastName,
-          profileImageUrl: userWithoutPassword.profileImageUrl,
-          isVerified: userWithoutPassword.isVerified,
-          role: userWithoutPassword.role,
-          createdAt: userWithoutPassword.createdAt,
+          id: userWithExtraInfo.id,
+          username: userWithExtraInfo.username,
+          email: userWithExtraInfo.email,
+          fullName: userWithExtraInfo.fullName,
+          profileImageUrl: userWithExtraInfo.profileImageUrl,
+          isVerified: userWithExtraInfo.isVerified,
+          role: userWithExtraInfo.role,
+          createdAt: userWithExtraInfo.createdAt,
+          profileCompleted: userWithExtraInfo.profileCompleted
         };
         return res.json(safeUserData);
       }
       
-      res.json(userWithoutPassword);
+      res.json(userWithExtraInfo);
     } catch (error) {
+      console.error("Error in /api/users/:userId:", error);
       res.status(500).json({ 
         message: "Failed to fetch user", 
         error: (error as Error).message 
