@@ -54,7 +54,7 @@ import {
   Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle,
   History, Activity, UserX, Globe, Timer, Laptop, Smartphone, 
   Clock8, ClockIcon, RefreshCw, Shield, ShieldOff, KeyRound, Lock,
-  RefreshCcw, Image as ImageIcon
+  RefreshCcw, Image as ImageIcon, UserPlus
 } from "lucide-react";
 import {
   Select,
@@ -1874,6 +1874,27 @@ export default function AdminDashboard() {
                                   >
                                     {user.profileCompleted ? 'Complete' : 'Incomplete'}
                                   </Badge>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-1.5">
+                                  {user.isReturningUser ? (
+                                    <Badge 
+                                      variant="default"
+                                      className="bg-amber-700 text-white flex items-center"
+                                    >
+                                      <History className="h-3 w-3 mr-1" />
+                                      Returning User {user.loginCount && `(${user.loginCount})`}
+                                    </Badge>
+                                  ) : (
+                                    <Badge 
+                                      variant="outline"
+                                      className="bg-gray-800 text-gray-300 flex items-center"
+                                    >
+                                      <UserPlus className="h-3 w-3 mr-1" />
+                                      New User
+                                    </Badge>
+                                  )}
                                 </div>
                               </TableCell>
                               <TableCell className="text-right">
