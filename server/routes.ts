@@ -745,6 +745,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sessionID: req.sessionID
         })}`);
         
+        // Track user login history
+        try {
+          const userAgent = req.headers['user-agent'] || '';
+          const ipAddress = req.ip || req.socket.remoteAddress || '';
+          
+          // Extract basic device info from user agent
+          const deviceInfo = {
+            browser: userAgent.includes('Chrome') ? 'Chrome' : 
+                     userAgent.includes('Firefox') ? 'Firefox' : 
+                     userAgent.includes('Safari') ? 'Safari' : 
+                     userAgent.includes('Edge') ? 'Edge' : 'Unknown',
+            os: userAgent.includes('Windows') ? 'Windows' : 
+                userAgent.includes('Mac') ? 'MacOS' : 
+                userAgent.includes('Linux') ? 'Linux' : 
+                userAgent.includes('Android') ? 'Android' : 
+                userAgent.includes('iPhone') || userAgent.includes('iPad') ? 'iOS' : 'Unknown',
+            isMobile: userAgent.includes('Mobile') || userAgent.includes('Android') || 
+                     userAgent.includes('iPhone') || userAgent.includes('iPad')
+          };
+
+          // Check if this is a returning user by looking up previous login history
+          console.log(`🔍 Checking if ${user.email} has previous successful logins`);
+          const previousLogins = await storage.getUserLoginHistory(user.id);
+          const successfulPreviousLogins = previousLogins.filter(login => login.loginStatus === 'success');
+          const isReturningUser = successfulPreviousLogins.length > 0;
+          
+          console.log(`${isReturningUser ? '🔄' : '🆕'} User ${user.email} is a ${isReturningUser ? 'returning' : 'first-time'} user`);
+          
+          // Create login history record
+          await storage.createUserLoginHistory({
+            userId: user.id,
+            email: user.email,
+            username: user.username || 'unknown',
+            ipAddress,
+            useragent: userAgent,
+            browser: deviceInfo.browser,
+            os: deviceInfo.os,
+            deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
+            deviceInfo,
+            loginStatus: 'success',
+            isAdmin: user.isAdmin || false,
+            sessionId: req.sessionID,
+            // Add a field to track if this is a returning user
+            isReturningUser: isReturningUser
+          });
+          
+          console.log(`📝 Login history recorded for user ${user.id} (${isReturningUser ? 'returning' : 'new'})`);
+        } catch (historyError) {
+          // Non-critical error - don't fail the login if history tracking fails
+          console.error("⚠️ Failed to record login history:", historyError);
+        }
+        
         // Return user details (excluding sensitive fields)
         res.status(200).json({ 
           message: "Login successful",
