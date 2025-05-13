@@ -282,8 +282,31 @@ export default function AdminDashboard() {
     refetchInterval: 60000, // Refresh every 60 seconds
   });
   
+  // Define interface for login history response
+  interface LoginHistoryResponse {
+    loginHistory: {
+      id: number;
+      userId: number;
+      sessionId: string;
+      loginTime: string;
+      formattedLoginTime: string;
+      logoutTime: string | null;
+      formattedLogoutTime: string | null;
+      lastActiveTime: string | null;
+      formattedLastActiveTime: string | null;
+      ipAddress: string;
+      userAgent: string;
+      browser: string;
+      os: string;
+      device: string;
+      duration: number | null;
+      isActive: boolean;
+    }[];
+    totalLogins: number;
+  }
+
   // Fetch specific user login history
-  const { data: userLoginHistoryData, isLoading: isUserLoginHistoryLoading } = useQuery({
+  const { data: userLoginHistoryData, isLoading: isUserLoginHistoryLoading } = useQuery<LoginHistoryResponse>({
     queryKey: ["/api/admin/login-history", selectedUserId],
     queryFn: async () => {
       if (!selectedUserId) return { loginHistory: [], totalLogins: 0 };
