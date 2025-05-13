@@ -1026,6 +1026,24 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  async getTotalSuccessfulLogins(): Promise<number> {
+    try {
+      // Get total count of all successful logins across all users
+      const result = await db.$queryRaw`
+        SELECT COUNT(*) as login_count
+        FROM user_login_history
+        WHERE loginstatus = 'success'
+      `;
+      
+      // The result will be an array with one object containing the count
+      const countResult = result as [{ login_count: number }];
+      return parseInt(countResult[0].login_count.toString()) || 0;
+    } catch (error) {
+      console.error("Database error in getTotalSuccessfulLogins:", error);
+      return 0;
+    }
+  }
+  
   async getUserAccountDetails(userId: number): Promise<{ createdAt: Date | null, loginCount: number }> {
     try {
       // Get the user's creation date
