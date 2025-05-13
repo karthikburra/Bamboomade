@@ -383,7 +383,8 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
       // Pending sessions temporarily block the slot for 10 minutes
       if (session.status === 'pending' && !session.paymentConfirmed) {
         // Check if the session was created within the last 10 minutes
-        const creationTime = new Date(session.createdAt);
+        // Handle case where createdAt might be missing in older sessions
+        const creationTime = session.createdAt ? new Date(session.createdAt) : new Date(session.date);
         const currentTime = new Date();
         const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
         
@@ -411,7 +412,8 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
         // NEW: Allow a 10-minute window for payment processing for half-hour bookings
         if (session.status === 'pending' && !session.paymentConfirmed) {
           // Check if the session was created within the last 10 minutes
-          const creationTime = new Date(session.createdAt);
+          // Handle case where createdAt might be missing in older sessions
+          const creationTime = session.createdAt ? new Date(session.createdAt) : new Date(session.date);
           const currentTime = new Date();
           const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
           
@@ -5947,9 +5949,10 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         
         allSessionDetails[sessionDateStr].push(sessionDebug);
         
-        // Don't include cancelled sessions in booking conflicts
-        if (session.status === 'cancelled') {
+        // Don't include cancelled or rescheduled sessions in booking conflicts
+        if (session.status === 'cancelled' || session.status === 'rescheduled') {
           cancelledSessionCount++;
+          console.log(`Skipping ${session.status} session ${session.id} at ${sessionDateStr} ${sessionTimeStr}`);
           return;
         }
         
@@ -5962,9 +5965,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           return; // Skip adding to booked slots
         }
         
-        // IMPROVED: Handle all non-cancelled status sessions, not just confirmed ones
-        // This ensures we catch pending, confirmed, and other statuses
-        if (session.status !== 'cancelled') {
+        // IMPROVED: Handle all active session statuses (not cancelled or rescheduled)
+        // This ensures we catch pending, confirmed, and other valid statuses
+        if (session.status !== 'cancelled' && session.status !== 'rescheduled') {
           // Track in the appropriate map based on status
           const isConfirmed = session.paymentConfirmed || session.status === 'confirmed';
           const isPending = session.status === 'pending';
@@ -5999,7 +6002,8 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             
             // NEW: Add to booked slots if pending session is less than 10 minutes old
             // This gives a 10-minute window for users to complete payment
-            const creationTime = new Date(session.createdAt);
+            // Handle case where createdAt might be missing in older sessions
+            const creationTime = session.createdAt ? new Date(session.createdAt) : new Date(session.date);
             const currentTime = new Date();
             const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
             
