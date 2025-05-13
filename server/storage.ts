@@ -946,11 +946,11 @@ export class DatabaseStorage implements IStorage {
   // User Login History operations
   async createUserLoginHistory(loginData: InsertUserLoginHistory): Promise<UserLoginHistory> {
     try {
-      // Use a direct SQL query to avoid column name mapping issues
+      // Use a direct SQL query with correct camelCase column names as in the database
       const result = await db.$queryRaw`
         INSERT INTO user_login_history 
-        (user_id, user_email, username, ip_address, useragent, browser, os, device_type, 
-         device_info, login_status, is_admin, session_id, login_time, last_active_time)
+        ("userId", "userEmail", username, "ipAddress", useragent, browser, os, "deviceType", 
+         deviceinfo, loginstatus, isadmin, "sessionId", "loginTime", "lastActiveTime")
         VALUES 
         (${loginData.userId}, ${loginData.email}, ${loginData.username || 'unknown'}, 
          ${loginData.ipAddress}, ${loginData.useragent}, ${loginData.browser}, 
@@ -962,6 +962,7 @@ export class DatabaseStorage implements IStorage {
       
       // Cast the result to expected type
       const loginRecord = result[0] as UserLoginHistory;
+      console.log(`Login history recorded successfully for user ${loginData.userId}`);
       
       return loginRecord;
     } catch (error) {
@@ -983,17 +984,16 @@ export class DatabaseStorage implements IStorage {
 
   async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
     try {
-      // Use raw SQL query to avoid field name mapping issues
+      // Use raw SQL query with correct camelCase column names as in the database
       const result = await db.$queryRaw`
-        SELECT id, user_id AS "userId", user_email as "email", username, 
-        ip_address as "ipAddress", useragent, browser, os, device_type as "deviceType",
-        device_info as "deviceInfo", login_time as "loginTime", 
-        last_active_time as "lastActiveTime", logout_time as "logoutTime",
-        login_status as "loginStatus", is_admin as "isAdmin", 
-        session_id as "sessionId", created_at as "createdAt"
+        SELECT id, "userId", "userEmail" as email, username, 
+        "ipAddress", useragent, browser, os, "deviceType",
+        deviceinfo as "deviceInfo", "loginTime", "lastActiveTime", "logoutTime",
+        loginstatus as "loginStatus", isadmin as "isAdmin", 
+        "sessionId", "createdAt"
         FROM user_login_history
-        WHERE user_id = ${userId}
-        ORDER BY login_time DESC
+        WHERE "userId" = ${userId}
+        ORDER BY "loginTime" DESC
       `;
       
       return result as UserLoginHistory[];

@@ -17,20 +17,21 @@ export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 // Create drizzle instance with our schema
 export const db = drizzle(pool, { schema });
 
-// Add custom methods to the db object for direct SQL queries
-// This is needed to work around schema mapping issues
-interface EnhancedDb extends typeof db {
-  $queryRaw<T = any>(query: TemplateStringsArray, ...params: any[]): Promise<T>;
-}
-
-// Extend the db object with the $queryRaw method
-(db as EnhancedDb).$queryRaw = async <T = any>(
-  query: TemplateStringsArray, 
+// Add custom property to the db object
+// @ts-ignore - Extend the db object with custom methods
+db.$queryRaw = async function<T = any>(
+  strings: TemplateStringsArray,
   ...params: any[]
-): Promise<T> => {
-  const text = query.join('?');
-  const queryText = text.replace(/\?/g, (_, i) => `$${i + 1}`);
+): Promise<T> {
+  // Prepare text query by replacing all placeholders with $1, $2, etc.
+  const text = strings.raw.join('?');
+  const paramCount = params.length;
   
+  // Replace the ? with $1, $2, etc.
+  let paramIndex = 0;
+  const queryText = text.replace(/\?/g, () => `$${++paramIndex}`);
+  
+  // Execute the query with the parameters
   const result = await pool.query(queryText, params);
   return result.rows as T;
 };
