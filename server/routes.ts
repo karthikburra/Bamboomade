@@ -372,10 +372,17 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
         return true;
       }
       
-      // UPDATED: Consider pending sessions as booked, except for those from the same email
-      if (session.status === 'pending') {
-        console.log(`Conflict detected: Pending session ${session.id} is reserving ${targetDateStr} ${targetTimeStr}`);
+      // FIXED: Only consider sessions with confirmed payments
+      // Pending sessions without payment confirmation don't block new bookings
+      if (session.status === 'pending' && session.paymentConfirmed) {
+        console.log(`Conflict detected: Pending session ${session.id} with confirmed payment is reserving ${targetDateStr} ${targetTimeStr}`);
         return true;
+      }
+      
+      // If it's a pending session without payment, it's not a conflict
+      if (session.status === 'pending' && !session.paymentConfirmed) {
+        console.log(`Not a conflict: Pending session ${session.id} without payment confirmation at ${targetDateStr} ${targetTimeStr}`);
+        return false;
       }
     }
     
@@ -383,12 +390,16 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
     if (isHalfHourBooking && sessionDateStr === targetDateStr) {
       if (hourToCheck.includes(sessionTimeStr)) {
         // This half-hour booking conflicts with a full-hour booking
-        // Skip pending sessions from the same email
-        if (session.paymentConfirmed || session.status === 'confirmed' || 
-            (session.status === 'pending' && 
-             (!emailToExclude || session.email.toLowerCase() !== emailToExclude.toLowerCase()))) {
+        // FIXED: Only consider sessions with confirmed payments for conflicts
+        if (session.paymentConfirmed || session.status === 'confirmed') {
           console.log(`Half-hour conflict: Session ${session.id} at ${sessionTimeStr} conflicts with ${targetTimeStr}`);
           return true;
+        }
+        
+        // If it's a pending session without payment, don't consider it a conflict
+        if (session.status === 'pending' && !session.paymentConfirmed) {
+          console.log(`Not a half-hour conflict: Pending session ${session.id} without payment at ${sessionTimeStr}`);
+          return false;
         }
       }
     }
@@ -5935,17 +5946,23 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           const isConfirmed = session.paymentConfirmed || session.status === 'confirmed';
           const isPending = session.status === 'pending';
           
-          // Mark all non-cancelled sessions as booked
-          if (!bookedSlots[sessionDateStr]) {
-            bookedSlots[sessionDateStr] = [];
+          // FIXED: Only mark confirmed sessions as booked
+          // Only mark a session as booked if the payment is confirmed
+          if (isConfirmed) {
+            if (!bookedSlots[sessionDateStr]) {
+              bookedSlots[sessionDateStr] = [];
+            }
+            
+            // Add the booked time slot to the main bookedSlots map
+            if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+              bookedSlots[sessionDateStr].push(sessionTimeStr);
+            }
+            
+            // Update the confirmed session counter
+            confirmedSessionCount++;
           }
           
-          // Add the booked time slot to the main bookedSlots map
-          if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
-            bookedSlots[sessionDateStr].push(sessionTimeStr);
-          }
-          
-          // Also track pending sessions separately for debugging
+          // Still track pending sessions separately for debugging
           if (isPending) {
             if (!pendingSlots[sessionDateStr]) {
               pendingSlots[sessionDateStr] = [];
@@ -5955,11 +5972,6 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
               pendingSlots[sessionDateStr].push(sessionTimeStr);
               pendingSessionCount++;
             }
-          }
-          
-          // Update the confirmed session counter if applicable
-          if (isConfirmed) {
-            confirmedSessionCount++;
           }
           
           // IMPROVED: Check if this is a half-hour booking and block the adjacent hours
@@ -6018,18 +6030,15 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             slot.date === excludedSessionDate && 
             timeSlot === excludedSessionTime;
           
-          // Check if slot is booked or pending due to exact match
-          const isExactTimeMatch = (
-            bookedTimesForDate.includes(timeSlot) || 
-            pendingTimesForDate.includes(timeSlot)
-          );
+          // FIXED: Only mark slots as booked if they have confirmed bookings
+          // Check if slot is booked due to an exact match with confirmed sessions
+          const isExactTimeMatch = bookedTimesForDate.includes(timeSlot);
+          
+          // Also check if there are any pending bookings (for UI display purposes)
+          const hasPendingBooking = pendingTimesForDate.includes(timeSlot);
           
           // IMPROVED: Check for half-hour bookings that would conflict with this full-hour slot
-          // The logic is simpler now because we already marked half-hour bookings as conflicts
-          // in the bookedSlots processing above, but we'll keep this check for redundancy
-          
-          // For full-hour slots, we already marked half-hour bookings as conflicts in the bookings
-          // processing code above, but we'll double-check here to be safe
+          // For full-hour slots, check for conflicts with confirmed half-hour bookings
           
           // Extract the hour from the time slot
           const hour = parseInt(timeSlot.split(":")[0]);
@@ -6039,11 +6048,15 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           const previousHalfHour = `${(hour-1).toString().padStart(2, '0')}:30`;
           const nextHalfHour = `${hour.toString().padStart(2, '0')}:30`;
           
-          // Check for any conflicting half-hour bookings
+          // Check for any conflicting half-hour bookings with CONFIRMED bookings only
           const isHalfHourConflict = (
             bookedTimesForDate.includes(previousHalfHour) || 
+            bookedTimesForDate.includes(nextHalfHour)
+          );
+          
+          // Check for pending half-hour bookings (for UI display purposes)
+          const hasPendingHalfHourBooking = (
             pendingTimesForDate.includes(previousHalfHour) ||
-            bookedTimesForDate.includes(nextHalfHour) || 
             pendingTimesForDate.includes(nextHalfHour)
           );
           
@@ -6053,6 +6066,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           }
           
           // Combine all checks to determine if the slot is booked
+          // FIXED: Only consider confirmed bookings when marking a slot as unavailable
           const isBooked = !isOriginalSlot && (isExactTimeMatch || isHalfHourConflict);
           
           // Instead of special case handling, ensure our general solution works properly
