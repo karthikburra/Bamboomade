@@ -5066,10 +5066,14 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         isActive: !record.logoutTime
       }));
       
+      // Get the actual login count for this user from database
+      const loginCount = await storage.getUserLoginCount(userId);
+      console.log(`Total login count for user ${userId} from database: ${loginCount}`);
+      
       // Return in a structured format for consistency with other endpoints
       res.json({
         loginHistory: formattedHistory,
-        totalLogins: formattedHistory.length
+        totalLogins: loginCount
       });
     } catch (error) {
       console.error(`Failed to get login history for user ${req.params.userId}:`, error);
