@@ -5487,6 +5487,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         isActive: !record.logoutTime
       }));
       
+      // Debug the formatted history
+      console.log(`User login history for user ${userId}: Found ${formattedHistory.length} records`);
+      if (formattedHistory.length > 0) {
+        console.log("Sample record fields:", Object.keys(formattedHistory[0]));
+      }
+      
       // Return in the format expected by the UserProfile component
       res.json({
         loginHistory: formattedHistory,
