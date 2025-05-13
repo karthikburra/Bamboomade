@@ -1366,9 +1366,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createUserLoginHistory({
           userId: user.id,
           email: user.email,
-          username: user.username,
+          username: user.username || 'unknown',
           ipAddress,
-          userAgent,
+          useragent: userAgent, // Changed from userAgent to useragent
           browser: deviceInfo.browser,
           os: deviceInfo.os,
           deviceType: deviceInfo.isMobile ? 'Mobile' : 'Desktop',
