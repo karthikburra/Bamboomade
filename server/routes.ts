@@ -5971,21 +5971,22 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         // IMPROVED: Handle all active session statuses (not cancelled)
         // This ensures we catch pending, confirmed, rescheduled, and other valid statuses
         if (session.status !== 'cancelled') {
-          // FIXED: All non-cancelled sessions should be treated as booked
-          // This includes rescheduled, pending and confirmed sessions
-          
-          // Still track status for debugging purposes
+          // Track status for debugging purposes
           const isConfirmed = session.paymentConfirmed || session.status === 'confirmed';
           const isPending = session.status === 'pending';
           const isRescheduled = session.status === 'rescheduled';
           
-          // All non-cancelled sessions are considered booked
+          // Initialize booked slots for this date if not exists
           if (!bookedSlots[sessionDateStr]) {
             bookedSlots[sessionDateStr] = [];
           }
           
-          // Add the booked time slot to the main bookedSlots map
-          if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+          // FIXED: Only block slots for confirmed payments or non-pending sessions (like rescheduled)
+          // Important: Pending sessions without payment confirmation should NOT block slots
+          const shouldBlockSlot = isConfirmed || isRescheduled || (isPending && session.paymentConfirmed);
+          
+          if (shouldBlockSlot && !bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
+            // Add the booked time slot to the main bookedSlots map
             bookedSlots[sessionDateStr].push(sessionTimeStr);
             
             // Add descriptive log for every type of session being blocked
@@ -6020,16 +6021,19 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
             const currentTime = new Date();
             const minutesSinceCreation = (currentTime.getTime() - creationTime.getTime()) / (1000 * 60);
             
-            // Log for debugging
-            console.log(`Temporarily blocking slot for pending session ${session.id} at ${sessionDateStr} ${sessionTimeStr} (${minutesSinceCreation.toFixed(1)} minutes old)`);
-            
-            // No need to add to bookedSlots again - all non-cancelled sessions already added above
+            // Log for debugging - clarify if it's actually blocking or just tracking
+            if (session.paymentConfirmed) {
+              console.log(`Blocking paid pending session ${session.id} at ${sessionDateStr} ${sessionTimeStr} (${minutesSinceCreation.toFixed(1)} minutes old)`);
+            } else {
+              console.log(`Tracking unpaid pending session ${session.id} at ${sessionDateStr} ${sessionTimeStr} (${minutesSinceCreation.toFixed(1)} minutes old)`);
+            }
           }
           
           // IMPROVED: Check if this is a half-hour booking and block the adjacent hours
           // For example, a 13:30 booking conflicts with both 13:00 and 14:00 slots
+          // But only if the session should block slots (confirmed or rescheduled)
           const isHalfHourBooking = sessionTimeStr.endsWith(":30");
-          if (isHalfHourBooking) {
+          if (isHalfHourBooking && shouldBlockSlot) {
             const hour = parseInt(sessionTimeStr.split(":")[0]);
             
             // Block the current hour (13:00) and next hour (14:00) for a 13:30 booking
