@@ -2547,44 +2547,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (razorpayPayments.success && razorpayPayments.payments && razorpayPayments.payments.length > 0) {
             console.log(`Retrieved ${razorpayPayments.payments.length} payments from Razorpay`);
             
-            // Create a map of order IDs to payment details
+            // Debug payment structure
+            if (razorpayPayments.payments.length > 0) {
+              console.log("Sample Razorpay payment structure:", 
+                JSON.stringify(razorpayPayments.payments[0], null, 2));
+            }
+            
+            // Create maps for both order ID and payment ID lookups
             const paymentsByOrderId = new Map();
+            const paymentsByPaymentId = new Map();
+            
+            console.log("Processing Razorpay payment data...");
             razorpayPayments.payments.forEach(payment => {
-              if (payment.orderId) {
-                paymentsByOrderId.set(payment.orderId, payment);
+              // Get field names in a specific payment
+              if (!payment.id) {
+                console.log("Warning: Payment missing ID:", payment);
+                return;
+              }
+              
+              // Log the first payment's field names for debugging
+              if (paymentsByPaymentId.size === 0) {
+                console.log("Payment field names:", Object.keys(payment));
+              }
+              
+              // Add to payment ID map
+              paymentsByPaymentId.set(payment.id, payment);
+              
+              // Add to order ID map if present
+              if (payment.orderId || payment.order_id) {
+                const orderId = payment.orderId || payment.order_id;
+                paymentsByOrderId.set(orderId, payment);
               }
             });
             
-            // Create a map of payment IDs to payment details
-            const paymentsByPaymentId = new Map();
-            razorpayPayments.payments.forEach(payment => {
-              paymentsByPaymentId.set(payment.id, payment);
-            });
+            console.log(`Created lookup maps with ${paymentsByPaymentId.size} payment IDs and ${paymentsByOrderId.size} order IDs`);
             
             // Enhance sessions with payment details from Razorpay
             const enhancedSessions = sessions.map(session => {
               const sessionData = { ...session };
+              let payment = null;
               
-              // If session has an order ID but no payment ID, try to find corresponding payment
-              if (session.orderId && !session.paymentId) {
-                const payment = paymentsByOrderId.get(session.orderId);
+              // Try to find payment info using both payment ID and order ID
+              if (session.paymentId) {
+                payment = paymentsByPaymentId.get(session.paymentId);
                 if (payment) {
-                  sessionData.paymentId = payment.id;
-                  console.log(`Enhanced session ${session.id} with payment ID ${payment.id} from Razorpay`);
+                  console.log(`Found payment via paymentId ${session.paymentId} for session ${session.id}`);
                 }
               }
               
-              // If session has a payment ID, add payment status from Razorpay
-              if (session.paymentId) {
-                const payment = paymentsByPaymentId.get(session.paymentId);
+              // If not found via payment ID, try order ID
+              if (!payment && session.orderId) {
+                payment = paymentsByOrderId.get(session.orderId);
                 if (payment) {
-                  sessionData.razorpayStatus = payment.status;
-                  sessionData.razorpayAmount = payment.amount;
-                  sessionData.razorpayMethod = payment.method;
-                  sessionData.razorpayCreatedAt = payment.createdAt;
-                  sessionData.razorpayCapturedAt = payment.capturedAt;
-                  console.log(`Added Razorpay status "${payment.status}" and method "${payment.method || 'unknown'}" to session ${session.id}`);
+                  // Update payment ID if we found it via order ID
+                  sessionData.paymentId = payment.id;
+                  console.log(`Found payment via orderId ${session.orderId} for session ${session.id}`);
                 }
+              }
+              
+              // If payment was found by either method, enhance the session with payment details
+              if (payment) {
+                // Handle different field naming conventions
+                sessionData.razorpayStatus = payment.status;
+                sessionData.razorpayAmount = (payment.amount / 100); // Convert paise to rupees
+                sessionData.razorpayMethod = payment.method;
+                sessionData.razorpayCreatedAt = payment.created_at || payment.createdAt;
+                sessionData.razorpayCapturedAt = payment.captured_at || payment.capturedAt;
+                
+                // Make sure IDs are always included
+                sessionData.paymentId = payment.id;
+                sessionData.orderId = payment.order_id || payment.orderId || session.orderId;
+                
+                console.log(`Enhanced session ${session.id} with payment details:`, {
+                  status: sessionData.razorpayStatus,
+                  method: sessionData.razorpayMethod,
+                  amount: sessionData.razorpayAmount,
+                  paymentId: sessionData.paymentId,
+                  orderId: sessionData.orderId
+                });
+              } else {
+                console.log(`No Razorpay payment found for session ${session.id}`);
               }
               
               return sessionData;
