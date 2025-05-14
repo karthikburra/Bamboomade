@@ -44,7 +44,8 @@ export interface IStorage {
   getProjectGuidance(id: number): Promise<ProjectGuidance | undefined>;
   getProjectGuidancesByEmail(email: string): Promise<ProjectGuidance[]>;
   createProjectGuidance(session: InsertProjectGuidance): Promise<ProjectGuidance>;
-  updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidancePayment(id: number, paymentId: string, amount?: number, orderId?: string): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidanceOrderId(id: number, orderId: string): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined>;
   cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined>;

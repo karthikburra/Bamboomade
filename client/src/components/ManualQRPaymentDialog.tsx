@@ -24,10 +24,11 @@ interface ManualQRPaymentDialogProps {
 
 const ManualQRPaymentDialog: React.FC<ManualQRPaymentDialogProps> = ({ 
   sessionId,
-  orderId
+  orderId: defaultOrderId
 }) => {
   const [open, setOpen] = useState(false);
   const [paymentId, setPaymentId] = useState("");
+  const [customOrderId, setCustomOrderId] = useState("");
   const [notes, setNotes] = useState("");
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -36,7 +37,7 @@ const ManualQRPaymentDialog: React.FC<ManualQRPaymentDialogProps> = ({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/admin/verify-qr-payment", {
         sessionId,
-        orderId,
+        orderId: customOrderId || defaultOrderId,
         paymentId: paymentId || `manual_${Date.now()}`,
         manualVerificationNotes: notes
       });
@@ -56,6 +57,7 @@ const ManualQRPaymentDialog: React.FC<ManualQRPaymentDialogProps> = ({
       setOpen(false);
       // Reset form
       setPaymentId("");
+      setCustomOrderId("");
       setNotes("");
       // Refresh session data
       queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
@@ -96,6 +98,19 @@ const ManualQRPaymentDialog: React.FC<ManualQRPaymentDialogProps> = ({
             />
             <p className="text-xs text-muted-foreground">
               Leave blank to generate an auto ID if you don't have the actual Razorpay ID
+            </p>
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="order-id">Razorpay Order ID</Label>
+            <Input 
+              id="order-id"
+              placeholder="e.g., order_H3fg45kYz9tP8L (optional)"
+              value={customOrderId}
+              onChange={(e) => setCustomOrderId(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Leave blank if you don't have the order ID or if it's already associated with the session
             </p>
           </div>
           

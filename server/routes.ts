@@ -2198,7 +2198,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update payment status in the database
       const updatedSession = await storage.updateProjectGuidancePayment(
         session.id, 
-        paymentId || `manual_${Date.now()}`
+        paymentId || `manual_${Date.now()}`, 
+        undefined,
+        req.body.orderId
       );
       
       if (!updatedSession) {
@@ -3018,13 +3020,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/project-guidance/:id/payment", async (req, res) => {
     try {
       const { id } = req.params;
-      const { paymentId } = req.body;
+      const { paymentId, orderId } = req.body;
       
       if (!paymentId) {
         return res.status(400).json({ message: "Payment ID is required" });
       }
       
-      const session = await storage.updateProjectGuidancePayment(parseInt(id), paymentId);
+      const session = await storage.updateProjectGuidancePayment(parseInt(id), paymentId, undefined, orderId);
       if (!session) {
         return res.status(404).json({ message: "Project guidance session not found" });
       }
