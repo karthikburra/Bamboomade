@@ -104,7 +104,8 @@ interface Session {
   topic: string;
   notes: string;
   duration: number;
-  paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
+  paymentStatus?: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
+  paymentConfirmed?: boolean;
   studentName: string;
   status: string;
   googleMeetLink?: string;
@@ -709,9 +710,9 @@ export default function AdminDashboard() {
   const failedPaymentSessions = applyFilters(sessions.filter((s: Session) => 
     s.status !== 'cancelled' && 
     s.status !== 'completed' && 
-    s.paymentStatus === 'Pending' && 
+    (!s.paymentConfirmed || !s.paymentId) && 
     (
-      // Any session with pending payment status (not yet paid)
+      // Any session with pending payment status (not yet paid) or no payment ID
       // This catches sessions right after booking where user is proceeding to payment
       true
     )));
@@ -720,7 +721,8 @@ export default function AdminDashboard() {
     s.status !== 'cancelled' && 
     s.status !== 'completed' && 
     !s.googleMeetLink && 
-    s.paymentStatus === 'Paid' && // Only include sessions with confirmed payment
+    s.paymentConfirmed && // Only include sessions with confirmed payment
+    s.paymentId && // Must have a payment ID
     !failedPaymentSessions.some(f => f.id === s.id)));
     
   const upcomingSessions = applyFilters(sessions.filter((s: Session) => 

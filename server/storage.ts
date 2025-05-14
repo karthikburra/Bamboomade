@@ -498,15 +498,32 @@ export class DatabaseStorage implements IStorage {
 
   async createProjectGuidance(insertSession: InsertProjectGuidance): Promise<ProjectGuidance> {
     try {
-      const [session] = await db.insert(projectGuidances).values({
+      // Create basic insert data that works with current schema
+      const insertData = {
         ...insertSession,
-        // Add default values for any fields not in the insert schema
         status: "pending",
         paymentConfirmed: false,
-        paymentStatus: "Pending", // Explicitly set payment status to Pending for new sessions
         isStudent: 'isStudent' in insertSession ? (insertSession as any).isStudent : true
-      }).returning();
-      console.log(`Created new session ${session.id} with paymentStatus: Pending`);
+      };
+      
+      // Insert the session
+      const [session] = await db.insert(projectGuidances).values(insertData).returning();
+      
+      // Try to set paymentStatus if the column exists
+      try {
+        // We'll try this in a separate transaction to avoid failing the main insert
+        await pool.query(`
+          UPDATE project_guidance_sessions 
+          SET payment_status = 'Pending' 
+          WHERE id = $1
+        `, [session.id]);
+        console.log(`Set payment_status to Pending for new session ${session.id}`);
+      } catch (err) {
+        // If column doesn't exist, just continue
+        console.log(`Could not set payment_status for new session ${session.id}, column may not exist yet`);
+      }
+      
+      console.log(`Created new session ${session.id}`);
       return session;
     } catch (error) {
       console.error("Database error in createProjectGuidance:", error);
@@ -516,13 +533,12 @@ export class DatabaseStorage implements IStorage {
 
   async updateProjectGuidancePayment(id: number, paymentId: string, amount?: number, orderId?: string): Promise<ProjectGuidance | undefined> {
     try {
+      // Create basic update data that works with current schema
       const updateData: any = { 
         paymentConfirmed: true, 
         paymentId, 
         amount: amount || null,
-        status: "active",
-        // Set paymentStatus to Paid when payment is successful
-        paymentStatus: "Paid"
+        status: "active"
       };
       
       // Only update orderId if it's provided and not empty
@@ -530,7 +546,21 @@ export class DatabaseStorage implements IStorage {
         updateData.orderId = orderId;
       }
       
-      console.log(`Updating payment for session ${id} - Setting paymentStatus to Paid with paymentId: ${paymentId}`);
+      // Try to set paymentStatus if the column exists
+      try {
+        // We'll try this in a separate transaction to avoid failing the main update
+        await pool.query(`
+          UPDATE project_guidance_sessions 
+          SET payment_status = 'Paid' 
+          WHERE id = $1
+        `, [id]);
+        console.log(`Set payment_status to Paid for session ${id}`);
+      } catch (err) {
+        // If column doesn't exist, just continue
+        console.log(`Could not set payment_status for session ${id}, column may not exist yet`);
+      }
+      
+      console.log(`Updating payment for session ${id} with paymentId: ${paymentId}`);
       
       const [updatedSession] = await db.update(projectGuidances)
         .set(updateData)

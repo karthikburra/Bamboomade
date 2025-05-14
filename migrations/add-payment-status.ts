@@ -1,6 +1,7 @@
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from "../shared/schema";
+import ws from 'ws';
 
 /**
  * Migration to add payment_status field to project_guidance_sessions table
@@ -14,9 +15,18 @@ async function runMigration() {
   }
 
   try {
-    // Connect to database
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    const db = drizzle(pool);
+    // Connect to database with websocket support
+    const pool = new Pool({ 
+      connectionString: process.env.DATABASE_URL,
+      // Set the WebSocket class
+      fetch: (url: any, init: any) => {
+        // Customize fetch options here, e.g., timeout
+        return fetch(url, {
+          ...init,
+          timeout: 30000, // 30 seconds timeout
+        });
+      },
+    });
 
     console.log('Adding payment_status column to project_guidance_sessions table...');
     
