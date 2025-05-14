@@ -242,3 +242,87 @@ export async function getRazorpayPaymentDetails(paymentId: string) {
     };
   }
 }
+
+/**
+ * Check for payments that have been made but not updated in our system.
+ * This function fetches pending sessions and checks with Razorpay if they have been paid.
+ * @param storage The storage interface for database operations
+ * @returns An array of session IDs that were found to be paid
+ */
+export async function verifyPendingPayments(storage: any) {
+  try {
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      console.error('Razorpay service not initialized - cannot verify pending payments');
+      return { success: false, error: 'Razorpay service not initialized' };
+    }
+
+    // 1. Get all pending sessions
+    const pendingSessions = await storage.getProjectGuidancesByStatus('pending');
+    if (!pendingSessions || pendingSessions.length === 0) {
+      console.log('No pending sessions found to verify payments');
+      return { success: true, updatedCount: 0, sessions: [] };
+    }
+
+    console.log(`Found ${pendingSessions.length} pending sessions to check for payments`);
+    const updatedSessions = [];
+
+    // 2. For each pending session, check if it has a payment_id
+    for (const session of pendingSessions) {
+      // Skip sessions that already have payment confirmation
+      if (session.paymentConfirmed) {
+        console.log(`Session ${session.id} already has payment confirmed, skipping`);
+        continue;
+      }
+
+      // If we have a payment ID, verify it with Razorpay
+      if (session.paymentId) {
+        try {
+          const paymentDetails = await razorpayInstance.payments.fetch(session.paymentId);
+          
+          console.log(`Razorpay payment check for session ${session.id}:`, {
+            paymentId: session.paymentId,
+            status: paymentDetails.status,
+            authorized: ['authorized', 'captured'].includes(paymentDetails.status)
+          });
+          
+          // If payment is authorized or captured, mark the session as confirmed
+          if (['authorized', 'captured'].includes(paymentDetails.status)) {
+            const updatedSession = await storage.updateProjectGuidancePayment(
+              session.id, 
+              session.paymentId,
+              typeof paymentDetails.amount === 'number' ? paymentDetails.amount / 100 : undefined
+            );
+            
+            if (updatedSession) {
+              console.log(`✅ Updated session ${session.id} as payment confirmed`);
+              updatedSessions.push({
+                id: session.id,
+                email: session.email,
+                status: updatedSession.status,
+                paymentConfirmed: updatedSession.paymentConfirmed
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to verify payment for session ${session.id}:`, error);
+        }
+      } else {
+        console.log(`Session ${session.id} has no payment ID to verify`);
+      }
+    }
+
+    return { 
+      success: true, 
+      updatedCount: updatedSessions.length,
+      sessions: updatedSessions
+    };
+  } catch (error: any) {
+    console.error('Error verifying pending payments:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Failed to verify pending payments' 
+    };
+  }
+}

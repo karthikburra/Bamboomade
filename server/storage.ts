@@ -439,6 +439,17 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
+  
+  async getProjectGuidancesByStatus(status: string): Promise<ProjectGuidance[]> {
+    try {
+      return await db.select()
+        .from(projectGuidances)
+        .where(eq(projectGuidances.status, status));
+    } catch (error) {
+      console.error(`Database error in getProjectGuidancesByStatus(${status}):`, error);
+      return [];
+    }
+  }
 
   async getProjectGuidance(id: number): Promise<ProjectGuidance | undefined> {
     try {
