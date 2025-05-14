@@ -511,20 +511,40 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateProjectGuidancePayment(id: number, paymentId: string, amount?: number): Promise<ProjectGuidance | undefined> {
+  async updateProjectGuidancePayment(id: number, paymentId: string, amount?: number, orderId?: string): Promise<ProjectGuidance | undefined> {
     try {
+      const updateData: any = { 
+        paymentConfirmed: true, 
+        paymentId, 
+        amount: amount || null,
+        status: "active" 
+      };
+      
+      // Only update orderId if it's provided and not empty
+      if (orderId) {
+        updateData.orderId = orderId;
+      }
+      
       const [updatedSession] = await db.update(projectGuidances)
-        .set({ 
-          paymentConfirmed: true, 
-          paymentId, 
-          amount: amount || null,
-          status: "active" 
-        })
+        .set(updateData)
         .where(eq(projectGuidances.id, id))
         .returning();
       return updatedSession;
     } catch (error) {
       console.error("Database error in updateProjectGuidancePayment:", error);
+      return undefined;
+    }
+  }
+  
+  async updateProjectGuidanceOrderId(id: number, orderId: string): Promise<ProjectGuidance | undefined> {
+    try {
+      const [updatedSession] = await db.update(projectGuidances)
+        .set({ orderId })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateProjectGuidanceOrderId:", error);
       return undefined;
     }
   }

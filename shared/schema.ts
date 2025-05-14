@@ -70,7 +70,8 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   topic: text("topic").notNull(),
   notes: text("notes"),
   paymentConfirmed: boolean("payment_confirmed").default(false),
-  paymentId: text("payment_id"),
+  paymentId: text("payment_id"), // Razorpay payment ID once payment is complete
+  orderId: text("order_id"), // Razorpay order ID generated at checkout
   status: text("status").default("active"), // active, pending, confirmed, cancelled, completed, rescheduled
   rescheduledBy: text("rescheduled_by"), // 'admin' or 'user'
   rescheduledDate: timestamp("rescheduled_date"), // When the rescheduling occurred
