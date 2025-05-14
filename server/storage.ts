@@ -12,7 +12,7 @@ import {
   deletedUsers, type DeletedUser, type InsertDeletedUser
 } from "@shared/schema";
 import { eq, and, asc, desc, isNull } from 'drizzle-orm';
-import { db } from './db';
+import { db, pool } from './db';
 
 export interface IStorage {
   // User operations
@@ -509,9 +509,8 @@ export class DatabaseStorage implements IStorage {
       // Insert the session
       const [session] = await db.insert(projectGuidances).values(insertData).returning();
       
-      // Try to set paymentStatus if the column exists
+      // Set payment_status to 'Pending' for new sessions
       try {
-        // We'll try this in a separate transaction to avoid failing the main insert
         await pool.query(`
           UPDATE project_guidance_sessions 
           SET payment_status = 'Pending' 
@@ -519,12 +518,17 @@ export class DatabaseStorage implements IStorage {
         `, [session.id]);
         console.log(`Set payment_status to Pending for new session ${session.id}`);
       } catch (err) {
-        // If column doesn't exist, just continue
-        console.log(`Could not set payment_status for new session ${session.id}, column may not exist yet`);
+        // The column might not exist yet if migration hasn't been run
+        console.log(`Could not set payment_status for new session ${session.id}`);
       }
       
+      // Now fetch the complete session with all fields
+      const [completeSession] = await db.select()
+        .from(projectGuidances)
+        .where(eq(projectGuidances.id, session.id));
+      
       console.log(`Created new session ${session.id}`);
-      return session;
+      return completeSession || session;
     } catch (error) {
       console.error("Database error in createProjectGuidance:", error);
       throw error;
@@ -533,7 +537,20 @@ export class DatabaseStorage implements IStorage {
 
   async updateProjectGuidancePayment(id: number, paymentId: string, amount?: number, orderId?: string): Promise<ProjectGuidance | undefined> {
     try {
-      // Create basic update data that works with current schema
+      // Set payment_status to 'Paid' first to ensure it's updated
+      try {
+        await pool.query(`
+          UPDATE project_guidance_sessions 
+          SET payment_status = 'Paid' 
+          WHERE id = $1
+        `, [id]);
+        console.log(`Set payment_status to Paid for session ${id}`);
+      } catch (err) {
+        // If column doesn't exist, just continue - it will be handled by the migration
+        console.log(`Could not set payment_status for session ${id}, will update other fields`);
+      }
+      
+      // Update the other fields using Drizzle
       const updateData: any = { 
         paymentConfirmed: true, 
         paymentId, 
@@ -544,20 +561,6 @@ export class DatabaseStorage implements IStorage {
       // Only update orderId if it's provided and not empty
       if (orderId) {
         updateData.orderId = orderId;
-      }
-      
-      // Try to set paymentStatus if the column exists
-      try {
-        // We'll try this in a separate transaction to avoid failing the main update
-        await pool.query(`
-          UPDATE project_guidance_sessions 
-          SET payment_status = 'Paid' 
-          WHERE id = $1
-        `, [id]);
-        console.log(`Set payment_status to Paid for session ${id}`);
-      } catch (err) {
-        // If column doesn't exist, just continue
-        console.log(`Could not set payment_status for session ${id}, column may not exist yet`);
       }
       
       console.log(`Updating payment for session ${id} with paymentId: ${paymentId}`);

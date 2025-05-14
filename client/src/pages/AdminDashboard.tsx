@@ -707,23 +707,34 @@ export default function AdminDashboard() {
 
   // Split sessions into categories
   // New category: Failed/Unpaid Payment Sessions - Including sessions where booking has started but payment is not completed
-  const failedPaymentSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status !== 'cancelled' && 
-    s.status !== 'completed' && 
-    (!s.paymentConfirmed || !s.paymentId) && 
-    (
-      // Any session with pending payment status (not yet paid) or no payment ID
-      // This catches sessions right after booking where user is proceeding to payment
-      true
-    )));
+  const failedPaymentSessions = applyFilters(sessions.filter((s: Session) => {
+    // First check if session is active (not cancelled or completed)
+    const isActive = s.status !== 'cancelled' && s.status !== 'completed';
     
-  const pendingSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status !== 'cancelled' && 
-    s.status !== 'completed' && 
-    !s.googleMeetLink && 
-    s.paymentConfirmed && // Only include sessions with confirmed payment
-    s.paymentId && // Must have a payment ID
-    !failedPaymentSessions.some(f => f.id === s.id)));
+    // Check if payment is not yet confirmed
+    const paymentNotConfirmed = !s.paymentConfirmed || !s.paymentId;
+    
+    // If paymentStatus field exists, consider "Pending" status sessions as failed/unpaid
+    // Otherwise, fall back to checking payment confirmation and payment ID
+    const hasUnpaidStatus = s.paymentStatus === 'Pending' || (!s.paymentStatus && paymentNotConfirmed);
+    
+    return isActive && hasUnpaidStatus;
+  }));
+    
+  const pendingSessions = applyFilters(sessions.filter((s: Session) => {
+    // First check if session is active (not cancelled or completed) and doesn't have a Google Meet link yet
+    const isActive = s.status !== 'cancelled' && s.status !== 'completed' && !s.googleMeetLink;
+    
+    // Check payment status and confirmation
+    // If paymentStatus field exists, look for "Paid" status
+    // Otherwise, fall back to checking payment confirmation and payment ID
+    const isPaid = s.paymentStatus === 'Paid' || (!s.paymentStatus && s.paymentConfirmed && s.paymentId);
+    
+    // Ensure the session is not already in the failed/unpaid list
+    const notInFailedList = !failedPaymentSessions.some(f => f.id === s.id);
+    
+    return isActive && isPaid && notInFailedList;
+  }));
     
   const upcomingSessions = applyFilters(sessions.filter((s: Session) => 
     s.status !== 'cancelled' && 
