@@ -26,7 +26,7 @@ import { processUrlWithGemini, processFileWithGemini } from "./gemini-extractor"
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
 // PhonePe service removed
-import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails } from "./razorpay-service";
+import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails, verifyPendingPayments } from "./razorpay-service";
 import { 
   generateGoogleMeetLink, 
   generateGoogleCalendarLink,
@@ -537,7 +537,23 @@ const upload = multer({
 
 
 
+// Import node-cron package for scheduled tasks
+import cron from "node-cron";
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Schedule automatic payment verification to run every 30 minutes
+  cron.schedule("*/30 * * * *", async () => {
+    console.log("🔄 Running scheduled verification of pending Razorpay payments...");
+    try {
+      const result = await verifyPendingPayments(storage);
+      console.log(`✅ Scheduled payment verification complete: ${result.updatedCount} sessions updated`);
+      if (result.updatedCount > 0) {
+        console.log("Updated sessions:", result.sessions);
+      }
+    } catch (error) {
+      console.error("❌ Error in scheduled payment verification:", error);
+    }
+  });
   // Development mode endpoint for debugging session state
   if (process.env.NODE_ENV === 'development') {
     app.get("/api/debug/session", (req, res) => {
@@ -3114,7 +3130,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Payment routes are exclusively handled by Razorpay
 
-  // Razorpay Payment Routes
+  // Endpoint to manually verify pending payments with Razorpay
+  app.post("/api/razorpay/verify-pending-payments", async (req, res) => {
+    try {
+      // Check if the user is authenticated as admin
+      if (!req.isAuthenticated() || !req.user || !req.user.isAdmin) {
+        return res.status(403).json({ 
+          success: false, 
+          message: "Unauthorized. Admin access required." 
+        });
+      }
+      
+      console.log("Admin initiated manual verification of pending Razorpay payments");
+      const verificationResult = await verifyPendingPayments(storage);
+      
+      res.json({
+        success: verificationResult.success,
+        message: verificationResult.success 
+          ? `Successfully verified pending payments. Updated ${verificationResult.updatedCount} sessions.` 
+          : `Failed to verify payments: ${verificationResult.error}`,
+        ...verificationResult
+      });
+    } catch (error) {
+      console.error("Error in manual payment verification:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to verify pending payments",
+        error: (error as Error).message
+      });
+    }
+  });
+
+// Razorpay Payment Routes
   app.post("/api/razorpay/create-order", async (req, res) => {
     try {
       const { amount, sessionId, customerName, customerPhone, customerEmail } = req.body;
