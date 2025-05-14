@@ -2580,7 +2580,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 if (payment) {
                   sessionData.razorpayStatus = payment.status;
                   sessionData.razorpayAmount = payment.amount;
-                  console.log(`Added Razorpay status "${payment.status}" to session ${session.id}`);
+                  sessionData.razorpayMethod = payment.method;
+                  sessionData.razorpayCreatedAt = payment.createdAt;
+                  sessionData.razorpayCapturedAt = payment.capturedAt;
+                  console.log(`Added Razorpay status "${payment.status}" and method "${payment.method || 'unknown'}" to session ${session.id}`);
                 }
               }
               

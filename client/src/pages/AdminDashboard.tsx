@@ -68,6 +68,12 @@ import { Switch } from "../components/ui/switch";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 import { LoadingSpinner } from "../components/ui/loading-spinner";
 
@@ -107,8 +113,13 @@ interface Session {
   originalDate?: string;
   orderId?: string; // Payment order ID from Razorpay
   paymentId?: string; // Payment ID from Razorpay once payment is complete
-  razorpayStatus?: string; // Payment status from Razorpay API
+  
+  // Razorpay enhanced fields
+  razorpayStatus?: string; // Payment status from Razorpay API (captured, authorized, failed, etc.)
   razorpayAmount?: number; // Payment amount from Razorpay API in rupees
+  razorpayMethod?: string; // Payment method (card, netbanking, upi, etc.)
+  razorpayCreatedAt?: string; // When the payment was created in ISO format
+  razorpayCapturedAt?: string; // When the payment was captured in ISO format, if captured
 }
 
 interface User {
@@ -1407,17 +1418,59 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell className="hidden lg:table-cell">
                                     {session.razorpayStatus ? (
-                                      <Badge
-                                        className={`
-                                          ${session.razorpayStatus === 'captured' ? 'bg-green-900/50 text-green-300 border-green-800' : ''}
-                                          ${session.razorpayStatus === 'authorized' ? 'bg-blue-900/50 text-blue-300 border-blue-800' : ''}
-                                          ${session.razorpayStatus === 'created' ? 'bg-yellow-900/50 text-yellow-300 border-yellow-800' : ''}
-                                          ${session.razorpayStatus === 'failed' ? 'bg-red-900/50 text-red-300 border-red-800' : ''}
-                                          ${session.razorpayStatus === 'refunded' ? 'bg-purple-900/50 text-purple-300 border-purple-800' : ''}
-                                        `}
-                                      >
-                                        {session.razorpayStatus || 'unknown'}
-                                      </Badge>
+                                      <div className="flex flex-col gap-1">
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Badge
+                                                className={`
+                                                  ${session.razorpayStatus === 'captured' ? 'bg-green-900/50 text-green-300 border-green-800' : ''}
+                                                  ${session.razorpayStatus === 'authorized' ? 'bg-blue-900/50 text-blue-300 border-blue-800' : ''}
+                                                  ${session.razorpayStatus === 'created' ? 'bg-yellow-900/50 text-yellow-300 border-yellow-800' : ''}
+                                                  ${session.razorpayStatus === 'failed' ? 'bg-red-900/50 text-red-300 border-red-800' : ''}
+                                                  ${session.razorpayStatus === 'refunded' ? 'bg-purple-900/50 text-purple-300 border-purple-800' : ''}
+                                                  cursor-help
+                                                `}
+                                              >
+                                                {session.razorpayStatus}
+                                              </Badge>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <div className="max-w-xs">
+                                                <p className="font-semibold">Razorpay Payment Status</p>
+                                                <p className="text-xs mt-1">
+                                                  {session.razorpayStatus === 'captured' && 'Payment has been received and credited to your account.'}
+                                                  {session.razorpayStatus === 'authorized' && 'Payment is authorized but not yet captured to your account.'}
+                                                  {session.razorpayStatus === 'created' && 'Payment process has been initiated but not completed yet.'}
+                                                  {session.razorpayStatus === 'failed' && 'Payment was attempted but did not complete successfully.'}
+                                                  {session.razorpayStatus === 'refunded' && 'Payment was refunded back to the customer.'}
+                                                </p>
+                                                {session.razorpayCreatedAt && (
+                                                  <div className="mt-2 text-xs">
+                                                    <span className="opacity-80">Created:</span> {new Date(session.razorpayCreatedAt).toLocaleString('en-IN')}
+                                                  </div>
+                                                )}
+                                                {session.razorpayCapturedAt && (
+                                                  <div className="text-xs">
+                                                    <span className="opacity-80">Captured:</span> {new Date(session.razorpayCapturedAt).toLocaleString('en-IN')}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        
+                                        {session.razorpayMethod && (
+                                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                                            <span className="text-amber-400 font-medium capitalize">{session.razorpayMethod}</span>
+                                            {session.razorpayCapturedAt && (
+                                              <span>
+                                                • {new Date(session.razorpayCapturedAt).toLocaleDateString('en-IN')}
+                                              </span>
+                                            )}
+                                          </span>
+                                        )}
+                                      </div>
                                     ) : (
                                       <span className="text-gray-500 text-xs">Not available</span>
                                     )}
