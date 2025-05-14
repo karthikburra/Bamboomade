@@ -642,7 +642,9 @@ export default function AdminDashboard() {
         googleMeetLink: session.googleMeetLink,
         isStudent: session.isStudent !== undefined ? session.isStudent : true,
         originalDate: session.originalDate,
-        rescheduledBy: session.rescheduledBy
+        rescheduledBy: session.rescheduledBy,
+        paymentId: session.paymentId || null,
+        orderId: session.orderId || null
       };
     });
   }, [sessionsData]);
@@ -1136,6 +1138,7 @@ export default function AdminDashboard() {
                                 <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
                                 <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
                                 <TableHead className="text-gray-300">Payment</TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell">Payment ID</TableHead>
                                 <TableHead className="text-gray-300">Google Meet</TableHead>
                                 <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
