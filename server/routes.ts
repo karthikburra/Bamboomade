@@ -5434,6 +5434,58 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Admin route to get all Razorpay payments
+  app.get("/api/admin/razorpay-payments", isAdmin, async (req, res) => {
+    try {
+      const { from, to, count, skip } = req.query;
+      
+      // Convert query parameters to the right types
+      const options: any = {};
+      if (from) options.from = Number(from);
+      if (to) options.to = Number(to);
+      if (count) options.count = Number(count);
+      if (skip) options.skip = Number(skip);
+      
+      console.log("Fetching Razorpay payments with options:", options);
+      
+      // Get all payments from Razorpay
+      const paymentsResult = await getAllRazorpayPayments(options);
+      
+      // Log some debug info
+      if (paymentsResult.success) {
+        console.log(`Successfully fetched ${paymentsResult.payments?.length || 0} Razorpay payments`);
+      } else {
+        console.error("Failed to fetch Razorpay payments:", paymentsResult.error);
+      }
+      
+      res.json(paymentsResult);
+    } catch (error) {
+      console.error("Error fetching Razorpay payments:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch Razorpay payments" });
+    }
+  });
+  
+  // Admin route to get payment status summary
+  app.get("/api/admin/razorpay-payment-summary", isAdmin, async (req, res) => {
+    try {
+      console.log("Fetching Razorpay payment status summary");
+      
+      const summary = await getRazorpayPaymentStatusSummary();
+      
+      // Log some debug info
+      if (summary.success) {
+        console.log("Successfully fetched Razorpay payment summary:", summary.summary);
+      } else {
+        console.error("Failed to fetch Razorpay payment summary:", summary.error);
+      }
+      
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching Razorpay payment status summary:", error);
+      res.status(500).json({ success: false, message: "Failed to fetch Razorpay payment status summary" });
+    }
+  });
+  
   app.post("/api/admin/ai-training", isAdmin, validateRequest(insertAiTrainingDataSchema), async (req, res) => {
     try {
       const trainingData = await storage.createAiTrainingData(req.body);
