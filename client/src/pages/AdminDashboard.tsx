@@ -41,6 +41,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Label } from "../components/ui/label";
+import ManualQRPaymentDialog from "../components/ManualQRPaymentDialog";
 import {
   Popover,
   PopoverContent,
@@ -193,6 +194,7 @@ export default function AdminDashboard() {
   const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
+  const [isManualPaymentDialogOpen, setIsManualPaymentDialogOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [newPassword, setNewPassword] = useState("");
   
@@ -1257,6 +1259,54 @@ export default function AdminDashboard() {
                                     )}
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell">{session.duration} min</TableCell>
+                                  <TableCell>
+                                    {session.paymentStatus === 'paid' ? (
+                                      <Badge className="bg-green-600/20 text-green-400 border-green-800 hover:bg-green-600/30">
+                                        <CheckCircle className="w-3 h-3 mr-1.5" />
+                                        Confirmed
+                                      </Badge>
+                                    ) : session.paymentStatus === 'pending' ? (
+                                      <div className="flex flex-col gap-1">
+                                        <Badge className="bg-amber-600/20 text-amber-400 border-amber-800 hover:bg-amber-600/30">
+                                          <Clock className="w-3 h-3 mr-1.5" />
+                                          Pending
+                                        </Badge>
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="whitespace-nowrap h-7 text-xs px-2 border-green-700/50 text-green-400 hover:text-green-300 hover:bg-green-950/30 hover:border-green-700"
+                                          onClick={() => {
+                                            setSelectedSession(session);
+                                            // Open manual payment verification dialog
+                                            setIsManualPaymentDialogOpen(true);
+                                          }}
+                                        >
+                                          <CheckCircle className="w-3 h-3 mr-1" /> 
+                                          <span>Verify Payment</span>
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex flex-col gap-1">
+                                        <Badge className="bg-red-600/20 text-red-400 border-red-800 hover:bg-red-600/30">
+                                          <XCircle className="w-3 h-3 mr-1.5" />
+                                          Not Paid
+                                        </Badge>
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          className="whitespace-nowrap h-7 text-xs px-2 border-green-700/50 text-green-400 hover:text-green-300 hover:bg-green-950/30 hover:border-green-700"
+                                          onClick={() => {
+                                            setSelectedSession(session);
+                                            // Open manual payment verification dialog
+                                            setIsManualPaymentDialogOpen(true);
+                                          }}
+                                        >
+                                          <CheckCircle className="w-3 h-3 mr-1" /> 
+                                          <span>Mark as Paid</span>
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
                                       {session.googleMeetLink ? (
