@@ -596,11 +596,28 @@ export default function AdminDashboard() {
         console.log("PAYMENT DEBUG - Payment ID exists?", data.some(s => s.paymentId));
         console.log("PAYMENT DEBUG - Order ID exists?", data.some(s => s.orderId));
         console.log("PAYMENT DEBUG - Session data keys:", Object.keys(data[0]));
+        
+        // Count how many sessions have payment IDs and order IDs
+        const sessionsWithPaymentId = data.filter(s => s.paymentId).length;
+        const sessionsWithOrderId = data.filter(s => s.orderId).length;
+        console.log(`PAYMENT DEBUG - Sessions with payment ID: ${sessionsWithPaymentId}/${data.length}`);
+        console.log(`PAYMENT DEBUG - Sessions with order ID: ${sessionsWithOrderId}/${data.length}`);
+        
         // Log all paymentIds to see if any exist
         const paymentIds = data.map(s => s.paymentId).filter(Boolean);
         console.log("PAYMENT DEBUG - All payment IDs:", paymentIds);
         const orderIds = data.map(s => s.orderId).filter(Boolean);
         console.log("PAYMENT DEBUG - All order IDs:", orderIds);
+        
+        // Log first 3 sessions with their payment details for debugging
+        console.log("PAYMENT DEBUG - First 3 sessions:", data.slice(0, 3).map(s => ({
+          id: s.id,
+          studentName: s.studentName,
+          paymentId: s.paymentId || "null", 
+          orderId: s.orderId || "null",
+          status: s.status,
+          paymentConfirmed: s.paymentConfirmed
+        })));
       }
       return data;
     }
