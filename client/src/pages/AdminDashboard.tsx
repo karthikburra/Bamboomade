@@ -1081,6 +1081,42 @@ export default function AdminDashboard() {
                     ) : (
                       <>
                         {/* Filter options */}
+                        {/* Debug info for payment IDs and order IDs */}
+                        {tab === "all" && (
+                          <div className="mb-4 p-3 bg-gray-800/50 border border-gray-700 rounded-md text-xs">
+                            <div className="flex items-center gap-2 mb-1">
+                              <InfoIcon className="h-4 w-4 text-blue-400" />
+                              <span className="font-medium text-blue-300">Payment Data Debug</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <div>
+                                <span className="text-gray-400">Sessions with Payment ID:</span>{" "}
+                                <span className="font-mono text-green-400">
+                                  {displaySessions.filter(s => s.paymentId).length}/{displaySessions.length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Sessions with Order ID:</span>{" "}
+                                <span className="font-mono text-amber-400">
+                                  {displaySessions.filter(s => s.orderId).length}/{displaySessions.length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Sessions with Razorpay Status:</span>{" "}
+                                <span className="font-mono text-purple-400">
+                                  {displaySessions.filter(s => s.razorpayStatus).length}/{displaySessions.length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Sessions with Payment Method:</span>{" "}
+                                <span className="font-mono text-blue-400">
+                                  {displaySessions.filter(s => s.razorpayMethod).length}/{displaySessions.length}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
                         <div className="mb-4 flex flex-wrap gap-2">
                           <div className="w-full sm:w-auto">
                             <Input
@@ -1365,54 +1401,82 @@ export default function AdminDashboard() {
                                   <TableCell>
                                     <div className="font-mono text-xs">
                                       {session.paymentId ? (
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-green-400">{session.paymentId}</span>
-                                          <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-5 w-5 p-0 text-gray-400 hover:text-white"
-                                            onClick={() => {
-                                              navigator.clipboard.writeText(session.paymentId || "");
-                                              toast({
-                                                title: "Copied!",
-                                                description: "Payment ID copied to clipboard",
-                                                variant: "default",
-                                              });
-                                            }}
-                                          >
-                                            <Copy className="h-3 w-3" />
-                                          </Button>
-                                        </div>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-green-400 max-w-[100px] truncate" title={session.paymentId}>
+                                                  {session.paymentId}
+                                                </span>
+                                                <Button
+                                                  type="button"
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  className="h-5 w-5 p-0 text-gray-400 hover:text-white"
+                                                  onClick={() => {
+                                                    navigator.clipboard.writeText(session.paymentId || "");
+                                                    toast({
+                                                      title: "Copied!",
+                                                      description: "Payment ID copied to clipboard",
+                                                      variant: "default",
+                                                    });
+                                                  }}
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </Button>
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <div className="max-w-xs">
+                                                <p className="font-semibold">Razorpay Payment ID</p>
+                                                <p className="text-xs mt-1 break-all font-mono">{session.paymentId}</p>
+                                              </div>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                       ) : (
-                                        <span className="text-gray-500">null</span>
+                                        <span className="text-gray-500">—</span>
                                       )}
                                     </div>
                                   </TableCell>
                                   <TableCell>
                                     <div className="font-mono text-xs">
                                       {session.orderId ? (
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-amber-400">{session.orderId}</span>
-                                          <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-5 w-5 p-0 text-gray-400 hover:text-white"
-                                            onClick={() => {
-                                              navigator.clipboard.writeText(session.orderId || "");
-                                              toast({
-                                                title: "Copied!",
-                                                description: "Order ID copied to clipboard",
-                                                variant: "default",
-                                              });
-                                            }}
-                                          >
-                                            <Copy className="h-3 w-3" />
-                                          </Button>
-                                        </div>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-amber-400 max-w-[100px] truncate" title={session.orderId}>
+                                                  {session.orderId}
+                                                </span>
+                                                <Button
+                                                  type="button"
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  className="h-5 w-5 p-0 text-gray-400 hover:text-white"
+                                                  onClick={() => {
+                                                    navigator.clipboard.writeText(session.orderId || "");
+                                                    toast({
+                                                      title: "Copied!",
+                                                      description: "Order ID copied to clipboard",
+                                                      variant: "default",
+                                                    });
+                                                  }}
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </Button>
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <div className="max-w-xs">
+                                                <p className="font-semibold">Razorpay Order ID</p>
+                                                <p className="text-xs mt-1 break-all font-mono">{session.orderId}</p>
+                                              </div>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                       ) : (
-                                        <span className="text-gray-500">null</span>
+                                        <span className="text-gray-500">—</span>
                                       )}
                                     </div>
                                   </TableCell>
