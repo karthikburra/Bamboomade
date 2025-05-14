@@ -415,7 +415,7 @@ export default function AdminDashboard() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance", "include_razorpay"] });
       toast({
         title: "Session cancelled",
         description: "The session has been cancelled and the student will be notified."
@@ -1170,6 +1170,7 @@ export default function AdminDashboard() {
                                 <TableHead className="text-gray-300">Payment</TableHead>
                                 <TableHead className="text-gray-300">Payment ID</TableHead>
                                 <TableHead className="text-gray-300">Order ID</TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell">Razorpay Status</TableHead>
                                 <TableHead className="text-gray-300">Google Meet</TableHead>
                                 <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
@@ -1396,6 +1397,23 @@ export default function AdminDashboard() {
                                         <span className="text-gray-500">null</span>
                                       )}
                                     </div>
+                                  </TableCell>
+                                  <TableCell className="hidden lg:table-cell">
+                                    {session.razorpayStatus ? (
+                                      <Badge
+                                        className={`
+                                          ${session.razorpayStatus === 'captured' ? 'bg-green-900/50 text-green-300 border-green-800' : ''}
+                                          ${session.razorpayStatus === 'authorized' ? 'bg-blue-900/50 text-blue-300 border-blue-800' : ''}
+                                          ${session.razorpayStatus === 'created' ? 'bg-yellow-900/50 text-yellow-300 border-yellow-800' : ''}
+                                          ${session.razorpayStatus === 'failed' ? 'bg-red-900/50 text-red-300 border-red-800' : ''}
+                                          ${session.razorpayStatus === 'refunded' ? 'bg-purple-900/50 text-purple-300 border-purple-800' : ''}
+                                        `}
+                                      >
+                                        {session.razorpayStatus || 'unknown'}
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-gray-500 text-xs">Not available</span>
+                                    )}
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
