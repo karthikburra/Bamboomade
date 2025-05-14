@@ -107,6 +107,8 @@ interface Session {
   originalDate?: string;
   orderId?: string; // Payment order ID from Razorpay
   paymentId?: string; // Payment ID from Razorpay once payment is complete
+  razorpayStatus?: string; // Payment status from Razorpay API
+  razorpayAmount?: number; // Payment amount from Razorpay API in rupees
 }
 
 interface User {
