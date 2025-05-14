@@ -590,12 +590,17 @@ export default function AdminDashboard() {
       const response = await apiRequest("GET", "/api/project-guidance");
       const data = await response.json();
       console.log("Fetched sessions data:", data);
-      // Debug session data to check for payment and order IDs
+      // Enhanced debugging
       if (data && data.length > 0) {
-        console.log("First session data:", data[0]);
-        console.log("Payment ID exists?", data.some(s => s.paymentId));
-        console.log("Order ID exists?", data.some(s => s.orderId));
-        console.log("Session data keys:", Object.keys(data[0]));
+        console.log("PAYMENT DEBUG - First session data:", JSON.stringify(data[0], null, 2));
+        console.log("PAYMENT DEBUG - Payment ID exists?", data.some(s => s.paymentId));
+        console.log("PAYMENT DEBUG - Order ID exists?", data.some(s => s.orderId));
+        console.log("PAYMENT DEBUG - Session data keys:", Object.keys(data[0]));
+        // Log all paymentIds to see if any exist
+        const paymentIds = data.map(s => s.paymentId).filter(Boolean);
+        console.log("PAYMENT DEBUG - All payment IDs:", paymentIds);
+        const orderIds = data.map(s => s.orderId).filter(Boolean);
+        console.log("PAYMENT DEBUG - All order IDs:", orderIds);
       }
       return data;
     }
