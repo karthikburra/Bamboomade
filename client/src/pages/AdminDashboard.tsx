@@ -698,11 +698,24 @@ export default function AdminDashboard() {
   }, [sessionsData]);
 
   // Split sessions into categories
+  // New category: Failed/Unpaid Payment Sessions
+  const failedPaymentSessions = applyFilters(sessions.filter((s: Session) => 
+    s.status !== 'cancelled' && 
+    s.status !== 'completed' && 
+    s.paymentStatus === 'Pending' && 
+    ((s.razorpayStatus === 'failed' || s.razorpayStatus === null) || 
+     (s.razorpayStatus === 'created' && new Date(s.date) < new Date()))));
+    
   const pendingSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status !== 'cancelled' && s.status !== 'completed' && !s.googleMeetLink));
+    s.status !== 'cancelled' && 
+    s.status !== 'completed' && 
+    !s.googleMeetLink && 
+    !failedPaymentSessions.some(f => f.id === s.id)));
     
   const upcomingSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status !== 'cancelled' && s.status !== 'completed' && s.googleMeetLink));
+    s.status !== 'cancelled' && 
+    s.status !== 'completed' && 
+    s.googleMeetLink));
     
   const completedSessions = applyFilters(sessions.filter((s: Session) => 
     s.status === 'completed'));
@@ -922,7 +935,7 @@ export default function AdminDashboard() {
           <TabsContent value="sessions" className="space-y-4">
         
             {/* Stats summary only shown on Sessions tab */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-3 sm:gap-5 mb-6 sm:mb-8">
               <Card className="bg-gray-900/70 border-gray-800 shadow-md hover:shadow-lg transition-all duration-200">
                 <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
                   <CardTitle className="text-sm sm:text-base text-gray-100">Total Sessions</CardTitle>
@@ -931,6 +944,18 @@ export default function AdminDashboard() {
                   <p className="text-xl sm:text-3xl font-bold text-white flex items-center">
                     <Calendar className="w-5 h-5 mr-2 text-gray-400" />
                     {sessions.length}
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-orange-950/60 border-orange-900/60 shadow-md hover:shadow-lg transition-all duration-200">
+                <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
+                  <CardTitle className="text-sm sm:text-base text-orange-100">Failed Payments</CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
+                  <p className="text-xl sm:text-3xl font-bold text-orange-200 flex items-center">
+                    <AlertCircle className="w-5 h-5 mr-2 text-orange-400/70" />
+                    {failedPaymentSessions.length}
                   </p>
                 </CardContent>
               </Card>
@@ -973,9 +998,9 @@ export default function AdminDashboard() {
             </div>
             
             <Tabs 
-              defaultValue={tabParam && ["pending", "upcoming", "completed", "cancelled", "all", "availability"].includes(tabParam) 
+              defaultValue={tabParam && ["failed-payments", "pending", "upcoming", "completed", "cancelled", "all", "availability"].includes(tabParam) 
                 ? tabParam 
-                : "pending"} 
+                : "failed-payments"} 
               className="space-y-4"
               onValueChange={(value: string) => {
                 // Update URL when inner tab changes without full page reload
@@ -986,6 +1011,13 @@ export default function AdminDashboard() {
             >
               <div className="relative overflow-x-auto pb-2">
                 <TabsList className="bg-gray-800/80 border border-gray-700 rounded-md shadow-md w-full flex flex-wrap sm:flex-nowrap overflow-x-auto">
+                  <TabsTrigger 
+                    value="failed-payments" 
+                    className="flex-1 data-[state=active]:bg-orange-700/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 mr-1.5 hidden sm:inline" />
+                    Failed Payments ({failedPaymentSessions.length})
+                  </TabsTrigger>
                   <TabsTrigger 
                     value="pending" 
                     className="flex-1 data-[state=active]:bg-amber-600/90 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap transition-all duration-200"
@@ -1032,11 +1064,15 @@ export default function AdminDashboard() {
               </div>
               
               {/* Session management tabs */}
-              {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
+              {["failed-payments", "pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
                 let displaySessions;
                 let emptyMessage = "";
                 
                 switch (tab) {
+                  case "failed-payments":
+                    displaySessions = failedPaymentSessions;
+                    emptyMessage = "No failed or unpaid payment sessions found.";
+                    break;
                   case "pending":
                     displaySessions = pendingSessions;
                     emptyMessage = "No pending sessions requiring Google Meet links.";
