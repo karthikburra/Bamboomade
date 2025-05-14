@@ -590,6 +590,13 @@ export default function AdminDashboard() {
       const response = await apiRequest("GET", "/api/project-guidance");
       const data = await response.json();
       console.log("Fetched sessions data:", data);
+      // Debug session data to check for payment and order IDs
+      if (data && data.length > 0) {
+        console.log("First session data:", data[0]);
+        console.log("Payment ID exists?", data.some(s => s.paymentId));
+        console.log("Order ID exists?", data.some(s => s.orderId));
+        console.log("Session data keys:", Object.keys(data[0]));
+      }
       return data;
     }
   });
