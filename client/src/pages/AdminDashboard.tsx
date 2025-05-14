@@ -1139,6 +1139,7 @@ export default function AdminDashboard() {
                                 <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
                                 <TableHead className="text-gray-300">Payment</TableHead>
                                 <TableHead className="text-gray-300 hidden lg:table-cell">Payment ID</TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell">Order ID</TableHead>
                                 <TableHead className="text-gray-300">Google Meet</TableHead>
                                 <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
