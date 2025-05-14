@@ -2533,7 +2533,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Project guidance session routes
   app.get("/api/project-guidance", async (req, res) => {
     try {
+      // Get all sessions from our database
       const sessions = await storage.getAllProjectGuidances();
+      
+      // If the req includes a query param 'include_razorpay=true', then fetch payment details from Razorpay
+      const includeRazorpay = req.query.include_razorpay === 'true';
+      
+      if (includeRazorpay) {
+        try {
+          // Get all payments from Razorpay (limit to 100 for performance)
+          const razorpayPayments = await getAllRazorpayPayments({ count: 100 });
+          
+          if (razorpayPayments.success && razorpayPayments.payments && razorpayPayments.payments.length > 0) {
+            console.log(`Retrieved ${razorpayPayments.payments.length} payments from Razorpay`);
+            
+            // Create a map of order IDs to payment details
+            const paymentsByOrderId = new Map();
+            razorpayPayments.payments.forEach(payment => {
+              if (payment.orderId) {
+                paymentsByOrderId.set(payment.orderId, payment);
+              }
+            });
+            
+            // Create a map of payment IDs to payment details
+            const paymentsByPaymentId = new Map();
+            razorpayPayments.payments.forEach(payment => {
+              paymentsByPaymentId.set(payment.id, payment);
+            });
+            
+            // Enhance sessions with payment details from Razorpay
+            const enhancedSessions = sessions.map(session => {
+              const sessionData = { ...session };
+              
+              // If session has an order ID but no payment ID, try to find corresponding payment
+              if (session.orderId && !session.paymentId) {
+                const payment = paymentsByOrderId.get(session.orderId);
+                if (payment) {
+                  sessionData.paymentId = payment.id;
+                  console.log(`Enhanced session ${session.id} with payment ID ${payment.id} from Razorpay`);
+                }
+              }
+              
+              // If session has a payment ID, add payment status from Razorpay
+              if (session.paymentId) {
+                const payment = paymentsByPaymentId.get(session.paymentId);
+                if (payment) {
+                  sessionData.razorpayStatus = payment.status;
+                  sessionData.razorpayAmount = payment.amount;
+                  console.log(`Added Razorpay status "${payment.status}" to session ${session.id}`);
+                }
+              }
+              
+              return sessionData;
+            });
+            
+            return res.status(200).json(enhancedSessions);
+          }
+        } catch (razorpayError) {
+          console.error("Error fetching payment details from Razorpay:", razorpayError);
+          // Continue with normal response if Razorpay fetch fails
+        }
+      }
+      
+      // Return normal sessions if not including Razorpay data or if Razorpay fetch failed
       res.status(200).json(sessions);
     } catch (error) {
       console.error("Error fetching project guidance sessions:", error);
