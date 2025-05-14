@@ -5987,6 +5987,15 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           // Add the booked time slot to the main bookedSlots map
           if (!bookedSlots[sessionDateStr].includes(sessionTimeStr)) {
             bookedSlots[sessionDateStr].push(sessionTimeStr);
+            
+            // Add descriptive log for every type of session being blocked
+            if (isRescheduled) {
+              console.log(`Blocking rescheduled session ${session.id} at ${sessionDateStr} ${sessionTimeStr}`);
+            } else if (isConfirmed) {
+              console.log(`Blocking confirmed session ${session.id} at ${sessionDateStr} ${sessionTimeStr}`);
+            } else if (!isPending) {
+              console.log(`Blocking other non-cancelled session ${session.id} (status: ${session.status}) at ${sessionDateStr} ${sessionTimeStr}`);
+            }
           }
           
           // Update appropriate counter depending on status
