@@ -1150,8 +1150,8 @@ export default function AdminDashboard() {
                                 <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
                                 <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
                                 <TableHead className="text-gray-300">Payment</TableHead>
-                                <TableHead className="text-gray-300 hidden lg:table-cell">Payment ID</TableHead>
-                                <TableHead className="text-gray-300 hidden lg:table-cell">Order ID</TableHead>
+                                <TableHead className="text-gray-300">Payment ID</TableHead>
+                                <TableHead className="text-gray-300">Order ID</TableHead>
                                 <TableHead className="text-gray-300">Google Meet</TableHead>
                                 <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
@@ -1325,7 +1325,7 @@ export default function AdminDashboard() {
                                       </div>
                                     )}
                                   </TableCell>
-                                  <TableCell className="hidden lg:table-cell">
+                                  <TableCell>
                                     <div className="font-mono text-xs">
                                       {session.paymentId ? (
                                         <div className="flex items-center gap-2">
@@ -1352,7 +1352,7 @@ export default function AdminDashboard() {
                                       )}
                                     </div>
                                   </TableCell>
-                                  <TableCell className="hidden lg:table-cell">
+                                  <TableCell>
                                     <div className="font-mono text-xs">
                                       {session.orderId ? (
                                         <div className="flex items-center gap-2">
