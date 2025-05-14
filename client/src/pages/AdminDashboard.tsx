@@ -705,13 +705,19 @@ export default function AdminDashboard() {
   }, [sessionsData]);
 
   // Split sessions into categories
-  // New category: Failed/Unpaid Payment Sessions
+  // New category: Failed/Unpaid Payment Sessions - Only sessions with explicit failed status or expired created status
   const failedPaymentSessions = applyFilters(sessions.filter((s: Session) => 
     s.status !== 'cancelled' && 
     s.status !== 'completed' && 
     s.paymentStatus === 'Pending' && 
-    ((s.razorpayStatus === 'failed' || s.razorpayStatus === null) || 
-     (s.razorpayStatus === 'created' && new Date(s.date) < new Date()))));
+    (
+      // Explicitly failed payments
+      s.razorpayStatus === 'failed' ||
+      // Payment was initiated but never completed and session date has passed
+      (s.razorpayStatus === 'created' && s.orderId && new Date(s.date) < new Date()) ||
+      // Session has an order ID but payment didn't complete and session date has passed
+      (s.orderId && !s.paymentId && new Date(s.date) < new Date())
+    )));
     
   const pendingSessions = applyFilters(sessions.filter((s: Session) => 
     s.status !== 'cancelled' && 
