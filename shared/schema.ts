@@ -72,6 +72,7 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   paymentConfirmed: boolean("payment_confirmed").default(false),
   paymentId: text("payment_id"), // Razorpay payment ID once payment is complete
   orderId: text("order_id"), // Razorpay order ID generated at checkout
+  paymentStatus: text("payment_status").default("Pending"), // 'Pending', 'Paid', 'Failed', 'Refunded'
   status: text("status").default("active"), // active, pending, confirmed, cancelled, completed, rescheduled
   rescheduledBy: text("rescheduled_by"), // 'admin' or 'user'
   rescheduledDate: timestamp("rescheduled_date"), // When the rescheduling occurred

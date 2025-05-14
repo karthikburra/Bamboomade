@@ -518,13 +518,17 @@ export class DatabaseStorage implements IStorage {
         paymentConfirmed: true, 
         paymentId, 
         amount: amount || null,
-        status: "active" 
+        status: "active",
+        // Set paymentStatus to Paid when payment is successful
+        paymentStatus: "Paid"
       };
       
       // Only update orderId if it's provided and not empty
       if (orderId) {
         updateData.orderId = orderId;
       }
+      
+      console.log(`Updating payment for session ${id} - Setting paymentStatus to Paid with paymentId: ${paymentId}`);
       
       const [updatedSession] = await db.update(projectGuidances)
         .set(updateData)
