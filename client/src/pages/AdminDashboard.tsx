@@ -598,6 +598,11 @@ export default function AdminDashboard() {
         console.log("PAYMENT DEBUG - First session data:", JSON.stringify(data[0], null, 2));
         console.log("PAYMENT DEBUG - Payment ID exists?", data.some(s => s.paymentId));
         console.log("PAYMENT DEBUG - Order ID exists?", data.some(s => s.orderId));
+        console.log("PAYMENT DEBUG - Razorpay Status exists?", data.some(s => s.razorpayStatus));
+        if (data.some(s => s.razorpayStatus)) {
+          const statusTypes = [...new Set(data.filter(s => s.razorpayStatus).map(s => s.razorpayStatus))];
+          console.log("PAYMENT DEBUG - Available Razorpay status types:", statusTypes);
+        }
         console.log("PAYMENT DEBUG - Session data keys:", Object.keys(data[0]));
         
         // Count how many sessions have payment IDs and order IDs
