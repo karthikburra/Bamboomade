@@ -1312,6 +1312,33 @@ export default function AdminDashboard() {
                                       </div>
                                     )}
                                   </TableCell>
+                                  <TableCell className="hidden lg:table-cell">
+                                    <div className="font-mono text-xs">
+                                      {session.paymentId ? (
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-green-400">{session.paymentId}</span>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-5 w-5 p-0 text-gray-400 hover:text-white"
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(session.paymentId || "");
+                                              toast({
+                                                title: "Copied!",
+                                                description: "Payment ID copied to clipboard",
+                                                variant: "default",
+                                              });
+                                            }}
+                                          >
+                                            <Copy className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <span className="text-gray-500">null</span>
+                                      )}
+                                    </div>
+                                  </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
                                       {session.googleMeetLink ? (
