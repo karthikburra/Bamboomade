@@ -374,6 +374,7 @@ async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailTo
       
       // FIXED: Only consider sessions with confirmed payments
       // Pending sessions without payment confirmation don't block new bookings
+      // Handle the edge case where a session is pending but has confirmed payment
       if (session.status === 'pending' && session.paymentConfirmed) {
         console.log(`Conflict detected: Pending session ${session.id} with confirmed payment is reserving ${targetDateStr} ${targetTimeStr}`);
         return true;
@@ -6041,6 +6042,8 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
               console.log(`Blocking rescheduled session ${session.id} at ${sessionDateStr} ${sessionTimeStr}`);
             } else if (isConfirmed) {
               console.log(`Blocking confirmed session ${session.id} at ${sessionDateStr} ${sessionTimeStr}`);
+            } else if (isPending && session.paymentConfirmed) {
+              console.log(`Blocking pending session ${session.id} with confirmed payment at ${sessionDateStr} ${sessionTimeStr}`);
             } else if (!isPending) {
               console.log(`Blocking other non-cancelled session ${session.id} (status: ${session.status}) at ${sessionDateStr} ${sessionTimeStr}`);
             }
