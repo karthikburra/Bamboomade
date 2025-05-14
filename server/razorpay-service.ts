@@ -244,6 +244,121 @@ export async function getRazorpayPaymentDetails(paymentId: string) {
 }
 
 /**
+ * Get all payments from Razorpay with pagination support
+ * This function fetches all payments from the Razorpay API and can be used to display payment history
+ * @param options Optional parameters: from, to, count, skip (for pagination)
+ * @returns List of payments with their details
+ */
+export async function getAllRazorpayPayments(options: {
+  from?: number;  // Timestamp in seconds
+  to?: number;    // Timestamp in seconds
+  count?: number; // Number of payments to fetch (default: 10, max: 100)
+  skip?: number;  // Number of payments to skip (for pagination)
+} = {}) {
+  try {
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      console.error('Razorpay service not initialized - cannot fetch payments');
+      return { success: false, error: 'Razorpay service not initialized' };
+    }
+
+    // Set defaults for pagination
+    const count = options.count || 10;
+    const skip = options.skip || 0;
+    
+    // Prepare query parameters
+    const queryParams: any = {
+      count,
+      skip
+    };
+    
+    // Add optional date range if provided
+    if (options.from) queryParams.from = options.from;
+    if (options.to) queryParams.to = options.to;
+    
+    // Fetch payments from Razorpay
+    const payments = await razorpayInstance.payments.all(queryParams);
+    
+    // Transform the response into a simpler format
+    const formattedPayments = payments.items.map((payment: any) => ({
+      id: payment.id,
+      orderId: payment.order_id,
+      amount: payment.amount / 100, // Convert from paise to rupees
+      currency: payment.currency,
+      status: payment.status,
+      method: payment.method,
+      email: payment.email,
+      contact: payment.contact,
+      createdAt: new Date(payment.created_at * 1000).toISOString(),
+      capturedAt: payment.captured_at ? new Date(payment.captured_at * 1000).toISOString() : null
+    }));
+    
+    return {
+      success: true,
+      payments: formattedPayments,
+      count: payments.count,
+      hasMore: payments.count > (skip + count)
+    };
+  } catch (error: any) {
+    console.error('Razorpay payments fetch error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch payments'
+    };
+  }
+}
+
+/**
+ * Get a summary of payment statuses from Razorpay
+ * This function provides counts for each payment status (created, authorized, captured, refunded, failed)
+ * @returns Summary of payment statuses with counts
+ */
+export async function getRazorpayPaymentStatusSummary() {
+  try {
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      console.error('Razorpay service not initialized - cannot fetch payment summary');
+      return { success: false, error: 'Razorpay service not initialized' };
+    }
+    
+    // We need to fetch all payments and then count by status
+    // Note: This is a simplified approach, for large datasets you'd want to implement proper pagination
+    const payments = await razorpayInstance.payments.all({ count: 100 });
+    
+    // Initialize counters for each status
+    const statusSummary = {
+      created: 0,
+      authorized: 0,
+      captured: 0,
+      refunded: 0,
+      failed: 0,
+      total: payments.count
+    };
+    
+    // Count payments by status
+    payments.items.forEach((payment: any) => {
+      const status = payment.status.toLowerCase();
+      if (statusSummary.hasOwnProperty(status)) {
+        statusSummary[status as keyof typeof statusSummary]++;
+      }
+    });
+    
+    return {
+      success: true,
+      summary: statusSummary
+    };
+  } catch (error: any) {
+    console.error('Razorpay payment status summary error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch payment status summary'
+    };
+  }
+}
+
+/**
  * Check for payments that have been made but not updated in our system.
  * This function fetches pending sessions and checks with Razorpay if they have been paid.
  * @param storage The storage interface for database operations

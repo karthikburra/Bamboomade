@@ -26,7 +26,14 @@ import { processUrlWithGemini, processFileWithGemini } from "./gemini-extractor"
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
 // PhonePe service removed
-import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayPaymentDetails, verifyPendingPayments } from "./razorpay-service";
+import { 
+  initiateRazorpayPayment, 
+  verifyRazorpayPayment, 
+  getRazorpayPaymentDetails, 
+  verifyPendingPayments,
+  getAllRazorpayPayments,
+  getRazorpayPaymentStatusSummary
+} from "./razorpay-service";
 import { 
   generateGoogleMeetLink, 
   generateGoogleCalendarLink,
