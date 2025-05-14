@@ -503,8 +503,10 @@ export class DatabaseStorage implements IStorage {
         // Add default values for any fields not in the insert schema
         status: "pending",
         paymentConfirmed: false,
+        paymentStatus: "Pending", // Explicitly set payment status to Pending for new sessions
         isStudent: 'isStudent' in insertSession ? (insertSession as any).isStudent : true
       }).returning();
+      console.log(`Created new session ${session.id} with paymentStatus: Pending`);
       return session;
     } catch (error) {
       console.error("Database error in createProjectGuidance:", error);

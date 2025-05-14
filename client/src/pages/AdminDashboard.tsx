@@ -104,7 +104,7 @@ interface Session {
   topic: string;
   notes: string;
   duration: number;
-  paymentStatus: string;
+  paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
   studentName: string;
   status: string;
   googleMeetLink?: string;
