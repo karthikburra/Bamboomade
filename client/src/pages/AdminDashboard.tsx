@@ -639,7 +639,7 @@ export default function AdminDashboard() {
         formattedTime,
         date: session.date,
         email: session.email,
-        phoneNumber: session.phoneNumber,
+        phoneNumber: session.phone, // Note: field is 'phone' in database, not 'phoneNumber'
         topic: session.topic,
         notes: session.notes || "",
         duration: session.duration,
