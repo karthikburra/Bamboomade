@@ -339,7 +339,7 @@ export default function AdminDashboard() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance", "include_razorpay"] });
       toast({
         title: "Google Meet link added",
         description: "The link has been saved and the student will be notified."
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance", "include_razorpay"] });
       toast({
         title: "Session rescheduled",
         description: "The session has been rescheduled and the student will be notified."
@@ -583,11 +583,12 @@ export default function AdminDashboard() {
     });
   };
 
-  // Fetch real session data from the API
+  // Fetch real session data from the API with enhanced Razorpay payment details
   const { data: sessionsData, isLoading: isSessionsLoading } = useQuery({
-    queryKey: ["/api/project-guidance"],
+    queryKey: ["/api/project-guidance", "include_razorpay"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/project-guidance");
+      // Include Razorpay data to enhance sessions with payment details
+      const response = await apiRequest("GET", "/api/project-guidance?include_razorpay=true");
       const data = await response.json();
       console.log("Fetched sessions data:", data);
       // Enhanced debugging
