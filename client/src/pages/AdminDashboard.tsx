@@ -705,24 +705,22 @@ export default function AdminDashboard() {
   }, [sessionsData]);
 
   // Split sessions into categories
-  // New category: Failed/Unpaid Payment Sessions - Only sessions with explicit failed status or expired created status
+  // New category: Failed/Unpaid Payment Sessions - Including sessions where booking has started but payment is not completed
   const failedPaymentSessions = applyFilters(sessions.filter((s: Session) => 
     s.status !== 'cancelled' && 
     s.status !== 'completed' && 
     s.paymentStatus === 'Pending' && 
     (
-      // Explicitly failed payments
-      s.razorpayStatus === 'failed' ||
-      // Payment was initiated but never completed and session date has passed
-      (s.razorpayStatus === 'created' && s.orderId && new Date(s.date) < new Date()) ||
-      // Session has an order ID but payment didn't complete and session date has passed
-      (s.orderId && !s.paymentId && new Date(s.date) < new Date())
+      // Any session with pending payment status (not yet paid)
+      // This catches sessions right after booking where user is proceeding to payment
+      true
     )));
     
   const pendingSessions = applyFilters(sessions.filter((s: Session) => 
     s.status !== 'cancelled' && 
     s.status !== 'completed' && 
     !s.googleMeetLink && 
+    s.paymentStatus === 'Paid' && // Only include sessions with confirmed payment
     !failedPaymentSessions.some(f => f.id === s.id)));
     
   const upcomingSessions = applyFilters(sessions.filter((s: Session) => 
