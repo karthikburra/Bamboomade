@@ -105,6 +105,8 @@ interface Session {
   isStudent?: boolean;
   rescheduledBy?: 'user' | 'admin';
   originalDate?: string;
+  orderId?: string; // Payment order ID from Razorpay
+  paymentId?: string; // Payment ID from Razorpay once payment is complete
 }
 
 interface User {
@@ -3513,6 +3515,37 @@ export default function AdminDashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Manual Payment Verification Dialog */}
+        {selectedSession && (
+          <Dialog open={isManualPaymentDialogOpen} onOpenChange={setIsManualPaymentDialogOpen}>
+            <DialogContent className="bg-gray-900 border-gray-800 text-white">
+              <DialogHeader>
+                <DialogTitle>Manual Payment Verification</DialogTitle>
+                <DialogDescription>
+                  Verify payment for session with {selectedSession.studentName}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <ManualQRPaymentDialog 
+                    sessionId={selectedSession.id}
+                    orderId={selectedSession.orderId}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  className="border-gray-700 hover:bg-gray-800"
+                  onClick={() => setIsManualPaymentDialogOpen(false)}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
