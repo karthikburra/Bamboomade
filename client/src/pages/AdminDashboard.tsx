@@ -1085,7 +1085,7 @@ export default function AdminDashboard() {
                         {tab === "all" && (
                           <div className="mb-4 p-3 bg-gray-800/50 border border-gray-700 rounded-md text-xs">
                             <div className="flex items-center gap-2 mb-1">
-                              <InfoIcon className="h-4 w-4 text-blue-400" />
+                              <Info className="h-4 w-4 text-blue-400" />
                               <span className="font-medium text-blue-300">Payment Data Debug</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
