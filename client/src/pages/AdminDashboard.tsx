@@ -692,7 +692,14 @@ export default function AdminDashboard() {
         originalDate: session.originalDate,
         rescheduledBy: session.rescheduledBy,
         paymentId: session.paymentId || null,
-        orderId: session.orderId || null
+        orderId: session.orderId || null,
+        
+        // Map Razorpay enhanced fields
+        razorpayStatus: session.razorpayStatus || null,
+        razorpayAmount: session.razorpayAmount || null,
+        razorpayMethod: session.razorpayMethod || null,
+        razorpayCreatedAt: session.razorpayCreatedAt || null,
+        razorpayCapturedAt: session.razorpayCapturedAt || null
       };
     });
   }, [sessionsData]);
