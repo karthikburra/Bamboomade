@@ -34,6 +34,7 @@ import {
   getAllRazorpayPayments,
   getRazorpayPaymentStatusSummary
 } from "./razorpay-service";
+import { autoMapPaymentsToSessions } from "./payment-mapper";
 import { 
   generateGoogleMeetLink, 
   generateGoogleCalendarLink,
@@ -2132,6 +2133,241 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to reschedule session", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  // Auto-map payments to sessions
+  app.post("/api/admin/auto-map-payments", isAdmin, async (req, res) => {
+    try {
+      const adminEmail = req.session.userEmail || "Unknown admin";
+      console.log(`Auto payment mapping requested by ${adminEmail}`);
+      
+      // Run the auto-mapping process
+      const result = await autoMapPaymentsToSessions(storage);
+      
+      // Log the activity
+      if (result.mappedCount > 0) {
+        const now = new Date();
+        const logEntry = {
+          timestamp: now,
+          type: "payment_auto_mapping",
+          admin: adminEmail,
+          details: {
+            mappedCount: result.mappedCount,
+            mappedSessions: result.mappedSessions
+          }
+        };
+        
+        // Save this log in a dashboard snapshot
+        const dateKey = now.toISOString().split('T')[0];
+        const existingSnapshot = await storage.getDashboardSnapshotByDate(dateKey);
+        
+        if (existingSnapshot) {
+          const existingLogs = existingSnapshot.activityLogs || [];
+          existingLogs.push(logEntry);
+          
+          await storage.saveDashboardSnapshot({
+            ...existingSnapshot,
+            activityLogs: existingLogs
+          });
+        } else {
+          await storage.saveDashboardSnapshot({
+            date: dateKey,
+            dailyStats: {},
+            activityLogs: [logEntry]
+          });
+        }
+      }
+      
+      res.json({
+        success: result.success,
+        mappedCount: result.mappedCount,
+        message: result.mappedCount > 0 
+          ? `Successfully mapped ${result.mappedCount} payments to sessions` 
+          : "No new payments were mapped to sessions",
+        errors: result.errors,
+        mappedSessions: result.mappedSessions
+      });
+    } catch (error) {
+      console.error("Error in auto-mapping payments:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to auto-map payments", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Get unmapped payments
+  app.get("/api/admin/unmapped-payments", isAdmin, async (req, res) => {
+    try {
+      // Get recent successful payments from Razorpay
+      const razorpayResponse = await getAllRazorpayPayments({ count: 50 });
+      
+      if (!razorpayResponse.success || !razorpayResponse.payments) {
+        return res.status(500).json({ 
+          success: false,
+          message: "Failed to fetch payments from Razorpay" 
+        });
+      }
+      
+      // Filter for successful payments
+      const successfulPayments = razorpayResponse.payments.filter(p => 
+        p.status === 'captured' || p.status === 'authorized'
+      );
+      
+      // Get all sessions with payments
+      const allSessions = await storage.getAllProjectGuidances();
+      const paidSessionPaymentIds = new Set(
+        allSessions
+          .filter(s => s.paymentId)
+          .map(s => s.paymentId)
+      );
+      
+      // Find payments that don't have a matching session
+      const unmappedPayments = successfulPayments.filter(payment => 
+        !paidSessionPaymentIds.has(payment.id)
+      );
+      
+      console.log(`Found ${unmappedPayments.length} unmapped payments out of ${successfulPayments.length} successful payments`);
+      
+      res.json({
+        success: true,
+        payments: unmappedPayments
+      });
+    } catch (error) {
+      console.error("Error fetching unmapped payments:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch unmapped payments", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Get unpaid sessions
+  app.get("/api/admin/unpaid-sessions", isAdmin, async (req, res) => {
+    try {
+      // Get all sessions without confirmed payment
+      const allSessions = await storage.getAllProjectGuidances();
+      const unpaidSessions = allSessions.filter(session => 
+        !session.paymentConfirmed && 
+        (session.paymentStatus === 'Pending' || !session.paymentStatus)
+      );
+      
+      console.log(`Found ${unpaidSessions.length} unpaid sessions`);
+      
+      res.json({
+        success: true,
+        sessions: unpaidSessions
+      });
+    } catch (error) {
+      console.error("Error fetching unpaid sessions:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to fetch unpaid sessions", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Manual mapping of payment to session
+  app.post("/api/admin/manual-map-payment", isAdmin, async (req, res) => {
+    try {
+      const { sessionId, paymentId } = req.body;
+      
+      if (!sessionId || !paymentId) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Session ID and Payment ID are required" 
+        });
+      }
+      
+      // Find the session
+      const session = await storage.getProjectGuidance(sessionId);
+      if (!session) {
+        return res.status(404).json({ 
+          success: false,
+          message: "Session not found" 
+        });
+      }
+      
+      // Get payment details from Razorpay
+      const paymentDetails = await getRazorpayPaymentDetails(paymentId);
+      if (!paymentDetails.success) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Payment not found in Razorpay" 
+        });
+      }
+      
+      // Extract payment amount
+      const paymentAmount = paymentDetails.payment.amount / 100; // Convert from paise to rupees
+      
+      // Update session payment details
+      const updatedSession = await storage.updateProjectGuidancePayment(
+        sessionId, 
+        paymentId, 
+        paymentAmount,
+        paymentDetails.payment.orderId || session.orderId
+      );
+      
+      // Add manual mapping note to the dashboard logs
+      const adminEmail = req.session.userEmail || "Unknown admin";
+      const now = new Date();
+      const logEntry = {
+        timestamp: now,
+        type: "payment_manual_mapping",
+        admin: adminEmail,
+        details: {
+          sessionId,
+          paymentId,
+          orderId: paymentDetails.payment.orderId || session.orderId,
+          studentName: session.studentName,
+          studentEmail: session.email,
+          amount: paymentAmount
+        }
+      };
+      
+      // Save this log in a dashboard snapshot
+      const dateKey = now.toISOString().split('T')[0];
+      const existingSnapshot = await storage.getDashboardSnapshotByDate(dateKey);
+      
+      if (existingSnapshot) {
+        const existingLogs = existingSnapshot.activityLogs || [];
+        existingLogs.push(logEntry);
+        
+        await storage.saveDashboardSnapshot({
+          ...existingSnapshot,
+          activityLogs: existingLogs
+        });
+      } else {
+        await storage.saveDashboardSnapshot({
+          date: dateKey,
+          dailyStats: {},
+          activityLogs: [logEntry]
+        });
+      }
+      
+      if (!updatedSession) {
+        return res.status(500).json({ 
+          success: false,
+          message: "Failed to update session payment details" 
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Payment mapped to session successfully",
+        session: updatedSession
+      });
+      
+    } catch (error) {
+      console.error("Error in manual payment mapping:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to map payment to session", 
         error: (error as Error).message 
       });
     }
