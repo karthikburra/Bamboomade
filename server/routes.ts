@@ -2310,7 +2310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId, 
         paymentId, 
         paymentAmount,
-        session.orderId // Use the session's order ID since we don't have it from payment details
+        session.orderId || null // Use the session's order ID if available, otherwise null
       );
       
       // Add manual mapping note to the dashboard logs
@@ -2323,7 +2323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         details: {
           sessionId,
           paymentId,
-          orderId: paymentDetails.payment.orderId || session.orderId,
+          orderId: session.orderId || null,
           studentName: session.studentName,
           studentEmail: session.email,
           amount: paymentAmount
