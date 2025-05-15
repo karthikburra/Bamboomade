@@ -35,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle, RefreshCcw, BarChart, PieChart, XCircle, Clock, RefreshCw, Compass } from "lucide-react";
 import PaymentMapperDialog from "./PaymentMapperDialog";
+import FixFailedSessionsButton from "./FixFailedSessionsButton";
 
 // Define payment status colors
 const paymentStatusColors = {
