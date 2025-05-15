@@ -628,13 +628,44 @@ export class DatabaseStorage implements IStorage {
           cancellationReason: reason,
           cancellationDate: new Date(),
           refundAmount,
-          refundPercentage
+          refundPercentage,
+          paymentStatus: 'Refund Pending' // Update payment status to pending refund
         })
         .where(eq(projectGuidances.id, id))
         .returning();
       return updatedSession;
     } catch (error) {
       console.error("Database error in cancelProjectGuidanceSession:", error);
+      return undefined;
+    }
+  }
+  
+  async updateSessionRefundStatus(id: number, refundId: string, refundStatus: string): Promise<ProjectGuidance | undefined> {
+    try {
+      // First get the current session to preserve existing notes
+      const [currentSession] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
+      if (!currentSession) {
+        console.error(`Session ${id} not found for updating refund status`);
+        return undefined;
+      }
+      
+      // Valid refund statuses: 'Refund Pending', 'Refund Initiated', 'Refund Processed', 'Refund Failed'
+      // Add refundId to track the refund in Razorpay
+      const newNotes = `Refund ID: ${refundId}${currentSession.notes ? ' | ' + currentSession.notes : ''}`;
+      
+      const [updatedSession] = await db.update(projectGuidances)
+        .set({ 
+          paymentStatus: refundStatus,
+          // Store refundId in notes field temporarily, until we add a dedicated refundId field
+          notes: newNotes
+        })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      
+      console.log(`Updated session ${id} refund status to ${refundStatus} with refund ID ${refundId}`);
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateSessionRefundStatus:", error);
       return undefined;
     }
   }
