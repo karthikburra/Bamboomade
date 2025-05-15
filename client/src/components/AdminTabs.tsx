@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Calendar, Database, Users, HelpCircle, Server, BookOpen, FileText, Trash2 } from "lucide-react";
+import { BarChart3, Calendar, Database, Users, HelpCircle, Server, BookOpen, FileText, Trash2, CreditCard } from "lucide-react";
 
 interface AdminTabsProps {
   value?: string;
@@ -69,6 +69,14 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
           >
             <Calendar className="w-4 h-4 mr-2" />
             Session Management
+          </TabsTrigger>
+
+          <TabsTrigger 
+            value="payments" 
+            className="flex-1 data-[state=active]:bg-blue-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+          >
+            <CreditCard className="w-4 h-4 mr-2" />
+            Payment Analytics
           </TabsTrigger>
 
           <TabsTrigger 
