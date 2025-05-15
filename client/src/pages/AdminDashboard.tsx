@@ -1415,7 +1415,7 @@ export default function AdminDashboard() {
                                 </TableHead>
                                 <TableHead className="text-gray-300 py-2 px-2 sm:px-4">
                                   <div className="flex items-center">
-                                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                                     <span>Actions</span>
                                   </div>
                                 </TableHead>
@@ -1575,49 +1575,53 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell">{session.duration} min</TableCell>
                                   <TableCell>
-                                    {session.paymentStatus === 'paid' ? (
-                                      <Badge className="bg-green-600/20 text-green-400 border-green-800 hover:bg-green-600/30">
-                                        <CheckCircle className="w-3 h-3 mr-1.5" />
-                                        Confirmed
+                                    {session.paymentStatus === 'Paid' ? (
+                                      <Badge className="bg-green-600/20 text-green-400 border-green-800 hover:bg-green-600/30 text-[10px] sm:text-xs">
+                                        <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
+                                        <span className="hidden sm:inline">Confirmed</span>
+                                        <span className="sm:hidden">Paid</span>
                                       </Badge>
-                                    ) : session.paymentStatus === 'pending' ? (
+                                    ) : session.paymentStatus === 'Pending' ? (
                                       <div className="flex flex-col gap-1">
-                                        <Badge className="bg-amber-600/20 text-amber-400 border-amber-800 hover:bg-amber-600/30">
-                                          <Clock className="w-3 h-3 mr-1.5" />
+                                        <Badge className="bg-amber-600/20 text-amber-400 border-amber-800 hover:bg-amber-600/30 text-[10px] sm:text-xs">
+                                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
                                           Pending
                                         </Badge>
                                         <Button 
                                           size="sm"
                                           variant="outline"
-                                          className="whitespace-nowrap h-7 text-xs px-2 border-green-700/50 text-green-400 hover:text-green-300 hover:bg-green-950/30 hover:border-green-700"
+                                          className="whitespace-nowrap h-7 text-[10px] sm:text-xs px-1.5 sm:px-2 border-green-700/50 text-green-400 hover:text-green-300 hover:bg-green-950/30 hover:border-green-700"
                                           onClick={() => {
                                             setSelectedSession(session);
                                             // Open manual payment verification dialog
                                             setIsManualPaymentDialogOpen(true);
                                           }}
                                         >
-                                          <CheckCircle className="w-3 h-3 mr-1" /> 
-                                          <span>Verify Payment</span>
+                                          <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" /> 
+                                          <span className="hidden sm:inline">Verify Payment</span>
+                                          <span className="sm:hidden">Verify</span>
                                         </Button>
                                       </div>
                                     ) : (
                                       <div className="flex flex-col gap-1">
-                                        <Badge className="bg-red-600/20 text-red-400 border-red-800 hover:bg-red-600/30">
-                                          <XCircle className="w-3 h-3 mr-1.5" />
-                                          Not Paid
+                                        <Badge className="bg-red-600/20 text-red-400 border-red-800 hover:bg-red-600/30 text-[10px] sm:text-xs">
+                                          <XCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
+                                          <span className="hidden sm:inline">Not Paid</span>
+                                          <span className="sm:hidden">Unpaid</span>
                                         </Badge>
                                         <Button 
                                           size="sm"
                                           variant="outline"
-                                          className="whitespace-nowrap h-7 text-xs px-2 border-green-700/50 text-green-400 hover:text-green-300 hover:bg-green-950/30 hover:border-green-700"
+                                          className="whitespace-nowrap h-7 text-[10px] sm:text-xs px-1.5 sm:px-2 border-green-700/50 text-green-400 hover:text-green-300 hover:bg-green-950/30 hover:border-green-700"
                                           onClick={() => {
                                             setSelectedSession(session);
                                             // Open manual payment verification dialog
                                             setIsManualPaymentDialogOpen(true);
                                           }}
                                         >
-                                          <CheckCircle className="w-3 h-3 mr-1" /> 
-                                          <span>Mark as Paid</span>
+                                          <CheckCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" /> 
+                                          <span className="hidden sm:inline">Mark as Paid</span>
+                                          <span className="sm:hidden">Mark Paid</span>
                                         </Button>
                                       </div>
                                     )}
