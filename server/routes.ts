@@ -2160,6 +2160,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  // Admin endpoint to manually mark completed sessions
+  app.post("/api/admin/mark-completed-sessions", isAdmin, async (req, res) => {
+    try {
+      const adminEmail = req.session.userEmail || "Unknown admin";
+      console.log(`Manual completion check requested by ${adminEmail}`);
+      
+      // Run the completion check process
+      const completedCount = await storage.updateCompletedSessionStatuses();
+      
+      console.log(`Marked ${completedCount} sessions as completed`);
+      
+      // Return success
+      res.json({
+        success: true,
+        message: `Successfully marked ${completedCount} sessions as completed`,
+        completedCount
+      });
+    } catch (error) {
+      console.error("Error marking completed sessions:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to mark completed sessions",
+        error: (error as Error).message
+      });
+    }
+  });
+  
   // Auto-map payments to sessions
   app.post("/api/admin/auto-map-payments", isAdmin, async (req, res) => {
     try {
