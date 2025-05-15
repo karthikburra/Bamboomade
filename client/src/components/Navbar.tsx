@@ -56,8 +56,10 @@ const SubscriptionStatusItem = () => {
   
   const getStatusLabel = () => {
     if (isLoading) return "Loading...";
-    if (isActive && subscriptionStatus === 'active') return "Active";
-    if (isActive && subscriptionStatus === 'free') return "Free Trial";
+    if (!isActive) return "Expired";
+    if (daysLeft !== null && daysLeft <= 0) return "Expired";
+    if (isActive && subscriptionStatus === 'active' && daysLeft) return `${daysLeft} days left`;
+    if (isActive && subscriptionStatus === 'free' && daysLeft) return `${daysLeft} days left`;
     return "Expired";
   };
   
@@ -124,16 +126,24 @@ const SubscriptionStatusItem = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-300">Days Left:</span>
-                    <span className="font-medium text-green-300">
+                    <span className="font-medium">
                       {daysLeft !== null ? (
-                        <Badge className="bg-amber-600 hover:bg-amber-700 text-white">
-                          {daysLeft} days
-                        </Badge>
+                        daysLeft > 0 ? (
+                          <Badge className={`${daysLeft > 30 ? 'bg-green-600 hover:bg-green-700' : daysLeft > 7 ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'} text-white`}>
+                            {daysLeft} days
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-red-600 hover:bg-red-700 text-white">
+                            Expired
+                          </Badge>
+                        )
                       ) : 'N/A'}
                     </span>
                   </div>
                   <div className="mt-3 text-sm text-gray-400">
-                    You have access to AI Chat for {daysLeft} more days.
+                    {daysLeft !== null && daysLeft > 0 ? 
+                      `You have access to AI Chat for ${daysLeft} more days.` : 
+                      "Your AI Chat access has expired."}
                   </div>
                 </div>
               ) : (
