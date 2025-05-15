@@ -2413,13 +2413,17 @@ export default function AdminDashboard() {
                                         </span>
                                       </div>
                                       <div>
-                                        {user.subscriptionStatus === 'active' ? (
+                                        {isAfter(new Date(user.aiAccessExpiryDate), new Date()) ? (
                                           <Badge 
                                             variant="default"
-                                            className="bg-green-700 text-white flex items-center"
+                                            className={`${differenceInDays(new Date(user.aiAccessExpiryDate), new Date()) > 30 ? 'bg-green-700' : differenceInDays(new Date(user.aiAccessExpiryDate), new Date()) > 7 ? 'bg-amber-600' : 'bg-red-600'} text-white flex items-center`}
                                           >
                                             <Clock className="h-3 w-3 mr-1" />
-                                            {differenceInDays(new Date(user.aiAccessExpiryDate), new Date())} days left
+                                            {user.subscriptionStatus === 'free' ? (
+                                              <span>6 Month Trial ({differenceInDays(new Date(user.aiAccessExpiryDate), new Date())} days left)</span>
+                                            ) : (
+                                              <span>{differenceInDays(new Date(user.aiAccessExpiryDate), new Date())} days left</span>
+                                            )}
                                           </Badge>
                                         ) : (
                                           <Badge 
