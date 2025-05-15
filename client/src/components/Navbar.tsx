@@ -59,7 +59,7 @@ const SubscriptionStatusItem = () => {
     if (!isActive) return "Expired";
     if (daysLeft !== null && daysLeft <= 0) return "Expired";
     if (isActive && subscriptionStatus === 'active' && daysLeft) return `${daysLeft} days left`;
-    if (isActive && subscriptionStatus === 'free' && daysLeft) return `${daysLeft} days left`;
+    if (isActive && subscriptionStatus === 'free' && daysLeft) return `6 Month Trial (${daysLeft} days left)`;
     return "Expired";
   };
   
@@ -141,9 +141,13 @@ const SubscriptionStatusItem = () => {
                     </span>
                   </div>
                   <div className="mt-3 text-sm text-gray-400">
-                    {daysLeft !== null && daysLeft > 0 ? 
-                      `You have access to AI Chat for ${daysLeft} more days.` : 
-                      "Your AI Chat access has expired."}
+                    {daysLeft !== null && daysLeft > 0 ? (
+                      subscriptionStatus === 'free' ? 
+                        `You're on a 6-month free trial with ${daysLeft} days remaining.` : 
+                        `You have access to AI Chat for ${daysLeft} more days.`
+                    ) : (
+                      "Your AI Chat access has expired."
+                    )}
                   </div>
                 </div>
               ) : (
