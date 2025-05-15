@@ -708,11 +708,13 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`Updating payment for session ${id} with paymentId: ${paymentId}`);
       
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update the session with payment information
+      await db.update(projectGuidances)
         .set(updateData)
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      return updatedSession;
+        .where(eq(projectGuidances.id, id));
+      
+      // Return the complete updated session with all fields including refund data
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateProjectGuidancePayment:", error);
       return undefined;
@@ -721,11 +723,13 @@ export class DatabaseStorage implements IStorage {
   
   async updateProjectGuidanceOrderId(id: number, orderId: string): Promise<ProjectGuidance | undefined> {
     try {
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update with order ID
+      await db.update(projectGuidances)
         .set({ orderId })
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      return updatedSession;
+        .where(eq(projectGuidances.id, id));
+      
+      // Return the complete updated session with all fields including refund data
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateProjectGuidanceOrderId:", error);
       return undefined;
