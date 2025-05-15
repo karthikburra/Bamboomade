@@ -6405,6 +6405,32 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
 
+  // API endpoint to check subscription status
+  app.get("/api/subscription/status", async (req, res) => {
+    try {
+      // Check if user is logged in
+      if (!req.session?.userId) {
+        return res.status(401).json({ 
+          isAuthenticated: false,
+          message: "Not authenticated"
+        });
+      }
+      
+      const userId = req.session.userId;
+      const subscriptionStatus = await storage.checkSubscriptionStatus(userId);
+      
+      return res.json({
+        isActive: subscriptionStatus.isActive,
+        expiryDate: subscriptionStatus.expiryDate,
+        daysLeft: subscriptionStatus.daysLeft,
+        subscriptionType: subscriptionStatus.isActive ? 'free' : 'expired' // Default to free for now
+      });
+    } catch (error) {
+      console.error("Error checking subscription status:", error);
+      return res.status(500).json({ message: "Failed to check subscription status" });
+    }
+  });
+
   // API endpoint to get available time slots for bookings
   // Get user profile by ID (for all logged-in users)
   app.get("/api/users/:userId", async (req, res) => {
@@ -6431,6 +6457,9 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // For security, only return limited user information for non-admins
       const isAdminUser = req.session?.adminUser !== undefined;
       
+      // Check subscription status for this user
+      const subscriptionStatus = await storage.checkSubscriptionStatus(userId);
+      
       if (!isAdminUser) {
         // Return only basic profile info for regular users
         const safeUserData = {
@@ -6442,7 +6471,10 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           isVerified: userWithExtraInfo.isVerified,
           role: userWithExtraInfo.role,
           createdAt: userWithExtraInfo.createdAt,
-          profileCompleted: userWithExtraInfo.profileCompleted
+          profileCompleted: userWithExtraInfo.profileCompleted,
+          // Add subscription information
+          subscriptionStatus: userWithExtraInfo.subscriptionStatus || (subscriptionStatus.isActive ? 'free' : 'expired'),
+          aiAccessExpiryDate: userWithExtraInfo.subscriptionEndDate || (subscriptionStatus.expiryDate ? subscriptionStatus.expiryDate.toISOString() : null)
         };
         return res.json({ user: safeUserData });
       }
