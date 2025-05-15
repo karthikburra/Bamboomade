@@ -56,7 +56,7 @@ import {
   Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle,
   History, Activity, UserX, Globe, Timer, Laptop, Smartphone, 
   Clock8, ClockIcon, RefreshCw, Shield, ShieldOff, KeyRound, Lock,
-  RefreshCcw, Image as ImageIcon, UserPlus
+  RefreshCcw, Image as ImageIcon, UserPlus, CreditCard, Settings
 } from "lucide-react";
 import {
   Select,
@@ -1359,17 +1359,72 @@ export default function AdminDashboard() {
                           <Table>
                             <TableHeader className="bg-gray-800">
                               <TableRow className="hover:bg-gray-800/80">
-                                <TableHead className="text-gray-300">Student</TableHead>
-                                <TableHead className="text-gray-300 hidden sm:table-cell">Contact</TableHead>
-                                <TableHead className="text-gray-300">Date & Time</TableHead>
-                                <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
-                                <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
-                                <TableHead className="text-gray-300">Payment</TableHead>
-                                <TableHead className="text-gray-300 hidden md:table-cell">Payment ID</TableHead>
-                                <TableHead className="text-gray-300 hidden md:table-cell">Order ID</TableHead>
-                                <TableHead className="text-gray-300 hidden lg:table-cell">Razorpay Status</TableHead>
-                                <TableHead className="text-gray-300">Actions</TableHead>
-                                <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
+                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Student</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden sm:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Phone className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Contact</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Date & Time</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Info className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Topic</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden md:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Duration</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Database className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Payment</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden md:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Database className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Payment ID</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden md:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Database className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Order ID</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Activity className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Razorpay Status</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Actions</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden sm:table-cell py-2 px-2 sm:px-4">
+                                  <div className="flex items-center">
+                                    <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Status</span>
+                                  </div>
+                                </TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody className="divide-y divide-gray-800">
@@ -1427,7 +1482,7 @@ export default function AdminDashboard() {
                                       {/* Show payment ID on mobile */}
                                       {session.paymentId && (
                                         <div className="flex items-center text-xs text-green-400">
-                                          <CreditCard className="w-3 h-3 mr-1" /> 
+                                          <Database className="w-3 h-3 mr-1" /> 
                                           <span className="font-mono max-w-[110px] truncate" title={session.paymentId}>
                                             {session.paymentId}
                                           </span>
