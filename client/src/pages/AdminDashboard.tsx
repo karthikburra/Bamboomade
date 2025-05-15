@@ -298,42 +298,24 @@ export default function AdminDashboard() {
         
         <Tabs defaultValue="pending" className="space-y-4">
           <div className="relative overflow-x-auto pb-1">
-            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 grid grid-cols-3 sm:flex sm:flex-nowrap gap-1 p-1 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
-                <div className="flex flex-col sm:flex-row items-center">
-                  <span>Pending</span>
-                  <span className="text-xs ml-0 sm:ml-1">({pendingSessions.length})</span>
-                </div>
+            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Pending ({pendingSessions.length})
               </TabsTrigger>
-              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
-                <div className="flex flex-col sm:flex-row items-center">
-                  <span>Upcoming</span>
-                  <span className="text-xs ml-0 sm:ml-1">({upcomingSessions.length})</span>
-                </div>
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Upcoming ({upcomingSessions.length})
               </TabsTrigger>
-              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
-                <div className="flex flex-col sm:flex-row items-center">
-                  <span>Done</span>
-                  <span className="text-xs ml-0 sm:ml-1">({completedSessions.length})</span>
-                </div>
+              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Completed ({completedSessions.length})
               </TabsTrigger>
-              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
-                <div className="flex flex-col sm:flex-row items-center">
-                  <span>Cancelled</span>
-                  <span className="text-xs ml-0 sm:ml-1">({cancelledSessions.length})</span>
-                </div>
+              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                Cancelled ({cancelledSessions.length})
               </TabsTrigger>
-              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
-                <div className="flex flex-col sm:flex-row items-center">
-                  <span>All</span>
-                  <span className="hidden sm:inline ml-1">Sessions</span>
-                </div>
+              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
+                All Sessions
               </TabsTrigger>
-              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
-                <div className="flex flex-col sm:flex-row items-center">
-                  <span>Slots</span>
-                  <span className="hidden sm:inline ml-1">Available</span>
-                </div>
+              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
+                Availability
               </TabsTrigger>
             </TabsList>
           </div>
@@ -427,48 +409,16 @@ export default function AdminDashboard() {
                         
                         <div className="rounded-md border border-gray-800 overflow-x-auto">
                           <Table>
-                            <TableHeader className="bg-gray-800 sticky top-0 z-10">
+                            <TableHeader className="bg-gray-800">
                               <TableRow className="hover:bg-gray-800/80">
-                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Student</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 hidden sm:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Contact</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Date & Time</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 hidden lg:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Topic</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 hidden md:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Duration</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Payment</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Google Meet</span>
-                                  </div>
-                                </TableHead>
-                                <TableHead className="text-gray-300 hidden sm:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <span className="text-xs sm:text-sm">Status</span>
-                                  </div>
-                                </TableHead>
+                                <TableHead className="text-gray-300">Student</TableHead>
+                                <TableHead className="text-gray-300 hidden sm:table-cell">Contact</TableHead>
+                                <TableHead className="text-gray-300">Date & Time</TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
+                                <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
+                                <TableHead className="text-gray-300">Payment</TableHead>
+                                <TableHead className="text-gray-300">Google Meet</TableHead>
+                                <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody className="divide-y divide-gray-800">
