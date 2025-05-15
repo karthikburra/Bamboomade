@@ -574,6 +574,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("❌ Error in scheduled completion check:", error);
     }
   });
+  
+  // Scheduled task to automatically map payments to sessions every 15 minutes
+  cron.schedule("*/15 * * * *", async () => {
+    console.log("🔄 Running scheduled payment mapping...");
+    try {
+      const result = await autoMapPaymentsToSessions(storage);
+      console.log(`✅ Scheduled payment mapping complete: ${result.mappedCount} payments mapped`);
+      
+      if (result.mappedCount > 0) {
+        result.mappedSessions.forEach(session => {
+          console.log(`- Session #${session.sessionId} mapped to payment ${session.paymentId} (₹${session.amount})`);
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error in scheduled payment mapping:", error);
+    }
+  });
   // Development mode endpoint for debugging session state
   if (process.env.NODE_ENV === 'development') {
     app.get("/api/debug/session", (req, res) => {

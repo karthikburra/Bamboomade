@@ -203,6 +203,7 @@ export async function getRazorpayPaymentDetails(paymentId: string) {
           success: true,
           status: 'captured',
           paymentId: paymentId,
+          orderId: 'order_simulated',
           amount: 1000,
           method: 'card',
           email: 'dev@example.com',
@@ -229,6 +230,7 @@ export async function getRazorpayPaymentDetails(paymentId: string) {
       success: true,
       status: payment.status,
       paymentId: payment.id,
+      orderId: payment.order_id,
       amount: typeof payment.amount === 'number' ? payment.amount / 100 : 0, // Convert from paise to rupees
       method: payment.method,
       email: payment.email,
