@@ -3,6 +3,8 @@ import { useLocation } from "wouter";
 import ScrollLink from "@/components/ScrollLink";
 import { useQuery } from "@tanstack/react-query";
 import { useIsMobile as useMobile } from "@/hooks/use-mobile";
+import { useSubscription } from "@/hooks/useSubscription";
+import { format, differenceInDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,13 +23,103 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone, User,
-  UserCircle, LogOut, Settings, Edit, ClipboardList
+  UserCircle, LogOut, Settings, Edit, ClipboardList, Loader2, Clock
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
+
+// Subscription Status Item Component for Dropdown Menu
+const SubscriptionStatusItem = () => {
+  const { isActive, expiryDate, daysLeft, subscriptionType, isLoading } = useSubscription();
+  
+  const getBadgeColor = () => {
+    if (subscriptionType === 'paid') return "bg-blue-600 hover:bg-blue-700";
+    if (subscriptionType === 'free' && isActive) return "bg-green-600 hover:bg-green-700";
+    return "bg-red-600 hover:bg-red-700";
+  };
+  
+  const getStatusLabel = () => {
+    if (isLoading) return "Loading...";
+    if (subscriptionType === 'paid') return "Premium";
+    if (subscriptionType === 'free' && isActive) return "Free Trial";
+    return "Expired";
+  };
+  
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <DropdownMenuItem 
+          className="flex items-center gap-2 cursor-pointer text-green-200 focus:text-green-100 focus:bg-green-700/30"
+          onClick={(e) => e.preventDefault()}
+        >
+          <Sparkles className="mr-2 h-4 w-4 text-amber-400" />
+          AI Subscription
+          <div className="ml-auto">
+            <Badge className={`text-white ${getBadgeColor()}`}>
+              {getStatusLabel()}
+            </Badge>
+          </div>
+        </DropdownMenuItem>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-4 bg-gray-900 border border-green-800/50 text-gray-100">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-lg text-green-300">AI Chat Access</h4>
+            <Badge className={`text-white ${getBadgeColor()}`}>
+              {getStatusLabel()}
+            </Badge>
+          </div>
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center p-2">
+              <Loader2 className="h-5 w-5 animate-spin text-green-500" />
+            </div>
+          ) : (
+            <>
+              {isActive ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Expiry Date:</span>
+                    <span className="font-medium text-green-300">
+                      {expiryDate ? format(new Date(expiryDate), 'MMM dd, yyyy') : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300">Days Left:</span>
+                    <span className="font-medium text-green-300">
+                      {daysLeft !== null ? (
+                        <Badge className="bg-amber-600 hover:bg-amber-700 text-white">
+                          {daysLeft} days
+                        </Badge>
+                      ) : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="mt-3 text-sm text-gray-400">
+                    You have access to AI Chat for {daysLeft} more days.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-400">
+                    Your subscription has expired. Please contact the administrator for more information.
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const Navbar: React.FC = () => {
   const [location] = useLocation();
@@ -184,6 +276,8 @@ const Navbar: React.FC = () => {
                   <ClipboardList className="mr-2 h-4 w-4" />
                   My Sessions
                 </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-green-800/30" />
+                <SubscriptionStatusItem />
                 <DropdownMenuSeparator className="bg-green-800/30" />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-300 focus:bg-red-900/20"
