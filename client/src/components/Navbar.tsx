@@ -102,7 +102,7 @@ const SubscriptionStatusItem = () => {
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-lg text-green-300">AI Chat Access</h4>
             <div className="flex items-center gap-2">
-              <Badge className={`text-white ${getBadgeColor()}`}>
+              <Badge className={`text-white ${getBadgeColor()} px-2 py-1 text-xs font-semibold rounded`}>
                 {getStatusLabel()}
               </Badge>
               <Button 
@@ -141,11 +141,11 @@ const SubscriptionStatusItem = () => {
                     <span className="font-medium">
                       {daysLeft !== null ? (
                         daysLeft > 0 ? (
-                          <Badge className={`${daysLeft > 30 ? 'bg-green-600 hover:bg-green-700' : daysLeft > 7 ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'} text-white`}>
+                          <Badge className={`${daysLeft > 30 ? 'bg-green-600 hover:bg-green-700' : daysLeft > 7 ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'} text-white px-2 py-1 text-xs font-semibold rounded`}>
                             {daysLeft} days
                           </Badge>
                         ) : (
-                          <Badge className="bg-red-600 hover:bg-red-700 text-white">
+                          <Badge className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 text-xs font-semibold rounded">
                             Expired
                           </Badge>
                         )
