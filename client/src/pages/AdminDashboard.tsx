@@ -2403,6 +2403,46 @@ export default function AdminDashboard() {
                                   )}
                                 </div>
                               </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-1.5">
+                                  {user.aiAccessExpiryDate ? (
+                                    <>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-sm font-medium">
+                                          Expires: {format(new Date(user.aiAccessExpiryDate), 'MMM dd, yyyy')}
+                                        </span>
+                                      </div>
+                                      <div>
+                                        {user.subscriptionStatus === 'active' ? (
+                                          <Badge 
+                                            variant="default"
+                                            className="bg-green-700 text-white flex items-center"
+                                          >
+                                            <Clock className="h-3 w-3 mr-1" />
+                                            {differenceInDays(new Date(user.aiAccessExpiryDate), new Date())} days left
+                                          </Badge>
+                                        ) : (
+                                          <Badge 
+                                            variant="default"
+                                            className="bg-red-700 text-white flex items-center"
+                                          >
+                                            <XCircle className="h-3 w-3 mr-1" />
+                                            Expired
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <Badge 
+                                      variant="outline"
+                                      className="bg-gray-800 text-gray-300 flex items-center"
+                                    >
+                                      <AlertCircle className="h-3 w-3 mr-1" />
+                                      No subscription data
+                                    </Badge>
+                                  )}
+                                </div>
+                              </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
                                   <Button 
