@@ -28,6 +28,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+// Custom component for Free Trial badge
+const FreeTrialBadge = ({ className = "" }: { className?: string }) => {
+  return (
+    <Badge className={`bg-gradient-to-r from-green-500 to-amber-500 text-white px-2 py-1 text-xs font-semibold rounded ${className}`}>
+      Free Trial
+    </Badge>
+  );
+};
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone, User,
@@ -35,6 +44,15 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
+
+// Custom component for Free Trial badge
+const FreeTrialBadge = ({ className = "" }: { className?: string }) => {
+  return (
+    <Badge className={`bg-gradient-to-r from-green-500 to-amber-500 text-white px-2 py-1 text-xs font-semibold rounded ${className}`}>
+      Free Trial
+    </Badge>
+  );
+};
 
 // Subscription Status Item Component for Dropdown Menu
 const SubscriptionStatusItem = () => {
@@ -316,6 +334,12 @@ const Navbar: React.FC = () => {
                 </DropdownMenuLabel>
                 <div className="px-2 py-1.5 text-xs text-green-400 mb-1">
                   {user.email}
+                  {user.subscriptionStatus === 'free' && (
+                    <div className="mt-1.5 flex items-center justify-between">
+                      <span className="text-xs text-amber-400 font-medium">Free Trial Active</span>
+                      <FreeTrialBadge className="scale-90" />
+                    </div>
+                  )}
                 </div>
                 <DropdownMenuSeparator className="bg-green-800/30" />
                 <DropdownMenuItem 
