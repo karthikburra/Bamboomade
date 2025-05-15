@@ -569,6 +569,113 @@ export async function initiateRazorpayRefund(
  * @param refundId The Razorpay refund ID
  * @returns Refund details
  */
+/**
+ * Process a refund for a session cancellation
+ * @param session The cancelled session object
+ * @param cancellationReason Reason for cancellation
+ * @param refundPercentage Percentage of the amount to be refunded (0-100)
+ * @param fullRefund Whether to issue a full refund (overrides refundPercentage)
+ * @param storage Storage interface for database operations
+ * @returns Refund details including status and refund ID
+ */
+export async function processSessionRefund(
+  session: any,
+  cancellationReason: string,
+  refundPercentage: number,
+  fullRefund: boolean = false,
+  storage = defaultStorage
+) {
+  try {
+    if (!session.paymentId) {
+      console.log(`Cannot process refund for session ${session.id} - no payment ID found`);
+      return { 
+        success: false,
+        refundStatus: 'Not Processed', 
+        error: 'No payment ID found for this session' 
+      };
+    }
+
+    // Calculate refund amount
+    const sessionAmount = session.amount || 0;
+    let refundAmount = 0;
+    
+    if (fullRefund) {
+      refundAmount = sessionAmount;
+      refundPercentage = 100;
+    } else {
+      refundAmount = Math.round((sessionAmount * refundPercentage) / 100);
+    }
+
+    // Don't process if refund amount is 0
+    if (refundAmount <= 0) {
+      console.log(`Refund amount is zero for session ${session.id}, skipping refund process`);
+      return { 
+        success: false, 
+        refundStatus: 'Not Processed',
+        amount: 0,
+        error: 'Refund amount is zero' 
+      };
+    }
+
+    // Prepare notes
+    const notes = {
+      reason: cancellationReason || 'Session cancelled',
+      sessionId: session.id.toString(),
+      refundPercentage: refundPercentage.toString()
+    };
+
+    // Initiate the refund
+    const refundResult = await initiateRazorpayRefund(
+      session.paymentId,
+      refundAmount, 
+      notes
+    );
+
+    if (refundResult.success) {
+      // Update session with refund information
+      await storage.updateSessionRefundStatus(
+        session.id,
+        refundResult.refundId,
+        'Refund Initiated'
+      );
+
+      return {
+        success: true,
+        refundStatus: 'Refund Initiated',
+        refundId: refundResult.refundId,
+        amount: refundAmount,
+        percentage: refundPercentage
+      };
+    } else {
+      // Something failed with the refund API
+      console.error(`Failed to process refund for session ${session.id}:`, refundResult.error);
+      
+      // Still update the session status for tracking
+      await storage.updateSessionRefundStatus(
+        session.id,
+        'refund_failed',
+        'Refund Failed'
+      );
+
+      return {
+        success: false,
+        refundStatus: 'Refund Failed',
+        error: refundResult.error,
+        amount: refundAmount,
+        percentage: refundPercentage
+      };
+    }
+  } catch (error: any) {
+    console.error('Error processing session refund:', error);
+    return {
+      success: false,
+      refundStatus: 'Error',
+      error: error.message || 'Unknown error processing refund',
+      errorDetails: error
+    };
+  }
+}
+
 export async function getRazorpayRefundDetails(refundId: string) {
   try {
     // Get Razorpay instance

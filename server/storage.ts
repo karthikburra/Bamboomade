@@ -642,27 +642,25 @@ export class DatabaseStorage implements IStorage {
   
   async updateSessionRefundStatus(id: number, refundId: string, refundStatus: string): Promise<ProjectGuidance | undefined> {
     try {
-      // First get the current session to preserve existing notes
+      // First get the current session to preserve existing values
       const [currentSession] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
       if (!currentSession) {
         console.error(`Session ${id} not found for updating refund status`);
         return undefined;
       }
       
-      // Valid refund statuses: 'Refund Pending', 'Refund Initiated', 'Refund Processed', 'Refund Failed'
-      // Add refundId to track the refund in Razorpay
-      const newNotes = `Refund ID: ${refundId}${currentSession.notes ? ' | ' + currentSession.notes : ''}`;
+      // Valid refund statuses: 'Refund Initiated', 'Refund Processed', 'Refund Failed', 'Not Processed'
       
       const [updatedSession] = await db.update(projectGuidances)
         .set({ 
-          paymentStatus: refundStatus,
-          // Store refundId in notes field temporarily, until we add a dedicated refundId field
-          notes: newNotes
+          paymentStatus: 'Refunded', // Update payment status to Refunded
+          refundId: refundId, // Store the Razorpay refund ID
+          refundStatus: refundStatus // Store the specific refund status
         })
         .where(eq(projectGuidances.id, id))
         .returning();
       
-      console.log(`Updated session ${id} refund status to ${refundStatus} with refund ID ${refundId}`);
+      console.log(`Updated session ${id} with refund status: ${refundStatus}, refund ID: ${refundId}`);
       return updatedSession;
     } catch (error) {
       console.error("Database error in updateSessionRefundStatus:", error);
