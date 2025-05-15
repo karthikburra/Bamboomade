@@ -75,6 +75,50 @@ import RefreshSessionsButton from "../components/RefreshSessionsButton";
 import FixFailedSessionsButton from "../components/FixFailedSessionsButton";
 import MarkCompletedSessionsButton from "../components/MarkCompletedSessionsButton";
 
+// Type definitions
+interface Session {
+  id: number;
+  studentName: string;
+  email: string;
+  status: string;
+  sessionDate: string;
+  duration: number;
+  amount: number;
+  paymentId?: string;
+  topic: string;
+  refundStatus?: string;
+  refundId?: string;
+}
+
+interface User {
+  id: string;
+  fullName?: string;
+  email: string;
+  createdAt?: string;
+  deletedAt?: string;
+}
+
+interface PaymentAnalyticsData {
+  totalRevenue: number;
+  totalSessions: number;
+  completedSessions: number;
+  pendingSessions: number;
+  cancelledSessions: number;
+  confirmedSessions: number;
+  averageSessionValue: number;
+  studentRevenue: number;
+  professionalRevenue: number;
+  monthlyRevenue: Record<string, number>;
+  userTypeDistribution: {
+    students: number;
+    professionals: number;
+  };
+  sessionDurationDistribution: {
+    thirtyMin: number;
+    sixtyMin: number;
+  };
+}
+
 export default function AdminDashboard() {
   // Get query parameters 
   const [location, navigate] = useLocation();
@@ -86,25 +130,25 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
   
   // Get sessions based on tab
-  const { data: sessions = [], isLoading: isSessionsLoading, refetch: refetchSessions } = useQuery({
+  const { data: sessions = [], isLoading: isSessionsLoading, refetch: refetchSessions } = useQuery<Session[]>({
     queryKey: ['/api/admin/sessions', tab],
     enabled: tab !== "summary" && tab !== "users" && tab !== "deleted-users" && tab !== "payments"
   });
   
   // Users data
-  const { data: users = [], isLoading: isUsersLoading, refetch: refetchUsers } = useQuery({
+  const { data: users = [], isLoading: isUsersLoading, refetch: refetchUsers } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
     enabled: tab === "users" || tab === "summary"
   });
   
   // Deleted users data
-  const { data: deletedUsers = [], isLoading: isDeletedUsersLoading, refetch: refetchDeletedUsers } = useQuery({
+  const { data: deletedUsers = [], isLoading: isDeletedUsersLoading, refetch: refetchDeletedUsers } = useQuery<User[]>({
     queryKey: ['/api/admin/deleted-users'],
     enabled: tab === "deleted-users"
   });
 
   // Payment analytics query
-  const { data: paymentAnalytics, isLoading: isPaymentAnalyticsLoading } = useQuery({
+  const { data: paymentAnalytics, isLoading: isPaymentAnalyticsLoading } = useQuery<PaymentAnalyticsData>({
     queryKey: ['/api/admin/payment-analytics'],
     enabled: tab === "payments" || tab === "summary"
   });
@@ -223,7 +267,7 @@ export default function AdminDashboard() {
                                       {/* Date shown on mobile */}
                                       <div className="flex flex-col space-y-1 mt-1 sm:hidden">
                                         <span className="text-[10px] text-gray-400">
-                                          {formatSessionDate(session.sessionDate)}
+                                          {session.sessionDate}
                                         </span>
                                         <span className="text-[10px] text-gray-400">
                                           {session.duration} mins
@@ -233,7 +277,7 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell className="hidden sm:table-cell py-2 px-2 sm:px-4">
                                     <div className="flex flex-col">
-                                      <span>{formatSessionDate(session.sessionDate)}</span>
+                                      <span>{session.sessionDate}</span>
                                       <span className="text-xs text-gray-400">{session.duration} mins</span>
                                     </div>
                                   </TableCell>
@@ -351,7 +395,7 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {isPaymentAnalyticsLoading ? (
+                {isPaymentAnalyticsLoading || !paymentAnalytics ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
                   </div>
@@ -464,7 +508,7 @@ export default function AdminDashboard() {
                               <TableCell className="font-mono text-xs sm:text-sm text-gray-400">{user.id}</TableCell>
                               <TableCell>{user.fullName || <span className="text-gray-500 italic">Not provided</span>}</TableCell>
                               <TableCell>{user.email}</TableCell>
-                              <TableCell>{formatSessionDate(user.deletedAt)}</TableCell>
+                              <TableCell>{user.deletedAt || "N/A"}</TableCell>
                               <TableCell>
                                 <div className="flex items-center space-x-2">
                                   <Button
