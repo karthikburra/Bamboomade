@@ -18,6 +18,10 @@ export const users = pgTable("users", {
   fullName: text("full_name"),
   profileImageUrl: text("profile_image_url"),
   phoneNumber: text("phone_number"),
+  // Subscription fields
+  aiAccessExpiryDate: timestamp("ai_access_expiry_date"),
+  subscriptionStatus: text("subscription_status").default("free"),  // 'free', 'active', 'expired'
+  lastSubscriptionCheckDate: timestamp("last_subscription_check_date"),
   // Add account creation timestamp
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

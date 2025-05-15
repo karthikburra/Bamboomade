@@ -25,6 +25,11 @@ export interface IStorage {
   updateUserAdminStatus(userId: number, isAdmin: boolean): Promise<User | undefined>;
   updateUser(userId: number, updates: Partial<User>): Promise<User | undefined>;
   
+  // Subscription operations
+  updateUserSubscription(userId: number, expiryDate: Date, status: string): Promise<User | undefined>;
+  checkSubscriptionStatus(userId: number): Promise<{ isActive: boolean, expiryDate: Date | null, daysLeft: number | null }>;
+  getUsersWithExpiredSubscriptions(): Promise<User[]>;
+  
   // Deleted user operations
   deleteUser(userId: number, deletedBy: number, reason?: string): Promise<DeletedUser>;
   getAllDeletedUsers(): Promise<DeletedUser[]>;
@@ -250,6 +255,79 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in updateUser:", error);
       return undefined;
+    }
+  }
+  
+  // Subscription operations
+  async updateUserSubscription(userId: number, expiryDate: Date, status: string): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({
+          aiAccessExpiryDate: expiryDate,
+          subscriptionStatus: status,
+          lastSubscriptionCheckDate: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error("Database error in updateUserSubscription:", error);
+      return undefined;
+    }
+  }
+  
+  async checkSubscriptionStatus(userId: number): Promise<{ isActive: boolean, expiryDate: Date | null, daysLeft: number | null }> {
+    try {
+      const user = await this.getUser(userId);
+      
+      if (!user || !user.aiAccessExpiryDate) {
+        return { isActive: false, expiryDate: null, daysLeft: null };
+      }
+      
+      const now = new Date();
+      const expiryDate = new Date(user.aiAccessExpiryDate);
+      
+      // Update last check date
+      await db.update(users)
+        .set({ lastSubscriptionCheckDate: now })
+        .where(eq(users.id, userId));
+      
+      // Calculate days left
+      const timeDiff = expiryDate.getTime() - now.getTime();
+      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      
+      // Check if subscription is active
+      const isActive = timeDiff > 0;
+      
+      return { 
+        isActive, 
+        expiryDate, 
+        daysLeft: isActive ? daysLeft : 0 
+      };
+    } catch (error) {
+      console.error("Database error in checkSubscriptionStatus:", error);
+      return { isActive: false, expiryDate: null, daysLeft: null };
+    }
+  }
+  
+  async getUsersWithExpiredSubscriptions(): Promise<User[]> {
+    try {
+      const now = new Date();
+      
+      // Get users whose subscription has expired but status is still active
+      const expiredUsers = await db.select()
+        .from(users)
+        .where(
+          and(
+            db.sql`${users.aiAccessExpiryDate} < ${now}`,
+            eq(users.subscriptionStatus, 'free')
+          )
+        );
+      
+      return expiredUsers;
+    } catch (error) {
+      console.error("Database error in getUsersWithExpiredSubscriptions:", error);
+      return [];
     }
   }
   
