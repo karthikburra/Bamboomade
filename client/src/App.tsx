@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -29,6 +29,7 @@ import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import PaymentFailed from "@/pages/PaymentFailed";
 import OurWorks from "@/pages/OurWorks";
 import AllSessions from "@/pages/AllSessions";
+import { useAuth } from "./hooks/useAuth";
 import ProfileEdit from "@/pages/ProfileEdit";
 import VerifyEmail from "@/pages/VerifyEmail";
 import DevTools from "@/pages/DevTools";
@@ -57,7 +58,7 @@ function Router() {
       <Route path="/our-works" component={OurWorks} />
       <Route path="/contact" component={Contact} />
       <Route path="/project-guidance" component={ProjectGuidance} />
-      <Route path="/ai-chat" component={AIChat} />
+      <Route path="/ai-chat" component={ProtectedAIChat} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-home" component={AdminHome} />
