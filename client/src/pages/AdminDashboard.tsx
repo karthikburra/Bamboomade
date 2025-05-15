@@ -1365,10 +1365,10 @@ export default function AdminDashboard() {
                                 <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
                                 <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
                                 <TableHead className="text-gray-300">Payment</TableHead>
-                                <TableHead className="text-gray-300">Payment ID</TableHead>
-                                <TableHead className="text-gray-300">Order ID</TableHead>
+                                <TableHead className="text-gray-300 hidden md:table-cell">Payment ID</TableHead>
+                                <TableHead className="text-gray-300 hidden md:table-cell">Order ID</TableHead>
                                 <TableHead className="text-gray-300 hidden lg:table-cell">Razorpay Status</TableHead>
-                                <TableHead className="text-gray-300">Google Meet</TableHead>
+                                <TableHead className="text-gray-300">Actions</TableHead>
                                 <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -1541,7 +1541,7 @@ export default function AdminDashboard() {
                                       </div>
                                     )}
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell className="hidden md:table-cell">
                                     <div className="font-mono text-xs">
                                       {session.paymentId ? (
                                         <TooltipProvider>
@@ -1582,7 +1582,7 @@ export default function AdminDashboard() {
                                       )}
                                     </div>
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell className="hidden md:table-cell">
                                     <div className="font-mono text-xs">
                                       {session.orderId ? (
                                         <TooltipProvider>
@@ -1683,12 +1683,13 @@ export default function AdminDashboard() {
                                     )}
                                   </TableCell>
                                   <TableCell>
-                                    <div className="flex flex-col gap-2">
-                                      {session.googleMeetLink ? (
-                                        <div className="flex gap-2">
+                                    <div className="flex flex-col">
+                                      <div className="flex flex-wrap gap-1 mb-1">
+                                        {/* Meet link/add button */}
+                                        {session.googleMeetLink ? (
                                           <Button 
                                             size="sm"
-                                            className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                            className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-[10px] sm:text-xs px-1.5 sm:px-2"
                                             onClick={() => {
                                               // Ensure URL has protocol prefix for proper browser opening
                                               let meetUrl = session.googleMeetLink;
@@ -1698,67 +1699,87 @@ export default function AdminDashboard() {
                                               window.open(meetUrl, '_blank', 'noopener,noreferrer');
                                             }}
                                           >
-                                            <Video className="w-3.5 h-3.5 mr-1.5" /> 
+                                            <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" /> 
                                             <span className="hidden sm:inline">Open Meet</span>
                                             <span className="sm:hidden">Meet</span>
                                           </Button>
+                                        ) : !["completed", "cancelled"].includes(session.status) && (
                                           <Button 
                                             size="sm"
-                                            className="whitespace-nowrap bg-gray-600 hover:bg-gray-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                            className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-[10px] sm:text-xs px-1.5 sm:px-2"
                                             onClick={() => {
-                                              navigator.clipboard.writeText(session.googleMeetLink || "");
-                                              toast({
-                                                title: "Link copied",
-                                                description: "Google Meet link copied to clipboard"
-                                              });
+                                              setSelectedSession(session);
+                                              setIsDialogOpen(true);
                                             }}
                                           >
-                                            <Copy className="w-3.5 h-3.5 mr-1.5" /> 
-                                            <span className="hidden sm:inline">Copy Link</span>
-                                            <span className="sm:hidden">Copy</span>
+                                            <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" /> 
+                                            <span className="hidden sm:inline">Add Link</span>
+                                            <span className="sm:hidden">Add</span>
                                           </Button>
-                                        </div>
-                                      ) : (
+                                        )}
+                                        
+                                        {/* Reschedule Button - only for active sessions */}
+                                        {!["completed", "cancelled"].includes(session.status) && (
+                                          <Button 
+                                            size="sm"
+                                            variant="outline"
+                                            className="whitespace-nowrap h-8 text-[10px] sm:text-xs px-1.5 sm:px-2 border-amber-700/50 text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 hover:border-amber-700"
+                                            onClick={() => {
+                                              setSelectedSession(session);
+                                              setRescheduleDuration(session.duration);
+                                              setIsRescheduleDialogOpen(true);
+                                            }}
+                                          >
+                                            <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" /> 
+                                            <span className="hidden sm:inline">Reschedule</span>
+                                            <span className="sm:hidden">Resched</span>
+                                          </Button>
+                                        )}
+                                        
+                                        {/* Cancel Button - only for active sessions */}
+                                        {!["completed", "cancelled"].includes(session.status) && (
+                                          <Button 
+                                            size="sm"
+                                            variant="outline"
+                                            className="whitespace-nowrap h-8 text-[10px] sm:text-xs px-1.5 sm:px-2 border-red-700/50 text-red-400 hover:text-red-300 hover:bg-red-950/30 hover:border-red-700"
+                                            onClick={() => {
+                                              setSelectedSession(session);
+                                              setIsCancelDialogOpen(true);
+                                            }}
+                                          >
+                                            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1" /> 
+                                            <span>Cancel</span>
+                                          </Button>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Copy link button - only shown if link exists */}
+                                      {session.googleMeetLink && (
                                         <Button 
                                           size="sm"
-                                          className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                          variant="outline"
+                                          className="whitespace-nowrap h-7 text-[10px] sm:text-xs px-2 text-gray-400 hover:text-white self-start"
                                           onClick={() => {
-                                            setSelectedSession(session);
-                                            setIsDialogOpen(true);
+                                            navigator.clipboard.writeText(session.googleMeetLink);
+                                            toast({
+                                              title: "Link copied",
+                                              description: "Google Meet link copied to clipboard"
+                                            });
                                           }}
                                         >
-                                          <Plus className="w-3.5 h-3.5 mr-1.5" /> 
-                                          <span className="hidden sm:inline">Add Meet Link</span>
-                                          <span className="sm:hidden">Add</span>
+                                          <Copy className="w-3 h-3 mr-1" /> 
+                                          <span>Copy Link</span>
                                         </Button>
                                       )}
                                       
-                                      <div className="flex gap-1 mt-1">
-                                        <Button 
-                                          size="sm"
+                                      {/* Show session status on mobile */}
+                                      <div className="sm:hidden mt-1">
+                                        <Badge 
                                           variant="outline"
-                                          className="whitespace-nowrap h-7 text-xs px-2 border-amber-700/50 text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 hover:border-amber-700"
-                                          onClick={() => {
-                                            setSelectedSession(session);
-                                            setIsRescheduleDialogOpen(true);
-                                          }}
+                                          className="capitalize text-[10px]"
                                         >
-                                          <Calendar className="w-3 h-3 mr-1" /> 
-                                          <span>Reschedule</span>
-                                        </Button>
-                                        
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="whitespace-nowrap h-7 text-xs px-2 border-red-700/50 text-red-400 hover:text-red-300 hover:bg-red-950/30 hover:border-red-700"
-                                          onClick={() => {
-                                            setSelectedSession(session);
-                                            setIsCancelDialogOpen(true);
-                                          }}
-                                        >
-                                          <X className="w-3 h-3 mr-1" /> 
-                                          <span>Cancel</span>
-                                        </Button>
+                                          {session.status}
+                                        </Badge>
                                       </div>
                                     </div>
                                   </TableCell>
