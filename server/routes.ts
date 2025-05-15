@@ -25,6 +25,7 @@ import { getGeminiAI, processMessage, summarizeContent as geminiSummarizeContent
 import { processUrlWithGemini, processFileWithGemini } from "./gemini-extractor";
 import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
+import { checkAndUpdateSubscriptions } from "./subscription-checker";
 // PhonePe service removed
 import { 
   initiateRazorpayPayment, 

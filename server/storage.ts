@@ -11,7 +11,7 @@ import {
   userLoginHistory, type UserLoginHistory, type InsertUserLoginHistory,
   deletedUsers, type DeletedUser, type InsertDeletedUser
 } from "@shared/schema";
-import { eq, and, asc, desc, isNull } from 'drizzle-orm';
+import { eq, and, asc, desc, isNull, ne, gt, lt, or, isNotNull, count, max, SQL } from 'drizzle-orm';
 import { db, pool } from './db';
 
 export interface IStorage {
@@ -329,7 +329,7 @@ export class DatabaseStorage implements IStorage {
         .from(users)
         .where(
           and(
-            db.sql`${users.aiAccessExpiryDate} < ${now}`,
+            lt(users.aiAccessExpiryDate, now),
             eq(users.subscriptionStatus, 'free')
           )
         );
@@ -350,7 +350,7 @@ export class DatabaseStorage implements IStorage {
         .from(users)
         .where(
           and(
-            db.sql`${users.aiAccessExpiryDate} > ${now}`,
+            gt(users.aiAccessExpiryDate, now),
             ne(users.subscriptionStatus, 'expired')
           )
         );
