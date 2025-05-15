@@ -1237,6 +1237,65 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
   }
+
+  // Method to update a project guidance session status
+  async updateProjectGuidanceStatus(id: number, status: string): Promise<ProjectGuidance | undefined> {
+    try {
+      console.log(`Updating session ${id} status to ${status}`);
+      
+      const [session] = await db.update(projectGuidances)
+        .set({ 
+          status: status,
+        })
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      
+      return session;
+    } catch (error) {
+      console.error(`Database error in updateProjectGuidanceStatus(${id}, ${status}):`, error);
+      return undefined;
+    }
+  }
+
+  // Method to automatically mark sessions as completed when their end time has passed
+  async updateCompletedSessionStatuses(): Promise<number> {
+    try {
+      // Get all confirmed sessions that are not already marked as completed or cancelled
+      const activeSessions = await db.select()
+        .from(projectGuidances)
+        .where(
+          and(
+            eq(projectGuidances.paymentConfirmed, true),
+            eq(projectGuidances.status, "confirmed")
+          )
+        );
+      
+      console.log(`Checking ${activeSessions.length} active sessions for completion`);
+      
+      const currentTime = new Date();
+      let completedCount = 0;
+      
+      // Process each session
+      for (const session of activeSessions) {
+        const sessionDate = new Date(session.date);
+        // Calculate the end time by adding the duration in minutes
+        const sessionEndTime = new Date(sessionDate.getTime() + (session.duration * 60 * 1000));
+        
+        // If the session end time has passed, mark it as completed
+        if (sessionEndTime < currentTime) {
+          console.log(`Session ${session.id} has ended at ${sessionEndTime.toISOString()}, marking as completed`);
+          await this.updateProjectGuidanceStatus(session.id, "completed");
+          completedCount++;
+        }
+      }
+      
+      console.log(`Marked ${completedCount} sessions as completed`);
+      return completedCount;
+    } catch (error) {
+      console.error("Database error in updateCompletedSessionStatuses:", error);
+      return 0;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

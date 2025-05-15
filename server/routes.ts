@@ -563,6 +563,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("❌ Error in scheduled payment verification:", error);
     }
   });
+  
+  // Schedule automatic marking of completed sessions to run every hour
+  cron.schedule("0 * * * *", async () => {
+    console.log("🔄 Running scheduled check for completed sessions...");
+    try {
+      const completedCount = await storage.updateCompletedSessionStatuses();
+      console.log(`✅ Scheduled completion check complete: ${completedCount} sessions marked as completed`);
+    } catch (error) {
+      console.error("❌ Error in scheduled completion check:", error);
+    }
+  });
   // Development mode endpoint for debugging session state
   if (process.env.NODE_ENV === 'development') {
     app.get("/api/debug/session", (req, res) => {
