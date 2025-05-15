@@ -350,8 +350,6 @@ const Navbar: React.FC = () => {
                   My Sessions
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-green-800/30" />
-                <SubscriptionStatusItem />
-                <DropdownMenuSeparator className="bg-green-800/30" />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-300 focus:bg-red-900/20"
                   onClick={handleLogout}
