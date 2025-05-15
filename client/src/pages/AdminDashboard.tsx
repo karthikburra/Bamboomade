@@ -122,6 +122,14 @@ interface Session {
   razorpayMethod?: string; // Payment method (card, netbanking, upi, etc.)
   razorpayCreatedAt?: string; // When the payment was created in ISO format
   razorpayCapturedAt?: string; // When the payment was captured in ISO format, if captured
+  
+  // Refund related fields
+  refundStatus?: string; // 'Refund Initiated', 'Refund Processed', 'Refund Failed', etc.
+  refundAmount?: number; // Amount refunded in rupees
+  refundPercentage?: number; // Percentage of total amount refunded (e.g., 50, 75, 95)
+  refundId?: string; // Razorpay refund ID
+  cancellationReason?: string; // Reason for cancellation
+  cancellationDate?: string; // When the session was cancelled
 }
 
 interface User {

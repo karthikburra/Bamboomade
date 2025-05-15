@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, CheckCircle } from "lucide-react";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';

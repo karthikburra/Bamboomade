@@ -102,6 +102,13 @@ interface Session {
   isRescheduled?: boolean;
   originalDate?: string | null;
   isStudent?: boolean;
+  // Refund related fields
+  refundStatus?: string | null;
+  refundAmount?: number | null;
+  refundPercentage?: number | null;
+  refundId?: string | null;
+  cancellationReason?: string | null;
+  cancellationDate?: string | null;
 }
 
 export default function AllSessions() {
@@ -729,7 +736,7 @@ export default function AllSessions() {
                             </span>
                           </div>
                         )}
-                        {session.refundAmount > 0 && (
+                        {session.refundAmount && session.refundAmount > 0 && (
                           <div>
                             Refund amount: ₹{session.refundAmount}
                           </div>
