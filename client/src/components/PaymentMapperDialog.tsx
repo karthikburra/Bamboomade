@@ -268,22 +268,56 @@ const PaymentMapperDialog: React.FC<PaymentMapperDialogProps> = ({ onSuccess }) 
                       <ul className="list-disc pl-5 mt-1 space-y-1">
                         <li>First attempting to match by order ID (most reliable)</li>
                         <li>Then trying to match by email and payment amount</li>
+                        <li>Checking booking time proximity to payment time</li>
                         <li>Only successful (captured) payments will be mapped</li>
+                      </ul>
+                      <p className="mt-2 font-medium">This process will analyze:</p>
+                      <ul className="list-disc pl-5 mt-1 space-y-1">
+                        <li>All unmapped successful Razorpay payments</li>
+                        <li>All sessions with "Pending" payment status</li>
+                        <li>Sessions where the email matches payment email</li>
                       </ul>
                     </div>
                   </div>
                 </div>
               </div>
               
+              {/* Auto-mapping stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border rounded-md p-3 bg-white dark:bg-gray-900">
+                  <div className="text-sm font-medium mb-1">Unmapped Payments</div>
+                  <div className="text-2xl font-bold">
+                    {isLoadingPayments ? 
+                      <div className="animate-pulse h-7 w-12 bg-gray-200 dark:bg-gray-700 rounded"></div> : 
+                      (paymentsData?.payments?.length || 0)
+                    }
+                  </div>
+                </div>
+                <div className="border rounded-md p-3 bg-white dark:bg-gray-900">
+                  <div className="text-sm font-medium mb-1">Pending Sessions</div>
+                  <div className="text-2xl font-bold">
+                    {isLoadingSessions ? 
+                      <div className="animate-pulse h-7 w-12 bg-gray-200 dark:bg-gray-700 rounded"></div> : 
+                      (sessionsData?.sessions?.length || 0)
+                    }
+                  </div>
+                </div>
+              </div>
+              
               <Button 
                 onClick={() => autoMapPayments()}
-                disabled={isAutoMapping}
+                disabled={isAutoMapping || (!paymentsData?.payments?.length || !sessionsData?.sessions?.length)}
                 className="w-full"
               >
                 {isAutoMapping ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Mapping Payments...
+                  </>
+                ) : !paymentsData?.payments?.length || !sessionsData?.sessions?.length ? (
+                  <>
+                    <AlertCircle className="mr-2 h-4 w-4" />
+                    No Payments to Map
                   </>
                 ) : (
                   <>
@@ -292,6 +326,10 @@ const PaymentMapperDialog: React.FC<PaymentMapperDialogProps> = ({ onSuccess }) 
                   </>
                 )}
               </Button>
+              
+              <div className="text-sm text-muted-foreground text-center italic">
+                If auto-mapping doesn't work, use the Manual Mapping tab to match payments to sessions.
+              </div>
             </div>
           </TabsContent>
           

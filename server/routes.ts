@@ -5840,29 +5840,22 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       
       console.log(`Auto mapping completed: ${result.mappedCount} payments mapped`);
       
-      // Log this action in admin activity logs
-      try {
-        const adminUser = req.session.adminUser || { email: 'Unknown admin', id: 0 };
-        const logEntry = {
-          adminId: adminUser.id,
-          actionType: 'payment_auto_mapping',
-          actionDetails: JSON.stringify({
-            mappedCount: result.mappedCount,
-            errors: result.errors,
-            mappedSessions: result.mappedSessions.map(s => ({
-              sessionId: s.sessionId,
-              paymentId: s.paymentId,
-              amount: s.amount
-            }))
-          }),
-          timestamp: new Date()
-        };
-        
-        await storage.createAdminActivityLog(logEntry);
-      } catch (logError) {
-        console.error('Error logging admin activity:', logError);
+      // Log basic mapping results
+      if (result.mappedCount > 0) {
+        console.log('Mapped sessions:');
+        result.mappedSessions.forEach(session => {
+          console.log(`- Session #${session.sessionId} mapped to payment ${session.paymentId} (₹${session.amount})`);
+        });
       }
       
+      if (result.errors.length > 0) {
+        console.log('Mapping errors:');
+        result.errors.forEach(error => {
+          console.log(`- ${error}`);
+        });
+      }
+      
+      // Return response with mapping results
       res.json({
         success: true,
         result: {
