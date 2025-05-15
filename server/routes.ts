@@ -34,7 +34,9 @@ import {
   getAllRazorpayPayments,
   getRazorpayPaymentStatusSummary,
   verifyWebhookSignature,
-  handleSuccessfulPaymentWebhook
+  handleSuccessfulPaymentWebhook,
+  initiateRazorpayRefund,
+  getRazorpayRefundDetails
 } from "./razorpay-service";
 import { autoMapPaymentsToSessions, checkFailedSessionsForSuccessfulPayments } from "./payment-mapper";
 import { 
@@ -2649,38 +2651,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Always provide full refund for admin cancellations
       let refundAmount = 0;
-      if (session.paymentStatus === 'Paid') {
+      if (session.paymentConfirmed === true || session.paymentStatus === 'Paid') {
         // Get the session price based on duration and student status
         const sessionPrice = session.isStudent
           ? (session.duration === 30 ? 500 : 800)  // Student pricing
           : (session.duration === 30 ? 1000 : 1500); // Professional pricing
         
-        refundAmount = sessionPrice;
+        // For admin cancellations, provide full refund (minus 2.5% Razorpay charges if applicable)
+        refundAmount = fullRefund ? sessionPrice : Math.round(sessionPrice * 0.975);
       }
       
-      // Update the session
-      const updatedSession = await storage.updateProjectGuidance(session.id, {
-        status: 'cancelled',
-        notes: `${session.notes || ''}${session.notes ? ' | ' : ''}Cancelled by admin: ${reason} with full refund.`
-      });
+      // Cancel the session first
+      const updatedSession = await storage.cancelProjectGuidanceSession(
+        session.id,
+        `Admin cancellation: ${reason}`,
+        refundAmount,
+        fullRefund ? 100 : 97.5
+      );
       
       console.log('Session cancelled by admin:', {
         sessionId: session.id,
         email: session.email,
         date: session.date,
-        refundAmount
+        refundAmount,
+        fullRefund
       });
+      
+      // Process refund via Razorpay if payment was made and refund amount > 0
+      let refundResponse = null;
+      if (session.paymentId && refundAmount > 0) {
+        console.log(`Initiating refund for payment ${session.paymentId} with amount ₹${refundAmount}`);
+        
+        // Initiate refund through Razorpay
+        refundResponse = await initiateRazorpayRefund(
+          session.paymentId,
+          refundAmount,
+          {
+            reason: `Admin cancelled session: ${reason}`,
+            sessionId: session.id.toString(),
+            email: session.email,
+            fullRefund: fullRefund ? 'true' : 'false'
+          }
+        );
+        
+        if (refundResponse.success) {
+          console.log(`Refund initiated successfully by admin:`, refundResponse);
+          
+          // Update session with refund status
+          await storage.updateSessionRefundStatus(
+            session.id,
+            refundResponse.refundId,
+            'Refund Initiated'
+          );
+        } else {
+          console.error(`Failed to initiate refund by admin:`, refundResponse.error);
+          
+          // Update session with failed refund status
+          await storage.updateSessionRefundStatus(
+            session.id,
+            'failed_' + Date.now(),
+            'Refund Failed'
+          );
+        }
+      } else if (refundAmount === 0) {
+        console.log(`No refund initiated for session ${session.id} as refund amount is 0`);
+      } else if (!session.paymentId) {
+        console.log(`No refund initiated for session ${session.id} as payment ID is missing`);
+      }
       
       // Email notifications have been removed as requested
       
-      // Return success
+      // Return success with refund information if available
       return res.json({
         success: true,
-        message: "Session cancelled successfully with full refund",
+        message: refundResponse && refundResponse.success
+          ? "Session cancelled successfully and refund initiated"
+          : "Session cancelled successfully with full refund",
         session: updatedSession,
         refundDetails: {
-          percentage: 100,
-          amount: refundAmount
+          percentage: fullRefund ? 100 : 97.5,
+          amount: refundAmount,
+          refundId: refundResponse?.refundId || null,
+          refundStatus: refundResponse?.success ? 'Initiated' : 'Not Processed'
         }
       });
     } catch (error) {
