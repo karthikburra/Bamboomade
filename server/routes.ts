@@ -5558,6 +5558,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Process users sequentially to add login count and returning status
       const usersWithLoginInfo = [];
       for (const user of allUsers) {
+        // Only include verified users
+        if (!user.isVerified) {
+          continue; // Skip unverified users
+        }
+        
         // Don't return password in response
         const { password, ...userWithoutPassword } = user;
         
@@ -6154,6 +6159,11 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       // Process users sequentially to avoid await in .map issues
       const users = [];
       for (const user of allUsers) {
+          // Only include verified users
+          if (!user.isVerified) {
+            continue; // Skip unverified users
+          }
+          
           const { password, ...userWithoutPassword } = user;
           
           // Get token purchases for each user
