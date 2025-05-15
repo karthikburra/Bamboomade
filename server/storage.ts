@@ -653,6 +653,32 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
   }
+
+  async updateProjectGuidanceStatus(id: number, status: string): Promise<ProjectGuidance | undefined> {
+    try {
+      // Also update the paymentStatus field if status is "pending" or "active"
+      const updateData: any = { status };
+      
+      if (status.toLowerCase() === "pending") {
+        updateData.paymentStatus = "Pending";
+      } else if (status.toLowerCase() === "active") {
+        updateData.paymentStatus = "Paid";
+        updateData.paymentConfirmed = true;
+      }
+      
+      console.log(`Updating session ${id} status to ${status}`);
+      
+      const [updatedSession] = await db.update(projectGuidances)
+        .set(updateData)
+        .where(eq(projectGuidances.id, id))
+        .returning();
+      
+      return updatedSession;
+    } catch (error) {
+      console.error("Database error in updateProjectGuidanceStatus:", error);
+      return undefined;
+    }
+  }
   
   // General update method for project guidance sessions
   async updateProjectGuidance(id: number, updates: Partial<ProjectGuidance>): Promise<ProjectGuidance | undefined> {

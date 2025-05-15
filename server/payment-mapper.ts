@@ -1,6 +1,6 @@
 import { db } from './db';
 import { projectGuidances } from '@shared/schema';
-import { eq, and, isNull, or } from 'drizzle-orm';
+import { eq, and, isNull, or, like } from 'drizzle-orm';
 import { getAllRazorpayPayments, getRazorpayPaymentDetails } from './razorpay-service';
 import { IStorage } from './storage';
 
@@ -181,6 +181,173 @@ export async function mapSpecificPaymentToSession(
  * Automatically map Razorpay payments to sessions based on email, amount, and timing
  * This will scan recent Razorpay payments and try to match them with pending sessions
  */
+/**
+ * Check for failed sessions that actually have successful payments in Razorpay
+ * This function will find sessions marked as failed but have successful payments in Razorpay
+ * and update them to "pending" status with the correct payment information
+ */
+export async function checkFailedSessionsForSuccessfulPayments(storage: IStorage): Promise<PaymentMappingResult> {
+  const result: PaymentMappingResult = {
+    success: true,
+    mappedCount: 0,
+    errors: [],
+    mappedSessions: []
+  };
+
+  try {
+    // Step 1: Get all sessions with failed status
+    const failedSessions = await db.select()
+      .from(projectGuidances)
+      .where(
+        or(
+          like(projectGuidances.status, '%failed%'),
+          eq(projectGuidances.paymentStatus, 'Failed')
+        )
+      );
+
+    if (failedSessions.length === 0) {
+      console.log('No failed sessions found to check for successful payments');
+      return result;
+    }
+
+    console.log(`Found ${failedSessions.length} failed sessions to check for successful payments`);
+
+    // Step 2: Get recent Razorpay payments
+    const razorpayResponse = await getAllRazorpayPayments({ count: 100 });
+    
+    if (!razorpayResponse.success || !razorpayResponse.payments) {
+      result.success = false;
+      result.errors.push('Failed to fetch payments from Razorpay');
+      return result;
+    }
+
+    // Only consider successful payments
+    const successfulPayments = razorpayResponse.payments.filter(p => 
+      p.status === 'captured' || p.status === 'authorized'
+    );
+    
+    console.log(`Found ${successfulPayments.length} successful Razorpay payments to check against failed sessions`);
+
+    // Step 3: For each failed session, check if there's a successful payment
+    for (const session of failedSessions) {
+      const sessionEmail = session.email.toLowerCase();
+      
+      // First check by order ID if available
+      if (session.orderId) {
+        const paymentByOrderId = successfulPayments.find(p => p.orderId === session.orderId);
+        
+        if (paymentByOrderId) {
+          console.log(`Found successful payment ${paymentByOrderId.id} for failed session ${session.id} via order ID ${session.orderId}`);
+          
+          try {
+            // Update the session to pending status with payment information
+            const updatedSession = await storage.updateProjectGuidancePayment(
+              session.id,
+              paymentByOrderId.id,
+              paymentByOrderId.amount / 100,
+              paymentByOrderId.orderId
+            );
+            
+            // Update the status to pending
+            if (updatedSession) {
+              await storage.updateProjectGuidanceStatus(session.id, 'pending');
+              console.log(`✓ Successfully updated failed session ${session.id} to pending status with payment ${paymentByOrderId.id}`);
+              
+              result.mappedCount++;
+              result.mappedSessions.push({
+                sessionId: session.id,
+                paymentId: paymentByOrderId.id,
+                amount: paymentByOrderId.amount / 100,
+                email: session.email
+              });
+            }
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push(`Error updating failed session ${session.id}: ${errorMessage}`);
+          }
+          
+          continue;
+        }
+      }
+      
+      // If no match by order ID, try matching by email
+      const paymentsByEmail = successfulPayments.filter(p => 
+        p.email && p.email.toLowerCase() === sessionEmail
+      );
+      
+      if (paymentsByEmail.length > 0) {
+        console.log(`Found ${paymentsByEmail.length} successful payments for failed session ${session.id} via email ${sessionEmail}`);
+        
+        // If multiple payments found, try to narrow down by amount
+        let bestMatch = null;
+        
+        // Calculate expected amount
+        let expectedAmount = session.amount || 0;
+        if (expectedAmount === 0) {
+          if (session.isStudent) {
+            expectedAmount = session.duration === 30 ? 500 : 800;
+          } else {
+            expectedAmount = session.duration === 30 ? 1000 : 1500;
+          }
+        }
+        
+        // Find payments with matching amount
+        const amountMatches = paymentsByEmail.filter(p => {
+          const paymentAmount = p.amount / 100;
+          return Math.abs(paymentAmount - expectedAmount) <= 1;
+        });
+        
+        if (amountMatches.length > 0) {
+          console.log(`Found ${amountMatches.length} payments with matching amount for failed session ${session.id}`);
+          
+          // Sort by recency (most recent first)
+          amountMatches.sort((a, b) => {
+            const dateA = new Date(a.createdAt || Date.now());
+            const dateB = new Date(b.createdAt || Date.now());
+            return dateB.getTime() - dateA.getTime();
+          });
+          
+          bestMatch = amountMatches[0];
+          
+          try {
+            // Update the session to pending status with payment information
+            const updatedSession = await storage.updateProjectGuidancePayment(
+              session.id,
+              bestMatch.id,
+              bestMatch.amount / 100,
+              bestMatch.orderId
+            );
+            
+            // Update the status to pending
+            if (updatedSession) {
+              await storage.updateProjectGuidanceStatus(session.id, 'pending');
+              console.log(`✓ Successfully updated failed session ${session.id} to pending status with payment ${bestMatch.id}`);
+              
+              result.mappedCount++;
+              result.mappedSessions.push({
+                sessionId: session.id,
+                paymentId: bestMatch.id,
+                amount: bestMatch.amount / 100,
+                email: session.email
+              });
+            }
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push(`Error updating failed session ${session.id}: ${errorMessage}`);
+          }
+        }
+      }
+    }
+    
+    return result;
+  } catch (error: unknown) {
+    result.success = false;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    result.errors.push(`Unexpected error checking failed sessions: ${errorMessage}`);
+    return result;
+  }
+}
+
 export async function autoMapPaymentsToSessions(storage: IStorage): Promise<PaymentMappingResult> {
   const result: PaymentMappingResult = {
     success: true,
