@@ -440,14 +440,18 @@ export default function AdminDashboard() {
   const cancelSessionMutation = useMutation({
     mutationFn: async ({ 
       sessionId, 
-      reason
+      reason,
+      email
     }: { 
-      sessionId: number, 
-      reason: string 
+      sessionId: number,
+      reason: string,
+      email: string
     }) => {
       const response = await apiRequest("POST", `/api/cancel-session`, {
         sessionId,
-        cancellationReason: reason,
+        email, // Use the email passed from the component
+        reason: reason, // Match the server parameter name
+        cancellationReason: reason, // Keep this for backward compatibility
         cancelledBy: "admin"
       });
       return response.json();
@@ -2855,6 +2859,7 @@ export default function AdminDashboard() {
                   
                   cancelSessionMutation.mutate({
                     sessionId: selectedSession.id,
+                    email: selectedSession.email,
                     reason: cancellationReason
                   });
                 }}
