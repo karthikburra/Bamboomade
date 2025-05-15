@@ -437,7 +437,34 @@ export class DatabaseStorage implements IStorage {
   // Project guidance operations
   async getAllProjectGuidances(): Promise<ProjectGuidance[]> {
     try {
-      return await db.select().from(projectGuidances);
+      // Explicitly select all fields including refund columns
+      return await db.select({
+        id: projectGuidances.id,
+        studentName: projectGuidances.studentName,
+        email: projectGuidances.email,
+        phone: projectGuidances.phone,
+        date: projectGuidances.date,
+        originalDate: projectGuidances.originalDate,
+        duration: projectGuidances.duration,
+        topic: projectGuidances.topic,
+        notes: projectGuidances.notes,
+        paymentConfirmed: projectGuidances.paymentConfirmed,
+        paymentId: projectGuidances.paymentId,
+        orderId: projectGuidances.orderId,
+        paymentStatus: projectGuidances.paymentStatus,
+        status: projectGuidances.status,
+        rescheduledBy: projectGuidances.rescheduledBy,
+        rescheduledDate: projectGuidances.rescheduledDate,
+        cancellationReason: projectGuidances.cancellationReason,
+        cancellationDate: projectGuidances.cancellationDate,
+        refundAmount: projectGuidances.refundAmount,
+        refundPercentage: projectGuidances.refundPercentage,
+        refundStatus: projectGuidances.refundStatus,
+        refundId: projectGuidances.refundId,
+        amount: projectGuidances.amount,
+        googleMeetLink: projectGuidances.googleMeetLink,
+        isStudent: projectGuidances.isStudent,
+      }).from(projectGuidances);
     } catch (error) {
       console.error("Database error in getAllProjectGuidances:", error);
       return [];
@@ -446,7 +473,34 @@ export class DatabaseStorage implements IStorage {
   
   async getProjectGuidancesByStatus(status: string): Promise<ProjectGuidance[]> {
     try {
-      return await db.select()
+      // Explicitly select all fields including refund fields
+      return await db.select({
+        id: projectGuidances.id,
+        studentName: projectGuidances.studentName,
+        email: projectGuidances.email,
+        phone: projectGuidances.phone,
+        date: projectGuidances.date,
+        originalDate: projectGuidances.originalDate,
+        duration: projectGuidances.duration,
+        topic: projectGuidances.topic,
+        notes: projectGuidances.notes,
+        paymentConfirmed: projectGuidances.paymentConfirmed,
+        paymentId: projectGuidances.paymentId,
+        orderId: projectGuidances.orderId,
+        paymentStatus: projectGuidances.paymentStatus,
+        status: projectGuidances.status,
+        rescheduledBy: projectGuidances.rescheduledBy,
+        rescheduledDate: projectGuidances.rescheduledDate,
+        cancellationReason: projectGuidances.cancellationReason,
+        cancellationDate: projectGuidances.cancellationDate,
+        refundAmount: projectGuidances.refundAmount,
+        refundPercentage: projectGuidances.refundPercentage,
+        refundStatus: projectGuidances.refundStatus,
+        refundId: projectGuidances.refundId,
+        amount: projectGuidances.amount,
+        googleMeetLink: projectGuidances.googleMeetLink,
+        isStudent: projectGuidances.isStudent,
+      })
         .from(projectGuidances)
         .where(eq(projectGuidances.status, status));
     } catch (error) {
@@ -457,7 +511,37 @@ export class DatabaseStorage implements IStorage {
 
   async getProjectGuidance(id: number): Promise<ProjectGuidance | undefined> {
     try {
-      const [session] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
+      // Explicitly select all fields including refund fields
+      const [session] = await db.select({
+        id: projectGuidances.id,
+        studentName: projectGuidances.studentName,
+        email: projectGuidances.email,
+        phone: projectGuidances.phone,
+        date: projectGuidances.date,
+        originalDate: projectGuidances.originalDate,
+        duration: projectGuidances.duration,
+        topic: projectGuidances.topic,
+        notes: projectGuidances.notes,
+        paymentConfirmed: projectGuidances.paymentConfirmed,
+        paymentId: projectGuidances.paymentId,
+        orderId: projectGuidances.orderId,
+        paymentStatus: projectGuidances.paymentStatus,
+        status: projectGuidances.status,
+        rescheduledBy: projectGuidances.rescheduledBy,
+        rescheduledDate: projectGuidances.rescheduledDate,
+        cancellationReason: projectGuidances.cancellationReason,
+        cancellationDate: projectGuidances.cancellationDate,
+        refundAmount: projectGuidances.refundAmount,
+        refundPercentage: projectGuidances.refundPercentage,
+        refundStatus: projectGuidances.refundStatus,
+        refundId: projectGuidances.refundId,
+        amount: projectGuidances.amount,
+        googleMeetLink: projectGuidances.googleMeetLink,
+        isStudent: projectGuidances.isStudent,
+      })
+        .from(projectGuidances)
+        .where(eq(projectGuidances.id, id));
+      
       return session;
     } catch (error) {
       console.error("Database error in getProjectGuidance:", error);
@@ -467,7 +551,36 @@ export class DatabaseStorage implements IStorage {
   
   async getProjectGuidancesByEmail(email: string): Promise<ProjectGuidance[]> {
     try {
-      return await db.select().from(projectGuidances).where(eq(projectGuidances.email, email));
+      // Explicitly select all fields including refund fields
+      return await db.select({
+        id: projectGuidances.id,
+        studentName: projectGuidances.studentName,
+        email: projectGuidances.email,
+        phone: projectGuidances.phone,
+        date: projectGuidances.date,
+        originalDate: projectGuidances.originalDate,
+        duration: projectGuidances.duration,
+        topic: projectGuidances.topic,
+        notes: projectGuidances.notes,
+        paymentConfirmed: projectGuidances.paymentConfirmed,
+        paymentId: projectGuidances.paymentId,
+        orderId: projectGuidances.orderId,
+        paymentStatus: projectGuidances.paymentStatus,
+        status: projectGuidances.status,
+        rescheduledBy: projectGuidances.rescheduledBy,
+        rescheduledDate: projectGuidances.rescheduledDate,
+        cancellationReason: projectGuidances.cancellationReason,
+        cancellationDate: projectGuidances.cancellationDate,
+        refundAmount: projectGuidances.refundAmount,
+        refundPercentage: projectGuidances.refundPercentage,
+        refundStatus: projectGuidances.refundStatus,
+        refundId: projectGuidances.refundId,
+        amount: projectGuidances.amount,
+        googleMeetLink: projectGuidances.googleMeetLink,
+        isStudent: projectGuidances.isStudent,
+      })
+        .from(projectGuidances)
+        .where(eq(projectGuidances.email, email));
     } catch (error) {
       console.error("Database error in getProjectGuidancesByEmail:", error);
       return [];
