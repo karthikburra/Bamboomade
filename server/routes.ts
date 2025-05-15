@@ -268,7 +268,7 @@ function formatInIST(date: Date, formatStr: string): string {
   return formatInTimeZone(date, TIMEZONE, formatStr);
 }
 
-// Function to check if a time slot is already booked
+// Function to check if a time slot is already booked or within 24 hours
 async function isTimeSlotBooked(date: Date, sessionIdToExclude?: number, emailToExclude?: string): Promise<boolean> {
   // Get all sessions to check for conflicts
   const allSessions = await storage.getAllProjectGuidances();
@@ -2103,6 +2103,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if the requested time is within 24 hours from now
+      const currentTime = new Date();
+      const twentyFourHoursFromNow = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
+      
+      if (parsedDate < twentyFourHoursFromNow) {
+        console.log(`Admin Rescheduling Warning: Selected time ${formatInIST(parsedDate, "yyyy-MM-dd HH:mm")} is within 24 hours from now ${formatInIST(twentyFourHoursFromNow, "yyyy-MM-dd HH:mm")}`);
+        
+        // For administrators, we'll allow this but include a warning in the response
+        req.body.adminWarning = "This session is being rescheduled to a time less than 24 hours from now. Normal users cannot book or reschedule sessions within 24 hours.";
+      }
+      
       // Update the session with new date/time using storage method
       const updatedSession = await storage.updateProjectGuidanceSession(
         session.id,
@@ -2126,7 +2137,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: "Session rescheduled successfully by admin",
-        session: updatedSession
+        session: updatedSession,
+        warning: req.body.adminWarning || null
       });
     } catch (error) {
       console.error("Error in admin rescheduling session:", error);
