@@ -1494,12 +1494,12 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell">{session.duration} min</TableCell>
                                   <TableCell>
-                                    {session.paymentStatus === 'paid' ? (
+                                    {session.paymentStatus === 'Paid' ? (
                                       <Badge className="bg-green-600/20 text-green-400 border-green-800 hover:bg-green-600/30">
                                         <CheckCircle className="w-3 h-3 mr-1.5" />
                                         Confirmed
                                       </Badge>
-                                    ) : session.paymentStatus === 'pending' ? (
+                                    ) : session.paymentStatus === 'Pending' ? (
                                       <div className="flex flex-col gap-1">
                                         <Badge className="bg-amber-600/20 text-amber-400 border-amber-800 hover:bg-amber-600/30">
                                           <Clock className="w-3 h-3 mr-1.5" />
@@ -1684,8 +1684,8 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
-                                      {/* Only show Google Meet link and action buttons for paid or pending sessions */}
-                                      {session.paymentStatus !== 'failed' ? (
+                                      {/* Only show Google Meet link and action buttons for non-failed sessions and sessions with payment */}
+                                      {session.status !== 'failed' && session.paymentStatus !== 'Failed' ? (
                                         <>
                                           {session.googleMeetLink ? (
                                             <div className="flex gap-2">
