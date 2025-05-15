@@ -734,14 +734,15 @@ export class DatabaseStorage implements IStorage {
   
   async updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined> {
     try {
-      // First get the current session to preserve the original date if it exists
-      const [currentSession] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
+      // Get the current session to preserve the original date if it exists
+      const currentSession = await this.getProjectGuidance(id);
       if (!currentSession) return undefined;
       
       // Store the original date if this is the first time rescheduling
       const originalDate = currentSession.originalDate || currentSession.date;
       
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update the session
+      await db.update(projectGuidances)
         .set({ 
           date: newDate,
           originalDate: originalDate,
@@ -750,9 +751,10 @@ export class DatabaseStorage implements IStorage {
           rescheduledBy,
           rescheduledDate: new Date()
         })
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      return updatedSession;
+        .where(eq(projectGuidances.id, id));
+      
+      // Return the complete updated session with all fields
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateProjectGuidanceSession:", error);
       return undefined;
@@ -761,7 +763,8 @@ export class DatabaseStorage implements IStorage {
   
   async cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined> {
     try {
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update session with cancellation info
+      await db.update(projectGuidances)
         .set({ 
           status: "cancelled",
           cancellationReason: reason,
@@ -770,9 +773,10 @@ export class DatabaseStorage implements IStorage {
           refundPercentage,
           paymentStatus: 'Refund Pending' // Update payment status to pending refund
         })
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      return updatedSession;
+        .where(eq(projectGuidances.id, id));
+      
+      // Return the complete updated session with all fields
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in cancelProjectGuidanceSession:", error);
       return undefined;
@@ -781,8 +785,8 @@ export class DatabaseStorage implements IStorage {
   
   async updateSessionRefundStatus(id: number, refundId: string, refundStatus: string): Promise<ProjectGuidance | undefined> {
     try {
-      // First get the current session to preserve existing values
-      const [currentSession] = await db.select().from(projectGuidances).where(eq(projectGuidances.id, id));
+      // Check if session exists
+      const currentSession = await this.getProjectGuidance(id);
       if (!currentSession) {
         console.error(`Session ${id} not found for updating refund status`);
         return undefined;
@@ -790,17 +794,19 @@ export class DatabaseStorage implements IStorage {
       
       // Valid refund statuses: 'Refund Initiated', 'Refund Processed', 'Refund Failed', 'Not Processed'
       
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update the session with refund information
+      await db.update(projectGuidances)
         .set({ 
           paymentStatus: 'Refunded', // Update payment status to Refunded
           refundId: refundId, // Store the Razorpay refund ID
           refundStatus: refundStatus // Store the specific refund status
         })
-        .where(eq(projectGuidances.id, id))
-        .returning();
+        .where(eq(projectGuidances.id, id));
       
       console.log(`Updated session ${id} with refund status: ${refundStatus}, refund ID: ${refundId}`);
-      return updatedSession;
+      
+      // Return the complete updated session with all fields
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateSessionRefundStatus:", error);
       return undefined;
@@ -809,14 +815,16 @@ export class DatabaseStorage implements IStorage {
   
   async updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined> {
     try {
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update the session with Google Meet link
+      await db.update(projectGuidances)
         .set({ 
           googleMeetLink,
           status: "confirmed"
         })
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      return updatedSession;
+        .where(eq(projectGuidances.id, id));
+      
+      // Return the complete updated session with all fields
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateProjectGuidanceMeetLink:", error);
       return undefined;
@@ -837,12 +845,13 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`Updating session ${id} status to ${status}`);
       
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update the session status
+      await db.update(projectGuidances)
         .set(updateData)
-        .where(eq(projectGuidances.id, id))
-        .returning();
+        .where(eq(projectGuidances.id, id));
       
-      return updatedSession;
+      // Return the complete updated session with all fields
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateProjectGuidanceStatus:", error);
       return undefined;
@@ -852,11 +861,13 @@ export class DatabaseStorage implements IStorage {
   // General update method for project guidance sessions
   async updateProjectGuidance(id: number, updates: Partial<ProjectGuidance>): Promise<ProjectGuidance | undefined> {
     try {
-      const [updatedSession] = await db.update(projectGuidances)
+      // Update the session with the provided changes
+      await db.update(projectGuidances)
         .set(updates)
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      return updatedSession;
+        .where(eq(projectGuidances.id, id));
+      
+      // Return the complete updated session with all fields
+      return await this.getProjectGuidance(id);
     } catch (error) {
       console.error("Database error in updateProjectGuidance:", error);
       return undefined;
