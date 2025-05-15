@@ -63,52 +63,54 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       onValueChange={handleTabChange}
       className="space-y-6"
     >
-      <div className="relative overflow-x-auto pb-2">
-        <TabsList className="bg-gray-800/80 border border-gray-700 w-full flex flex-wrap sm:flex-nowrap overflow-x-auto rounded-md shadow-md">
+      <div className="sticky top-0 z-10 bg-gray-950 pt-1 pb-2">
+        <TabsList className="bg-gray-800/80 border border-gray-700 w-full flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent rounded-md shadow-md">
           {/* Dashboard Summary tab removed */}
           <TabsTrigger 
             value="sessions" 
-            className="flex-1 data-[state=active]:bg-green-700/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 min-w-[140px] data-[state=active]:bg-green-700/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Calendar className="w-4 h-4 mr-2" />
-            Session Management
+            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="sm:inline">Session</span> Management
           </TabsTrigger>
 
           <TabsTrigger 
             value="payments" 
-            className="flex-1 data-[state=active]:bg-blue-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 min-w-[140px] data-[state=active]:bg-blue-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <CreditCard className="w-4 h-4 mr-2" />
-            Payment Analytics
+            <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="sm:inline">Payment</span> Analytics
           </TabsTrigger>
 
           <TabsTrigger 
             value="database" 
-            className="flex-1 data-[state=active]:bg-amber-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 min-w-[140px] data-[state=active]:bg-amber-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Database className="w-4 h-4 mr-2" />
-            Knowledge Database
+            <Database className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="sm:inline">Knowledge</span> Database
           </TabsTrigger>
           
           <TabsTrigger 
             value="users" 
-            className="flex-1 data-[state=active]:bg-purple-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 min-w-[140px] data-[state=active]:bg-purple-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Users className="w-4 h-4 mr-2" />
-            User Management
+            <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="sm:inline">User</span> Management
           </TabsTrigger>
           
           <TabsTrigger 
             value="deleted-users" 
-            className="flex-1 data-[state=active]:bg-red-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 min-w-[140px] data-[state=active]:bg-red-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Deleted Users
+            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="sm:inline">Deleted</span> Users
           </TabsTrigger>
         </TabsList>
       </div>
 
-      {children}
+      <div className="pb-20">
+        {children}
+      </div>
     </Tabs>
   );
 };
