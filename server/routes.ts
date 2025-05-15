@@ -2302,15 +2302,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Extract payment amount
-      const paymentAmount = paymentDetails.payment.amount / 100; // Convert from paise to rupees
+      // Extract payment amount (already converted from paise to rupees in the service)
+      const paymentAmount = paymentDetails.amount;
       
       // Update session payment details
       const updatedSession = await storage.updateProjectGuidancePayment(
         sessionId, 
         paymentId, 
         paymentAmount,
-        paymentDetails.payment.orderId || session.orderId
+        session.orderId // Use the session's order ID since we don't have it from payment details
       );
       
       // Add manual mapping note to the dashboard logs
