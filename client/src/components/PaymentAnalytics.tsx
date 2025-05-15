@@ -33,7 +33,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle, RefreshCcw, BarChart, PieChart, XCircle, Clock, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle, RefreshCcw, BarChart, PieChart, XCircle, Clock, RefreshCw, Compass } from "lucide-react";
+import PaymentMapperDialog from "./PaymentMapperDialog";
 
 // Define payment status colors
 const paymentStatusColors = {
@@ -235,14 +236,17 @@ const PaymentAnalytics: React.FC = () => {
               <SelectItem value="all">All Time</SelectItem>
             </SelectContent>
           </Select>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={handleRefresh} 
-            disabled={isSummaryLoading || isPaymentsLoading}
-          >
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <PaymentMapperDialog onSuccess={handleRefresh} />
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={handleRefresh} 
+              disabled={isSummaryLoading || isPaymentsLoading}
+            >
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 

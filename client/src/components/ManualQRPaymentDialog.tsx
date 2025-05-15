@@ -79,7 +79,7 @@ const ManualQRPaymentDialog: React.FC<ManualQRPaymentDialogProps> = ({
           Verify QR Payment
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md dark:bg-gray-950">
         <DialogHeader>
           <DialogTitle>Manual QR Payment Verification</DialogTitle>
           <DialogDescription>
