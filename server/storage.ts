@@ -1406,6 +1406,7 @@ export class DatabaseStorage implements IStorage {
   async getUserLoginHistory(userId: number): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query with correct camelCase column names as in the database
+      // Only include successful logins in the user history
       const result = await db.$queryRaw`
         SELECT id, "userId", "userEmail" as email, username, 
         "ipAddress", useragent, browser, os, "deviceType",
@@ -1413,7 +1414,7 @@ export class DatabaseStorage implements IStorage {
         loginstatus as "loginStatus", isadmin as "isAdmin", 
         "sessionId", "createdAt", "isreturninguser" as "isReturningUser"
         FROM user_login_history
-        WHERE "userId" = ${userId}
+        WHERE "userId" = ${userId} AND loginstatus = 'success'
         ORDER BY "loginTime" DESC
       `;
       
@@ -1487,6 +1488,7 @@ export class DatabaseStorage implements IStorage {
   async getAllUserLoginHistory(): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query to avoid field name mapping issues
+      // Only include successful logins in the admin dashboard
       const result = await db.execute<UserLoginHistory[]>(
         `SELECT id, "userId", "userEmail", "userEmail" as email, username, 
         "ipAddress", useragent, browser, os, "deviceType",
@@ -1495,6 +1497,7 @@ export class DatabaseStorage implements IStorage {
         loginstatus as "loginStatus", isadmin as "isAdmin", 
         "sessionId", "createdAt", "isreturninguser" as "isReturningUser"
         FROM user_login_history
+        WHERE loginstatus = 'success'
         ORDER BY "loginTime" DESC;`
       );
       
@@ -1508,6 +1511,7 @@ export class DatabaseStorage implements IStorage {
   async getActiveUserSessions(): Promise<UserLoginHistory[]> {
     try {
       // Use raw SQL query to avoid field name mapping issues
+      // Only include successful logins in active sessions
       const result = await db.execute<UserLoginHistory[]>(
         `SELECT id, "userId", "userEmail", "userEmail" as email, username, 
         "ipAddress", useragent, browser, os, "deviceType",
@@ -1516,7 +1520,7 @@ export class DatabaseStorage implements IStorage {
         loginstatus as "loginStatus", isadmin as "isAdmin", 
         "sessionId", "createdAt", "isreturninguser" as "isReturningUser"
         FROM user_login_history
-        WHERE "logoutTime" IS NULL
+        WHERE "logoutTime" IS NULL AND loginstatus = 'success'
         ORDER BY "lastActiveTime" DESC;`
       );
       
