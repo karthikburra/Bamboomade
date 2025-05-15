@@ -180,6 +180,10 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
+      // Set AI access expiration date to 6 months from now
+      const sixMonthsFromNow = new Date();
+      sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+      
       const [user] = await db.insert(users).values({
         username: insertUser.username,
         password: insertUser.password,
@@ -188,8 +192,13 @@ export class DatabaseStorage implements IStorage {
         isAdmin: insertUser.role === 'admin',
         isVerified: insertUser.isVerified !== undefined ? insertUser.isVerified : false,
         verificationCode: insertUser.verificationCode,
-        verificationCodeExpires: insertUser.verificationCodeExpires
+        verificationCodeExpires: insertUser.verificationCodeExpires,
+        // Set subscription fields for new users
+        aiAccessExpiryDate: sixMonthsFromNow,
+        subscriptionStatus: 'free',
+        lastSubscriptionCheckDate: new Date()
       }).returning();
+      
       return user;
     } catch (error) {
       console.error("Database error in createUser:", error);

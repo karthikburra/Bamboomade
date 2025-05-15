@@ -102,6 +102,10 @@ interface UserData {
   profileCompleted?: boolean;
   accountCreationDate?: string; // Added field from basic profile endpoint
   totalLogins?: number; // Added field from basic profile endpoint
+  // Subscription fields
+  aiAccessExpiryDate?: string;
+  subscriptionStatus?: string; // 'free', 'active', 'expired'
+  lastSubscriptionCheckDate?: string;
 }
 
 // Interface for API responses
@@ -392,6 +396,58 @@ export default function UserProfile() {
                               hour: '2-digit',
                               minute: '2-digit'
                             })}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Subscription Information */}
+                    <div className="flex items-center gap-2">
+                      <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                        <Shield className="h-3.5 w-3.5 text-primary/80" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-zinc-200 font-medium">AI Access</span>
+                        <span className="text-zinc-400">
+                          {user?.aiAccessExpiryDate 
+                            ? new Date(user.aiAccessExpiryDate) > new Date() 
+                              ? `Active until ${new Date(user.aiAccessExpiryDate).toLocaleDateString('en-US', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}`
+                              : 'Expired'
+                            : 'Not Available'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {user?.subscriptionStatus && (
+                      <div className="flex items-center gap-2">
+                        <div className="bg-zinc-700/70 p-1.5 rounded-full">
+                          <Activity className="h-3.5 w-3.5 text-primary/80" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-zinc-200 font-medium">Subscription Status</span>
+                          <span className="text-zinc-400 flex items-center">
+                            {user.subscriptionStatus === 'free' && (
+                              <>
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-1.5"></span>
+                                Free 6-month Access
+                              </>
+                            )}
+                            {user.subscriptionStatus === 'active' && (
+                              <>
+                                <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+                                Active Subscription
+                              </>
+                            )}
+                            {user.subscriptionStatus === 'expired' && (
+                              <>
+                                <span className="w-2 h-2 bg-red-500 rounded-full mr-1.5"></span>
+                                Expired
+                              </>
+                            )}
                           </span>
                         </div>
                       </div>
