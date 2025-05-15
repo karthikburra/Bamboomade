@@ -31,6 +31,9 @@ export interface IStorage {
   getUsersWithExpiredSubscriptions(): Promise<User[]>;
   getUsersWithActiveSubscriptions(): Promise<User[]>;
   
+  // User status operations
+  isReturningUser(userId: number): Promise<boolean>;
+  
   // Deleted user operations
   deleteUser(userId: number, deletedBy: number, reason?: string): Promise<DeletedUser>;
   getAllDeletedUsers(): Promise<DeletedUser[]>;
@@ -1442,6 +1445,17 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in getUserLoginCount:", error);
       return 0;
+    }
+  }
+  
+  async isReturningUser(userId: number): Promise<boolean> {
+    try {
+      // Check if user has previous successful logins
+      const loginCount = await this.getUserLoginCount(userId);
+      return loginCount > 1; // More than 1 login means they're returning
+    } catch (error) {
+      console.error("Database error in isReturningUser:", error);
+      return false;
     }
   }
   

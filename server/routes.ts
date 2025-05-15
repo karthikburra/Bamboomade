@@ -1674,15 +1674,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`✅ User found: ID ${user.id}, Username: ${user.username}`);
       
-      // Check if profile is complete (has fullName)
-      const needsProfileCompletion = !user.fullName;
+      // Check if user is a returning user (has logged in before)
+      const isReturningUser = await storage.isReturningUser(userId);
+      console.log(`User ${user.id} returning status: ${isReturningUser ? 'Returning user' : 'New user'}`);
+      
+      // Only new users with incomplete profiles need to complete their profile
+      // Returning users don't need to complete their profile even if it's incomplete
+      const needsProfileCompletion = !isReturningUser && !user.fullName;
       
       // Don't return password in response
       const { password, ...userWithoutPassword } = user;
       console.log(`✅ Returning user data for ${user.id}`);
       res.json({
         ...userWithoutPassword,
-        needsProfileCompletion
+        needsProfileCompletion,
+        isReturningUser
       });
     } catch (error) {
       console.error("❌ Error retrieving user data:", error);
