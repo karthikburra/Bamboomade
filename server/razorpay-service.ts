@@ -493,6 +493,128 @@ export function verifyWebhookSignature(webhookBody: string, signature: string): 
  * Handle a successful payment webhook from Razorpay
  * @param paymentData The payment data from the webhook
  */
+/**
+ * Initiate a refund for a payment through Razorpay
+ * @param paymentId The Razorpay payment ID to refund
+ * @param amount The amount to refund in rupees (optional, defaults to full payment amount)
+ * @param notes Additional notes for the refund (optional)
+ * @returns Success status and refund details
+ */
+export async function initiateRazorpayRefund(
+  paymentId: string,
+  amount?: number,
+  notes?: { [key: string]: string }
+) {
+  try {
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      console.error('Razorpay service not initialized - cannot initiate refund');
+      
+      // For development: simulate a successful refund when keys aren't available
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('DEV MODE: Simulating Razorpay refund');
+        return {
+          success: true,
+          refundId: `dev_rfnd_${Date.now()}`,
+          paymentId: paymentId,
+          amount: amount || 100,
+          status: 'processed',
+          createdAt: new Date().toISOString(),
+          speedProcessed: 'normal',
+          warning: 'Using development mode with simulated refund'
+        };
+      }
+      
+      return { success: false, error: 'Razorpay service not initialized' };
+    }
+    
+    // Prepare refund options
+    const refundOptions: any = {};
+    
+    // If amount is specified, convert it from rupees to paise
+    if (amount) {
+      refundOptions.amount = Math.round(amount * 100); // Convert to paise
+    }
+    
+    // Add notes if provided
+    if (notes) {
+      refundOptions.notes = notes;
+    }
+    
+    // Initiate the refund
+    const refund = await razorpayInstance.payments.refund(paymentId, refundOptions);
+    
+    // Format the response
+    return {
+      success: true,
+      refundId: refund.id,
+      paymentId: refund.payment_id,
+      amount: refund.amount / 100, // Convert back to rupees
+      status: refund.status,
+      createdAt: new Date(refund.created_at * 1000).toISOString(),
+      speedProcessed: refund.speed_processed
+    };
+  } catch (error: any) {
+    console.error('Razorpay refund error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to initiate refund'
+    };
+  }
+}
+
+/**
+ * Get refund details from Razorpay
+ * @param refundId The Razorpay refund ID
+ * @returns Refund details
+ */
+export async function getRazorpayRefundDetails(refundId: string) {
+  try {
+    // Get Razorpay instance
+    const razorpayInstance = getRazorpayInstance();
+    if (!razorpayInstance) {
+      console.error('Razorpay service not initialized - cannot fetch refund details');
+      
+      // For development: simulate success when keys aren't available
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('DEV MODE: Simulating Razorpay refund details fetch');
+        return {
+          success: true,
+          refundId: refundId,
+          paymentId: 'pay_simulated',
+          amount: 100,
+          status: 'processed',
+          createdAt: new Date().toISOString(),
+          speedProcessed: 'normal'
+        };
+      }
+      
+      return { success: false, error: 'Razorpay service not initialized' };
+    }
+    
+    // Fetch refund from Razorpay
+    const refund = await razorpayInstance.refunds.fetch(refundId);
+    
+    // Format the response
+    return {
+      success: true,
+      refundId: refund.id,
+      paymentId: refund.payment_id,
+      amount: refund.amount / 100, // Convert from paise to rupees
+      status: refund.status,
+      createdAt: new Date(refund.created_at * 1000).toISOString(),
+      speedProcessed: refund.speed_processed
+    };
+  } catch (error: any) {
+    console.error('Razorpay refund details fetch error:', error);
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch refund details'
+    };
+  }
+}
+
 export async function handleSuccessfulPaymentWebhook(paymentData: any, storage = defaultStorage) {
   try {
     if (!paymentData || !paymentData.id) {

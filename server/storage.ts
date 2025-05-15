@@ -51,6 +51,7 @@ export interface IStorage {
   updateProjectGuidanceStatus(id: number, status: string): Promise<ProjectGuidance | undefined>;
   updateCompletedSessionStatuses(): Promise<number>; // Returns count of sessions marked as completed
   cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined>;
+  updateSessionRefundStatus(id: number, refundId: string, refundStatus: string): Promise<ProjectGuidance | undefined>;
   
   // Chat message operations
   getChatMessagesByUserId(userId: number): Promise<ChatMessage[]>;
