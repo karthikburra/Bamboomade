@@ -6,7 +6,7 @@ import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import PaymentAnalytics from "../components/PaymentAnalytics";
 import { DayPicker } from "react-day-picker";
-import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
+import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO, differenceInDays } from "date-fns";
 import { formatInIST, formatSessionDate } from "../lib/date-utils";
 import { cn } from "../lib/utils";
 import {
@@ -2312,6 +2312,7 @@ export default function AdminDashboard() {
                             <TableHead className="text-gray-300">Role</TableHead>
                             <TableHead className="text-gray-300">Status</TableHead>
                             <TableHead className="text-gray-300">User Type</TableHead>
+                            <TableHead className="text-gray-300">AI Subscription</TableHead>
                             <TableHead className="text-gray-300 text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
