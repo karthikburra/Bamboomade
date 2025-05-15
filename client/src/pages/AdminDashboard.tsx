@@ -346,6 +346,28 @@ export default function AdminDashboard() {
   });
   
   // Add Google Meet link mutation
+  // Mutation to mark completed sessions
+  const markCompletedSessionsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/admin/mark-completed-sessions");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/project-guidance", "include_razorpay"] });
+      toast({
+        title: "Completed Sessions Check",
+        description: `Successfully marked ${data.completedCount} sessions as completed.`
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to mark completed sessions",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const addMeetLinkMutation = useMutation({
     mutationFn: async ({ sessionId, meetLink }: { sessionId: number, meetLink: string }) => {
       const response = await apiRequest("PATCH", `/api/project-guidance/${sessionId}/meet-link`, {
@@ -1127,13 +1149,38 @@ export default function AdminDashboard() {
                 return (
                   <TabsContent key={tab} value={tab} className="space-y-4">
                     <Card className="bg-gray-900 border-gray-800">
-                      <CardHeader>
-                        <CardTitle className="capitalize">{tab} Sessions</CardTitle>
-                        <CardDescription>
-                          {tab === "pending" ? "Sessions requiring Google Meet links" : 
-                           tab === "upcoming" ? "Sessions with Google Meet links set" :
-                           `All ${tab} sessions`}
-                        </CardDescription>
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <div>
+                          <CardTitle className="capitalize">{tab} Sessions</CardTitle>
+                          <CardDescription>
+                            {tab === "pending" ? "Sessions requiring Google Meet links" : 
+                             tab === "upcoming" ? "Sessions with Google Meet links set" :
+                             `All ${tab} sessions`}
+                          </CardDescription>
+                        </div>
+                        
+                        {/* Add a button to mark completed sessions on the completed tab */}
+                        {tab === "completed" && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => markCompletedSessionsMutation.mutate()}
+                            disabled={markCompletedSessionsMutation.isPending}
+                            className="flex items-center gap-1"
+                          >
+                            {markCompletedSessionsMutation.isPending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                Checking...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Mark Completed Sessions
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </CardHeader>
                       <CardContent>
                         {isSessionsLoading ? (
