@@ -3565,41 +3565,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         refundAmount
       });
       
-      // Process refund via Razorpay if payment was made and refund amount > 0
+      // Process refund via Razorpay if payment was made
       let refundResponse = null;
-      if (selectedSession.paymentId && refundAmount > 0) {
-        console.log(`Initiating refund for payment ${selectedSession.paymentId} with amount ₹${refundAmount}`);
+      if (selectedSession.paymentId) {
+        console.log(`Processing refund for payment ${selectedSession.paymentId} with amount ₹${refundAmount} (${refundPercentage}%)`);
         
-        // Initiate refund through Razorpay
-        refundResponse = await initiateRazorpayRefund(
-          selectedSession.paymentId,
-          refundAmount,
-          {
-            reason: `Session cancellation: ${reason}`,
-            sessionId: selectedSession.id.toString(),
-            email: email
-          }
+        // Use the new refund processing function
+        refundResponse = await processSessionRefund(
+          selectedSession,
+          reason,
+          refundPercentage,
+          false, // Not a full refund
+          storage
         );
         
-        if (refundResponse.success) {
-          console.log(`Refund initiated successfully:`, refundResponse);
-          
-          // Update session with refund status
-          await storage.updateSessionRefundStatus(
-            selectedSession.id,
-            refundResponse.refundId,
-            'Refund Initiated'
-          );
-        } else {
-          console.error(`Failed to initiate refund:`, refundResponse.error);
-          
-          // Update session with failed refund status
-          await storage.updateSessionRefundStatus(
-            selectedSession.id,
-            'failed_' + Date.now(),
-            'Refund Failed'
-          );
-        }
+        console.log('Refund processing result:', refundResponse);
       } else if (refundAmount === 0) {
         console.log(`No refund initiated for session ${selectedSession.id} as refund amount is 0`);
       } else if (!selectedSession.paymentId) {
