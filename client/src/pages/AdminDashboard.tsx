@@ -298,24 +298,42 @@ export default function AdminDashboard() {
         
         <Tabs defaultValue="pending" className="space-y-4">
           <div className="relative overflow-x-auto pb-1">
-            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Pending ({pendingSessions.length})
+            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 grid grid-cols-3 sm:flex sm:flex-nowrap gap-1 p-1 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row items-center">
+                  <span>Pending</span>
+                  <span className="text-xs ml-0 sm:ml-1">({pendingSessions.length})</span>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Upcoming ({upcomingSessions.length})
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row items-center">
+                  <span>Upcoming</span>
+                  <span className="text-xs ml-0 sm:ml-1">({upcomingSessions.length})</span>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Completed ({completedSessions.length})
+              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row items-center">
+                  <span>Done</span>
+                  <span className="text-xs ml-0 sm:ml-1">({completedSessions.length})</span>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Cancelled ({cancelledSessions.length})
+              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row items-center">
+                  <span>Cancelled</span>
+                  <span className="text-xs ml-0 sm:ml-1">({cancelledSessions.length})</span>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                All Sessions
+              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row items-center">
+                  <span>All</span>
+                  <span className="hidden sm:inline ml-1">Sessions</span>
+                </div>
               </TabsTrigger>
-              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
-                Availability
+              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm px-2 py-1.5 whitespace-nowrap">
+                <div className="flex flex-col sm:flex-row items-center">
+                  <span>Slots</span>
+                  <span className="hidden sm:inline ml-1">Available</span>
+                </div>
               </TabsTrigger>
             </TabsList>
           </div>
