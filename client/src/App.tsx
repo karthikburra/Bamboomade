@@ -60,7 +60,7 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/project-guidance" component={ProjectGuidance} />
       <Route path="/ai-chat">
-        {() => <ProtectedRoute component={AIChat} />}
+        {() => <ProtectedRoute component={AIChat} requiresSubscription={true} />}
       </Route>
       <Route path="/admin" component={Admin} />
       <Route path="/admin-login" component={AdminLogin} />

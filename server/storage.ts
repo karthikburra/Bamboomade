@@ -29,6 +29,7 @@ export interface IStorage {
   updateUserSubscription(userId: number, expiryDate: Date, status: string): Promise<User | undefined>;
   checkSubscriptionStatus(userId: number): Promise<{ isActive: boolean, expiryDate: Date | null, daysLeft: number | null }>;
   getUsersWithExpiredSubscriptions(): Promise<User[]>;
+  getUsersWithActiveSubscriptions(): Promise<User[]>;
   
   // Deleted user operations
   deleteUser(userId: number, deletedBy: number, reason?: string): Promise<DeletedUser>;
@@ -336,6 +337,27 @@ export class DatabaseStorage implements IStorage {
       return expiredUsers;
     } catch (error) {
       console.error("Database error in getUsersWithExpiredSubscriptions:", error);
+      return [];
+    }
+  }
+  
+  async getUsersWithActiveSubscriptions(): Promise<User[]> {
+    try {
+      const now = new Date();
+      
+      // Get users with active subscriptions (not expired)
+      const activeUsers = await db.select()
+        .from(users)
+        .where(
+          and(
+            db.sql`${users.aiAccessExpiryDate} > ${now}`,
+            ne(users.subscriptionStatus, 'expired')
+          )
+        );
+      
+      return activeUsers;
+    } catch (error) {
+      console.error("Database error in getUsersWithActiveSubscriptions:", error);
       return [];
     }
   }
