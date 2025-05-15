@@ -406,8 +406,9 @@ export default function AdminDashboard() {
       
       const response = await apiRequest("POST", `/api/reschedule-session`, {
         sessionId: selectedSession.id,
+        email: selectedSession.email, // Add email field required by the server
         newDate: reschedulingDate.toISOString(),
-        duration: rescheduleDuration,
+        newDuration: rescheduleDuration, // Match the server parameter name
         rescheduledBy: "admin"
       });
       return response.json();
