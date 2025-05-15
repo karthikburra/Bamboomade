@@ -4,6 +4,7 @@ import { useToast } from "../hooks/use-toast";
 import { apiRequest } from "../lib/queryClient";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import PaymentAnalytics from "../components/PaymentAnalytics";
 import { DayPicker } from "react-day-picker";
 import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
 import { formatInIST, formatSessionDate } from "../lib/date-utils";
@@ -955,6 +956,11 @@ export default function AdminDashboard() {
             setLocation(`/admin-dashboard?${newSearchParams.toString()}`, { replace: true });
           }}
         >
+          {/* Payment Analytics Tab */}
+          <TabsContent value="payments" className="space-y-4">
+            <PaymentAnalytics />
+          </TabsContent>
+
           {/* Sessions Tab - Contains session management */}
           <TabsContent value="sessions" className="space-y-4">
         

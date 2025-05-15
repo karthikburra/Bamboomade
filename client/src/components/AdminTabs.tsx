@@ -32,6 +32,9 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       case "sessions":
         navigate("/admin-dashboard?tab=pending");
         break;
+      case "payments":
+        navigate("/admin-dashboard?tab=payments");
+        break;
       case "database":
         navigate("/ai-knowledge-database");
         break;
