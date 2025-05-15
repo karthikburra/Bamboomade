@@ -239,6 +239,7 @@ const PaymentAnalytics: React.FC = () => {
           </Select>
           <div className="flex items-center gap-2">
             <PaymentMapperDialog onSuccess={handleRefresh} />
+            <FixFailedSessionsButton onSuccess={handleRefresh} />
             <Button 
               variant="outline" 
               size="icon" 
