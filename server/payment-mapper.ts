@@ -146,7 +146,7 @@ export async function mapSpecificPaymentToSession(
         const updatedSession = await storage.updateProjectGuidancePayment(
           session.id,
           paymentId,
-          paymentDetails.amount,
+          paymentDetails.amount || 0,
           paymentDetails.orderId
         );
         
@@ -169,9 +169,10 @@ export async function mapSpecificPaymentToSession(
     }
     
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     result.success = false;
-    result.errors.push(`Unexpected error: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    result.errors.push(`Unexpected error: ${errorMessage}`);
     return result;
   }
 }
@@ -199,7 +200,7 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
       result.mappedSessions = result.mappedSessions.concat(specificResult.mappedSessions);
       console.log(`Successfully mapped specified payment ${specificPaymentId} to a session`);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`Error mapping specific payment ${specificPaymentId}:`, error);
     // Continue with normal mapping even if this fails
   }
@@ -279,7 +280,8 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
           const updatedSession = await storage.updateProjectGuidancePayment(
             session.id, 
             payment.id, 
-            paymentAmount
+            paymentAmount,
+            payment.orderId
           );
           
           if (updatedSession) {
@@ -293,15 +295,16 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
             });
             matched = true;
           }
-        } catch (error) {
-          result.errors.push(`Error updating session ${session.id}: ${error.message}`);
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          result.errors.push(`Error updating session ${session.id}: ${errorMessage}`);
         }
         
         // Remove the matched session from both maps to prevent double-matching
         if (matched) {
           sessionsByOrderId.delete(payment.orderId);
           const emailSessions = sessionsByEmail.get(session.email.toLowerCase()) || [];
-          const filteredSessions = emailSessions.filter(s => s.id !== session.id);
+          const filteredSessions = emailSessions.filter((s: any) => s.id !== session.id);
           
           if (filteredSessions.length > 0) {
             sessionsByEmail.set(session.email.toLowerCase(), filteredSessions);
@@ -321,7 +324,7 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
         
         // Find sessions with matching email, amount, and booking time
         // We allow a small margin of error in the amount and a reasonable time window
-        const matchingSessions = emailSessions.filter(session => {
+        const matchingSessions = emailSessions.filter((session: any) => {
           // Don't remap sessions that already have a payment ID
           if (session.paymentId) {
             console.log(`Session ${session.id} already has payment ID ${session.paymentId}`);
@@ -355,7 +358,7 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
           }
           
           // 2. Check time match - payment should occur after session booking and within 48 hours
-          const paymentTime = new Date(payment.createdAt).getTime();
+          const paymentTime = new Date(payment.createdAt || Date.now()).getTime();
           
           // Use session.date since createdAt is not available in the schema
           // The date field represents when the guidance session is scheduled for
@@ -388,7 +391,7 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
         // Log if multiple matches found
         if (matchingSessions.length > 1) {
           console.log(`⚠️ Multiple sessions (${matchingSessions.length}) match payment ${payment.id} for email ${paymentEmail}:`);
-          matchingSessions.forEach(session => {
+          matchingSessions.forEach((session: any) => {
             console.log(`  - Session ${session.id}: ${session.studentName}, ${session.duration}min, booked for ${new Date(session.date).toISOString().split('T')[0]}`);
           });
           // Skip mapping if multiple matches are found
@@ -419,26 +422,33 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
               });
               matched = true;
               
-              // Remove the matched session from the email map
-              const remainingSessions = emailSessions.filter(s => s.id !== session.id);
+              // Remove the matched session from both maps to prevent double-matching
+              if (session.orderId) {
+                sessionsByOrderId.delete(session.orderId);
+              }
               
-              if (remainingSessions.length > 0) {
-                sessionsByEmail.set(paymentEmail, remainingSessions);
+              const remainingSessions = sessionsByEmail.get(session.email.toLowerCase()) || [];
+              const filteredSessions = remainingSessions.filter((s: any) => s.id !== session.id);
+              
+              if (filteredSessions.length > 0) {
+                sessionsByEmail.set(session.email.toLowerCase(), filteredSessions);
               } else {
-                sessionsByEmail.delete(paymentEmail);
+                sessionsByEmail.delete(session.email.toLowerCase());
               }
             }
-          } catch (error) {
-            result.errors.push(`Error updating session ${session.id}: ${error.message}`);
+          } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            result.errors.push(`Error updating session ${session.id}: ${errorMessage}`);
           }
         }
       }
     }
-
+    
     return result;
-  } catch (error) {
+  } catch (error: unknown) {
     result.success = false;
-    result.errors.push(`Unexpected error: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    result.errors.push(`Unexpected error: ${errorMessage}`);
     return result;
   }
 }
