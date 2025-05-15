@@ -1684,82 +1684,91 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-2">
-                                      {session.googleMeetLink ? (
-                                        <div className="flex gap-2">
-                                          <Button 
-                                            size="sm"
-                                            className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                            onClick={() => {
-                                              // Ensure URL has protocol prefix for proper browser opening
-                                              let meetUrl = session.googleMeetLink;
-                                              if (meetUrl && !meetUrl.startsWith('http')) {
-                                                meetUrl = 'https://' + meetUrl;
-                                              }
-                                              window.open(meetUrl, '_blank', 'noopener,noreferrer');
-                                            }}
-                                          >
-                                            <Video className="w-3.5 h-3.5 mr-1.5" /> 
-                                            <span className="hidden sm:inline">Open Meet</span>
-                                            <span className="sm:hidden">Meet</span>
-                                          </Button>
-                                          <Button 
-                                            size="sm"
-                                            className="whitespace-nowrap bg-gray-600 hover:bg-gray-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                            onClick={() => {
-                                              navigator.clipboard.writeText(session.googleMeetLink || "");
-                                              toast({
-                                                title: "Link copied",
-                                                description: "Google Meet link copied to clipboard"
-                                              });
-                                            }}
-                                          >
-                                            <Copy className="w-3.5 h-3.5 mr-1.5" /> 
-                                            <span className="hidden sm:inline">Copy Link</span>
-                                            <span className="sm:hidden">Copy</span>
-                                          </Button>
-                                        </div>
+                                      {/* Only show Google Meet link and action buttons for paid or pending sessions */}
+                                      {session.paymentStatus !== 'failed' ? (
+                                        <>
+                                          {session.googleMeetLink ? (
+                                            <div className="flex gap-2">
+                                              <Button 
+                                                size="sm"
+                                                className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                                onClick={() => {
+                                                  // Ensure URL has protocol prefix for proper browser opening
+                                                  let meetUrl = session.googleMeetLink;
+                                                  if (meetUrl && !meetUrl.startsWith('http')) {
+                                                    meetUrl = 'https://' + meetUrl;
+                                                  }
+                                                  window.open(meetUrl, '_blank', 'noopener,noreferrer');
+                                                }}
+                                              >
+                                                <Video className="w-3.5 h-3.5 mr-1.5" /> 
+                                                <span className="hidden sm:inline">Open Meet</span>
+                                                <span className="sm:hidden">Meet</span>
+                                              </Button>
+                                              <Button 
+                                                size="sm"
+                                                className="whitespace-nowrap bg-gray-600 hover:bg-gray-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(session.googleMeetLink || "");
+                                                  toast({
+                                                    title: "Link copied",
+                                                    description: "Google Meet link copied to clipboard"
+                                                  });
+                                                }}
+                                              >
+                                                <Copy className="w-3.5 h-3.5 mr-1.5" /> 
+                                                <span className="hidden sm:inline">Copy Link</span>
+                                                <span className="sm:hidden">Copy</span>
+                                              </Button>
+                                            </div>
+                                          ) : (
+                                            <Button 
+                                              size="sm"
+                                              className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
+                                              onClick={() => {
+                                                setSelectedSession(session);
+                                                setIsDialogOpen(true);
+                                              }}
+                                            >
+                                              <Plus className="w-3.5 h-3.5 mr-1.5" /> 
+                                              <span className="hidden sm:inline">Add Meet Link</span>
+                                              <span className="sm:hidden">Add</span>
+                                            </Button>
+                                          )}
+                                          
+                                          <div className="flex gap-1 mt-1">
+                                            <Button 
+                                              size="sm"
+                                              variant="outline"
+                                              className="whitespace-nowrap h-7 text-xs px-2 border-amber-700/50 text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 hover:border-amber-700"
+                                              onClick={() => {
+                                                setSelectedSession(session);
+                                                setIsRescheduleDialogOpen(true);
+                                              }}
+                                            >
+                                              <Calendar className="w-3 h-3 mr-1" /> 
+                                              <span>Reschedule</span>
+                                            </Button>
+                                            
+                                            <Button 
+                                              size="sm"
+                                              variant="outline"
+                                              className="whitespace-nowrap h-7 text-xs px-2 border-red-700/50 text-red-400 hover:text-red-300 hover:bg-red-950/30 hover:border-red-700"
+                                              onClick={() => {
+                                                setSelectedSession(session);
+                                                setIsCancelDialogOpen(true);
+                                              }}
+                                            >
+                                              <X className="w-3 h-3 mr-1" /> 
+                                              <span>Cancel</span>
+                                            </Button>
+                                          </div>
+                                        </>
                                       ) : (
-                                        <Button 
-                                          size="sm"
-                                          className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                          onClick={() => {
-                                            setSelectedSession(session);
-                                            setIsDialogOpen(true);
-                                          }}
-                                        >
-                                          <Plus className="w-3.5 h-3.5 mr-1.5" /> 
-                                          <span className="hidden sm:inline">Add Meet Link</span>
-                                          <span className="sm:hidden">Add</span>
-                                        </Button>
+                                        <div className="text-xs text-gray-400 italic">
+                                          No actions available - payment failed
+                                        </div>
                                       )}
-                                      
-                                      <div className="flex gap-1 mt-1">
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="whitespace-nowrap h-7 text-xs px-2 border-amber-700/50 text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 hover:border-amber-700"
-                                          onClick={() => {
-                                            setSelectedSession(session);
-                                            setIsRescheduleDialogOpen(true);
-                                          }}
-                                        >
-                                          <Calendar className="w-3 h-3 mr-1" /> 
-                                          <span>Reschedule</span>
-                                        </Button>
-                                        
-                                        <Button 
-                                          size="sm"
-                                          variant="outline"
-                                          className="whitespace-nowrap h-7 text-xs px-2 border-red-700/50 text-red-400 hover:text-red-300 hover:bg-red-950/30 hover:border-red-700"
-                                          onClick={() => {
-                                            setSelectedSession(session);
-                                            setIsCancelDialogOpen(true);
-                                          }}
-                                        >
-                                          <X className="w-3 h-3 mr-1" /> 
-                                          <span>Cancel</span>
-                                        </Button>
-                                      </div>
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden sm:table-cell">
