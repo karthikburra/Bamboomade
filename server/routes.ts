@@ -34,7 +34,7 @@ import {
   getAllRazorpayPayments,
   getRazorpayPaymentStatusSummary
 } from "./razorpay-service";
-import { autoMapPaymentsToSessions } from "./payment-mapper";
+import { autoMapPaymentsToSessions, checkFailedSessionsForSuccessfulPayments } from "./payment-mapper";
 import { 
   generateGoogleMeetLink, 
   generateGoogleCalendarLink,
@@ -589,6 +589,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("❌ Error in scheduled payment mapping:", error);
+    }
+    
+    // After mapping regular payments, also check for failed sessions with successful payments
+    try {
+      console.log("🔄 Checking for failed sessions with successful payments...");
+      const failedResult = await checkFailedSessionsForSuccessfulPayments(storage);
+      
+      console.log(`✅ Failed session check complete: ${failedResult.mappedCount} failed sessions updated to pending`);
+      
+      if (failedResult.mappedCount > 0) {
+        failedResult.mappedSessions.forEach(session => {
+          console.log(`- Failed session #${session.sessionId} updated to pending with payment ${session.paymentId} (₹${session.amount})`);
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error checking failed sessions for successful payments:", error);
     }
   });
   // Development mode endpoint for debugging session state
@@ -2261,6 +2277,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Failed to auto-map payments", 
+        error: (error as Error).message 
+      });
+    }
+  });
+  
+  // Check for failed sessions with successful payments
+  app.post("/api/admin/check-failed-sessions", isAdmin, async (req, res) => {
+    try {
+      const adminEmail = req.session.userEmail || "Unknown admin";
+      console.log(`Check for failed sessions with successful payments requested by ${adminEmail}`);
+      
+      // Run the check for failed sessions with successful payments
+      const result = await checkFailedSessionsForSuccessfulPayments(storage);
+      
+      // Log the activity
+      if (result.mappedCount > 0) {
+        const now = new Date();
+        const logEntry = {
+          timestamp: now,
+          type: "failed_session_payment_check",
+          admin: adminEmail,
+          details: {
+            mappedCount: result.mappedCount,
+            mappedSessions: result.mappedSessions
+          }
+        };
+        
+        // Save this log in a dashboard snapshot
+        const dateKey = now.toISOString().split('T')[0];
+        const existingSnapshot = await storage.getDashboardSnapshotByDate(dateKey);
+        
+        if (existingSnapshot) {
+          const existingLogs = existingSnapshot.activityLogs || [];
+          existingLogs.push(logEntry);
+          
+          await storage.saveDashboardSnapshot({
+            ...existingSnapshot,
+            activityLogs: existingLogs
+          });
+        } else {
+          await storage.saveDashboardSnapshot({
+            date: dateKey,
+            dailyStats: {},
+            activityLogs: [logEntry]
+          });
+        }
+      }
+      
+      res.json({
+        success: result.success,
+        mappedCount: result.mappedCount,
+        message: result.mappedCount > 0 
+          ? `Found ${result.mappedCount} failed sessions with successful payments and updated them to pending` 
+          : "No failed sessions were found with successful payments",
+        errors: result.errors,
+        mappedSessions: result.mappedSessions
+      });
+    } catch (error) {
+      console.error("Error checking failed sessions for successful payments:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to check failed sessions for successful payments", 
         error: (error as Error).message 
       });
     }
