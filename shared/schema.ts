@@ -80,6 +80,8 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   cancellationDate: timestamp("cancellation_date"),
   refundAmount: integer("refund_amount"),
   refundPercentage: integer("refund_percentage"),
+  refundStatus: text("refund_status"), // 'Refund Initiated', 'Refund Processed', 'Refund Failed', etc.
+  refundId: text("refund_id"), // Razorpay refund ID
   amount: integer("amount"), // Total amount paid for the session
   googleMeetLink: text("google_meet_link"), // Link for Google Meet session
   isStudent: boolean("is_student").default(true), // Whether the booking is for a student or professional

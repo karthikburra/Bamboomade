@@ -447,21 +447,38 @@ export default function AdminDashboard() {
       reason: string,
       email: string
     }) => {
-      const response = await apiRequest("POST", `/api/cancel-session`, {
+      const response = await apiRequest("POST", `/api/admin/cancel-session`, {
         sessionId,
         email, // Use the email passed from the component
         reason: reason, // Match the server parameter name
-        cancellationReason: reason, // Keep this for backward compatibility
-        cancelledBy: "admin"
+        fullRefund: true
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/project-guidance", "include_razorpay"] });
+      
+      // Check if refund was processed
+      const refundStatus = data.refundDetails?.refundStatus;
+      const refundAmount = data.refundDetails?.amount;
+      
+      let description = "The session has been cancelled successfully.";
+      
+      if (refundAmount > 0) {
+        if (refundStatus === 'Initiated') {
+          description = `Session cancelled with ₹${refundAmount} refund initiated to the student.`;
+        } else if (refundStatus === 'Not Processed') {
+          description = `Session cancelled. Refund of ₹${refundAmount} will be processed manually.`;
+        } else {
+          description = `Session cancelled with refund of ₹${refundAmount}.`;
+        }
+      }
+      
       toast({
         title: "Session cancelled",
-        description: "The session has been cancelled and the student will be notified."
+        description: description
       });
+      
       setIsCancelDialogOpen(false);
       setCancellationReason("");
     },
