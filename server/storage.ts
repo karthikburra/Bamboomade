@@ -639,7 +639,33 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Now fetch the complete session with all fields
-      const [completeSession] = await db.select()
+      const [completeSession] = await db.select({
+        id: projectGuidances.id,
+        studentName: projectGuidances.studentName,
+        email: projectGuidances.email,
+        phone: projectGuidances.phone,
+        date: projectGuidances.date,
+        originalDate: projectGuidances.originalDate,
+        duration: projectGuidances.duration,
+        topic: projectGuidances.topic,
+        notes: projectGuidances.notes,
+        paymentConfirmed: projectGuidances.paymentConfirmed,
+        paymentId: projectGuidances.paymentId,
+        orderId: projectGuidances.orderId,
+        paymentStatus: projectGuidances.paymentStatus,
+        status: projectGuidances.status,
+        rescheduledBy: projectGuidances.rescheduledBy,
+        rescheduledDate: projectGuidances.rescheduledDate,
+        cancellationReason: projectGuidances.cancellationReason,
+        cancellationDate: projectGuidances.cancellationDate,
+        refundAmount: projectGuidances.refundAmount,
+        refundPercentage: projectGuidances.refundPercentage,
+        refundStatus: projectGuidances.refundStatus,
+        refundId: projectGuidances.refundId,
+        amount: projectGuidances.amount,
+        googleMeetLink: projectGuidances.googleMeetLink,
+        isStudent: projectGuidances.isStudent,
+      })
         .from(projectGuidances)
         .where(eq(projectGuidances.id, session.id));
       
