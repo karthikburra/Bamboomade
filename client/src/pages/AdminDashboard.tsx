@@ -56,7 +56,7 @@ import {
   Info, Database, Copy, BarChart3, Users, CheckCircle, XCircle,
   History, Activity, UserX, Globe, Timer, Laptop, Smartphone, 
   Clock8, ClockIcon, RefreshCw, Shield, ShieldOff, KeyRound, Lock,
-  RefreshCcw, Image as ImageIcon, UserPlus
+  RefreshCcw, Image as ImageIcon, UserPlus, CalendarCheck
 } from "lucide-react";
 import {
   Select,
@@ -2258,15 +2258,43 @@ export default function AdminDashboard() {
                     Manage users and their permissions
                   </CardDescription>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => refetchUsers()}
-                  className="bg-gray-800 hover:bg-gray-700 text-white border-gray-700"
-                >
-                  <RefreshCw className="h-4 w-4 mr-1" />
-                  Refresh
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const response = await apiRequest("POST", "/api/admin/check-subscriptions");
+                        const data = await response.json();
+                        toast({
+                          title: "Subscription Check",
+                          description: data.message,
+                          variant: "success"
+                        });
+                        refetchUsers();
+                      } catch (error) {
+                        toast({
+                          title: "Error",
+                          description: "Failed to check subscriptions",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                    className="bg-purple-900/50 hover:bg-purple-800 text-white border-purple-700"
+                  >
+                    <CalendarCheck className="h-4 w-4 mr-1" />
+                    Check Subscriptions
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => refetchUsers()}
+                    className="bg-gray-800 hover:bg-gray-700 text-white border-gray-700"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                    Refresh
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {isLoadingUsers ? (
