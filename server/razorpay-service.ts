@@ -445,3 +445,147 @@ export async function verifyPendingPayments(storage: any) {
     };
   }
 }
+
+/**
+ * Verify a Razorpay webhook signature
+ * @param webhookBody The raw JSON body of the webhook request
+ * @param signature The signature from the X-Razorpay-Signature header
+ * @returns Whether the signature is valid
+ */
+export function verifyWebhookSignature(webhookBody: string, signature: string): boolean {
+  try {
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      console.error('RAZORPAY_KEY_SECRET not configured');
+      
+      // For development, allow webhook without verification
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('⚠️ DEV MODE: Bypassing webhook signature verification');
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // Create HMAC using the webhook secret
+    const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+    hmac.update(webhookBody);
+    
+    // Generate expected signature
+    const generatedSignature = hmac.digest('hex');
+    
+    // Compare signatures
+    const isValid = generatedSignature === signature;
+    
+    if (!isValid) {
+      console.error('Webhook signature verification failed');
+      console.error(`Expected: ${generatedSignature}`);
+      console.error(`Received: ${signature}`);
+    }
+    
+    return isValid;
+  } catch (error) {
+    console.error('Error verifying webhook signature:', error);
+    return false;
+  }
+}
+
+/**
+ * Handle a successful payment webhook from Razorpay
+ * @param paymentData The payment data from the webhook
+ */
+export async function handleSuccessfulPaymentWebhook(paymentData: any, storage = defaultStorage) {
+  try {
+    if (!paymentData || !paymentData.id) {
+      console.error('Invalid payment data in webhook:', paymentData);
+      return {
+        success: false,
+        error: 'Invalid payment data'
+      };
+    }
+    
+    console.log(`📣 Processing successful payment webhook for payment ID: ${paymentData.id}`);
+    
+    // Extract relevant payment information
+    const paymentId = paymentData.id;
+    const orderId = paymentData.order_id;
+    const amount = paymentData.amount / 100; // Convert from paise to rupees
+    const email = paymentData.email;
+    const status = paymentData.status;
+    
+    // Log payment details
+    console.log('Payment details:', {
+      paymentId,
+      orderId,
+      amount, 
+      email,
+      status
+    });
+    
+    // First check if this payment is already mapped to a session
+    const existingSession = await storage.findSessionByPaymentId(paymentId);
+    
+    if (existingSession) {
+      console.log(`Payment ${paymentId} is already mapped to session ${existingSession.id}`);
+      return {
+        success: true,
+        message: 'Payment already mapped to session',
+        sessionId: existingSession.id
+      };
+    }
+    
+    // Try matching by order ID first
+    let sessionId: number | null = null;
+    
+    if (orderId) {
+      // Try to extract session ID from our custom order ID format
+      // Format: BAMBOO_sessionId_timestamp
+      const orderIdParts = orderId.split('_');
+      
+      if (orderIdParts[0] === 'BAMBOO' && orderIdParts.length >= 3 && orderIdParts[1] !== 'RANDOM') {
+        sessionId = parseInt(orderIdParts[1]);
+        console.log(`Extracted session ID ${sessionId} from order ID ${orderId}`);
+      } else {
+        // Try to find by full order ID in the database
+        const sessionByOrderId = await storage.findSessionByOrderId(orderId);
+        if (sessionByOrderId) {
+          sessionId = sessionByOrderId.id;
+          console.log(`Found session ${sessionId} by order ID ${orderId}`);
+        }
+      }
+    }
+    
+    // If we found a session by order ID, update it
+    if (sessionId) {
+      const updatedSession = await storage.updateProjectGuidancePayment(
+        sessionId,
+        paymentId,
+        amount
+      );
+      
+      if (updatedSession) {
+        console.log(`✅ Updated session ${sessionId} with payment ID ${paymentId}`);
+        return {
+          success: true,
+          sessionId,
+          paymentId,
+          status: updatedSession.status
+        };
+      }
+    }
+    
+    // If no session found by order ID, try the advanced matching from payment-mapper
+    console.log('No direct match found for payment, trying advanced matching...');
+    const result = await checkFailedSessionsForSuccessfulPayments();
+    
+    return {
+      success: true,
+      matchingResult: result
+    };
+  } catch (error) {
+    console.error('Error handling payment webhook:', error);
+    return {
+      success: false,
+      error: (error as Error).message || 'Unknown error in payment webhook handler'
+    };
+  }
+}

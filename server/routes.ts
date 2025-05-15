@@ -32,7 +32,9 @@ import {
   getRazorpayPaymentDetails, 
   verifyPendingPayments,
   getAllRazorpayPayments,
-  getRazorpayPaymentStatusSummary
+  getRazorpayPaymentStatusSummary,
+  verifyWebhookSignature,
+  handleSuccessfulPaymentWebhook
 } from "./razorpay-service";
 import { autoMapPaymentsToSessions, checkFailedSessionsForSuccessfulPayments } from "./payment-mapper";
 import { 
@@ -3830,6 +3832,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Razorpay webhook for real-time payment updates
+  app.post("/api/razorpay/webhook", express.raw({ type: 'application/json' }), async (req, res) => {
+    try {
+      // Get the webhook event data and signature from the request
+      const webhookSignature = req.headers['x-razorpay-signature'] as string;
+      const webhookBody = req.body.toString(); // Body is now a Buffer due to express.raw
+      
+      if (!webhookSignature) {
+        console.error('Razorpay webhook error: Missing signature header');
+        return res.status(400).json({
+          success: false,
+          message: 'Missing webhook signature'
+        });
+      }
+      
+      // Log webhook receipt
+      console.log(`📣 Received Razorpay webhook, signature: ${webhookSignature?.substring(0, 8)}...`);
+      
+      // Verify the webhook signature
+      const isValid = verifyWebhookSignature(webhookBody, webhookSignature);
+      
+      if (!isValid) {
+        console.error('Razorpay webhook error: Invalid signature');
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid webhook signature'
+        });
+      }
+      
+      // Parse the webhook data
+      const webhookData = JSON.parse(webhookBody);
+      const event = webhookData.event;
+      console.log(`📣 Razorpay webhook event type: ${event}`);
+      
+      // Handle different event types
+      switch(event) {
+        case 'payment.authorized':
+        case 'payment.captured':
+          await handleSuccessfulPaymentWebhook(webhookData.payload.payment.entity);
+          break;
+        case 'payment.failed':
+          console.log('Payment failed webhook received', webhookData.payload.payment.entity.id);
+          break;
+        default:
+          console.log(`Unhandled Razorpay webhook event: ${event}`);
+      }
+      
+      // Acknowledge receipt of the webhook
+      res.status(200).json({ success: true });
+      
+    } catch (error) {
+      console.error('Error processing Razorpay webhook:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error processing webhook'
+      });
+    }
+  });
+
   app.post("/api/razorpay/verify-payment", async (req, res) => {
     try {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
