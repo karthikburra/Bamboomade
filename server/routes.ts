@@ -6404,6 +6404,19 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       let pendingSessionCount = 0;
       let cancelledSessionCount = 0;
       
+      // Get the current date and time in IST
+      const currentDate = new Date();
+      const currentDateIST = formatInIST(currentDate, "yyyy-MM-dd");
+      const currentTimeIST = formatInIST(currentDate, "HH:mm");
+
+      // Calculate the time 24 hours from now for filtering
+      const twentyFourHoursFromNow = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+      const twentyFourHoursDateIST = formatInIST(twentyFourHoursFromNow, "yyyy-MM-dd");
+      const twentyFourHoursTimeIST = formatInIST(twentyFourHoursFromNow, "HH:mm");
+      
+      console.log(`DEBUG: Current date/time in IST: ${currentDateIST} ${currentTimeIST}`);
+      console.log(`DEBUG: 24 hours from now in IST: ${twentyFourHoursDateIST} ${twentyFourHoursTimeIST}`);
+      
       // Create a map of all booked slots by date and time
       allSessions.forEach(session => {
         // FIXED: Ensure we handle time zone conversion correctly
@@ -6619,18 +6632,29 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           if (isHalfHourConflict) {
             console.log(`DEBUG: Detected half-hour conflict for ${slot.date} ${timeSlot} with either ${previousHalfHour} or ${nextHalfHour}`);
           }
+
+          // NEW: Check if this slot is within 24 hours from now
+          let isWithin24Hours = false;
+          const slotDateObj = new Date(`${slot.date}T${timeSlot}:00+05:30`); // Create date object in IST
+          
+          if (
+            // Either slot date is before 24-hour date
+            (slot.date < twentyFourHoursDateIST) ||
+            // Or it's the same date but the time is earlier than the 24-hour time
+            (slot.date === twentyFourHoursDateIST && timeSlot < twentyFourHoursTimeIST)
+          ) {
+            isWithin24Hours = true;
+            console.log(`DEBUG: Slot ${slot.date} ${timeSlot} is within 24 hours from now and will be marked as unavailable`);
+          }
           
           // Combine all checks to determine if the slot is booked
           // FIXED: Only consider confirmed bookings when marking a slot as unavailable
-          const isBooked = !isOriginalSlot && (isExactTimeMatch || isHalfHourConflict);
-          
-          // Instead of special case handling, ensure our general solution works properly
-          // No more special cases or hardcoding of specific dates
-          const isSpecialCaseBooked = false;
+          const isBooked = !isOriginalSlot && (isExactTimeMatch || isHalfHourConflict || isWithin24Hours);
           
           return {
             time: timeSlot,
-            isBooked: isBooked || isSpecialCaseBooked
+            isBooked: isBooked,
+            isWithin24Hours: isWithin24Hours // Add this flag for UI feedback
           };
         });
         
