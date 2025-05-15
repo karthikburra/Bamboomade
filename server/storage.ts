@@ -48,6 +48,8 @@ export interface IStorage {
   updateProjectGuidanceOrderId(id: number, orderId: string): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceSession(id: number, newDate: Date, newDuration: number, rescheduledBy: 'admin' | 'user'): Promise<ProjectGuidance | undefined>;
   updateProjectGuidanceMeetLink(id: number, googleMeetLink: string): Promise<ProjectGuidance | undefined>;
+  updateProjectGuidanceStatus(id: number, status: string): Promise<ProjectGuidance | undefined>;
+  updateCompletedSessionStatuses(): Promise<number>; // Returns count of sessions marked as completed
   cancelProjectGuidanceSession(id: number, reason: string, refundAmount: number, refundPercentage: number): Promise<ProjectGuidance | undefined>;
   
   // Chat message operations
