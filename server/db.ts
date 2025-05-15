@@ -11,8 +11,14 @@ if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-// Create connection pool
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Create connection pool with improved connection settings
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  max: 20,                 // maximum number of clients
+  idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
+  connectionTimeoutMillis: 10000, // how long to wait for a connection to become available
+  maxUses: 7500,           // number of times a client can be used before being destroyed
+});
 
 // Create drizzle instance with our schema
 export const db = drizzle(pool, { schema });
