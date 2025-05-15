@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import crypto from "crypto";
+import { differenceInDays } from "date-fns";
 
 // Extend session interface to include admin user type
 declare module 'express-session' {
@@ -8581,6 +8582,91 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       res.status(500).json({ 
         error: "Failed to extract content from file", 
         details: error.message 
+      });
+    }
+  });
+
+  /**
+   * Get the subscription status for the current user
+   * This endpoint checks the AI access expiry date and returns the status
+   */
+  app.get("/api/subscription/status", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ 
+          message: "Not authenticated",
+          isActive: false
+        });
+      }
+      
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ 
+          message: "User not found",
+          isActive: false
+        });
+      }
+      
+      // Check if user has an AI access expiry date
+      if (!user.ai_access_expiry_date) {
+        return res.json({
+          isActive: false,
+          message: "No active subscription found"
+        });
+      }
+      
+      const now = new Date();
+      const expiryDate = new Date(user.ai_access_expiry_date);
+      const isActive = expiryDate > now;
+      
+      // Calculate days left
+      const daysLeft = isActive ? Math.max(0, differenceInDays(expiryDate, now)) : 0;
+      
+      return res.json({
+        isActive,
+        expiryDate: user.ai_access_expiry_date,
+        daysLeft,
+        subscriptionStatus: user.subscription_status || 'inactive'
+      });
+    } catch (error) {
+      console.error("Error getting subscription status:", error);
+      return res.status(500).json({ 
+        message: "Failed to get subscription status",
+        error: error instanceof Error ? error.message : "Unknown error",
+        isActive: false
+      });
+    }
+  });
+
+  /**
+   * Check and update subscription for the current user
+   * This endpoint forces a check and update of the subscription status
+   */
+  app.post("/api/subscription/check", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ 
+          message: "Not authenticated" 
+        });
+      }
+      
+      const result = await checkAndUpdateSubscriptions([userId]);
+      
+      return res.json({
+        message: "Subscription status checked",
+        updated: result.updatedIds.includes(userId),
+        status: result.statusMap[userId] || 'unknown'
+      });
+    } catch (error) {
+      console.error("Error checking subscription status:", error);
+      return res.status(500).json({ 
+        message: "Failed to check subscription status",
+        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
