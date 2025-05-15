@@ -1423,6 +1423,32 @@ export default function AdminDashboard() {
                                       <div className="flex items-center text-xs text-gray-300">
                                         <Phone className="w-3 h-3 mr-1" /> {session.phoneNumber}
                                       </div>
+                                      
+                                      {/* Show payment ID on mobile */}
+                                      {session.paymentId && (
+                                        <div className="flex items-center text-xs text-green-400">
+                                          <CreditCard className="w-3 h-3 mr-1" /> 
+                                          <span className="font-mono max-w-[110px] truncate" title={session.paymentId}>
+                                            {session.paymentId}
+                                          </span>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="ghost"
+                                            className="ml-auto h-5 w-5 p-0 text-green-400/70 hover:text-green-400"
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(session.paymentId || "");
+                                              toast({
+                                                title: "Copied!",
+                                                description: "Payment ID copied to clipboard",
+                                                variant: "default",
+                                              });
+                                            }}
+                                          >
+                                            <Copy className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                      )}
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden sm:table-cell">
