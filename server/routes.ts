@@ -3470,20 +3470,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let refundPercentage = 0;
       let refundAmount = 0;
       
-      if (daysUntilSession > 7) {
-        // More than 7 days before session: 100% refund
-        refundPercentage = 100;
-      } else if (daysUntilSession > 3) {
-        // 3-7 days before session: 75% refund
-        refundPercentage = 75;
+      if (daysUntilSession > 2) {
+        // More than 48 hours before session: 95% refund
+        refundPercentage = 95;
       } else if (daysUntilSession > 1) {
-        // 1-3 days before session: 50% refund
+        // 24-48 hours before session: 75% refund
+        refundPercentage = 75;
+      } else if (daysUntilSession > (4/24)) {
+        // 4-24 hours before session: 50% refund
         refundPercentage = 50;
-      } else if (daysUntilSession > 0) {
-        // Less than 24 hours before session: 25% refund
-        refundPercentage = 25;
       } else {
-        // After session scheduled start time: 0% refund
+        // Less than 4 hours before session: No refund
         refundPercentage = 0;
       }
       
@@ -3491,7 +3488,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         refundAmount = Math.round(selectedSession.amount * (refundPercentage / 100));
       }
       
-      // Cancel the session
+      if (timeUntilSession < (4 * 60 * 60 * 1000)) {  // 4 hours in milliseconds
+        return res.status(400).json({
+          success: false,
+          message: "Cannot cancel within 4 hours of the session",
+          errors: "Sessions cannot be cancelled less than 4 hours before the scheduled time."
+        });
+      }
+      
+      // Cancel the session first
       const updatedSession = await storage.cancelProjectGuidanceSession(
         selectedSession.id,
         reason,
@@ -3508,16 +3513,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         refundAmount
       });
       
+      // Process refund via Razorpay if payment was made and refund amount > 0
+      let refundResponse = null;
+      if (selectedSession.paymentId && refundAmount > 0) {
+        console.log(`Initiating refund for payment ${selectedSession.paymentId} with amount ₹${refundAmount}`);
+        
+        // Initiate refund through Razorpay
+        refundResponse = await initiateRazorpayRefund(
+          selectedSession.paymentId,
+          refundAmount,
+          {
+            reason: `Session cancellation: ${reason}`,
+            sessionId: selectedSession.id.toString(),
+            email: email
+          }
+        );
+        
+        if (refundResponse.success) {
+          console.log(`Refund initiated successfully:`, refundResponse);
+          
+          // Update session with refund status
+          await storage.updateSessionRefundStatus(
+            selectedSession.id,
+            refundResponse.refundId,
+            'Refund Initiated'
+          );
+        } else {
+          console.error(`Failed to initiate refund:`, refundResponse.error);
+          
+          // Update session with failed refund status
+          await storage.updateSessionRefundStatus(
+            selectedSession.id,
+            'failed_' + Date.now(),
+            'Refund Failed'
+          );
+        }
+      } else if (refundAmount === 0) {
+        console.log(`No refund initiated for session ${selectedSession.id} as refund amount is 0`);
+      } else if (!selectedSession.paymentId) {
+        console.log(`No refund initiated for session ${selectedSession.id} as payment ID is missing`);
+      }
+      
       // Email notifications have been removed as requested
       
-      // Return success
+      // Return success with refund information if available
       res.json({ 
         success: true, 
-        message: "Session cancelled successfully",
+        message: refundResponse && refundResponse.success
+          ? "Session cancelled successfully and refund initiated"
+          : "Session cancelled successfully",
         session: updatedSession,
         refundDetails: {
           percentage: refundPercentage,
-          amount: refundAmount
+          amount: refundAmount,
+          refundId: refundResponse?.refundId || null,
+          refundStatus: refundResponse?.success ? 'Initiated' : 'Not Processed'
         }
       });
     } catch (error) {
