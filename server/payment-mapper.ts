@@ -156,12 +156,13 @@ export async function mapSpecificPaymentToSession(
           result.mappedSessions.push({
             sessionId: session.id,
             paymentId: paymentId,
-            amount: paymentDetails.amount,
+            amount: paymentDetails.amount || 0, // Provide a default value to avoid type errors
             email: session.email
           });
         }
-      } catch (error) {
-        result.errors.push(`Error updating session ${session.id}: ${error.message}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        result.errors.push(`Error updating session ${session.id}: ${errorMessage}`);
       }
     } else {
       console.log(`No matching session found for payment ${paymentId}`);

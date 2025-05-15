@@ -557,10 +557,11 @@ export class DatabaseStorage implements IStorage {
         paymentConfirmed: true, 
         paymentId, 
         amount: amount || null,
-        status: "active"
+        status: "active",
+        paymentStatus: 'Paid'
       };
       
-      // Only update orderId if it's provided and not empty
+      // Add orderId if provided
       if (orderId) {
         updateData.orderId = orderId;
       }
