@@ -3217,6 +3217,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if the requested time is within 24 hours from now
+      const currentTime = new Date();
+      const twentyFourHoursFromNow = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
+      
+      if (parsedDate < twentyFourHoursFromNow) {
+        console.log(`Rescheduling denied: Selected time ${formatInIST(parsedDate, "yyyy-MM-dd HH:mm")} is within 24 hours from now ${formatInIST(twentyFourHoursFromNow, "yyyy-MM-dd HH:mm")}`);
+        return res.status(400).json({
+          message: "Time slot unavailable",
+          errors: "Sessions cannot be booked or rescheduled less than 24 hours in advance. Please select a time at least 24 hours from now."
+        });
+      }
+      
       // Update the session with new date/time using storage method
       const updatedSession = await storage.updateProjectGuidanceSession(
         selectedSession.id,

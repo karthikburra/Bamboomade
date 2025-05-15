@@ -696,7 +696,9 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 {/* Show message if no time slots are available or all are booked */}
                 {(availableTimeSlots.length === 0 || (slotsWithStatus.length > 0 && slotsWithStatus.every((slot: TimeSlotWithStatus) => slot.isBooked))) && !isLoadingSlots && (
                   <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                    No available time slots for this date
+                    {slotsWithStatus.some((slot: TimeSlotWithStatus) => slot.isWithin24Hours) 
+                      ? "Some slots are unavailable (within 24h advance notice required)" 
+                      : "No available time slots for this date"}
                   </div>
                 )}
               </SelectContent>
