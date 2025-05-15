@@ -64,46 +64,76 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
       className="space-y-6"
     >
       <div className="sticky top-0 z-10 bg-gray-950 pt-1 pb-2">
-        <TabsList className="bg-gray-800/80 border border-gray-700 w-full flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent rounded-md shadow-md">
+        <TabsList className="bg-gray-800/80 border border-gray-700 w-full grid grid-cols-2 sm:grid-cols-3 md:flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent rounded-md shadow-md">
           {/* Dashboard Summary tab removed */}
           <TabsTrigger 
             value="sessions" 
-            className="flex-1 min-w-[140px] data-[state=active]:bg-green-700/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 h-14 sm:h-10 min-w-[100px] sm:min-w-[140px] data-[state=active]:bg-green-700/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="sm:inline">Session</span> Management
+            <div className="flex flex-col sm:flex-row items-center justify-center w-full">
+              <Calendar className="w-5 h-5 sm:w-4 sm:h-4 mb-1 sm:mb-0 sm:mr-2" />
+              <div className="flex flex-col sm:flex-row items-center">
+                <span className="block sm:hidden">Sessions</span>
+                <span className="hidden sm:inline">Session</span>
+                <span className="hidden sm:inline ml-1">Management</span>
+              </div>
+            </div>
           </TabsTrigger>
 
           <TabsTrigger 
             value="payments" 
-            className="flex-1 min-w-[140px] data-[state=active]:bg-blue-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 h-14 sm:h-10 min-w-[100px] sm:min-w-[140px] data-[state=active]:bg-blue-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="sm:inline">Payment</span> Analytics
+            <div className="flex flex-col sm:flex-row items-center justify-center w-full">
+              <CreditCard className="w-5 h-5 sm:w-4 sm:h-4 mb-1 sm:mb-0 sm:mr-2" />
+              <div className="flex flex-col sm:flex-row items-center">
+                <span className="block sm:hidden">Payments</span>
+                <span className="hidden sm:inline">Payment</span>
+                <span className="hidden sm:inline ml-1">Analytics</span>
+              </div>
+            </div>
           </TabsTrigger>
 
           <TabsTrigger 
             value="database" 
-            className="flex-1 min-w-[140px] data-[state=active]:bg-amber-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 h-14 sm:h-10 min-w-[100px] sm:min-w-[140px] data-[state=active]:bg-amber-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Database className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="sm:inline">Knowledge</span> Database
+            <div className="flex flex-col sm:flex-row items-center justify-center w-full">
+              <Database className="w-5 h-5 sm:w-4 sm:h-4 mb-1 sm:mb-0 sm:mr-2" />
+              <div className="flex flex-col sm:flex-row items-center">
+                <span className="block sm:hidden">Knowledge</span>
+                <span className="hidden sm:inline">Knowledge</span>
+                <span className="hidden sm:inline ml-1">Database</span>
+              </div>
+            </div>
           </TabsTrigger>
           
           <TabsTrigger 
             value="users" 
-            className="flex-1 min-w-[140px] data-[state=active]:bg-purple-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 h-14 sm:h-10 min-w-[100px] sm:min-w-[140px] data-[state=active]:bg-purple-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="sm:inline">User</span> Management
+            <div className="flex flex-col sm:flex-row items-center justify-center w-full">
+              <Users className="w-5 h-5 sm:w-4 sm:h-4 mb-1 sm:mb-0 sm:mr-2" />
+              <div className="flex flex-col sm:flex-row items-center">
+                <span className="block sm:hidden">Users</span>
+                <span className="hidden sm:inline">User</span>
+                <span className="hidden sm:inline ml-1">Management</span>
+              </div>
+            </div>
           </TabsTrigger>
           
           <TabsTrigger 
             value="deleted-users" 
-            className="flex-1 min-w-[140px] data-[state=active]:bg-red-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
+            className="flex-1 h-14 sm:h-10 min-w-[100px] sm:min-w-[140px] data-[state=active]:bg-red-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200"
           >
-            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="sm:inline">Deleted</span> Users
+            <div className="flex flex-col sm:flex-row items-center justify-center w-full">
+              <Trash2 className="w-5 h-5 sm:w-4 sm:h-4 mb-1 sm:mb-0 sm:mr-2" />
+              <div className="flex flex-col sm:flex-row items-center">
+                <span className="block sm:hidden">Deleted</span>
+                <span className="hidden sm:inline">Deleted</span>
+                <span className="hidden sm:inline ml-1">Users</span>
+              </div>
+            </div>
           </TabsTrigger>
         </TabsList>
       </div>
