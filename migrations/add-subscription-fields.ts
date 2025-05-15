@@ -1,7 +1,10 @@
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { sql } from 'drizzle-orm';
 import ws from "ws";
+
+// Configure Neon to use ws for WebSocket
+neonConfig.webSocketConstructor = ws;
 
 /**
  * Migration to add subscription fields to users table
