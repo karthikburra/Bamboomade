@@ -8611,7 +8611,7 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       }
       
       // Check if user has an AI access expiry date
-      if (!user.ai_access_expiry_date) {
+      if (!user.aiAccessExpiryDate) {
         return res.json({
           isActive: false,
           message: "No active subscription found"
@@ -8619,7 +8619,7 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       }
       
       const now = new Date();
-      const expiryDate = new Date(user.ai_access_expiry_date);
+      const expiryDate = new Date(user.aiAccessExpiryDate);
       const isActive = expiryDate > now;
       
       // Calculate days left
@@ -8627,9 +8627,9 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       
       return res.json({
         isActive,
-        expiryDate: user.ai_access_expiry_date,
+        expiryDate: user.aiAccessExpiryDate,
         daysLeft,
-        subscriptionStatus: user.subscription_status || 'inactive'
+        subscriptionStatus: user.subscriptionStatus || 'inactive'
       });
     } catch (error) {
       console.error("Error getting subscription status:", error);
@@ -8659,8 +8659,8 @@ Please structure the summary in a helpful format with clear headings, bullet poi
       
       return res.json({
         message: "Subscription status checked",
-        updated: result.updatedIds.includes(userId),
-        status: result.statusMap[userId] || 'unknown'
+        updated: result.updatedIds ? result.updatedIds.includes(userId) : false,
+        status: result.statusMap && result.statusMap[userId] ? result.statusMap[userId] : 'unknown'
       });
     } catch (error) {
       console.error("Error checking subscription status:", error);
