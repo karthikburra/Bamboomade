@@ -569,6 +569,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Schedule subscription status check to run every day at midnight
+  cron.schedule("0 0 * * *", async () => {
+    console.log("🔄 Running scheduled subscription status check...");
+    try {
+      const result = await checkAndUpdateSubscriptions();
+      console.log(`✅ Subscription check complete: ${result.expired} subscriptions marked as expired, ${result.active} active subscriptions`);
+    } catch (error) {
+      console.error("❌ Error in scheduled subscription check:", error);
+    }
+  });
+  
+  // Run subscription check once at startup
+  setTimeout(async () => {
+    try {
+      console.log("🔄 Running initial subscription status check...");
+      const result = await checkAndUpdateSubscriptions();
+      console.log(`✅ Initial subscription check complete: ${result.expired} subscriptions marked as expired, ${result.active} active subscriptions`);
+    } catch (error) {
+      console.error("❌ Error in initial subscription check:", error);
+    }
+  }, 10000); // Delay by 10 seconds to allow server to fully start
+  
   // Schedule automatic marking of completed sessions to run every hour
   cron.schedule("0 * * * *", async () => {
     console.log("🔄 Running scheduled check for completed sessions...");
@@ -6094,6 +6116,22 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       res.json(sessions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch project guidance sessions", error: (error as Error).message });
+    }
+  });
+  
+  // Admin endpoint to manually check and update subscription statuses
+  app.post("/api/admin/check-subscriptions", isAdmin, async (req, res) => {
+    try {
+      console.log("Manual subscription status check initiated by admin:", req.session.adminUser?.email);
+      const result = await checkAndUpdateSubscriptions();
+      res.json({
+        success: true,
+        message: `Subscription check completed: ${result.checked} checked, ${result.expired} expired, ${result.active} active`,
+        ...result
+      });
+    } catch (error) {
+      console.error("Error in manual subscription check:", error);
+      res.status(500).json({ error: "Failed to check subscriptions", message: (error as Error).message });
     }
   });
   
