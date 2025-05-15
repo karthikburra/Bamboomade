@@ -67,6 +67,7 @@ function isFullProps(props: BookingCalendarProps): props is BookingCalendarFullP
 interface TimeSlotWithStatus {
   time: string;
   isBooked: boolean;
+  isWithin24Hours?: boolean; // New flag to mark slots within 24 hours
 }
 
 interface AvailableSlot {
@@ -614,38 +615,57 @@ const BookingCalendar: React.FC<BookingCalendarProps> = (props) => {
                 {slotsWithStatus.map((slot: TimeSlotWithStatus) => {
                   const time = slot.time;
                   const isBooked = slot.isBooked;
+                  const isWithin24Hours = slot.isWithin24Hours;
+                  
+                  // Determine the status text and styling
+                  let statusText = "Available";
+                  let statusClasses = "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-300";
+                  
+                  if (isBooked) {
+                    if (isWithin24Hours) {
+                      statusText = "< 24h";
+                      statusClasses = "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400";
+                    } else {
+                      statusText = "Booked";
+                      statusClasses = "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400";
+                    }
+                  } else if (props.selectedTime === time) {
+                    statusText = "Selected";
+                    statusClasses = "bg-green-600 text-white";
+                  }
                   
                   return (
-                    <div key={time} className="relative">
-                      <SelectItem 
-                        value={time}
-                        disabled={isBooked}
-                        className={cn(
-                          "justify-between",
-                          props.selectedTime === time ? "font-medium" : "",
-                          isBooked ? "text-gray-500 line-through bg-gray-800/60 cursor-not-allowed" : "cursor-pointer hover:bg-gray-700"
-                        )}
-                      >
-                        <div className="flex justify-between items-center w-full">
-                          <span>{isBooked ? `${time} (Booked)` : time}</span>
-                          <div className="ml-3">
-                            {isBooked ? (
-                              <span className="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
-                                Booked
-                              </span>
-                            ) : props.selectedTime === time ? (
-                              <span className="inline-flex items-center rounded-full bg-green-600 px-2 py-0.5 text-xs font-medium text-white">
-                                Selected
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center rounded-full bg-gray-200 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-800 dark:text-gray-300">
-                                Available
-                              </span>
-                            )}
+                    <TooltipProvider key={time}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="relative">
+                            <SelectItem 
+                              value={time}
+                              disabled={isBooked}
+                              className={cn(
+                                "justify-between",
+                                props.selectedTime === time ? "font-medium" : "",
+                                isBooked ? "text-gray-500 line-through bg-gray-800/60 cursor-not-allowed" : "cursor-pointer hover:bg-gray-700"
+                              )}
+                            >
+                              <div className="flex justify-between items-center w-full">
+                                <span>{isBooked && isWithin24Hours ? `${time} (< 24h)` : isBooked ? `${time} (Booked)` : time}</span>
+                                <div className="ml-3">
+                                  <span className={`inline-flex items-center rounded-full ${statusClasses} px-2 py-0.5 text-xs font-medium`}>
+                                    {statusText}
+                                  </span>
+                                </div>
+                              </div>
+                            </SelectItem>
                           </div>
-                        </div>
-                      </SelectItem>
-                    </div>
+                        </TooltipTrigger>
+                        {isWithin24Hours && (
+                          <TooltipContent className="bg-gray-800 border-gray-700 text-white">
+                            <p>Cannot book sessions less than 24 hours in advance</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   );
                 })}
                 
