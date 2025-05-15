@@ -14,10 +14,13 @@ const Login: React.FC = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && userData) {
-      // Check if user needs to complete their profile (add fullName)
+      // Check if user needs to complete their profile (new users without fullName)
       if (userData.needsProfileCompletion) {
+        console.log("New user needs to complete profile. Redirecting to profile edit page.");
         window.location.href = "/profile/edit";
       } else {
+        // Returning users or users with completed profiles go to home page
+        console.log("User already logged in. Redirecting to home page.");
         window.location.href = "/";
       }
     }

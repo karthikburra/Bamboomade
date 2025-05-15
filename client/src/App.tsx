@@ -113,9 +113,9 @@ function ProfileRedirectChecker({ children }: { children: React.ReactNode }) {
   });
   
   useEffect(() => {
-    // If user is logged in and needs to complete their profile, redirect to edit profile page
-    if (!isLoading && user && user && window.location.pathname !== '/profile/edit') {
-      console.log("User needs to complete profile. Redirecting to profile edit page.");
+    // Only redirect if user needs profile completion and isn't already on the profile edit page
+    if (!isLoading && user && user.needsProfileCompletion && window.location.pathname !== '/profile/edit') {
+      console.log("New user needs to complete profile. Redirecting to profile edit page.");
       window.location.href = '/profile/edit';
     }
   }, [user, isLoading]);

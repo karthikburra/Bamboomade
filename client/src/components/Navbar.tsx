@@ -49,9 +49,21 @@ const SubscriptionStatusItem = () => {
   } = useSubscription();
   
   const getBadgeColor = () => {
-    if (subscriptionStatus === 'active') return "bg-blue-600 hover:bg-blue-700";
-    if (subscriptionStatus === 'free' && isActive) return "bg-green-600 hover:bg-green-700";
-    return "bg-red-600 hover:bg-red-700";
+    if (!isActive || (daysLeft !== null && daysLeft <= 0)) {
+      return "bg-red-600 hover:bg-red-700"; // Expired
+    }
+    
+    if (subscriptionStatus === 'free') {
+      if (daysLeft && daysLeft > 30) {
+        return "bg-green-600 hover:bg-green-700"; // Free trial with plenty of time
+      } else if (daysLeft && daysLeft > 7) {
+        return "bg-amber-600 hover:bg-amber-700"; // Free trial with limited time
+      } else {
+        return "bg-red-600 hover:bg-red-700"; // Free trial about to expire
+      }
+    }
+    
+    return "bg-blue-600 hover:bg-blue-700"; // Active paid subscription
   };
   
   const getStatusLabel = () => {
@@ -59,7 +71,7 @@ const SubscriptionStatusItem = () => {
     if (!isActive) return "Expired";
     if (daysLeft !== null && daysLeft <= 0) return "Expired";
     if (isActive && subscriptionStatus === 'active' && daysLeft) return `${daysLeft} days left`;
-    if (isActive && subscriptionStatus === 'free' && daysLeft) return `6 Month Trial (${daysLeft} days left)`;
+    if (isActive && subscriptionStatus === 'free' && daysLeft) return `Free Trial (${daysLeft} days)`;
     return "Expired";
   };
   
@@ -79,7 +91,7 @@ const SubscriptionStatusItem = () => {
           <Sparkles className="mr-2 h-4 w-4 text-amber-400" />
           AI Subscription
           <div className="ml-auto">
-            <Badge className={`text-white ${getBadgeColor()}`}>
+            <Badge className={`text-white ${getBadgeColor()} px-2 py-1 text-xs font-medium rounded`}>
               {getStatusLabel()}
             </Badge>
           </div>
@@ -143,7 +155,7 @@ const SubscriptionStatusItem = () => {
                   <div className="mt-3 text-sm text-gray-400">
                     {daysLeft !== null && daysLeft > 0 ? (
                       subscriptionStatus === 'free' ? 
-                        `You're on a 6-month free trial with ${daysLeft} days remaining.` : 
+                        <span className="text-green-300">You're on a <strong>Free Trial</strong> with <strong>{daysLeft} days</strong> remaining.</span> : 
                         `You have access to AI Chat for ${daysLeft} more days.`
                     ) : (
                       "Your AI Chat access has expired."
