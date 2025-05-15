@@ -5829,6 +5829,58 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // API endpoint to run auto-mapping of payments to sessions
+  app.post('/api/admin/auto-map-payments', isAdmin, async (req, res) => {
+    try {
+      console.log('Running automatic payment mapping...');
+      
+      // Import the payment-mapper file and run the auto-mapping function
+      const { autoMapPaymentsToSessions } = require('./payment-mapper');
+      const result = await autoMapPaymentsToSessions(storage);
+      
+      console.log(`Auto mapping completed: ${result.mappedCount} payments mapped`);
+      
+      // Log this action in admin activity logs
+      try {
+        const adminUser = req.session.adminUser || { email: 'Unknown admin', id: 0 };
+        const logEntry = {
+          adminId: adminUser.id,
+          actionType: 'payment_auto_mapping',
+          actionDetails: JSON.stringify({
+            mappedCount: result.mappedCount,
+            errors: result.errors,
+            mappedSessions: result.mappedSessions.map(s => ({
+              sessionId: s.sessionId,
+              paymentId: s.paymentId,
+              amount: s.amount
+            }))
+          }),
+          timestamp: new Date()
+        };
+        
+        await storage.createAdminActivityLog(logEntry);
+      } catch (logError) {
+        console.error('Error logging admin activity:', logError);
+      }
+      
+      res.json({
+        success: true,
+        result: {
+          mappedCount: result.mappedCount,
+          mappedSessions: result.mappedSessions,
+          errors: result.errors
+        }
+      });
+    } catch (error) {
+      console.error('Error in auto-mapping payments:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Error running automatic payment mapping',
+        error: error.message
+      });
+    }
+  });
+  
   app.post("/api/admin/ai-training", isAdmin, validateRequest(insertAiTrainingDataSchema), async (req, res) => {
     try {
       const trainingData = await storage.createAiTrainingData(req.body);
