@@ -30,6 +30,7 @@ import PaymentFailed from "@/pages/PaymentFailed";
 import OurWorks from "@/pages/OurWorks";
 import AllSessions from "@/pages/AllSessions";
 import { useAuth } from "./hooks/useAuth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ProfileEdit from "@/pages/ProfileEdit";
 import VerifyEmail from "@/pages/VerifyEmail";
 import DevTools from "@/pages/DevTools";
@@ -58,7 +59,9 @@ function Router() {
       <Route path="/our-works" component={OurWorks} />
       <Route path="/contact" component={Contact} />
       <Route path="/project-guidance" component={ProjectGuidance} />
-      <Route path="/ai-chat" component={ProtectedAIChat} />
+      <Route path="/ai-chat">
+        {() => <ProtectedRoute component={AIChat} />}
+      </Route>
       <Route path="/admin" component={Admin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-home" component={AdminHome} />
@@ -111,7 +114,7 @@ function ProfileRedirectChecker({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     // If user is logged in and needs to complete their profile, redirect to edit profile page
-    if (!isLoading && user && user.needsProfileCompletion && window.location.pathname !== '/profile/edit') {
+    if (!isLoading && user && user && window.location.pathname !== '/profile/edit') {
       console.log("User needs to complete profile. Redirecting to profile edit page.");
       window.location.href = '/profile/edit';
     }
