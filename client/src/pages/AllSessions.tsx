@@ -715,8 +715,25 @@ export default function AllSessions() {
                     )}
                     
                     {session.status === 'cancelled' && (
-                      <div className="text-xs text-red-400">
-                        This session has been cancelled
+                      <div className="text-xs text-red-400 space-y-1">
+                        <div>This session has been cancelled</div>
+                        {session.refundStatus && (
+                          <div className="flex items-center">
+                            <div className="mr-1">Refund status:</div>
+                            <span className={`font-medium ${
+                              session.refundStatus === 'Refund Initiated' ? 'text-green-400' : 
+                              session.refundStatus === 'Refund Failed' ? 'text-red-400' : 
+                              'text-yellow-400'
+                            }`}>
+                              {session.refundStatus}
+                            </span>
+                          </div>
+                        )}
+                        {session.refundAmount > 0 && (
+                          <div>
+                            Refund amount: ₹{session.refundAmount}
+                          </div>
+                        )}
                       </div>
                     )}
                     
