@@ -38,19 +38,33 @@ import darkLogoImage from "@assets/Lgo dark.png";
 
 // Subscription Status Item Component for Dropdown Menu
 const SubscriptionStatusItem = () => {
-  const { isActive, expiryDate, daysLeft, subscriptionType, isLoading } = useSubscription();
+  const { 
+    isActive, 
+    expiryDate, 
+    daysLeft, 
+    subscriptionStatus, 
+    isLoading,
+    isChecking,
+    checkSubscription 
+  } = useSubscription();
   
   const getBadgeColor = () => {
-    if (subscriptionType === 'paid') return "bg-blue-600 hover:bg-blue-700";
-    if (subscriptionType === 'free' && isActive) return "bg-green-600 hover:bg-green-700";
+    if (subscriptionStatus === 'active') return "bg-blue-600 hover:bg-blue-700";
+    if (subscriptionStatus === 'free' && isActive) return "bg-green-600 hover:bg-green-700";
     return "bg-red-600 hover:bg-red-700";
   };
   
   const getStatusLabel = () => {
     if (isLoading) return "Loading...";
-    if (subscriptionType === 'paid') return "Premium";
-    if (subscriptionType === 'free' && isActive) return "Free Trial";
+    if (isActive && subscriptionStatus === 'active') return "Active";
+    if (isActive && subscriptionStatus === 'free') return "Free Trial";
     return "Expired";
+  };
+  
+  const handleRefresh = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    checkSubscription();
   };
   
   return (
@@ -73,9 +87,25 @@ const SubscriptionStatusItem = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-lg text-green-300">AI Chat Access</h4>
-            <Badge className={`text-white ${getBadgeColor()}`}>
-              {getStatusLabel()}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge className={`text-white ${getBadgeColor()}`}>
+                {getStatusLabel()}
+              </Badge>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-6 w-6 rounded-full p-0 text-gray-400 hover:text-white hover:bg-gray-700/50"
+                onClick={handleRefresh}
+                disabled={isChecking}
+                title="Refresh subscription status"
+              >
+                {isChecking ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Clock className="h-3 w-3" />
+                )}
+              </Button>
+            </div>
           </div>
           
           {isLoading ? (
