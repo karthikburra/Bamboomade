@@ -1,10 +1,14 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { useLocation } from "wouter";
+import { useToast } from "../hooks/use-toast";
+import { apiRequest } from "../lib/queryClient";
+import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DayPicker, SelectSingleEventHandler } from "react-day-picker";
+import PaymentAnalytics from "../components/PaymentAnalytics";
+import { DayPicker } from "react-day-picker";
+import { format, addMinutes, addDays, isAfter, isBefore, isToday, parseISO } from "date-fns";
+import { formatInIST, formatSessionDate } from "../lib/date-utils";
+import { cn } from "../lib/utils";
 import {
   Card,
   CardContent,
@@ -12,7 +16,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "../components/ui/card";
 import {
   Table,
   TableBody,
@@ -21,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "../components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -30,496 +34,306 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { 
-  Loader2, LogOut, Link as LinkIcon, Check, AlertCircle, Calendar, 
-  CalendarClock, Clock, User, Phone, Mail, Plus, Trash2, Edit, Save,
-  X, AlertTriangle, CalendarRange, Video, Search, Ban, ExternalLink,
-  SlidersHorizontal, Eye, ChevronDown, UserCheck, UserCog
-} from "lucide-react";
+} from "../components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import AdminTabs from "../components/AdminTabs";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Button } from "../components/ui/button";
+import { Checkbox } from "../components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { addDays, format, isAfter, isBefore, isToday, parse, parseISO, startOfToday } from "date-fns";
-import { cn } from "@/lib/utils";
-import { formatInIST, getCurrentISTDate } from "@/lib/date-utils";
-import { z } from "zod";
+} from "../components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import { Switch } from "../components/ui/switch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-
-
-interface TimeSlotWithStatus {
-  time: string;
-  isBooked: boolean;
-}
-
-interface AvailableTimeSlot {
-  id: number;
-  date: string; // ISO format date string like "2023-05-15"
-  slots: string[]; // Array of time slots like ["09:00", "10:00", "11:00"]
-  slotsWithStatus?: TimeSlotWithStatus[]; // Array of time slots with booking status
-  allSlotsBooked?: boolean; // Whether all slots for this date are booked
-  createdAt: Date;
-  createdBy: number;
-  updatedAt: Date;
-}
-
-interface Session {
-  id: number;
-  formattedDate: string;
-  formattedTime: string;
-  date: string;
-  email: string; // Used for web search functionality
-  phone: string;
-  topic: string;
-  notes: string;
-  duration: number;
-  paymentStatus: string;
-  studentName: string;
-  status: string;
-  googleMeetLink?: string;
-  isStudent?: boolean;
-  rescheduledBy?: 'user' | 'admin';
-  originalDate?: string;
-}
+import * as z from "zod";
+import { Loader2, RefreshCw, Search, Edit, Trash, Plus, Calendar, Clock, User, AtSign, Phone, Users, DollarSign, BookOpen, ArrowUpDown, MoreVertical, CheckCircle, XCircle, Copy, ExternalLink, ReceiptText, CalendarClock, Download, FileText, ChevronDown, ChevronRight, Filter, Timer } from "lucide-react";
+import PaymentMapperDialog from "../components/PaymentMapperDialog";
+import RefreshSessionsButton from "../components/RefreshSessionsButton";
+import FixFailedSessionsButton from "../components/FixFailedSessionsButton";
+import MarkCompletedSessionsButton from "../components/MarkCompletedSessionsButton";
 
 export default function AdminDashboard() {
-  // Session management state
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
-  const [meetLink, setMeetLink] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  // Filter state
-  const [emailFilter, setEmailFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  
-  // Reschedule session state
-  const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
-  const [rescheduleDate, setRescheduleDate] = useState("");
-  const [rescheduleTime, setRescheduleTime] = useState("");
-  const [rescheduleDuration, setRescheduleDuration] = useState<number>(0);
-  const [selectedRescheduleDate, setSelectedRescheduleDate] = useState<Date | undefined>(undefined);
-  
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<TimeSlotWithStatus[]>([]);
-  const [availableDates, setAvailableDates] = useState<Date[]>([]);
-  
-  // Cancel session state
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [cancellationReason, setCancellationReason] = useState("");
-  
-  // Availability management state
-  const [newDate, setNewDate] = useState("");
-  const [newTimeSlot, setNewTimeSlot] = useState("");
-  const [editingSlotId, setEditingSlotId] = useState<number | null>(null);
-  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
-  const [isAddSlotDialogOpen, setIsAddSlotDialogOpen] = useState(false);
-  const [isEditSlotDialogOpen, setIsEditSlotDialogOpen] = useState(false);
-  
-  // Bulk date selection state
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [dateRange, setDateRange] = useState<{start: string, end: string}>({start: "", end: ""});
-  const [bulkMode, setBulkMode] = useState<boolean>(false);
-  const [selectedDays, setSelectedDays] = useState<{[key: string]: boolean}>({
-    monday: true,
-    tuesday: true,
-    wednesday: true,
-    thursday: true,
-    friday: true,
-    saturday: false,
-    sunday: false,
-  });
-  
-  // Calendar state
-  const [startDateMonth, setStartDateMonth] = useState<Date>(new Date());
-  const [endDateMonth, setEndDateMonth] = useState<Date>(new Date());
-  const [startPickerOpen, setStartPickerOpen] = useState<boolean>(false);
-  const [endPickerOpen, setEndPickerOpen] = useState<boolean>(false);
-  
-  // Fixed time slots for chips - including early morning and late night options
-  const timeSlotOptions = useMemo(() => [
-    // Early morning
-    "06:00", "07:00", "08:00", 
-    // Standard business hours
-    "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", 
-    "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
-    // Late evening/night
-    "21:00", "22:00", "23:00", "00:00"
-  ], []);
-  
-  // References for calendar popups
-  const startDateRef = useRef<HTMLDivElement>(null);
-  const endDateRef = useRef<HTMLDivElement>(null);
+  // Get query parameters 
+  const [location, navigate] = useLocation();
+  const search = useSearch();
+  const queryParams = new URLSearchParams(search);
+  const tab = queryParams.get("tab") || "pending";
   
   const { toast } = useToast();
-  const [_, setLocation] = useLocation();
   const queryClient = useQueryClient();
-
-  // Check if user is authenticated and is admin
-  const { data: userData, isLoading: isAuthLoading } = useQuery({
-    queryKey: ["/api/auth/admin-check"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/auth/admin-check");
-      return response.json();
-    },
-    retry: false
+  
+  // Get sessions based on tab
+  const { data: sessions = [], isLoading: isSessionsLoading, refetch: refetchSessions } = useQuery({
+    queryKey: ['/api/admin/sessions', tab],
+    enabled: tab !== "summary" && tab !== "users" && tab !== "deleted-users" && tab !== "payments"
+  });
+  
+  // Users data
+  const { data: users = [], isLoading: isUsersLoading, refetch: refetchUsers } = useQuery({
+    queryKey: ['/api/admin/users'],
+    enabled: tab === "users" || tab === "summary"
+  });
+  
+  // Deleted users data
+  const { data: deletedUsers = [], isLoading: isDeletedUsersLoading, refetch: refetchDeletedUsers } = useQuery({
+    queryKey: ['/api/admin/deleted-users'],
+    enabled: tab === "deleted-users"
   });
 
-  // Rest of your functions and state management code would go here
-  // ...
+  // Payment analytics query
+  const { data: paymentAnalytics, isLoading: isPaymentAnalyticsLoading } = useQuery({
+    queryKey: ['/api/admin/payment-analytics'],
+    enabled: tab === "payments" || tab === "summary"
+  });
 
-  // Filter function for sessions
-  const applyFilters = (sessionsToFilter: Session[]) => {
-    return sessionsToFilter.filter(session => {
-      const matchesEmail = !emailFilter || session.email.toLowerCase().includes(emailFilter.toLowerCase());
-      const matchesDate = !dateFilter || 
-        formatInIST(new Date(session.date), 'yyyy-MM-dd').includes(dateFilter) ||
-        session.formattedDate?.toLowerCase().includes(dateFilter.toLowerCase());
-      const matchesStatus = !statusFilter || session.status.toLowerCase().includes(statusFilter.toLowerCase());
-      return matchesEmail && matchesDate && matchesStatus;
-    });
-  };
-
-  // Mock data for sessions (in a real app, this would come from backend)
-  const sessions: Session[] = [
-    // Example session data
-    {
-      id: 1,
-      formattedDate: "May 15, 2025",
-      formattedTime: "10:00",
-      date: "2025-05-15T04:30:00.000Z",
-      email: "student@example.com",
-      phone: "9876543210",
-      topic: "Bamboo furniture design",
-      notes: "",
-      duration: 60,
-      paymentStatus: "Paid",
-      studentName: "John Student",
-      status: "pending",
-      isStudent: true
-    },
-    {
-      id: 2,
-      formattedDate: "May 16, 2025",
-      formattedTime: "14:00",
-      date: "2025-05-16T08:30:00.000Z",
-      email: "pro@example.com",
-      phone: "9876543211",
-      topic: "Bamboo structural design",
-      notes: "",
-      duration: 30,
-      paymentStatus: "Paid",
-      studentName: "Jane Professional",
-      status: "upcoming",
-      googleMeetLink: "https://meet.google.com/123-abc-xyz",
-      isStudent: false
-    }
-  ];
-
-  // Split sessions into categories
-  const pendingSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status !== 'cancelled' && s.status !== 'completed' && !s.googleMeetLink));
-    
-  const upcomingSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status !== 'cancelled' && s.status !== 'completed' && s.googleMeetLink));
-    
-  const completedSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status === 'completed'));
-    
-  const cancelledSessions = applyFilters(sessions.filter((s: Session) => 
-    s.status === 'cancelled'));
-
+  // Render the appropriate tab content based on the URL parameter
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-950 text-gray-200">
       <Helmet>
         <title>Admin Dashboard | BambooMade</title>
-        <meta name="description" content="Admin dashboard for session management" />
       </Helmet>
       
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-8 gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-          <Button variant="ghost" className="flex items-center gap-2 self-end sm:self-auto">
-            <LogOut size={18} />
-            <span>Logout</span>
-          </Button>
-        </div>
+      <div className="container max-w-7xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
         
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
-          <Card className="bg-gray-900 border-gray-800">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg">Total Sessions</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold">{sessions.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-amber-900/20 border-amber-900">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg text-amber-400">Pending</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold text-amber-500">{pendingSessions.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-green-900/20 border-green-900">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg text-green-400">Upcoming</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold text-green-500">{upcomingSessions.length}</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-red-900/20 border-red-900">
-            <CardHeader className="pb-1 sm:pb-2 px-3 sm:px-6">
-              <CardTitle className="text-sm sm:text-lg text-red-400">Cancelled</CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6 py-1 sm:py-2">
-              <p className="text-xl sm:text-3xl font-bold text-red-500">{cancelledSessions.length}</p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <Tabs defaultValue="pending" className="space-y-4">
-          <div className="relative overflow-x-auto pb-1">
-            <TabsList className="bg-gray-800 border border-gray-700 w-max min-w-full sm:min-w-0 flex flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-              <TabsTrigger value="pending" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Pending ({pendingSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="upcoming" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Upcoming ({upcomingSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Completed ({completedSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="cancelled" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                Cancelled ({cancelledSessions.length})
-              </TabsTrigger>
-              <TabsTrigger value="all" className="data-[state=active]:bg-green-700 text-xs sm:text-sm whitespace-nowrap">
-                All Sessions
-              </TabsTrigger>
-              <TabsTrigger value="availability" className="data-[state=active]:bg-blue-600 text-xs sm:text-sm whitespace-nowrap">
-                Availability
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          
-          {/* Session management tabs */}
-          {["pending", "upcoming", "completed", "cancelled", "all"].map((tab) => {
-            let displaySessions;
-            let emptyMessage = "";
+        <AdminTabs value={tab}>
+          {/* Session Management tabs */}
+          {["pending", "confirmed", "completed", "cancelled", "all"].map((statusTab) => {
+            // Generate display name with first letter capitalized
+            const displayName = statusTab.charAt(0).toUpperCase() + statusTab.slice(1);
             
-            switch (tab) {
-              case "pending":
-                displaySessions = pendingSessions;
-                emptyMessage = "No pending sessions requiring Google Meet links.";
-                break;
-              case "upcoming":
-                displaySessions = upcomingSessions;
-                emptyMessage = "No upcoming sessions with Google Meet links set.";
-                break;
-              case "completed":
-                displaySessions = completedSessions;
-                emptyMessage = "No completed sessions.";
-                break;
-              case "cancelled":
-                displaySessions = cancelledSessions;
-                emptyMessage = "No cancelled sessions.";
-                break;
-              default:
-                displaySessions = sessions;
-                emptyMessage = "No sessions found.";
-            }
+            // Set empty message based on tab
+            const emptyMessage = statusTab === "all" 
+              ? "No sessions found" 
+              : `No ${statusTab} sessions found`;
             
+            // Filter sessions based on tab if it's the "all" tab
+            const displaySessions = statusTab === "all" 
+              ? sessions 
+              : sessions.filter(s => s.status === statusTab);
+              
             return (
-              <TabsContent key={tab} value={tab} className="space-y-4">
+              <TabsContent key={statusTab} value={statusTab} className="space-y-4">
                 <Card className="bg-gray-900 border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="capitalize">{tab} Sessions</CardTitle>
-                    <CardDescription>
-                      {tab === "pending" ? "Sessions requiring Google Meet links" : 
-                       tab === "upcoming" ? "Sessions with Google Meet links set" :
-                       `All ${tab} sessions`}
-                    </CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="space-y-0.5">
+                      <CardTitle className="text-lg">{displayName} Sessions</CardTitle>
+                      <CardDescription>
+                        View and manage {statusTab} project guidance sessions
+                      </CardDescription>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <RefreshSessionsButton tab={statusTab} />
+                      
+                      {statusTab === "all" && (
+                        <FixFailedSessionsButton />
+                      )}
+                      
+                      {statusTab === "confirmed" && (
+                        <MarkCompletedSessionsButton />
+                      )}
+                      
+                      {statusTab === "pending" && (
+                        <PaymentMapperDialog />
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    {displaySessions.length === 0 ? (
+                    {isSessionsLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full"></div>
+                      </div>
+                    ) : displaySessions.length === 0 ? (
                       <div className="text-center py-8 text-gray-400">
                         <p>{emptyMessage}</p>
                       </div>
                     ) : (
-                      <>
-                        {/* Filter options */}
-                        <div className="mb-4 flex flex-wrap gap-2">
-                          <div className="w-full sm:w-auto">
-                            <Input
-                              placeholder="Filter by Email"
-                              value={emailFilter}
-                              onChange={(e) => setEmailFilter(e.target.value)}
-                              className="bg-gray-800 border-gray-700 text-sm"
-                            />
-                          </div>
-                          <div className="w-full sm:w-auto">
-                            <Input
-                              placeholder="Filter by Date"
-                              value={dateFilter}
-                              onChange={(e) => setDateFilter(e.target.value)}
-                              className="bg-gray-800 border-gray-700 text-sm"
-                            />
-                          </div>
-                          <div className="w-full sm:w-auto">
-                            <Input
-                              placeholder="Filter by Status"
-                              value={statusFilter}
-                              onChange={(e) => setStatusFilter(e.target.value)}
-                              className="bg-gray-800 border-gray-700 text-sm"
-                            />
-                          </div>
-                          {(emailFilter || dateFilter || statusFilter) && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setEmailFilter("");
-                                setDateFilter("");
-                                setStatusFilter("");
-                              }}
-                              className="text-gray-400 border-gray-700"
-                            >
-                              <X className="w-4 h-4 mr-1" /> Clear Filters
-                            </Button>
-                          )}
-                        </div>
-                        
-                        <div className="rounded-md border border-gray-800 overflow-x-auto">
-                          <Table>
-                            <TableHeader className="bg-gray-800">
+                      <div className="rounded-md border border-gray-800 overflow-hidden">
+                        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pb-1">
+                          <Table className="min-w-[700px]">
+                            <TableHeader className="bg-gray-800 sticky top-0 z-10">
                               <TableRow className="hover:bg-gray-800/80">
-                                <TableHead className="text-gray-300">Student</TableHead>
-                                <TableHead className="text-gray-300 hidden sm:table-cell">Contact</TableHead>
-                                <TableHead className="text-gray-300">Date & Time</TableHead>
-                                <TableHead className="text-gray-300 hidden lg:table-cell">Topic</TableHead>
-                                <TableHead className="text-gray-300 hidden md:table-cell">Duration</TableHead>
-                                <TableHead className="text-gray-300">Payment</TableHead>
-                                <TableHead className="text-gray-300">Google Meet</TableHead>
-                                <TableHead className="text-gray-300 hidden sm:table-cell">Status</TableHead>
+                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Student</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden sm:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Date</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Payment</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden lg:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Topic</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 hidden sm:table-cell py-2 px-2 sm:px-4 whitespace-nowrap">
+                                  <div className="flex items-center">
+                                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                    <span>Status</span>
+                                  </div>
+                                </TableHead>
+                                <TableHead className="text-gray-300 text-right py-2 px-2 sm:px-4 whitespace-nowrap">
+                                  <span>Actions</span>
+                                </TableHead>
                               </TableRow>
                             </TableHeader>
-                            <TableBody className="divide-y divide-gray-800">
+                            <TableBody>
                               {displaySessions.map((session) => (
-                                <TableRow 
-                                  key={session.id} 
-                                  className="hover:bg-gray-800/50 bg-gray-900"
-                                >
-                                  <TableCell>
-                                    <div className="font-medium text-sm sm:text-base">{session.studentName}</div>
-                                    <div className="text-xs text-gray-400">{session.isStudent ? "Student" : "Professional"}</div>
-                                    
-                                    {/* Show contact info on mobile */}
-                                    <div className="flex items-center text-xs text-gray-300 mt-1 sm:hidden">
-                                      <Mail className="w-3 h-3 mr-1" /> 
-                                      <span className="max-w-[80px] truncate" title={session.email}>
-                                        {session.email}
-                                      </span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="hidden sm:table-cell">
-                                    <div className="flex items-center text-xs text-gray-300 mb-1">
-                                      <Mail className="w-3 h-3 mr-1" /> 
-                                      <span className="max-w-[120px] truncate" title={session.email}>
-                                        {session.email}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center text-xs text-gray-300">
-                                      <Phone className="w-3 h-3 mr-1" /> {session.phone}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    {/* Current session date/time (highlighted) */}
-                                    <div className="flex flex-col gap-1 mb-1">
-                                      <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
-                                        <Calendar className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> 
-                                        <span className="truncate">
-                                          {formatInIST(new Date(session.date), 'MMM d')}
+                                <TableRow key={session.id} className="hover:bg-gray-800/40 border-gray-800">
+                                  <TableCell className="py-2 px-2 sm:px-4">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">{session.studentName}</span>
+                                      <span className="text-xs text-gray-400">{session.email}</span>
+                                      
+                                      {/* Date shown on mobile */}
+                                      <div className="flex flex-col space-y-1 mt-1 sm:hidden">
+                                        <span className="text-[10px] text-gray-400">
+                                          {formatSessionDate(session.sessionDate)}
+                                        </span>
+                                        <span className="text-[10px] text-gray-400">
+                                          {session.duration} mins
                                         </span>
                                       </div>
-                                      <div className="flex items-center text-xs sm:text-sm font-medium text-white bg-gray-800 px-2 py-1 rounded-md">
-                                        <Clock className="w-3 h-3 mr-1 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-green-400" /> {session.formattedTime}
-                                      </div>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="hidden lg:table-cell">
-                                    <div className="max-w-[200px] truncate" title={session.topic}>
-                                      {session.topic}
+                                  <TableCell className="hidden sm:table-cell py-2 px-2 sm:px-4">
+                                    <div className="flex flex-col">
+                                      <span>{formatSessionDate(session.sessionDate)}</span>
+                                      <span className="text-xs text-gray-400">{session.duration} mins</span>
                                     </div>
-                                    {session.notes && (
-                                      <div className="text-xs text-gray-400 mt-1 max-w-[200px] truncate" title={session.notes}>
-                                        {session.notes}
+                                  </TableCell>
+                                  <TableCell className="py-2 px-2 sm:px-4">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-center">
+                                        <span className="font-medium">₹{session.amount}</span>
+                                        
+                                        {session.paymentId && (
+                                          <Button 
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-6 w-6 ml-1"
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(session.paymentId);
+                                              toast({
+                                                title: "Payment ID copied",
+                                                description: "Payment ID has been copied to clipboard",
+                                              });
+                                            }}
+                                          >
+                                            <Copy className="h-3 w-3" />
+                                          </Button>
+                                        )}
                                       </div>
-                                    )}
-                                  </TableCell>
-                                  <TableCell className="hidden md:table-cell">{session.duration} min</TableCell>
-                                  <TableCell>
-                                    <Badge 
-                                      variant={session.paymentStatus === "Paid" ? "default" : "outline"}
-                                      className={`text-xs ${session.paymentStatus === "Paid" ? "bg-green-700 hover:bg-green-600" : ""}`}
-                                    >
-                                      {session.paymentStatus}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex flex-col gap-2">
-                                      {session.googleMeetLink ? (
-                                        <Button 
-                                          size="sm"
-                                          className="whitespace-nowrap bg-green-600 hover:bg-green-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                        >
-                                          <Video className="w-3.5 h-3.5 mr-1.5" /> 
-                                          <span className="hidden sm:inline">Open Meet</span>
-                                          <span className="sm:hidden">Meet</span>
-                                        </Button>
-                                      ) : (
-                                        <Button 
-                                          size="sm"
-                                          className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 h-8 text-xs px-2 sm:text-sm sm:px-3"
-                                        >
-                                          <Plus className="w-3.5 h-3.5 mr-1.5" /> 
-                                          <span className="hidden sm:inline">Add Meet Link</span>
-                                          <span className="sm:hidden">Add</span>
-                                        </Button>
+                                      
+                                      {session.status === "pending" && (
+                                        <div className="mt-1">
+                                          {session.paymentId ? (
+                                            <Badge variant="success" className="text-[10px] bg-green-800/30 hover:bg-green-800/50 border-green-600/40 text-green-400">
+                                              <span className="sm:hidden">Paid</span>
+                                              <span className="hidden sm:inline">Payment confirmed</span>
+                                            </Badge>
+                                          ) : (
+                                            <Badge variant="outline" className="text-[10px] px-1 py-0 border-yellow-600/40 text-yellow-500 bg-yellow-950/20">
+                                              <span className="sm:hidden">Verify</span>
+                                              <span className="hidden sm:inline">Verification pending</span>
+                                            </Badge>
+                                          )}
+                                        </div>
                                       )}
+                                      
+                                      {session.refundStatus && (
+                                        <div className="mt-1">
+                                          <Badge 
+                                            variant={session.refundStatus === "completed" ? "success" : "outline"}
+                                            className={cn(
+                                              "text-[10px] px-1 py-0",
+                                              session.refundStatus === "completed" 
+                                                ? "bg-blue-800/30 hover:bg-blue-800/50 border-blue-600/40 text-blue-400"
+                                                : "border-orange-600/40 text-orange-500 bg-orange-950/20"
+                                            )}
+                                          >
+                                            {session.refundStatus === "completed" ? "Refunded" : "Processing Refund"}
+                                          </Badge>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="hidden lg:table-cell py-2 px-2 sm:px-4">
+                                    <div>
+                                      <span className="line-clamp-2">{session.topic}</span>
                                     </div>
                                   </TableCell>
                                   <TableCell className="hidden sm:table-cell">
                                     <Badge 
                                       variant="outline"
-                                      className="capitalize text-xs"
+                                      className="capitalize text-xs whitespace-nowrap"
                                     >
                                       {session.status}
                                     </Badge>
+                                  </TableCell>
+                                  <TableCell className="text-right py-2 px-2 sm:px-4">
+                                    <div className="sm:hidden mt-1">
+                                      <Badge 
+                                        variant="outline"
+                                        className="capitalize text-[10px]"
+                                      >
+                                        {session.status}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center justify-end space-x-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 text-[10px] sm:text-xs px-2"
+                                        onClick={() => {
+                                          // Session management action
+                                        }}
+                                      >
+                                        Manage
+                                      </Button>
+                                    </div>
                                   </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
                           </Table>
                         </div>
-                      </>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -527,34 +341,179 @@ export default function AdminDashboard() {
             );
           })}
           
-          {/* Availability management tab */}
-          <TabsContent value="availability" className="space-y-4">
+          {/* Payment Analytics tab */}
+          <TabsContent value="payments" className="space-y-4">
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <CardTitle className="text-lg">Payment Analytics</CardTitle>
+                <CardDescription>
+                  View payment analytics and statistics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isPaymentAnalyticsLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                  </div>
+                ) : (
+                  <PaymentAnalytics data={paymentAnalytics} />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* User Management tab */}
+          <TabsContent value="users" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                   <div>
-                    <CardTitle>Available Time Slots</CardTitle>
+                    <CardTitle className="text-lg">User Management</CardTitle>
                     <CardDescription>
-                      Manage available dates and times for project guidance bookings
+                      Manage user accounts and permissions
                     </CardDescription>
                   </div>
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700" 
-                    size="sm"
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> Add Date
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-400">
-                  <p>No available time slots have been added yet.</p>
-                  <p className="mt-2">Click "Add Date" to create your first available booking date.</p>
+                {isUsersLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full"></div>
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No users found</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-gray-800 overflow-hidden">
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pb-1">
+                      <Table className="min-w-[600px]">
+                        <TableHeader className="bg-gray-800 sticky top-0 z-10">
+                          <TableRow className="hover:bg-gray-800/80">
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">User ID</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Name</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Email</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user) => (
+                            <TableRow key={user.id} className="hover:bg-gray-800/40 border-gray-800">
+                              <TableCell className="font-mono text-xs sm:text-sm text-gray-400">{user.id}</TableCell>
+                              <TableCell>{user.fullName || <span className="text-gray-500 italic">Not provided</span>}</TableCell>
+                              <TableCell>{user.email}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 text-[10px] sm:text-xs px-2"
+                                    onClick={() => {
+                                      // User management action
+                                    }}
+                                  >
+                                    Manage
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Deleted Users tab */}
+          <TabsContent value="deleted-users" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-lg">Deleted Users</CardTitle>
+                <CardDescription>
+                  View and restore deleted user accounts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isDeletedUsersLoading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full"></div>
+                  </div>
+                ) : deletedUsers.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No deleted users found</p>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-gray-800 overflow-hidden">
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pb-1">
+                      <Table className="min-w-[600px]">
+                        <TableHeader className="bg-gray-800 sticky top-0 z-10">
+                          <TableRow className="hover:bg-gray-800/80">
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">User ID</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Name</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Email</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Deleted At</TableHead>
+                            <TableHead className="text-gray-300 py-2 px-2 sm:px-4 whitespace-nowrap">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {deletedUsers.map((user) => (
+                            <TableRow key={user.id} className="hover:bg-gray-800/40 border-gray-800">
+                              <TableCell className="font-mono text-xs sm:text-sm text-gray-400">{user.id}</TableCell>
+                              <TableCell>{user.fullName || <span className="text-gray-500 italic">Not provided</span>}</TableCell>
+                              <TableCell>{user.email}</TableCell>
+                              <TableCell>{formatSessionDate(user.deletedAt)}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 text-[10px] sm:text-xs px-2"
+                                    onClick={() => {
+                                      // Restore user action
+                                    }}
+                                  >
+                                    Restore
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Database tab placeholder */}
+          <TabsContent value="database" className="space-y-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-lg">Knowledge Database</CardTitle>
+                <CardDescription>
+                  Manage AI training data and knowledge base
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-amber-400">
+                  <p>Please navigate to the AI Knowledge Database page to manage content</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => navigate("/ai-knowledge-database")}
+                  >
+                    Open Knowledge Database
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+        </AdminTabs>
       </div>
     </div>
   );

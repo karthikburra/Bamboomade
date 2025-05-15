@@ -3,22 +3,22 @@ import { Button } from "./ui/button";
 import { useToast } from "../hooks/use-toast";
 import { apiRequest } from "../lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
 
-const FixFailedSessionsButton: React.FC = () => {
+const MarkCompletedSessionsButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleFixFailedSessions = async () => {
+  const handleMarkCompletedSessions = async () => {
     try {
       setIsLoading(true);
-      const response = await apiRequest("POST", "/api/admin/fix-failed-sessions");
+      const response = await apiRequest("POST", "/api/admin/mark-completed-sessions");
       const data = await response.json();
       
       toast({
         title: "Sessions updated",
-        description: `${data.fixedCount} failed sessions have been fixed`,
+        description: `${data.completedCount} sessions marked as completed`,
       });
       
       // Refresh the sessions data
@@ -26,7 +26,7 @@ const FixFailedSessionsButton: React.FC = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to fix sessions",
+        description: "Failed to mark completed sessions",
         variant: "destructive",
       });
     } finally {
@@ -39,16 +39,19 @@ const FixFailedSessionsButton: React.FC = () => {
       variant="outline" 
       size="sm"
       className="h-8 text-xs"
-      onClick={handleFixFailedSessions}
+      onClick={handleMarkCompletedSessions}
       disabled={isLoading}
     >
       {isLoading ? (
         <Loader2 className="h-3 w-3 mr-2 animate-spin" />
       ) : (
-        <span>Fix Failed Sessions</span>
+        <>
+          <CheckCircle className="h-3 w-3 mr-2" />
+          Mark Completed
+        </>
       )}
     </Button>
   );
 };
 
-export default FixFailedSessionsButton;
+export default MarkCompletedSessionsButton;
