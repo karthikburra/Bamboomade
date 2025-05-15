@@ -29,14 +29,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-// Custom component for Free Trial badge
-const FreeTrialBadge = ({ className = "" }: { className?: string }) => {
-  return (
-    <Badge className={`bg-gradient-to-r from-green-500 to-amber-500 text-white px-2 py-1 text-xs font-semibold rounded ${className}`}>
-      Free Trial
-    </Badge>
-  );
-};
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone, User,
@@ -212,6 +204,7 @@ const Navbar: React.FC = () => {
     fullName: string | null;
     profileImageUrl: string | null;
     phoneNumber: string | null;
+    subscriptionStatus: string | null;
   }>({
     queryKey: ["/api/auth/me"],
     enabled: true,
