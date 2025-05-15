@@ -137,39 +137,91 @@ export async function autoMapPaymentsToSessions(storage: IStorage): Promise<Paym
         continue;
       }
       
-      // If no match by order ID, try matching by email + amount
+      // If no match by order ID, try matching by email + amount + booking time
       const emailSessions = sessionsByEmail.get(paymentEmail) || [];
       
       if (emailSessions.length > 0) {
-        // Find sessions with matching email and a close amount match
-        // We allow a small margin of error in the amount
-        const amountMatchSessions = emailSessions.filter(session => {
+        console.log(`Found ${emailSessions.length} sessions with matching email: ${paymentEmail}`);
+        
+        // Find sessions with matching email, amount, and booking time
+        // We allow a small margin of error in the amount and a reasonable time window
+        const matchingSessions = emailSessions.filter(session => {
           // Don't remap sessions that already have a payment ID
           if (session.paymentId) {
+            console.log(`Session ${session.id} already has payment ID ${session.paymentId}`);
             return false;
           }
+          
+          // 1. Check amount match
+          let amountMatches = false;
+          let estimatedAmount = 0;
           
           // Check if the session has an amount, and if so, if it matches the payment amount
           if (session.amount) {
             // Allow a 1 rupee difference to account for rounding errors
-            return Math.abs(session.amount - paymentAmount) <= 1;
-          }
-          
-          // If the session doesn't have an amount, estimate based on duration and isStudent
-          let estimatedAmount = 0;
-          if (session.isStudent) {
-            estimatedAmount = session.duration === 30 ? 500 : 800;
+            amountMatches = Math.abs(session.amount - paymentAmount) <= 1;
+            estimatedAmount = session.amount;
           } else {
-            estimatedAmount = session.duration === 30 ? 1000 : 1500;
+            // If the session doesn't have an amount, estimate based on duration and isStudent
+            if (session.isStudent) {
+              estimatedAmount = session.duration === 30 ? 500 : 800;
+            } else {
+              estimatedAmount = session.duration === 30 ? 1000 : 1500;
+            }
+            
+            // Allow a 1 rupee difference to account for rounding errors
+            amountMatches = Math.abs(estimatedAmount - paymentAmount) <= 1;
           }
           
-          // Allow a 1 rupee difference to account for rounding errors
-          return Math.abs(estimatedAmount - paymentAmount) <= 1;
+          if (!amountMatches) {
+            console.log(`Amount mismatch for session ${session.id}: Expected ₹${estimatedAmount}, got ₹${paymentAmount}`);
+            return false;
+          }
+          
+          // 2. Check time match - payment should occur after session booking and within 48 hours
+          const paymentTime = new Date(payment.createdAt).getTime();
+          
+          // Use session.date since createdAt is not available in the schema
+          // The date field represents when the guidance session is scheduled for
+          const sessionBookingTime = new Date(session.date).getTime();
+          
+          // For now, we'll use only session.date as the reference point
+          // We assume booking happens shortly before payment
+          const sessionTime = sessionBookingTime;
+          
+          // For project guidance sessions, the payment typically happens at booking time
+          // or may happen a few days before the scheduled session
+          // Since session.date is the future event date, payment must happen BEFORE session date
+          // Allow payment to be made up to 14 days before the scheduled session
+          const timeWindowMs = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+          
+          // Check if payment happens before the session date but not too far in advance
+          // This means: payment time must be LESS than session time (payment happens before session)
+          // And the difference shouldn't be more than timeWindowMs (not booked too far in advance)
+          const timeMatches = paymentTime < sessionTime && (sessionTime - paymentTime) <= timeWindowMs;
+          
+          if (!timeMatches) {
+            console.log(`Time mismatch for session ${session.id}: Session time ${new Date(sessionTime).toISOString()}, payment time ${new Date(paymentTime).toISOString()}`);
+            return false;
+          }
+          
+          console.log(`✓ Found potential match for payment ${payment.id}: Session ${session.id} (email: ${session.email}, amount: ₹${estimatedAmount}, duration: ${session.duration}min)`);
+          return true;
         });
         
-        if (amountMatchSessions.length === 1) {
+        // Log if multiple matches found
+        if (matchingSessions.length > 1) {
+          console.log(`⚠️ Multiple sessions (${matchingSessions.length}) match payment ${payment.id} for email ${paymentEmail}:`);
+          matchingSessions.forEach(session => {
+            console.log(`  - Session ${session.id}: ${session.studentName}, ${session.duration}min, booked for ${new Date(session.date).toISOString().split('T')[0]}`);
+          });
+          // Skip mapping if multiple matches are found
+          continue;
+        }
+        
+        if (matchingSessions.length === 1) {
           // If only one session matches, update it
-          const session = amountMatchSessions[0];
+          const session = matchingSessions[0];
           
           try {
             // Update the session with payment details
