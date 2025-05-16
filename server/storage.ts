@@ -185,10 +185,37 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
+      // First check if a user with this email already exists
+      console.log(`🔍 Checking if user with email ${insertUser.email} already exists`);
+      const existingUser = await this.getUserByEmail(insertUser.email);
+      
+      if (existingUser) {
+        console.log(`⚠️ User with email ${insertUser.email} already exists with ID: ${existingUser.id}`);
+        
+        // If the existing user isn't verified, we can update some of their details
+        if (!existingUser.isVerified && insertUser.verificationCode) {
+          console.log(`📝 Updating verification details for existing user (ID: ${existingUser.id})`);
+          
+          await db.update(users)
+            .set({
+              verificationCode: insertUser.verificationCode,
+              verificationCodeExpires: insertUser.verificationCodeExpires,
+            })
+            .where(eq(users.id, existingUser.id));
+            
+          const updatedUser = await this.getUser(existingUser.id);
+          return updatedUser!;
+        }
+        
+        // Return the existing user
+        return existingUser;
+      }
+      
       // Set AI access expiration date to 6 months from now
       const sixMonthsFromNow = new Date();
       sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
       
+      console.log(`✨ Creating new user with email: ${insertUser.email}`);
       const [user] = await db.insert(users).values({
         username: insertUser.username,
         password: insertUser.password,
@@ -204,6 +231,7 @@ export class DatabaseStorage implements IStorage {
         lastSubscriptionCheckDate: new Date()
       }).returning();
       
+      console.log(`✅ Created new user with ID: ${user.id}, email: ${user.email}`);
       return user;
     } catch (error) {
       console.error("Database error in createUser:", error);
