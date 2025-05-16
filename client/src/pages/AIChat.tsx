@@ -7,6 +7,7 @@ import ChatInterface from "@/components/ChatInterface";
 import BambooFact from "@/components/BambooFact";
 import RecentArticles from "@/components/RecentArticles";
 import SocialMediaCarousel from "@/components/SocialMediaCarousel";
+import SocialMediaPosts from "@/components/SocialMediaPosts";
 import TodaysEnthusiast from "@/components/TodaysEnthusiast";
 import UpcomingEventsList from "@/components/UpcomingEventsList";
 import useScrollTop from "@/hooks/use-scroll-top";
@@ -173,9 +174,9 @@ const AIChat: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Fifth column - Social Media content */}
+                      {/* Fifth column - Social Media content from knowledge base */}
                       <div className="md:col-span-2">
-                        <SocialMediaCarousel />
+                        <SocialMediaPosts onPostClick={handleTopicClick} />
                       </div>
                     </div>
                   </>

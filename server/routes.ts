@@ -8688,5 +8688,37 @@ Please structure the summary in a helpful format with clear headings, bullet poi
   });
 
   const httpServer = createServer(app);
+  // API route to fetch social media posts from the knowledge base
+  app.get("/api/social-media-posts", async (req, res) => {
+    try {
+      // Fetch all active content from the knowledge base
+      const allContent = await storage.getActiveAiKnowledgeContent();
+      
+      // Filter for social media content
+      // This includes any content with type 'social_media' or that has socialMediaInfo
+      const socialPosts = allContent.filter(item => {
+        return item.contentType === 'social_media' || 
+               item.contentType.includes('social') || 
+               (item.socialMediaInfo !== null && item.socialMediaInfo !== undefined);
+      });
+      
+      // Sort by creation date (newest first)
+      const sortedPosts = socialPosts.sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      
+      // Limit to 12 posts maximum
+      const limitedPosts = sortedPosts.slice(0, 12);
+      
+      console.log(`Found ${limitedPosts.length} social media posts in knowledge base`);
+      
+      // Return the posts
+      res.json(limitedPosts);
+    } catch (error) {
+      console.error("Error fetching social media posts:", error);
+      res.status(500).json({ error: "Failed to retrieve social media posts" });
+    }
+  });
+  
   return httpServer;
 }
