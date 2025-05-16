@@ -155,7 +155,7 @@ const Profile: React.FC = () => {
                       onClick={() => navigate("/ai-chat")}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
-                      AI Chat
+                      Bamboo One
                     </Button>
                     <Button
                       variant="outline"
@@ -237,7 +237,7 @@ const Profile: React.FC = () => {
                             className="w-full border-amber-700 text-amber-300 hover:bg-amber-900"
                             onClick={() => navigate("/ai-chat")}
                           >
-                            AI Chat
+                            Bamboo One
                           </Button>
                         </div>
                       </div>

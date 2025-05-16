@@ -112,7 +112,7 @@ const AIChat: React.FC = () => {
                   }`}
                 >
                   <MessageCircle className="h-3.5 w-3.5 mr-1.5" />
-                  <span>AI Chat</span>
+                  <span>Bamboo One</span>
                 </button>
               </div>
             </div>

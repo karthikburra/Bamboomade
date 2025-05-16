@@ -57,7 +57,7 @@ const Login: React.FC = () => {
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M12 17.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M12 7.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/></svg>
                         </div>
                         <div>
-                          <span className="font-medium">6 Months Free AI Chat Access</span>
+                          <span className="font-medium">6 Months Free Bamboo One Access</span>
                           <p className="text-sm text-muted-foreground">Get 6 months of free access to our bamboo architecture AI assistant from your registration date.</p>
                         </div>
                       </div>
@@ -115,7 +115,7 @@ const Login: React.FC = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M12 17.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M12 7.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/></svg>
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-green-50 mb-2">6 Months Free AI Chat Access</h3>
+                        <h3 className="text-xl font-semibold text-green-50 mb-2">6 Months Free Bamboo One Access</h3>
                         <p className="text-green-200/80">Get 6 months of free access to our bamboo architecture AI assistant from your registration date. Ask questions, get design help, and learn about sustainable bamboo construction.</p>
                       </div>
                     </div>
