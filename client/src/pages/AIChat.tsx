@@ -139,9 +139,11 @@ const AIChat: React.FC = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Top Row - Facts and Events */}
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-4 sm:mb-6 md:grid-cols-2">
-                      {/* Bamboo Facts Card */}
+                    {/* Grid layout similar to the reference image */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                      {/* Content cards in a 3-column grid layout */}
+                      
+                      {/* First column - Display bamboo facts */}
                       <div>
                         <BambooFact 
                           factData={dashboardData?.fact || null}
@@ -150,34 +152,31 @@ const AIChat: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Upcoming Events List */}
+                      {/* Second column - Upcoming Events */}
                       <div>
                         <UpcomingEventsList 
                           events={dashboardData?.upcomingEvents || []}
                           onEventClick={handleTopicClick}
                         />
                       </div>
-                    </div>
-                    
-                    {/* Second Row - Today's Enthusiast and Recent Articles */}
-                    <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-6 sm:mb-8 md:grid-cols-2">
-                      {/* Today's Bamboo Enthusiast */}
+                      
+                      {/* Third column - Today's Bamboo Enthusiast */}
                       <div>
                         <TodaysEnthusiast />
                       </div>
                       
-                      {/* Recent Articles */}
+                      {/* Fourth column - Recent Articles */}
                       <div>
                         <RecentArticles 
                           articles={dashboardData?.updates || []} 
                           onArticleClick={handleTopicClick}
                         />
                       </div>
-                    </div>
-
-                    {/* Third Row - Social Media Carousel */}
-                    <div className="mb-6 sm:mb-8 md:mb-12">
-                      <SocialMediaCarousel />
+                      
+                      {/* Fifth column - Social Media content */}
+                      <div className="md:col-span-2">
+                        <SocialMediaCarousel />
+                      </div>
                     </div>
                   </>
                 )}
