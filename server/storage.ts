@@ -1450,7 +1450,27 @@ export class DatabaseStorage implements IStorage {
   
   async isReturningUser(userId: number): Promise<boolean> {
     try {
-      // Check if user has previous successful logins
+      // Get the user to check their email
+      const user = await this.getUser(userId);
+      if (!user || !user.email) {
+        return false;
+      }
+      
+      // Check if this email exists in any other user records
+      // or if the user has previous successful logins
+      const userWithSameEmail = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.email, user.email),
+          ne(users.id, userId)
+        ));
+        
+      // If we find any other user with the same email, this is a returning user
+      if (userWithSameEmail.length > 0) {
+        return true;
+      }
+      
+      // Fall back to login history check if no duplicate email is found
       const loginCount = await this.getUserLoginCount(userId);
       return loginCount > 1; // More than 1 login means they're returning
     } catch (error) {
