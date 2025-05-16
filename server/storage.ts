@@ -12,6 +12,7 @@ import {
   deletedUsers, type DeletedUser, type InsertDeletedUser
 } from "@shared/schema";
 import { eq, and, asc, desc, isNull, ne, gt, lt, or, isNotNull, count, max, SQL } from 'drizzle-orm';
+import { differenceInDays } from 'date-fns';
 import { db, pool } from './db';
 
 export interface IStorage {
@@ -1456,23 +1457,29 @@ export class DatabaseStorage implements IStorage {
         return false;
       }
       
-      // Check if this email exists in any other user records
-      // or if the user has previous successful logins
-      const userWithSameEmail = await db.select()
+      // Check if this user's email exists in our database before this account was created
+      const usersWithSameEmail = await db.select()
         .from(users)
-        .where(and(
-          eq(users.email, user.email),
-          ne(users.id, userId)
-        ));
-        
-      // If we find any other user with the same email, this is a returning user
-      if (userWithSameEmail.length > 0) {
+        .where(eq(users.email, user.email));
+      
+      // If we find multiple users with same email, this is a returning user
+      if (usersWithSameEmail.length > 1) {
+        console.log(`Found ${usersWithSameEmail.length} accounts with email ${user.email} - considering as returning user`);
         return true;
       }
       
-      // Fall back to login history check if no duplicate email is found
-      const loginCount = await this.getUserLoginCount(userId);
-      return loginCount > 1; // More than 1 login means they're returning
+      // If we only found one user (this user), check if this is their first login attempt
+      // by checking createdAt date - if it's older than 1 day, likely returning
+      if (user.createdAt) {
+        const daysSinceCreation = differenceInDays(new Date(), user.createdAt);
+        if (daysSinceCreation > 1) {
+          console.log(`User ${userId} account is ${daysSinceCreation} days old - considering as returning user`);
+          return true;
+        }
+      }
+      
+      console.log(`User ${userId} with email ${user.email} is a new user`);
+      return false;
     } catch (error) {
       console.error("Database error in isReturningUser:", error);
       return false;
