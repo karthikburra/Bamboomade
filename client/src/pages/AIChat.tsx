@@ -81,7 +81,7 @@ const AIChat: React.FC = () => {
             <div className="flex justify-between items-center mb-2 sm:mb-3">
               <div className="flex items-center gap-2 sm:gap-3">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">
-                  BambooMade AI
+                  Bamboo One
                 </h1>
                 
                 <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full bg-green-900/40 text-green-400 border border-green-800">
