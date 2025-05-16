@@ -110,7 +110,7 @@ const SubscriptionStatusItem = () => {
       <PopoverContent className="w-80 p-4 bg-gray-900 border border-green-800/50 text-gray-100">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-lg text-green-300">AI Chat Access</h4>
+            <h4 className="font-medium text-lg text-green-300">Bamboo One Access</h4>
             <div className="flex items-center gap-2">
               <Badge className={`text-white ${getBadgeColor()} px-2 py-1 text-xs font-semibold rounded`}>
                 {getStatusLabel()}
@@ -166,9 +166,9 @@ const SubscriptionStatusItem = () => {
                     {daysLeft !== null && daysLeft > 0 ? (
                       subscriptionStatus === 'free' ? 
                         <span className="text-green-300">You're on a <strong>Free Trial</strong> with <strong>{daysLeft} days</strong> remaining.</span> : 
-                        `You have access to AI Chat for ${daysLeft} more days.`
+                        `You have access to Bamboo One for ${daysLeft} more days.`
                     ) : (
-                      "Your AI Chat access has expired."
+                      "Your Bamboo One access has expired."
                     )}
                   </div>
                 </div>
@@ -224,7 +224,7 @@ const Navbar: React.FC = () => {
     { href: "/our-works", label: "Our Experience" }, 
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
-    { href: "/ai-chat", label: "AI Chat", isBeta: true },
+    { href: "/ai-chat", label: "Bamboo One", isBeta: true },
   ];
   
   // User links removed as profile is now accessible via the dropdown menu
