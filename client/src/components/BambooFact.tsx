@@ -100,38 +100,46 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
     }
   };
   
-  // Function to render source information without content type badges
+  // Function to render source information with content type badges
   const renderSourceInfo = (fact: BambooFactType) => {
-    if (!fact.source) return null;
-    
     return (
-      <div className="mt-1 text-xs flex flex-wrap items-center justify-end">
-        {/* Source Link only, no content type badge */}
-        <a 
-          href={fact.source.startsWith('http') ? fact.source : '#'} 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-green-500 hover:text-green-400 inline-flex items-center"
-          onClick={(e) => {
-            if (!fact.source?.startsWith('http')) {
-              e.preventDefault();
-              handleFactClick(fact);
-            }
-            
-            // Track click in Google Analytics
-            if (typeof window !== 'undefined' && (window as any).gtag && fact.source && fact.source.startsWith('http')) {
-              (window as any).gtag('event', 'citation_click', {
-                'event_category': 'AI_Chat',
-                'event_label': fact.source
-              });
-            }
-          }}
+      <div className="mt-2 text-xs flex flex-wrap items-center justify-between">
+        {/* Content Type Badge */}
+        <Badge 
+          className={`${getContentTypeColor(fact.contentType)} px-2 py-0.5 text-xs rounded-md flex items-center`}
         >
-          {fact.source && fact.source.startsWith('http') 
-            ? new URL(fact.source).hostname.replace('www.', '') 
-            : fact.source}
-          {fact.source && fact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
-        </a>
+          {getContentTypeIcon(fact.contentType)}
+          {getContentTypeLabel(fact.contentType)}
+        </Badge>
+        
+        {/* Source Link */}
+        {fact.source && (
+          <a 
+            href={fact.source.startsWith('http') ? fact.source : '#'} 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-green-500 hover:text-green-400 inline-flex items-center"
+            onClick={(e) => {
+              if (!fact.source?.startsWith('http')) {
+                e.preventDefault();
+                handleFactClick(fact);
+              }
+              
+              // Track click in Google Analytics
+              if (typeof window !== 'undefined' && (window as any).gtag && fact.source && fact.source.startsWith('http')) {
+                (window as any).gtag('event', 'citation_click', {
+                  'event_category': 'AI_Chat',
+                  'event_label': fact.source
+                });
+              }
+            }}
+          >
+            {fact.source && fact.source.startsWith('http') 
+              ? new URL(fact.source).hostname.replace('www.', '') 
+              : fact.source}
+            {fact.source && fact.source.startsWith('http') && <ExternalLink className="h-3 w-3 ml-1" />}
+          </a>
+        )}
       </div>
     );
   };
