@@ -146,6 +146,11 @@ const WebExtraction = () => {
         setExtractionSummary(data.summary);
       }
       
+      // Store the extraction data if available
+      if (data.results) {
+        setExtractionData(data.results);
+      }
+      
       // Switch to the results tab
       setActiveTab('results');
       

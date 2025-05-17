@@ -329,10 +329,25 @@ export function registerScrapyRoutes(app: any) {
         itemsAddedToKnowledgeBase: itemsAdded
       };
       
+      // Save results to a temporary file for later retrieval
+      try {
+        await fs.writeFile(
+          path.join(process.cwd(), 'scrapy-results.json'), 
+          JSON.stringify({
+            url,
+            results: extractionResults.results
+          })
+        );
+      } catch (err) {
+        console.error('Error writing extraction results to file:', err);
+        // Continue even if file writing fails
+      }
+      
       return res.json({
         success: true,
         message: `Successfully extracted content from ${url} and added ${itemsAdded} items to the knowledge base`,
-        summary
+        summary,
+        results: extractionResults.results // Send the results directly to the client
       });
     } catch (error: any) {
       console.error('Error in web extraction:', error);
