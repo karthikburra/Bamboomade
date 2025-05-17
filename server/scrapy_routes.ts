@@ -48,7 +48,16 @@ export function registerScrapyRoutes(app: any) {
         });
       }
       
-      const extractionResults = JSON.parse(cachedResultsStr);
+      let extractionResults;
+      try {
+        extractionResults = JSON.parse(cachedResultsStr);
+      } catch (parseError) {
+        console.error('Error parsing extraction results:', parseError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Invalid extraction results format. Please run a new extraction.' 
+        });
+      }
       
       // Only process if it's the same URL
       if (extractionResults.url !== url) {

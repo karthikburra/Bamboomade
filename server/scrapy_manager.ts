@@ -224,7 +224,7 @@ export async function processScrapyResults(
           // Store the full book details in the rawContent field
           rawContent: JSON.stringify(book),
           // Include book price if available
-          price: typeof book.price === 'string' ? book.price : null
+          price: book.price ? String(book.price) : null
         });
       }
     }
