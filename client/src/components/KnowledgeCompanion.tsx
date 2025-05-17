@@ -877,10 +877,10 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       <div className="flex h-full overflow-hidden">
-        {/* Left Column - Data Sources */}
+        {/* Left Column - Data Sources and URL Folders */}
         <div className="w-72 flex-shrink-0 flex flex-col border-r border-gray-800 bg-gray-900">
           <div className="flex items-center justify-between p-3 border-b border-gray-800">
-            <span className="text-sm font-medium text-gray-300">Your Data Sources</span>
+            <span className="text-sm font-medium text-gray-300">Your Content</span>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -889,6 +889,41 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
             >
               <Plus className="h-4 w-4 text-gray-400" />
             </Button>
+          </div>
+          
+          {/* URL Folders Section */}
+          <div className="flex-none p-3 border-b border-gray-800">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-400">URL Folders</span>
+            </div>
+            <div className="max-h-48 overflow-y-auto">
+              {chatFolders.length === 0 ? (
+                <div className="text-xs text-gray-500 italic">
+                  Add a URL to create a folder
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {chatFolders.map(folder => (
+                    <div
+                      key={folder.id}
+                      className={`flex items-center p-2 rounded-md cursor-pointer ${
+                        folder.selected ? 'bg-blue-900/30 border border-blue-700/50' : 'hover:bg-gray-800'
+                      }`}
+                      onClick={() => handleFolderSelection(folder.id)}
+                    >
+                      <div className="flex-none mr-2">
+                        <LinkIcon className="h-3.5 w-3.5 text-amber-500" />
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <div className="text-xs font-medium text-gray-300 truncate">
+                          {folder.name}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex-none p-3 border-b border-gray-800">
