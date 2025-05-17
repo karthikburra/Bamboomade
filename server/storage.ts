@@ -1410,51 +1410,39 @@ export class DatabaseStorage implements IStorage {
 
   async createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent> {
     try {
-      // Filter out fields that don't exist in the database table 
-      // to avoid "column X does not exist" errors
-      const { 
-        title, 
-        content: contentText, 
-        contentType, 
-        createdBy, 
-        source, 
-        status, 
-        rawContent, 
-        mediaUrl, 
-        mediaType, 
-        socialMediaInfo, 
-        contactEmail, 
-        contactPhone, 
-        eventDate, 
-        eventLocation, 
-        registrationLink, 
-        price,
-        ...rest 
-      } = content as any;
+      console.log("Creating AI knowledge content with fields:", Object.keys(content).join(", "));
       
-      // CRITICAL: Only include fields that actually exist in the database
-      // DO NOT include fields like authorName, publisherName, etc. that aren't in the actual database
-      // Make sure all fields have proper values (not undefined)
+      // Get a clean subset of fields that we know exist in the database
+      // This is a critical fix to prevent "column X does not exist" errors
       const validContent = {
-        title: title || '',
-        content: contentText || '',
-        contentType: contentType || '',
-        createdBy: createdBy || 0,
-        source: source || null,
-        status: status || 'active',
-        rawContent: rawContent || null,
-        mediaUrl: mediaUrl || null,
-        mediaType: mediaType || null,
-        socialMediaInfo: socialMediaInfo || null,
-        contactEmail: contactEmail || null,
-        contactPhone: contactPhone || null,
-        eventDate: eventDate || null,
-        eventLocation: eventLocation || null,
-        registrationLink: registrationLink || null,
-        price: price || null,
+        title: content.title || '',
+        content: content.content || '',
+        contentType: content.contentType || '',
+        createdBy: content.createdBy || 0,
+        source: content.source || null,
+        status: content.status || 'active',
+        rawContent: content.rawContent || null,
+        mediaUrl: content.mediaUrl || null,
+        mediaType: content.mediaType || null,
+        socialMediaInfo: content.socialMediaInfo || null,
+        contactEmail: content.contactEmail || null,
+        contactPhone: content.contactPhone || null,
+        eventDate: content.eventDate || null,
+        eventLocation: content.eventLocation || null,
+        registrationLink: content.registrationLink || null,
+        price: content.price || null,
         createdAt: new Date(),
         updatedAt: new Date()
       };
+      
+      // DO NOT include these fields as they don't exist in the database:
+      // - authorName
+      // - publicationYear  
+      // - publisherName
+      // - purchaseLink
+      // - embedCode
+      // - postDate
+      // - socialPlatform
       
       const [createdContent] = await db.insert(aiKnowledgeContent)
         .values(validContent)

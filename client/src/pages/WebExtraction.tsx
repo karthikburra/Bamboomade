@@ -101,6 +101,38 @@ const WebExtraction = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Add mutation to save individual items to the knowledge base
+  const saveItemMutation = useMutation({
+    mutationFn: async ({ item, type, sourceUrl }: { item: any, type: string, sourceUrl: string }) => {
+      const response = await apiRequest('POST', '/api/scrapy/save-item', {
+        item, 
+        type, 
+        sourceUrl
+      });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Mark the item as added to prevent duplicate additions
+      const itemKey = `${variables.type}-${JSON.stringify(variables.item)}`;
+      setAddedItems(prev => ({ ...prev, [itemKey]: true }));
+
+      toast({
+        title: "Item Added",
+        description: "Successfully added to knowledge base",
+      });
+      
+      // Invalidate relevant queries to refresh content
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Adding Item",
+        description: error.message || "Failed to add item to knowledge base",
+        variant: "destructive",
+      });
+    }
+  });
+  
   const [url, setUrl] = useState('');
   const [maxDepth, setMaxDepth] = useState<string>('2');
   const [isUrlValid, setIsUrlValid] = useState(true);
@@ -108,6 +140,7 @@ const WebExtraction = () => {
   const [activeDetailTab, setActiveDetailTab] = useState<string | null>(null);
   const [extractionSummary, setExtractionSummary] = useState<ExtractSummary | null>(null);
   const [extractionData, setExtractionData] = useState<ScrapyResults | null>(null);
+  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
   
   // Validate URL format
   const validateUrl = (input: string) => {
