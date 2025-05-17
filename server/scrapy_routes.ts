@@ -84,6 +84,204 @@ export function registerScrapyRoutes(app: any) {
     }
   });
   /**
+   * Get detailed extraction results 
+   * GET /api/scrapy/results
+   * Query: ?url=string
+   */
+  app.get('/api/scrapy/results', async (req: Request, res: Response) => {
+    try {
+      const { url } = req.query;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: 'URL parameter is required'
+        });
+      }
+      
+      // Check if user is logged in
+      if (!req.session.userId) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Authentication required' 
+        });
+      }
+      
+      // Get the cached extraction results
+      let cachedResultsStr;
+      try {
+        cachedResultsStr = await fs.readFile(
+          path.join(process.cwd(), 'scrapy-results.json'), 
+          'utf8'
+        );
+      } catch (err) {
+        console.error('Error reading cached extraction results:', err);
+        return res.status(404).json({
+          success: false,
+          message: 'No extraction results found. Please run an extraction first.'
+        });
+      }
+      
+      try {
+        const extractionData = JSON.parse(cachedResultsStr);
+        
+        // Return the results, focusing on the content types (events, contacts, etc.)
+        return res.json({
+          success: true,
+          results: extractionData.results
+        });
+      } catch (error) {
+        console.error('Error parsing extraction results:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error processing extraction results'
+        });
+      }
+    } catch (error: any) {
+      console.error('Error getting extraction results:', error);
+      return res.status(500).json({
+        success: false,
+        message: `Server error: ${error.message}`
+      });
+    }
+  });
+  
+  /**
+   * Save a single item to the knowledge base
+   * POST /api/scrapy/save-item
+   * Body: { item: any, type: string, sourceUrl: string }
+   */
+  app.post('/api/scrapy/save-item', async (req: Request, res: Response) => {
+    try {
+      const { item, type, sourceUrl } = req.body;
+      
+      if (!item || !type) {
+        return res.status(400).json({
+          success: false,
+          message: 'Item and type are required'
+        });
+      }
+      
+      // Check if user is logged in
+      if (!req.session.userId) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Authentication required' 
+        });
+      }
+      
+      // Process the single item based on its type
+      try {
+        const content = await processScrapyResults({
+          url: sourceUrl,
+          results: {
+            pages: type === 'page' ? [item] : [],
+            events: type === 'event' ? [item] : [],
+            contacts: type === 'contact' ? [item] : [],
+            images: type === 'image' ? [item] : [],
+            books: type === 'book' ? [item] : [],
+            social_media: type === 'social_media' ? [item] : [],
+          }
+        }, req.session.userId);
+        
+        return res.json({
+          success: true,
+          message: 'Item added to knowledge base',
+          itemAdded: content > 0
+        });
+      } catch (error: any) {
+        console.error('Error processing item:', error);
+        return res.status(500).json({
+          success: false,
+          message: `Error processing item: ${error.message}`
+        });
+      }
+    } catch (error: any) {
+      console.error('Error saving item:', error);
+      return res.status(500).json({
+        success: false,
+        message: `Server error: ${error.message}`
+      });
+    }
+  });
+  
+  /**
+   * Save all images from extraction results
+   * POST /api/scrapy/save-all-images
+   * Body: { url: string }
+   */
+  app.post('/api/scrapy/save-all-images', async (req: Request, res: Response) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({
+          success: false,
+          message: 'URL is required'
+        });
+      }
+      
+      // Check if user is logged in
+      if (!req.session.userId) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Authentication required' 
+        });
+      }
+      
+      // Get the cached extraction results
+      let cachedResultsStr;
+      try {
+        cachedResultsStr = await fs.readFile(
+          path.join(process.cwd(), 'scrapy-results.json'), 
+          'utf8'
+        );
+      } catch (err) {
+        console.error('Error reading cached extraction results:', err);
+        return res.status(404).json({
+          success: false,
+          message: 'No extraction results found. Please run an extraction first.'
+        });
+      }
+      
+      try {
+        const extractionData = JSON.parse(cachedResultsStr);
+        
+        // Process only the images from the extraction results
+        const savedCount = await processScrapyResults({
+          url: extractionData.url,
+          results: {
+            pages: [],
+            events: [],
+            contacts: [],
+            images: extractionData.results.images || [],
+            books: [],
+            social_media: [],
+          }
+        }, req.session.userId);
+        
+        return res.json({
+          success: true,
+          message: `${savedCount} images added to knowledge base`,
+          savedCount
+        });
+      } catch (error: any) {
+        console.error('Error processing images:', error);
+        return res.status(500).json({
+          success: false,
+          message: `Error processing images: ${error.message}`
+        });
+      }
+    } catch (error: any) {
+      console.error('Error saving images:', error);
+      return res.status(500).json({
+        success: false,
+        message: `Server error: ${error.message}`
+      });
+    }
+  });
+  
+  /**
    * Extract content from a website and add it to the knowledge base
    * POST /api/scrapy/extract
    * Body: { url: string, maxDepth?: number }
