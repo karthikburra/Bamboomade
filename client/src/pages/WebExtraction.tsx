@@ -716,12 +716,14 @@ const WebExtraction = () => {
                       <p className="text-green-200 mb-4">
                         Content has been categorized by type (events, books, contacts, etc.) and linked to original sources.
                       </p>
-                      {activeDetailTab === 'events' && extractionData?.events?.length > 0 && (
+                      {activeDetailTab === 'events' && extractionData?.events && (
                         <div className="mb-6 mt-2">
                           <h3 className="text-lg font-semibold text-green-300 mb-3">All Events ({extractionData.events.length})</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
-                            {extractionData.events.map((event, index) => (
-                              <div key={index} className="p-4 border border-green-800/30 rounded-md bg-gray-900/50">
+                          <div className="max-h-[500px] overflow-y-auto pr-2">
+                            {renderContentItems('event', extractionData.events)}
+                          </div>
+                        </div>
+                      )}
                                 <h4 className="font-medium text-green-200 mb-1">{event.title}</h4>
                                 {event.date && (
                                   <p className="text-sm text-green-400 mb-1">
