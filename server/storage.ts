@@ -3,6 +3,7 @@ import {
   projects, type Project, type InsertProject,
   projectGuidances, type ProjectGuidance, type InsertProjectGuidance,
   chatMessages, type ChatMessage, type InsertChatMessage,
+  chatFolders, type ChatFolder, type InsertChatFolder,
   aiTrainingData, type AiTrainingData, type InsertAiTrainingData,
   tokenPurchases, type TokenPurchase, type InsertTokenPurchase,
   availableTimeSlots, type AvailableTimeSlot, type InsertAvailableTimeSlot,
@@ -65,7 +66,16 @@ export interface IStorage {
   
   // Chat message operations
   getChatMessagesByUserId(userId: number): Promise<ChatMessage[]>;
+  getChatMessagesByFolder(folderId: number): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  updateChatMessageFolder(messageId: number, folderId: number | null): Promise<ChatMessage | undefined>;
+  
+  // Chat folder operations
+  getAllChatFolders(adminId: number): Promise<ChatFolder[]>;
+  getChatFolder(id: number): Promise<ChatFolder | undefined>;
+  createChatFolder(folder: InsertChatFolder): Promise<ChatFolder>;
+  updateChatFolder(id: number, updates: Partial<ChatFolder>): Promise<ChatFolder | undefined>;
+  deleteChatFolder(id: number): Promise<boolean>;
   
   // AI training data operations
   getAllAiTrainingData(): Promise<AiTrainingData[]>;

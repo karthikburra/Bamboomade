@@ -101,6 +101,22 @@ export const insertProjectGuidanceSchema = createInsertSchema(projectGuidances).
   notes: true,
 });
 
+// Chat folders for organizing AI conversations
+export const chatFolders = pgTable("chat_folders", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertChatFolderSchema = createInsertSchema(chatFolders).pick({
+  name: true,
+  description: true,
+  createdBy: true,
+});
+
 // AI chat messages
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
@@ -109,6 +125,7 @@ export const chatMessages = pgTable("chat_messages", {
   response: text("response").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
   tokensUsed: integer("tokens_used").notNull(),
+  folderId: integer("folder_id").references(() => chatFolders.id),
 });
 
 export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
@@ -116,6 +133,7 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
   message: true,
   response: true,
   tokensUsed: true,
+  folderId: true,
 });
 
 // AI training data
@@ -160,6 +178,9 @@ export type InsertProjectGuidance = z.infer<typeof insertProjectGuidanceSchema>;
 
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+
+export type ChatFolder = typeof chatFolders.$inferSelect;
+export type InsertChatFolder = z.infer<typeof insertChatFolderSchema>;
 
 export type AiTrainingData = typeof aiTrainingData.$inferSelect;
 export type InsertAiTrainingData = z.infer<typeof insertAiTrainingDataSchema>;
