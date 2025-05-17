@@ -277,6 +277,9 @@ export async function processScrapyResults(
             createdBy: userId,
             // Store social media details in content field
             mediaUrl: social.url,
+            socialPlatform: social.platform || '',
+            embedCode: social.embed_code || '',
+            postDate: social.post_date || '',
             rawContent: JSON.stringify(social)
           });
         }
