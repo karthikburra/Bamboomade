@@ -323,11 +323,6 @@ export async function processScrapyResults(
           eventLocation: item.eventLocation || null,
           registrationLink: item.registrationLink || null,
           price: item.price || null,
-          // Fields below are in the schema but don't exist in the database, so we'll exclude them
-          // authorName: item.authorName || null,
-          // publicationYear: item.publicationYear || null, 
-          // publisherName: item.publisherName || null,
-          // embedCode: item.embedCode || null,
           // postDate: item.postDate || null,
           // socialPlatform: item.socialPlatform || null
         };
