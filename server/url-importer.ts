@@ -4,6 +4,7 @@ import { getOpenAI } from "./openai-service";
 import { storage } from "./storage";
 import { URL } from 'url';
 import path from 'path';
+import { scrapeWebsite, convertScrapedResultsToKnowledgeContent } from './scraper_integration';
 
 /**
  * Import and process content from a URL
@@ -91,6 +92,23 @@ export async function importFromUrl(url: string, userId: number) {
       await extractSocialProfiles(truncatedContent, title) : 
       {};
 
+    // First use our advanced scraper to get structured information
+    let enhancedData = null;
+    
+    try {
+      console.log('Starting enhanced web scraping for additional structured data');
+      const scrapedData = await scrapeWebsite(url, 3); // Scrape up to 3 pages
+      
+      // If we got any structured data, log it
+      if (scrapedData.pages && scrapedData.pages.length > 0) {
+        console.log(`Enhanced scraping found ${scrapedData.pages.length} pages, ${scrapedData.events.length} events, ${scrapedData.contacts.length} contacts`);
+        enhancedData = scrapedData;
+      }
+    } catch (scrapeError) {
+      console.error('Error during enhanced scraping:', scrapeError);
+      // Continue with standard processing
+    }
+    
     // Create a new knowledge base entry with enhanced data
     const newContent = await storage.createAiKnowledgeContent({
       title: analysis.title || title,
