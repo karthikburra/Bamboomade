@@ -1738,7 +1738,7 @@ export default function AIKnowledgeDatabase() {
 
       {/* Add Content Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="bg-gray-900 border-gray-800 text-white sm:max-w-[600px]">
+        <DialogContent className="bg-gray-900 border-gray-800 text-white sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-amber-400">Add New Content</DialogTitle>
             <DialogDescription className="text-gray-400">
