@@ -8720,5 +8720,64 @@ Please structure the summary in a helpful format with clear headings, bullet poi
     }
   });
   
+  // Import content from URL - Admin only endpoint
+  app.post("/api/admin/import-url", isAdmin, async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ message: "URL is required" });
+      }
+      
+      // Import from the provided URL using our importer
+      const { importFromUrl } = require('./url-importer');
+      const importedContent = await importFromUrl(url);
+      
+      res.json(importedContent);
+    } catch (error) {
+      console.error("Error importing from URL:", error);
+      res.status(500).json({ 
+        message: "Failed to import content from URL", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Save imported content to knowledge base - Admin only endpoint
+  app.post("/api/admin/save-imported-content", isAdmin, async (req, res) => {
+    try {
+      const { title, contentType, content, url, platform } = req.body;
+      
+      if (!title || !contentType || !content || !url) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Get admin user ID for attribution
+      const adminId = req.session.adminUser?.id;
+      
+      if (!adminId) {
+        return res.status(401).json({ message: "Admin user ID not found in session" });
+      }
+      
+      // Save the imported content
+      const { saveImportedContent } = require('./url-importer');
+      const savedContent = await saveImportedContent(
+        { title, contentType, content, url, platform }, 
+        adminId
+      );
+      
+      res.json({
+        message: "Content saved successfully",
+        content: savedContent
+      });
+    } catch (error) {
+      console.error("Error saving imported content:", error);
+      res.status(500).json({ 
+        message: "Failed to save content", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
   return httpServer;
 }
