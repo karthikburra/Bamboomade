@@ -245,6 +245,17 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   currency: text("currency"), // Currency code (e.g., "INR", "USD")
   priceRange: text("price_range"), // Price range for variable pricing (e.g., "₹500-₹1000")
   discountPrice: text("discount_price"), // Special or discounted price
+  
+  // Book specific fields
+  authorName: text("author_name"), // Author of the book
+  publicationYear: text("publication_year"), // Year of publication
+  publisherName: text("publisher_name"), // Publisher of the book
+  purchaseLink: text("purchase_link"), // Link to purchase the book
+  
+  // Social media specific fields
+  embedCode: text("embed_code"), // HTML embed code for social media posts
+  postDate: text("post_date"), // Date when the social media post was published
+  socialPlatform: text("social_platform"), // Name of the social media platform
   lastResummarizedAt: timestamp("last_resummarized_at"), // When content was last resummarized
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
