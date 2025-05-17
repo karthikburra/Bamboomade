@@ -770,42 +770,97 @@ const WebExtraction = () => {
                         </div>
                       )}
                       
-                      {!activeDetailTab && (
-                        <div className="flex flex-col sm:flex-row gap-3">
+                      {!activeDetailTab && extractionData && (
+                        <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
                           <Button
                             className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={async () => {
-                              try {
-                                toast({
-                                  title: "Saving Extraction Results",
-                                  description: `Adding ${extractionSummary.contactsFound} contacts and ${extractionSummary.eventsFound + extractionSummary.booksFound + extractionSummary.socialMediaFound} other items to the knowledge base.`,
-                                  variant: "default",
-                                });
-                                
-                                // Call the actual API endpoint to save the extracted content
-                                const response = await fetch('/api/scrapy/save-extraction', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({
-                                    url: extractionSummary.url,
-                                  }),
-                                });
-                                
-                                const result = await response.json();
-                                
-                                if (result.success) {
-                                  toast({
-                                    title: "Content Added Successfully",
-                                    description: `${result.itemsAdded} items have been added to your knowledge database.`,
-                                    variant: "default",
-                                  });
-                                  
-                                  // Update the extraction summary with the new count
-                                  setExtractionSummary({
-                                    ...extractionSummary,
-                                    itemsAddedToKnowledgeBase: result.itemsAdded,
+                            onClick={() => setActiveDetailTab('events')}>
+                            Events ({extractionData.events.length})
+                          </Button>
+                          <Button
+                            className="bg-green-700 hover:bg-green-600 text-white"
+                            onClick={() => setActiveDetailTab('books')}>
+                            Books ({extractionData.books.length})
+                          </Button>
+                          <Button
+                            className="bg-green-700 hover:bg-green-600 text-white"
+                            onClick={() => setActiveDetailTab('contacts')}>
+                            Contacts ({extractionData.contacts.length})
+                          </Button>
+                          <Button
+                            className="bg-green-700 hover:bg-green-600 text-white"
+                            onClick={() => setActiveDetailTab('images')}>
+                            Images ({extractionData.images.length})
+                          </Button>
+                          <Button
+                            className="bg-green-700 hover:bg-green-600 text-white"
+                            onClick={() => setActiveDetailTab('social_media')}>
+                            Social Media ({extractionData.social_media.length})
+                          </Button>
+                          <Button
+                            className="bg-green-700 hover:bg-green-600 text-white"
+                            onClick={() => setActiveDetailTab('pages')}>
+                            Pages ({extractionData.pages.length})
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {activeDetailTab && (
+                        <div className="mt-4">
+                          <Button
+                            variant="outline" 
+                            className="border-green-800 text-green-300 hover:bg-green-900/30"
+                            onClick={() => setActiveDetailTab(null)}>
+                            Back to Overview
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Summary section at the bottom of the page */}
+                      {extractionSummary && (
+                        <div className="mt-6 p-4 border border-green-800/30 rounded-lg bg-green-900/20">
+                          <h3 className="text-lg font-semibold text-green-300 mb-2">Extraction Summary</h3>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-green-200">
+                            <div>
+                              <span className="block text-sm text-green-400">Pages Found</span>
+                              <span className="text-xl">{extractionSummary.pagesFound}</span>
+                            </div>
+                            <div>
+                              <span className="block text-sm text-green-400">Events Found</span>
+                              <span className="text-xl">{extractionSummary.eventsFound}</span>
+                            </div>
+                            <div>
+                              <span className="block text-sm text-green-400">Books Found</span>
+                              <span className="text-xl">{extractionSummary.booksFound}</span>
+                            </div>
+                            <div>
+                              <span className="block text-sm text-green-400">Contacts Found</span>
+                              <span className="text-xl">{extractionSummary.contactsFound}</span>
+                            </div>
+                            <div>
+                              <span className="block text-sm text-green-400">Images Found</span>
+                              <span className="text-xl">{extractionSummary.imagesFound}</span>
+                            </div>
+                            <div>
+                              <span className="block text-sm text-green-400">Social Media</span>
+                              <span className="text-xl">{extractionSummary.socialMediaFound}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default WebExtraction;
                                   });
                                 } else {
                                   toast({
