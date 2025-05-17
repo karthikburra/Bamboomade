@@ -193,6 +193,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
               <FileText className="h-5 w-5 mr-2 text-green-500" />
+              Articles & Resources
             </CardTitle>
             <Button 
               variant="ghost" 
@@ -221,6 +222,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
             <FileText className="h-5 w-5 mr-2 text-green-500" />
+            Articles & Resources
           </CardTitle>
           <Button 
             variant="ghost" 
