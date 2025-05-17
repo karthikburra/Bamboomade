@@ -1433,23 +1433,26 @@ export class DatabaseStorage implements IStorage {
       } = content as any;
       
       // Only include fields that actually exist in the database
+      // Make sure all fields have proper values (not undefined)
       const validContent = {
         title,
         content: contentText,
         contentType,
         createdBy,
-        source,
-        status,
-        rawContent,
-        mediaUrl,
-        mediaType,
-        socialMediaInfo,
-        contactEmail,
-        contactPhone,
-        eventDate,
-        eventLocation,
-        registrationLink,
-        price
+        source: source || null,
+        status: status || 'active',
+        rawContent: rawContent || null,
+        mediaUrl: mediaUrl || null,
+        mediaType: mediaType || null,
+        socialMediaInfo: socialMediaInfo || null,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        eventDate: eventDate || null,
+        eventLocation: eventLocation || null,
+        registrationLink: registrationLink || null,
+        price: price || null,
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
       
       const [createdContent] = await db.insert(aiKnowledgeContent)
