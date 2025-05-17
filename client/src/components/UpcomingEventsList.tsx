@@ -35,7 +35,6 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
           <div className="flex items-start justify-between">
             <CardTitle className="text-xl font-bold text-zinc-100 flex items-center">
               <CalendarDays className="h-5 w-5 mr-2 text-green-500" />
-              Upcoming Events
             </CardTitle>
             <Button 
               variant="ghost" 
@@ -64,7 +63,6 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
         <div className="flex items-start justify-between">
           <CardTitle className="text-xl font-bold text-zinc-100 flex items-center">
             <CalendarDays className="h-5 w-5 mr-2 text-green-500" />
-            Upcoming Events
           </CardTitle>
           <Button 
             variant="ghost" 

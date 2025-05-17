@@ -183,11 +183,7 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
             <div>
               <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
                 <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
-                Did You Know?
               </CardTitle>
-              <CardDescription className="text-xs text-zinc-400">
-                Click to learn more about this interesting bamboo fact
-              </CardDescription>
             </div>
             <Button 
               variant="ghost" 
@@ -222,11 +218,7 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
           <div>
             <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
               <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
-              Did You Know?
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-400">
-              Interesting facts about bamboo architecture and design
-            </CardDescription>
           </div>
           <Button 
             variant="ghost" 
