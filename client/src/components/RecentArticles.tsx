@@ -207,10 +207,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
           </div>
         </CardHeader>
         <CardContent>
-          <CardDescription className="text-zinc-400">
-            External articles, books, and resources from our trusted sources will appear here. 
-            These rotate daily, so check back often for new content.
-          </CardDescription>
+
         </CardContent>
       </Card>
     );
@@ -234,9 +231,7 @@ const RecentArticles: React.FC<RecentArticlesProps> = ({ articles, onArticleClic
             <RefreshCw className="h-3.5 w-3.5 text-secondary" />
           </Button>
         </div>
-        <CardDescription className="text-zinc-400">
-          Content from external websites, blogs, books, and publications
-        </CardDescription>
+
       </CardHeader>
       <CardContent className="space-y-3">
         {articles.slice(0, 3).map((article) => {
