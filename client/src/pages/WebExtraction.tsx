@@ -153,6 +153,139 @@ const WebExtraction = () => {
     setUrl(newUrl);
     setIsUrlValid(newUrl === '' || validateUrl(newUrl));
   };
+
+  // Function to check if an item has already been added to knowledge base
+  const isItemAdded = (type: string, item: any) => {
+    const itemKey = `${type}-${JSON.stringify(item)}`;
+    return addedItems[itemKey] === true;
+  };
+
+  // Function to add an item to the knowledge base
+  const handleAddItem = (type: string, item: any) => {
+    saveItemMutation.mutate({ 
+      item, 
+      type, 
+      sourceUrl: extractionSummary?.url || url 
+    });
+  };
+
+  // Render individual content items with add buttons
+  const renderContentItems = (type: string, items: any[]) => {
+    if (!items || items.length === 0) {
+      return (
+        <div className="text-center py-8 text-green-400">
+          No {type} items found
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {items.map((item, index) => {
+          // Create a unique ID for this item
+          const itemAdded = isItemAdded(type, item);
+          
+          return (
+            <div key={index} className="border border-green-800/30 bg-gray-900/50 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div className="flex-grow">
+                  {/* Display item details based on type */}
+                  {type === 'event' && (
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
+                      {item.date && <p className="text-green-200"><Calendar className="inline w-4 h-4 mr-2" /> {item.date}</p>}
+                      {item.location && <p className="text-green-200"><MapPin className="inline w-4 h-4 mr-2" /> {item.location}</p>}
+                      {item.price && <p className="text-green-200"><Ticket className="inline w-4 h-4 mr-2" /> Price: {item.price}</p>}
+                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                    </div>
+                  )}
+                  
+                  {type === 'contact' && (
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-medium text-green-300">Contact Information</h3>
+                      {item.email && item.email.length > 0 && (
+                        <p className="text-green-200">
+                          <Mail className="inline w-4 h-4 mr-2" /> 
+                          {item.email.join(', ')}
+                        </p>
+                      )}
+                      {item.phone && item.phone.length > 0 && (
+                        <p className="text-green-200">
+                          <Phone className="inline w-4 h-4 mr-2" /> 
+                          {item.phone.join(', ')}
+                        </p>
+                      )}
+                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                    </div>
+                  )}
+                  
+                  {type === 'book' && (
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
+                      {item.author && <p className="text-green-200">By {item.author}</p>}
+                      {item.publication_year && <p className="text-green-200">Published in {item.publication_year}</p>}
+                      {item.publisher && <p className="text-green-200">Publisher: {item.publisher}</p>}
+                      {item.price && <p className="text-green-200"><ShoppingCart className="inline w-4 h-4 mr-2" /> Price: {item.price}</p>}
+                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                    </div>
+                  )}
+                  
+                  {type === 'page' && (
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
+                      <p className="text-green-200 truncate">{item.content.substring(0, 150)}...</p>
+                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                    </div>
+                  )}
+                  
+                  {type === 'image' && (
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-medium text-green-300">{item.title || 'Image'}</h3>
+                      {item.url && (
+                        <div className="relative h-40 w-full">
+                          <img 
+                            src={item.url} 
+                            alt={item.alt_text || 'Extracted image'} 
+                            className="object-contain h-full mx-auto rounded-md"
+                          />
+                        </div>
+                      )}
+                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.page_url}</p>
+                    </div>
+                  )}
+
+                  {type === 'social_media' && (
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-medium text-green-300">Social Media {item.platform || ''}</h3>
+                      {item.post_date && <p className="text-green-200">Posted: {item.post_date}</p>}
+                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Add to knowledge base button */}
+                <Button
+                  size="sm"
+                  variant={itemAdded ? "outline" : "default"}
+                  className={itemAdded ? "bg-green-900/30 text-green-300 border-green-700" : "bg-green-700 text-white"}
+                  onClick={() => handleAddItem(type, item)}
+                  disabled={itemAdded || saveItemMutation.isPending}
+                >
+                  {saveItemMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : itemAdded ? (
+                    "Added ✓"
+                  ) : (
+                    "Add to Database"
+                  )}
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
   
   const extractionStatus = useQuery({
     queryKey: ['/api/scrapy/status'],
