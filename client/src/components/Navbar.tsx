@@ -225,6 +225,7 @@ const Navbar: React.FC = () => {
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
     { href: "/ai-chat", label: "Bamboo One", isBeta: true },
+    { href: "/web-extraction", label: "Web Extraction", isNew: true },
   ];
   
   // User links removed as profile is now accessible via the dropdown menu

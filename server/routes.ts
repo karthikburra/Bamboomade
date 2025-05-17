@@ -8862,6 +8862,9 @@ Please structure the summary in a helpful format with clear headings, bullet poi
     }
   });
 
+  // Register Scrapy routes for web extraction
+  registerScrapyRoutes(app);
+  
   const httpServer = createServer(app);
   // API route to fetch social media posts from the knowledge base
   app.get("/api/social-media-posts", async (req, res) => {
