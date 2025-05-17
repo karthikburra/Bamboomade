@@ -63,6 +63,7 @@ function Router() {
         {() => <ProtectedRoute component={AIChat} requiresSubscription={true} />}
       </Route>
       <Route path="/admin" component={Admin} />
+      <Route path="/knowledge-importer" component={KnowledgeImporter} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-home" component={AdminHome} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
