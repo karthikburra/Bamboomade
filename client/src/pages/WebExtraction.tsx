@@ -435,54 +435,48 @@ const WebExtraction = () => {
                     )}
                   />
                   {!isUrlValid && (
-                    <p className="text-sm text-red-400">
-                      Please enter a valid URL starting with http:// or https://
+                    <p className="text-red-500 text-sm mt-1">
+                      Please enter a valid URL (e.g., https://example.com)
                     </p>
                   )}
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="maxDepth" className="text-green-200">Crawl Depth</Label>
-                  <Select
-                    value={maxDepth}
-                    onValueChange={(value) => setMaxDepth(value)}
+                  <Select 
+                    value={maxDepth} 
+                    onValueChange={setMaxDepth}
                   >
-                    <SelectTrigger className="bg-gray-900/70 border-green-800/50 text-green-50">
+                    <SelectTrigger id="maxDepth" className="bg-gray-900/70 border-green-800/50 text-green-50">
                       <SelectValue placeholder="Select crawl depth" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-green-800/50">
-                      <SelectItem value="1" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Minimal (1 level)</SelectItem>
-                      <SelectItem value="2" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Standard (2 levels)</SelectItem>
-                      <SelectItem value="3" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Deep (3 levels)</SelectItem>
-                      <SelectItem value="4" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Very Deep (4 levels)</SelectItem>
-                      <SelectItem value="5" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Exhaustive (5 levels)</SelectItem>
+                    <SelectContent className="bg-gray-800 border-green-800/50 text-green-50">
+                      <SelectItem value="1">1 (Basic - Homepage Only)</SelectItem>
+                      <SelectItem value="2">2 (Standard - Homepage + Linked Pages)</SelectItem>
+                      <SelectItem value="3">3 (Deep - Multiple Levels)</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-green-500">
-                    Higher depth values will extract more content but take longer to complete.
+                  <p className="text-sm text-green-400">
+                    Higher depth values will crawl more pages but take longer to complete.
                   </p>
                 </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-green-700 text-white hover:bg-green-600"
+                  disabled={extractMutation.isPending}
+                >
+                  {extractMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Extracting...
+                    </>
+                  ) : (
+                    "Start Extraction"
+                  )}
+                </Button>
               </form>
             </CardContent>
-            <CardFooter>
-              <Button 
-                onClick={handleExtract} 
-                disabled={extractMutation.isPending}
-                className="w-full bg-green-700 hover:bg-green-600 text-white"
-              >
-                {extractMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Extracting...
-                  </>
-                ) : (
-                  <>
-                    <Globe className="mr-2 h-4 w-4" />
-                    Start Extraction
-                  </>
-                )}
-              </Button>
-            </CardFooter>
           </Card>
         </TabsContent>
         
@@ -491,36 +485,76 @@ const WebExtraction = () => {
             <CardHeader>
               <CardTitle className="text-green-300">Extraction Status</CardTitle>
               <CardDescription className="text-green-400">
-                Current status of the web extraction process.
+                Monitor the progress of your web content extraction.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {extractMutation.isPending ? (
                 <div className="space-y-4">
-                  <p className="text-green-200">Extracting content from <span className="text-green-300 font-medium">{url}</span></p>
-                  <Progress value={50} className="h-2 bg-gray-700" />
-                  <p className="text-sm text-green-500">
-                    Please wait while we crawl the website and extract content.
-                    This process may take several minutes depending on the size of the website.
+                  <div className="flex items-center space-x-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+                    <div>
+                      <h3 className="text-green-300 text-lg">Extraction in Progress</h3>
+                      <p className="text-green-400">
+                        Crawling {url} (Depth: {maxDepth})
+                      </p>
+                    </div>
+                  </div>
+                  <Progress 
+                    value={45} 
+                    className="h-2 bg-gray-700" 
+                  />
+                  <p className="text-sm text-green-400">
+                    This may take a few minutes depending on the size of the website and crawl depth.
                   </p>
                 </div>
-              ) : extractionStatus.isLoading ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-green-500" />
-                </div>
-              ) : extractionStatus.isError ? (
-                <Alert variant="destructive" className="bg-red-900/30 border-red-800 text-red-300">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>
-                    Failed to fetch extraction status. Please try again.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-green-200">{extractionStatus.data?.status || "No active extractions"}</p>
-                  {extractionStatus.data?.isRunning && (
-                    <Progress value={75} className="h-2 bg-gray-700" />
+              ) : extractionStatus.data ? (
+                <div>
+                  <h3 className="text-green-300 text-lg">
+                    {extractionStatus.data.status === 'completed' 
+                      ? 'Extraction Complete' 
+                      : 'Extraction in Progress'}
+                  </h3>
+                  
+                  <div className="mt-4 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-green-400">Status:</span>
+                      <span className="text-green-200 capitalize">{extractionStatus.data.status}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-green-400">URL:</span>
+                      <span className="text-green-200">{extractionStatus.data.url}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-green-400">Pages Crawled:</span>
+                      <span className="text-green-200">{extractionStatus.data.pagesCrawled || 0}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-green-400">Items Found:</span>
+                      <span className="text-green-200">{extractionStatus.data.itemsFound || 0}</span>
+                    </div>
+                  </div>
+                  
+                  {extractionStatus.data.status === 'completed' && (
+                    <div className="mt-6">
+                      <Button 
+                        onClick={() => setActiveTab('results')}
+                        className="w-full bg-green-700 text-white hover:bg-green-600"
+                      >
+                        View Results
+                      </Button>
+                    </div>
                   )}
+                </div>
+              ) : (
+                <div className="text-center">
+                  <p className="text-green-300">No active extraction</p>
+                  <p className="text-sm text-green-400 mt-2">
+                    Start an extraction from the "Extract Content" tab to see status here.
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -532,335 +566,91 @@ const WebExtraction = () => {
             <CardHeader>
               <CardTitle className="text-green-300">Extraction Results</CardTitle>
               <CardDescription className="text-green-400">
-                Summary of content extracted from the website.
+                Browse and add extracted content to the Bamboo Knowledge Base.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {extractionSummary ? (
-                <div className="space-y-6">
-                  <p className="font-medium text-green-200">Content extracted from: <span className="text-green-300">{extractionSummary.url}</span></p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
-                      <FileText className="h-8 w-8 text-green-500 mb-2" />
-                      <p className="text-2xl font-bold text-green-300">{extractionSummary.pagesFound}</p>
-                      <p className="text-sm text-green-400">Pages</p>
+              <div className="space-y-6">
+                {extractionSummary ? (
+                  <div>
+                    <div className="mb-6 p-4 bg-gray-900/50 rounded-lg">
+                      <h3 className="text-lg font-medium text-green-300 mb-2">Extraction Summary</h3>
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <span className="block text-sm text-green-400">URL</span>
+                          <span className="text-green-200 text-sm break-all">{extractionSummary.url}</span>
+                        </div>
+                        <div>
+                          <span className="block text-sm text-green-400">Pages</span>
+                          <span className="text-xl">{extractionSummary.pagesFound}</span>
+                        </div>
+                        <div>
+                          <span className="block text-sm text-green-400">Events</span>
+                          <span className="text-xl">{extractionSummary.eventsFound}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-4 gap-4">
+                        <div>
+                          <span className="block text-sm text-green-400">Books</span>
+                          <span className="text-xl">{extractionSummary.booksFound}</span>
+                        </div>
+                        <div>
+                          <span className="block text-sm text-green-400">Contacts</span>
+                          <span className="text-xl">{extractionSummary.contactsFound}</span>
+                        </div>
+                        <div>
+                          <span className="block text-sm text-green-400">Images</span>
+                          <span className="text-xl">{extractionSummary.imagesFound}</span>
+                        </div>
+                        <div>
+                          <span className="block text-sm text-green-400">Social Media</span>
+                          <span className="text-xl">{extractionSummary.socialMediaFound}</span>
+                        </div>
+                      </div>
                     </div>
                     
-                    <div 
-                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
-                      onClick={() => {
-                        // Get the actual extraction data if not already loaded
-                        if (!extractionData && extractionSummary?.url) {
-                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
-                            .then(res => res.json())
-                            .then(data => {
-                              if (data.success && data.results) {
-                                setExtractionData(data.results);
-                                setActiveDetailTab('events');
-                              } else {
-                                toast({
-                                  title: "Error Loading Results",
-                                  description: data.message || "There was a problem loading the extraction results.",
-                                  variant: "destructive",
-                                });
-                              }
-                            })
-                            .catch(err => {
-                              console.error("Error loading extraction data:", err);
-                              toast({
-                                title: "Error Loading Results",
-                                description: "Failed to load extraction results. Please try again.",
-                                variant: "destructive",
-                              });
-                            });
-                        } else {
-                          setActiveDetailTab('events');
-                        }
-                      }}
-                    >
-                      <Calendar className="h-8 w-8 text-green-500 mb-2" />
-                      <p className="text-2xl font-bold text-green-300">{extractionSummary.eventsFound}</p>
-                      <p className="text-sm text-green-400">Events</p>
-                    </div>
-                    
-                    <div 
-                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
-                      onClick={() => {
-                        // Get the actual extraction data if not already loaded
-                        if (!extractionData && extractionSummary?.url) {
-                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
-                            .then(res => res.json())
-                            .then(data => {
-                              if (data.success && data.results) {
-                                setExtractionData(data.results);
-                                setActiveDetailTab('contacts');
-                              } else {
-                                toast({
-                                  title: "Error Loading Results",
-                                  description: data.message || "There was a problem loading the extraction results.",
-                                  variant: "destructive",
-                                });
-                              }
-                            })
-                            .catch(err => {
-                              console.error("Error loading extraction data:", err);
-                              toast({
-                                title: "Error Loading Results",
-                                description: "Failed to load extraction results. Please try again.",
-                                variant: "destructive",
-                              });
-                            });
-                        } else {
-                          setActiveDetailTab('contacts');
-                        }
-                      }}
-                    >
-                      <Phone className="h-8 w-8 text-green-500 mb-2" />
-                      <p className="text-2xl font-bold text-green-300">{extractionSummary.contactsFound}</p>
-                      <p className="text-sm text-green-400">Contacts</p>
-                    </div>
-                    
-                    <div 
-                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
-                      onClick={() => {
-                        // Get the actual extraction data if not already loaded
-                        if (!extractionData && extractionSummary?.url) {
-                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
-                            .then(res => res.json())
-                            .then(data => {
-                              if (data.success && data.results) {
-                                setExtractionData(data.results);
-                                setActiveDetailTab('images');
-                              } else {
-                                toast({
-                                  title: "Error Loading Results",
-                                  description: data.message || "There was a problem loading the extraction results.",
-                                  variant: "destructive",
-                                });
-                              }
-                            })
-                            .catch(err => {
-                              console.error("Error loading extraction data:", err);
-                              toast({
-                                title: "Error Loading Results",
-                                description: "Failed to load extraction results. Please try again.",
-                                variant: "destructive",
-                              });
-                            });
-                        } else {
-                          setActiveDetailTab('images');
-                        }
-                      }}
-                    >
-                      <Image className="h-8 w-8 text-green-500 mb-2" />
-                      <p className="text-2xl font-bold text-green-300">{extractionSummary.imagesFound}</p>
-                      <p className="text-sm text-green-400">Images</p>
-                    </div>
-                    
-                    <div 
-                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
-                      onClick={() => {
-                        // Get the actual extraction data if not already loaded
-                        if (!extractionData && extractionSummary?.url) {
-                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
-                            .then(res => res.json())
-                            .then(data => {
-                              if (data.success && data.results) {
-                                setExtractionData(data.results);
-                                setActiveDetailTab('books');
-                              } else {
-                                toast({
-                                  title: "Error Loading Results",
-                                  description: data.message || "There was a problem loading the extraction results.",
-                                  variant: "destructive",
-                                });
-                              }
-                            })
-                            .catch(err => {
-                              console.error("Error loading extraction data:", err);
-                              toast({
-                                title: "Error Loading Results",
-                                description: "Failed to load extraction results. Please try again.",
-                                variant: "destructive",
-                              });
-                            });
-                        } else {
-                          setActiveDetailTab('books');
-                        }
-                      }}
-                    >
-                      <Book className="h-8 w-8 text-green-500 mb-2" />
-                      <p className="text-2xl font-bold text-green-300">{extractionSummary.booksFound}</p>
-                      <p className="text-sm text-green-400">Books</p>
-                    </div>
-                    
-                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
-                      <MessageSquare className="h-8 w-8 text-green-500 mb-2" />
-                      <p className="text-2xl font-bold text-green-300">{extractionSummary.socialMediaFound}</p>
-                      <p className="text-sm text-green-400">Social Media</p>
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-medium text-green-300 mb-4">Events</h3>
+                        {extractionData?.events && renderContentItems('event', extractionData.events)}
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium text-green-300 mb-4">Books</h3>
+                        {extractionData?.books && renderContentItems('book', extractionData.books)}
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium text-green-300 mb-4">Contacts</h3>
+                        {extractionData?.contacts && renderContentItems('contact', extractionData.contacts)}
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium text-green-300 mb-4">Pages</h3>
+                        {extractionData?.pages && renderContentItems('page', extractionData.pages)}
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium text-green-300 mb-4">Images</h3>
+                        {extractionData?.images && renderContentItems('image', extractionData.images)}
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-lg font-medium text-green-300 mb-4">Social Media</h3>
+                        {extractionData?.social_media && renderContentItems('social_media', extractionData.social_media)}
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="mt-6 space-y-4">
-                    <Alert className="bg-green-900/30 border-green-800">
-                      <AlertTitle className="text-green-300">Knowledge Base Update</AlertTitle>
-                      <AlertDescription className="text-green-200">
-                        <span className="font-bold text-green-300">{extractionSummary.itemsAddedToKnowledgeBase}</span> new items were added to the knowledge base.
-                      </AlertDescription>
-                    </Alert>
-                    
-                    {/* Action panel for manual content extraction */}
-                    <div className="p-4 border border-green-700/30 rounded-lg bg-green-900/20">
-                      <h3 className="text-xl font-semibold text-green-300 mb-2">Manual Content Actions</h3>
-                      <p className="text-green-200 mb-4">
-                        Content has been categorized by type (events, books, contacts, etc.) and linked to original sources.
-                      </p>
-                      {activeDetailTab === 'events' && extractionData?.events && (
-                        <div className="mb-6 mt-2">
-                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Events ({extractionData.events.length})</h3>
-                          <div className="max-h-[500px] overflow-y-auto pr-2">
-                            {renderContentItems('event', extractionData.events)}
-                          </div>
-                        </div>
-                      )
-                      
-                      {activeDetailTab === 'books' && extractionData?.books && (
-                        <div className="mb-6 mt-2">
-                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Books ({extractionData.books.length})</h3>
-                          <div className="max-h-[500px] overflow-y-auto pr-2">
-                            {renderContentItems('book', extractionData.books)}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {activeDetailTab === 'contacts' && extractionData?.contacts && (
-                        <div className="mb-6 mt-2">
-                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Contacts ({extractionData.contacts.length})</h3>
-                          <div className="max-h-[500px] overflow-y-auto pr-2">
-                            {renderContentItems('contact', extractionData.contacts)}
-                          </div>
-                        </div>
-                      )}
-
-                      {activeDetailTab === 'images' && extractionData?.images && (
-                        <div className="mb-6 mt-2">
-                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Images ({extractionData.images.length})</h3>
-                          <div className="max-h-[500px] overflow-y-auto pr-2">
-                            {renderContentItems('image', extractionData.images)}
-                          </div>
-                        </div>
-                      )}
-
-                      {activeDetailTab === 'social_media' && extractionData?.social_media && (
-                        <div className="mb-6 mt-2">
-                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Social Media ({extractionData.social_media.length})</h3>
-                          <div className="max-h-[500px] overflow-y-auto pr-2">
-                            {renderContentItems('social_media', extractionData.social_media)}
-                          </div>
-                        </div>
-                      )}
-
-                      {activeDetailTab === 'pages' && extractionData?.pages && (
-                        <div className="mb-6 mt-2">
-                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Pages ({extractionData.pages.length})</h3>
-                          <div className="max-h-[500px] overflow-y-auto pr-2">
-                            {renderContentItems('page', extractionData.pages)}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {!activeDetailTab && extractionData && (
-                        <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
-                          <Button
-                            className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={() => setActiveDetailTab('events')}>
-                            Events ({extractionData.events.length})
-                          </Button>
-                          <Button
-                            className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={() => setActiveDetailTab('books')}>
-                            Books ({extractionData.books.length})
-                          </Button>
-                          <Button
-                            className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={() => setActiveDetailTab('contacts')}>
-                            Contacts ({extractionData.contacts.length})
-                          </Button>
-                          <Button
-                            className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={() => setActiveDetailTab('images')}>
-                            Images ({extractionData.images.length})
-                          </Button>
-                          <Button
-                            className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={() => setActiveDetailTab('social_media')}>
-                            Social Media ({extractionData.social_media.length})
-                          </Button>
-                          <Button
-                            className="bg-green-700 hover:bg-green-600 text-white"
-                            onClick={() => setActiveDetailTab('pages')}>
-                            Pages ({extractionData.pages.length})
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {activeDetailTab && (
-                        <div className="mt-4">
-                          <Button
-                            variant="outline" 
-                            className="border-green-800 text-green-300 hover:bg-green-900/30"
-                            onClick={() => setActiveDetailTab(null)}>
-                            Back to Overview
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {/* Summary section at the bottom of the page */}
-                      {extractionSummary && (
-                        <div className="mt-6 p-4 border border-green-800/30 rounded-lg bg-green-900/20">
-                          <h3 className="text-lg font-semibold text-green-300 mb-2">Extraction Summary</h3>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-green-200">
-                            <div>
-                              <span className="block text-sm text-green-400">Pages Found</span>
-                              <span className="text-xl">{extractionSummary.pagesFound}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm text-green-400">Events Found</span>
-                              <span className="text-xl">{extractionSummary.eventsFound}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm text-green-400">Books Found</span>
-                              <span className="text-xl">{extractionSummary.booksFound}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm text-green-400">Contacts Found</span>
-                              <span className="text-xl">{extractionSummary.contactsFound}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm text-green-400">Images Found</span>
-                              <span className="text-xl">{extractionSummary.imagesFound}</span>
-                            </div>
-                            <div>
-                              <span className="block text-sm text-green-400">Social Media</span>
-                              <span className="text-xl">{extractionSummary.socialMediaFound}</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-green-300">No extraction results to display yet.</p>
+                    <p className="text-sm text-green-500 mt-2">
+                      Run an extraction from the "Extract Content" tab to see results here.
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    );
-  }
-}
-
-export default WebExtraction;
+                )}
+              </div>
             </CardContent>
             <CardFooter>
               <Button 
