@@ -36,6 +36,7 @@ import VerifyEmail from "@/pages/VerifyEmail";
 import DevTools from "@/pages/DevTools";
 import NotFound from "@/pages/not-found";
 import UserProfile from "@/pages/UserProfile";
+import KnowledgeImporterDemo from "@/pages/KnowledgeImporterDemo";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
 import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWorkshop";
@@ -63,7 +64,6 @@ function Router() {
         {() => <ProtectedRoute component={AIChat} requiresSubscription={true} />}
       </Route>
       <Route path="/admin" component={Admin} />
-      <Route path="/knowledge-importer" component={KnowledgeImporter} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-home" component={AdminHome} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
@@ -71,6 +71,7 @@ function Router() {
       <Route path="/ai-knowledge-database" component={AIKnowledgeDatabase} />
       <Route path="/admin-ai-knowledge-chat" component={AdminAIKnowledgeChat} />
       <Route path="/dev-admin-login" component={DevAdminLogin} />
+      <Route path="/knowledge-importer-demo" component={KnowledgeImporterDemo} />
       <Route path="/login" component={Login} />
       <Route path="/profile/edit" component={ProfileEdit} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
