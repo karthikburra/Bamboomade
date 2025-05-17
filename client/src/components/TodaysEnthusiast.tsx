@@ -123,9 +123,7 @@ export function TodaysEnthusiast() {
                 <User className="h-5 w-5 mr-2 text-amber-500" />
                 Today's Bamboo Enthusiast
               </CardTitle>
-              <CardDescription className="text-zinc-400">
-                Spotlighting innovators in sustainable bamboo design
-              </CardDescription>
+
             </div>
             <Button 
               variant="ghost" 
@@ -162,9 +160,7 @@ export function TodaysEnthusiast() {
               <User className="h-5 w-5 mr-2 text-amber-500" />
               Bamboo Enthusiast
             </CardTitle>
-            <CardDescription className="text-zinc-400">
-              Spotlighting innovators in sustainable bamboo design
-            </CardDescription>
+
           </div>
           <Button 
             variant="ghost" 
