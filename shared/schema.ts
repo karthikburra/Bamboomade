@@ -215,8 +215,15 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   personalWebsite: text("personal_website"), // Personal website URL
   // Event specific fields
   eventDate: text("event_date"), // Date and time of the event
+  eventEndDate: text("event_end_date"), // End date for multi-day events
+  eventTimings: text("event_timings"), // Detailed timing information
   eventLocation: text("event_location"), // Physical or virtual location of the event
   registrationLink: text("registration_link"), // URL for event registration
+  // Price information for books, events, or products
+  price: text("price"), // Main price (e.g., "₹500", "$25")
+  currency: text("currency"), // Currency code (e.g., "INR", "USD")
+  priceRange: text("price_range"), // Price range for variable pricing (e.g., "₹500-₹1000")
+  discountPrice: text("discount_price"), // Special or discounted price
   lastResummarizedAt: timestamp("last_resummarized_at"), // When content was last resummarized
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -243,8 +250,15 @@ export const insertAiKnowledgeContentSchema = createInsertSchema(aiKnowledgeCont
   personalWebsite: true,
   // Event specific fields
   eventDate: true,
+  eventEndDate: true,
+  eventTimings: true,
   eventLocation: true,
   registrationLink: true,
+  // Price information
+  price: true,
+  currency: true,
+  priceRange: true,
+  discountPrice: true,
   lastResummarizedAt: true,
   createdBy: true,
 });
