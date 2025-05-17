@@ -861,46 +861,6 @@ const WebExtraction = () => {
 }
 
 export default WebExtraction;
-                                  });
-                                } else {
-                                  toast({
-                                    title: "Error Saving Content",
-                                    description: result.message || "There was a problem saving the content to the database.",
-                                    variant: "destructive",
-                                  });
-                                }
-                              } catch (error) {
-                                console.error("Error saving extraction:", error);
-                                toast({
-                                  title: "Error Saving Content",
-                                  description: "Failed to connect to the server. Please try again.",
-                                  variant: "destructive",
-                                });
-                              }
-                            }}
-                          >
-                            Save All Content to Knowledge Base
-                          </Button>
-                          <Button
-                            variant="outline" 
-                            className="border-green-700 text-green-200 hover:bg-green-800/30"
-                            onClick={() => setActiveTab('extract')}
-                          >
-                            Extract Different Website
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-green-300">No extraction results to display yet.</p>
-                  <p className="text-sm text-green-500 mt-2">
-                    Run an extraction from the "Extract Content" tab to see results here.
-                  </p>
-                </div>
-              )}
             </CardContent>
             <CardFooter>
               <Button 
