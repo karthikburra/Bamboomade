@@ -79,36 +79,36 @@ interface ScrapyResponse {
 }
 
 /**
- * Run the Scrapy spider to extract data from a website
+ * Run the web extractor to extract data from a website
  * @param url URL to crawl
  * @param maxDepth Maximum crawl depth (default: 2)
  * @returns Structured data extracted from the website
  */
 export async function scrapeWebsite(url: string, maxDepth: number = 2): Promise<ScrapyResponse> {
   try {
-    console.log(`Starting Scrapy crawler for URL: ${url} with max depth: ${maxDepth}`);
+    console.log(`Starting web extraction for URL: ${url} with max depth: ${maxDepth}`);
     
     // Create a temporary output file
     const outputFile = path.join(
       process.cwd(),
-      `temp_scrapy_${Date.now()}.json`
+      `temp_extraction_${Date.now()}.json`
     );
     
     // Run the Python script with URL and depth parameters
-    const command = `python3 server/scrapy_extractor.py "${url}" ${maxDepth} "${outputFile}"`;
+    const command = `python3 server/simple_extractor.py "${url}" ${maxDepth} "${outputFile}"`;
     console.log(`Executing command: ${command}`);
     
     const { stdout, stderr } = await execPromise(command);
     
     if (stderr) {
-      console.warn('Scrapy stderr:', stderr);
+      console.warn('Extraction stderr:', stderr);
     }
     
-    console.log('Scrapy stdout:', stdout);
+    console.log('Extraction stdout:', stdout);
     
     // Check if output file was created
     if (!fs.existsSync(outputFile)) {
-      throw new Error('Scrapy crawler did not produce output file');
+      throw new Error('Web extractor did not produce output file');
     }
     
     // Read and parse the output file
@@ -120,7 +120,7 @@ export async function scrapeWebsite(url: string, maxDepth: number = 2): Promise<
     
     return scrapyResult;
   } catch (error) {
-    console.error('Error running Scrapy crawler:', error);
+    console.error('Error running web extractor:', error);
     
     // Return empty result on error
     return {
@@ -311,11 +311,15 @@ export async function processScrapyResults(
     let successCount = 0;
     for (const item of knowledgeItems) {
       try {
-        const result = await storage.addAiKnowledgeContent(item);
+        // Remove folderId if it exists since it's not in the database schema
+        const { folderId, ...cleanItem } = item as any;
+        
+        // Use createAiKnowledgeContent instead of addAiKnowledgeContent
+        const result = await storage.createAiKnowledgeContent(cleanItem);
         if (result && result.id) {
           successCount++;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error adding knowledge item: ${error.message}`);
       }
     }

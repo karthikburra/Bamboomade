@@ -1,17 +1,17 @@
 /**
- * Scrapy Routes
- * API endpoints for the Scrapy-based web scraping functionality
+ * Web Extraction Routes
+ * API endpoints for the web content extraction functionality
  */
 import { Request, Response } from 'express';
 import { scrapeWebsite, processScrapyResults } from './scrapy_manager';
 
 /**
- * Register Scrapy-related routes
+ * Register web extraction routes
  * @param app Express application
  */
 export function registerScrapyRoutes(app: any) {
   /**
-   * Scrape a website and add its content to the knowledge base
+   * Extract content from a website and add it to the knowledge base
    * POST /api/scrapy/extract
    * Body: { url: string, maxDepth?: number }
    */
@@ -38,43 +38,43 @@ export function registerScrapyRoutes(app: any) {
       // Validate max depth
       const depth = Math.min(Math.max(parseInt(String(maxDepth), 10) || 2, 1), 5);
       
-      console.log(`Starting Scrapy extraction for ${url} with depth ${depth}`);
+      console.log(`Starting web extraction for ${url} with depth ${depth}`);
       
-      // Start scraping
-      const scrapyResults = await scrapeWebsite(url, depth);
+      // Start extracting content
+      const extractionResults = await scrapeWebsite(url, depth);
       
       // Process results and add to knowledge base
-      const itemsAdded = await processScrapyResults(scrapyResults, req.session.userId);
+      const itemsAdded = await processScrapyResults(extractionResults, req.session.userId);
       
       // Summarize the results
       const summary = {
         url,
-        pagesFound: scrapyResults.results.pages.length,
-        eventsFound: scrapyResults.results.events.length,
-        contactsFound: scrapyResults.results.contacts.length,
-        imagesFound: scrapyResults.results.images.length,
-        booksFound: scrapyResults.results.books.length,
-        socialMediaFound: scrapyResults.results.social_media.length,
+        pagesFound: extractionResults.results.pages.length,
+        eventsFound: extractionResults.results.events.length,
+        contactsFound: extractionResults.results.contacts.length,
+        imagesFound: extractionResults.results.images.length,
+        booksFound: extractionResults.results.books.length,
+        socialMediaFound: extractionResults.results.social_media.length,
         itemsAddedToKnowledgeBase: itemsAdded
       };
       
       return res.json({
         success: true,
-        message: `Successfully scraped ${url} and added ${itemsAdded} items to the knowledge base`,
+        message: `Successfully extracted content from ${url} and added ${itemsAdded} items to the knowledge base`,
         summary
       });
-    } catch (error) {
-      console.error('Error in Scrapy extraction:', error);
+    } catch (error: any) {
+      console.error('Error in web extraction:', error);
       return res.status(500).json({
         success: false,
-        message: `Error extracting content: ${error.message || 'Unknown error'}`,
-        error: error.message
+        message: `Error extracting content: ${error?.message || 'Unknown error'}`,
+        error: error?.message
       });
     }
   });
   
   /**
-   * Get status of current Scrapy extraction (for long-running extractions)
+   * Get status of current web extraction (for long-running extractions)
    * GET /api/scrapy/status
    */
   app.get('/api/scrapy/status', (req: Request, res: Response) => {
