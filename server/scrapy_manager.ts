@@ -1,0 +1,328 @@
+/**
+ * Scrapy Manager
+ * Integration for using Scrapy to extract structured data from websites
+ */
+import { exec } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import { promisify } from 'util';
+import { URL } from 'url';
+import { storage } from './storage';
+import { InsertAiKnowledgeContent } from '@shared/schema';
+
+const execPromise = promisify(exec);
+
+interface ScrapyPage {
+  url: string;
+  title: string;
+  content: string;
+  timestamp: string;
+}
+
+interface ScrapyImage {
+  url: string;
+  alt_text?: string;
+  title?: string;
+  page_url: string;
+}
+
+interface ScrapyEvent {
+  title: string;
+  url: string;
+  date?: string;
+  location?: string;
+  registration_link?: string;
+  price?: string;
+}
+
+interface ScrapyContact {
+  url: string;
+  email?: string[];
+  phone?: string[];
+  social_media?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
+}
+
+interface ScrapyBook {
+  title: string;
+  url: string;
+  author?: string;
+  publication_year?: string;
+  publisher?: string;
+  purchase_link?: string;
+}
+
+interface ScrapySocialMedia {
+  url: string;
+  platform?: string;
+  embed_code?: string;
+  post_date?: string;
+}
+
+interface ScrapyResults {
+  pages: ScrapyPage[];
+  events: ScrapyEvent[];
+  contacts: ScrapyContact[];
+  images: ScrapyImage[];
+  books: ScrapyBook[];
+  social_media: ScrapySocialMedia[];
+}
+
+interface ScrapyResponse {
+  url: string;
+  results: ScrapyResults;
+}
+
+/**
+ * Run the Scrapy spider to extract data from a website
+ * @param url URL to crawl
+ * @param maxDepth Maximum crawl depth (default: 2)
+ * @returns Structured data extracted from the website
+ */
+export async function scrapeWebsite(url: string, maxDepth: number = 2): Promise<ScrapyResponse> {
+  try {
+    console.log(`Starting Scrapy crawler for URL: ${url} with max depth: ${maxDepth}`);
+    
+    // Create a temporary output file
+    const outputFile = path.join(
+      process.cwd(),
+      `temp_scrapy_${Date.now()}.json`
+    );
+    
+    // Run the Python script with URL and depth parameters
+    const command = `python3 server/scrapy_extractor.py "${url}" ${maxDepth} "${outputFile}"`;
+    console.log(`Executing command: ${command}`);
+    
+    const { stdout, stderr } = await execPromise(command);
+    
+    if (stderr) {
+      console.warn('Scrapy stderr:', stderr);
+    }
+    
+    console.log('Scrapy stdout:', stdout);
+    
+    // Check if output file was created
+    if (!fs.existsSync(outputFile)) {
+      throw new Error('Scrapy crawler did not produce output file');
+    }
+    
+    // Read and parse the output file
+    const fileContent = fs.readFileSync(outputFile, 'utf8');
+    const scrapyResult: ScrapyResponse = JSON.parse(fileContent);
+    
+    // Clean up the temporary file
+    fs.unlinkSync(outputFile);
+    
+    return scrapyResult;
+  } catch (error) {
+    console.error('Error running Scrapy crawler:', error);
+    
+    // Return empty result on error
+    return {
+      url,
+      results: {
+        pages: [],
+        events: [],
+        contacts: [],
+        images: [],
+        books: [],
+        social_media: []
+      }
+    };
+  }
+}
+
+/**
+ * Convert Scrapy extraction results to knowledge content items
+ * @param scrapyResult Structured data from Scrapy
+ * @param userId User ID of the person adding the content
+ * @returns Array of knowledge content items ready to add to the database
+ */
+export async function processScrapyResults(
+  scrapyResult: ScrapyResponse, 
+  userId: number
+): Promise<number> {
+  const knowledgeItems: InsertAiKnowledgeContent[] = [];
+  
+  try {
+    const { url, results } = scrapyResult;
+    const hostname = new URL(url).hostname;
+    
+    // Create a folder for this website
+    const folderName = `Scrapy: ${hostname}`;
+    let folderId: number | undefined;
+    
+    try {
+      const folder = await storage.createChatFolder({
+        name: folderName,
+        description: `Content extracted from ${url} using Scrapy`,
+        createdBy: userId
+      });
+      folderId = folder.id;
+      console.log(`Created folder for Scrapy content with ID: ${folderId}`);
+    } catch (folderError) {
+      console.warn('Error creating folder for Scrapy content:', folderError);
+    }
+    
+    // Process web pages
+    if (results.pages && results.pages.length > 0) {
+      for (const page of results.pages) {
+        knowledgeItems.push({
+          title: page.title || `Content from ${page.url}`,
+          content: page.content || `Extracted content from ${page.url}`,
+          source: page.url,
+          contentType: 'webpage',
+          status: 'active',
+          createdBy: userId,
+          folderId,
+          rawContent: JSON.stringify(page)
+        });
+      }
+    }
+    
+    // Process events
+    if (results.events && results.events.length > 0) {
+      for (const event of results.events) {
+        const eventContent = [
+          event.title ? `Event: ${event.title}` : 'Unnamed Event',
+          event.date ? `Date: ${event.date}` : '',
+          event.location ? `Location: ${event.location}` : '',
+          event.price ? `Price: ${event.price}` : '',
+          event.registration_link ? `Registration: ${event.registration_link}` : '',
+          `Source: ${event.url}`
+        ].filter(Boolean).join('\n\n');
+        
+        knowledgeItems.push({
+          title: event.title || `Event from ${hostname}`,
+          content: eventContent,
+          source: event.url,
+          contentType: 'event',
+          status: 'active',
+          createdBy: userId,
+          folderId,
+          eventDate: event.date || '',
+          eventLocation: event.location || '',
+          registrationLink: event.registration_link || '',
+          price: event.price || '',
+          rawContent: JSON.stringify(event)
+        });
+      }
+    }
+    
+    // Process books
+    if (results.books && results.books.length > 0) {
+      for (const book of results.books) {
+        const bookContent = [
+          book.title ? `Book: ${book.title}` : 'Unnamed Book',
+          book.author ? `Author: ${book.author}` : '',
+          book.publication_year ? `Year: ${book.publication_year}` : '',
+          book.publisher ? `Publisher: ${book.publisher}` : '',
+          book.purchase_link ? `Purchase: ${book.purchase_link}` : '',
+          `Source: ${book.url}`
+        ].filter(Boolean).join('\n\n');
+        
+        knowledgeItems.push({
+          title: book.title || `Book from ${hostname}`,
+          content: bookContent,
+          source: book.url,
+          contentType: 'book',
+          status: 'active',
+          createdBy: userId,
+          folderId,
+          authorName: book.author || '',
+          publicationYear: book.publication_year || '',
+          publisherName: book.publisher || '',
+          purchaseLink: book.purchase_link || '',
+          rawContent: JSON.stringify(book)
+        });
+      }
+    }
+    
+    // Process contacts
+    if (results.contacts && results.contacts.length > 0) {
+      for (const contact of results.contacts) {
+        if (contact.email || contact.phone || contact.social_media) {
+          const contactContent = [
+            'Contact Information:',
+            contact.email ? `Email: ${contact.email.join(', ')}` : '',
+            contact.phone ? `Phone: ${contact.phone.join(', ')}` : '',
+            contact.social_media ? 'Social Media: ' + 
+              Object.entries(contact.social_media)
+                .map(([platform, url]) => `${platform}: ${url}`)
+                .join(', ') : ''
+          ].filter(Boolean).join('\n\n');
+          
+          knowledgeItems.push({
+            title: `Contact Information from ${hostname}`,
+            content: contactContent,
+            source: contact.url,
+            contentType: 'enthusiast',
+            status: 'active',
+            createdBy: userId,
+            folderId,
+            contactEmail: contact.email ? contact.email[0] : '',
+            contactPhone: contact.phone ? contact.phone[0] : '',
+            linkedinUrl: contact.social_media?.linkedin || '',
+            instagramUrl: contact.social_media?.instagram || '',
+            twitterUrl: contact.social_media?.twitter || '',
+            facebookUrl: contact.social_media?.facebook || '',
+            rawContent: JSON.stringify(contact)
+          });
+        }
+      }
+    }
+    
+    // Process social media
+    if (results.social_media && results.social_media.length > 0) {
+      for (const social of results.social_media) {
+        if (social.platform && social.embed_code) {
+          const socialContent = [
+            `Platform: ${social.platform}`,
+            social.post_date ? `Posted: ${social.post_date}` : '',
+            social.embed_code ? `Embed Code: ${social.embed_code}` : '',
+            `Source: ${social.url}`
+          ].filter(Boolean).join('\n\n');
+          
+          knowledgeItems.push({
+            title: `${social.platform} Post from ${hostname}`,
+            content: socialContent,
+            source: social.url,
+            contentType: 'social-media',
+            status: 'active',
+            createdBy: userId,
+            folderId,
+            socialPlatform: social.platform,
+            postDate: social.post_date || '',
+            embedCode: social.embed_code || '',
+            rawContent: JSON.stringify(social)
+          });
+        }
+      }
+    }
+    
+    // Insert all knowledge items into the database
+    console.log(`Adding ${knowledgeItems.length} items to knowledge base`);
+    
+    let successCount = 0;
+    for (const item of knowledgeItems) {
+      try {
+        const result = await storage.addAiKnowledgeContent(item);
+        if (result && result.id) {
+          successCount++;
+        }
+      } catch (error) {
+        console.error(`Error adding knowledge item: ${error.message}`);
+      }
+    }
+    
+    return successCount;
+  } catch (error) {
+    console.error('Error processing Scrapy results:', error);
+    return 0;
+  }
+}

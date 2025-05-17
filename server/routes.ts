@@ -28,6 +28,7 @@ import OpenAI from "openai";
 import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, getMultipleBambooFacts, getUpcomingEvents } from "./event-refresher";
 import { checkAndUpdateSubscriptions } from "./subscription-checker";
 import { importFromUrl } from "./url-importer";
+import { registerScrapyRoutes } from "./scrapy_routes";
 // PhonePe service removed
 import { 
   initiateRazorpayPayment, 
