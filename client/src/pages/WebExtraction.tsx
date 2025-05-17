@@ -351,24 +351,57 @@ const WebExtraction = () => {
                       <div className="flex flex-col sm:flex-row gap-3">
                         <Button
                           className="bg-green-700 hover:bg-green-600 text-white"
-                          onClick={() => {
-                            toast({
-                              title: "Extract Request Submitted",
-                              description: `Checking ${extractionSummary.url} for new content to add to the knowledge base.`,
-                              variant: "default",
-                            });
-                            // This would typically call a new API endpoint to refresh the content
-                            // For now, we'll simulate success with a toast
-                            setTimeout(() => {
+                          onClick={async () => {
+                            try {
                               toast({
-                                title: "Content Updated",
-                                description: "All content has been successfully added to the knowledge database.",
+                                title: "Saving Extraction Results",
+                                description: `Adding ${extractionSummary.contactsFound} contacts and ${extractionSummary.eventsFound + extractionSummary.booksFound + extractionSummary.socialMediaFound} other items to the knowledge base.`,
                                 variant: "default",
                               });
-                            }, 2000);
+                              
+                              // Call the actual API endpoint to save the extracted content
+                              const response = await fetch('/api/scrapy/save-extraction', {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  url: extractionSummary.url,
+                                }),
+                              });
+                              
+                              const result = await response.json();
+                              
+                              if (result.success) {
+                                toast({
+                                  title: "Content Added Successfully",
+                                  description: `${result.itemsAdded} items have been added to your knowledge database.`,
+                                  variant: "default",
+                                });
+                                
+                                // Update the extraction summary with the new count
+                                setExtractionSummary({
+                                  ...extractionSummary,
+                                  itemsAddedToKnowledgeBase: result.itemsAdded,
+                                });
+                              } else {
+                                toast({
+                                  title: "Error Saving Content",
+                                  description: result.message || "There was a problem saving the content to the database.",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              console.error("Error saving extraction:", error);
+                              toast({
+                                title: "Error Saving Content",
+                                description: "Failed to connect to the server. Please try again.",
+                                variant: "destructive",
+                              });
+                            }
                           }}
                         >
-                          Extract New Content Now
+                          Save All Content to Knowledge Base
                         </Button>
                         <Button
                           variant="outline" 

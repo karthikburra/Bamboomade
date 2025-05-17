@@ -4,12 +4,76 @@
  */
 import { Request, Response } from 'express';
 import { scrapeWebsite, processScrapyResults } from './scrapy_manager';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 /**
  * Register web extraction routes
  * @param app Express application
  */
 export function registerScrapyRoutes(app: any) {
+  /**
+   * Save extraction results to the knowledge base
+   * POST /api/scrapy/save-extraction
+   * Body: { url: string }
+   */
+  app.post('/api/scrapy/save-extraction', async (req: Request, res: Response) => {
+    try {
+      const { url } = req.body;
+      
+      // Check if user is logged in
+      if (!req.session.userId) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Authentication required' 
+        });
+      }
+      
+      // Get the cached extraction results based on URL
+      let cachedResultsStr;
+      try {
+        cachedResultsStr = await fs.readFile(
+          path.join(process.cwd(), 'scrapy-results.json'), 
+          'utf8'
+        );
+      } catch (err) {
+        console.error('Error reading cached extraction results:', err);
+        cachedResultsStr = null;
+      }
+      
+      if (!cachedResultsStr) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'No extraction results found. Please run an extraction first.' 
+        });
+      }
+      
+      const extractionResults = JSON.parse(cachedResultsStr);
+      
+      // Only process if it's the same URL
+      if (extractionResults.url !== url) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'URL mismatch. Please run a new extraction with the correct URL.' 
+        });
+      }
+      
+      // Process results and add to knowledge base
+      const itemsAdded = await processScrapyResults(extractionResults, req.session.userId);
+      
+      return res.json({
+        success: true,
+        message: `Successfully added ${itemsAdded} items to the knowledge base.`,
+        itemsAdded
+      });
+    } catch (error: any) {
+      console.error('Error saving extraction results:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: `Error saving extraction results: ${error.message}` 
+      });
+    }
+  });
   /**
    * Extract content from a website and add it to the knowledge base
    * POST /api/scrapy/extract

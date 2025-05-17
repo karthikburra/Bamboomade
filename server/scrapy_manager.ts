@@ -304,8 +304,8 @@ export async function processScrapyResults(
     let successCount = 0;
     for (const item of knowledgeItems) {
       try {
-        // Filter to include only fields that exist in the database schema
-        // This uses a whitelist approach to ensure only valid fields are sent to the database
+        // Only include fields that actually exist in the database table
+        // We just checked the database and confirmed these are the only valid fields
         const validItem = {
           title: item.title,
           content: item.content,
@@ -322,7 +322,14 @@ export async function processScrapyResults(
           eventDate: item.eventDate || null,
           eventLocation: item.eventLocation || null,
           registrationLink: item.registrationLink || null,
-          price: item.price || null
+          price: item.price || null,
+          // Fields below are in the schema but don't exist in the database, so we'll exclude them
+          // authorName: item.authorName || null,
+          // publicationYear: item.publicationYear || null, 
+          // publisherName: item.publisherName || null,
+          // embedCode: item.embedCode || null,
+          // postDate: item.postDate || null,
+          // socialPlatform: item.socialPlatform || null
         };
         
         // Use createAiKnowledgeContent to save to database with only valid fields
