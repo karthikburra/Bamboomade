@@ -304,20 +304,29 @@ export async function processScrapyResults(
     let successCount = 0;
     for (const item of knowledgeItems) {
       try {
-        // Remove problematic fields that don't exist in the actual database
-        const { 
-          folderId, 
-          authorName, 
-          publishYear, 
-          publisher, 
-          socialPlatform, 
-          embedCode, 
-          postDate,
-          ...cleanItem 
-        } = item as any;
+        // Filter to include only fields that exist in the database schema
+        // This uses a whitelist approach to ensure only valid fields are sent to the database
+        const validItem = {
+          title: item.title,
+          content: item.content,
+          contentType: item.contentType,
+          createdBy: item.createdBy,
+          source: item.source || null,
+          status: item.status || 'active',
+          rawContent: item.rawContent || null,
+          mediaUrl: item.mediaUrl || null,
+          mediaType: item.mediaType || null,
+          socialMediaInfo: item.socialMediaInfo || null,
+          contactEmail: item.contactEmail || null,
+          contactPhone: item.contactPhone || null,
+          eventDate: item.eventDate || null,
+          eventLocation: item.eventLocation || null,
+          registrationLink: item.registrationLink || null,
+          price: item.price || null
+        };
         
-        // Use createAiKnowledgeContent to save to database
-        const result = await storage.createAiKnowledgeContent(cleanItem);
+        // Use createAiKnowledgeContent to save to database with only valid fields
+        const result = await storage.createAiKnowledgeContent(validItem);
         if (result && result.id) {
           successCount++;
         }
