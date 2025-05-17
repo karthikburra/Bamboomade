@@ -550,69 +550,154 @@ const WebExtraction = () => {
                       <p className="text-green-200 mb-4">
                         Content has been categorized by type (events, books, contacts, etc.) and linked to original sources.
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Button
-                          className="bg-green-700 hover:bg-green-600 text-white"
-                          onClick={async () => {
-                            try {
-                              toast({
-                                title: "Saving Extraction Results",
-                                description: `Adding ${extractionSummary.contactsFound} contacts and ${extractionSummary.eventsFound + extractionSummary.booksFound + extractionSummary.socialMediaFound} other items to the knowledge base.`,
-                                variant: "default",
-                              });
-                              
-                              // Call the actual API endpoint to save the extracted content
-                              const response = await fetch('/api/scrapy/save-extraction', {
-                                method: 'POST',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                  url: extractionSummary.url,
-                                }),
-                              });
-                              
-                              const result = await response.json();
-                              
-                              if (result.success) {
+                      {activeDetailTab === 'events' && extractionData?.events?.length > 0 && (
+                        <div className="mb-6 mt-2">
+                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Events ({extractionData.events.length})</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                            {extractionData.events.map((event, index) => (
+                              <div key={index} className="p-4 border border-green-800/30 rounded-md bg-gray-900/50">
+                                <h4 className="font-medium text-green-200 mb-1">{event.title}</h4>
+                                {event.date && (
+                                  <p className="text-sm text-green-400 mb-1">
+                                    <span className="font-medium">Date:</span> {event.date}
+                                  </p>
+                                )}
+                                {event.location && (
+                                  <p className="text-sm text-green-400 mb-1">
+                                    <span className="font-medium">Location:</span> {event.location}
+                                  </p>
+                                )}
+                                {event.price && (
+                                  <p className="text-sm text-green-400 mb-1">
+                                    <span className="font-medium">Price:</span> {event.price}
+                                  </p>
+                                )}
+                                {event.registration_link && (
+                                  <div className="mt-2">
+                                    <a 
+                                      href={event.registration_link} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-400 hover:text-blue-300 underline"
+                                    >
+                                      Registration Link
+                                    </a>
+                                  </div>
+                                )}
+                                <div className="mt-3">
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-green-700 hover:bg-green-600 text-white text-xs py-1 h-7"
+                                    onClick={async () => {
+                                      try {
+                                        const response = await fetch('/api/scrapy/save-item', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({
+                                            item: event,
+                                            type: 'event',
+                                            sourceUrl: extractionSummary.url
+                                          })
+                                        });
+                                        
+                                        const result = await response.json();
+                                        
+                                        if (result.success) {
+                                          toast({
+                                            title: "Event Added",
+                                            description: "Event has been added to the knowledge base.",
+                                          });
+                                        } else {
+                                          toast({
+                                            title: "Error Adding Event",
+                                            description: result.message,
+                                            variant: "destructive",
+                                          });
+                                        }
+                                      } catch (error) {
+                                        console.error("Error saving event:", error);
+                                        toast({
+                                          title: "Error",
+                                          description: "Failed to add event to knowledge base.",
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    Add to Bamboo One
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {activeDetailTab !== 'events' && (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button
+                            className="bg-green-700 hover:bg-green-600 text-white"
+                            onClick={async () => {
+                              try {
                                 toast({
-                                  title: "Content Added Successfully",
-                                  description: `${result.itemsAdded} items have been added to your knowledge database.`,
+                                  title: "Saving Extraction Results",
+                                  description: `Adding ${extractionSummary.contactsFound} contacts and ${extractionSummary.eventsFound + extractionSummary.booksFound + extractionSummary.socialMediaFound} other items to the knowledge base.`,
                                   variant: "default",
                                 });
                                 
-                                // Update the extraction summary with the new count
-                                setExtractionSummary({
-                                  ...extractionSummary,
-                                  itemsAddedToKnowledgeBase: result.itemsAdded,
+                                // Call the actual API endpoint to save the extracted content
+                                const response = await fetch('/api/scrapy/save-extraction', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    url: extractionSummary.url,
+                                  }),
                                 });
-                              } else {
+                                
+                                const result = await response.json();
+                                
+                                if (result.success) {
+                                  toast({
+                                    title: "Content Added Successfully",
+                                    description: `${result.itemsAdded} items have been added to your knowledge database.`,
+                                    variant: "default",
+                                  });
+                                  
+                                  // Update the extraction summary with the new count
+                                  setExtractionSummary({
+                                    ...extractionSummary,
+                                    itemsAddedToKnowledgeBase: result.itemsAdded,
+                                  });
+                                } else {
+                                  toast({
+                                    title: "Error Saving Content",
+                                    description: result.message || "There was a problem saving the content to the database.",
+                                    variant: "destructive",
+                                  });
+                                }
+                              } catch (error) {
+                                console.error("Error saving extraction:", error);
                                 toast({
                                   title: "Error Saving Content",
-                                  description: result.message || "There was a problem saving the content to the database.",
+                                  description: "Failed to connect to the server. Please try again.",
                                   variant: "destructive",
                                 });
                               }
-                            } catch (error) {
-                              console.error("Error saving extraction:", error);
-                              toast({
-                                title: "Error Saving Content",
-                                description: "Failed to connect to the server. Please try again.",
-                                variant: "destructive",
-                              });
-                            }
-                          }}
-                        >
-                          Save All Content to Knowledge Base
-                        </Button>
-                        <Button
-                          variant="outline" 
-                          className="border-green-700 text-green-200 hover:bg-green-800/30"
-                          onClick={() => setActiveTab('extract')}
-                        >
-                          Extract Different Website
-                        </Button>
-                      </div>
+                            }}
+                          >
+                            Save All Content to Knowledge Base
+                          </Button>
+                          <Button
+                            variant="outline" 
+                            className="border-green-700 text-green-200 hover:bg-green-800/30"
+                            onClick={() => setActiveTab('extract')}
+                          >
+                            Extract Different Website
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
