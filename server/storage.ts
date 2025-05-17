@@ -1410,8 +1410,50 @@ export class DatabaseStorage implements IStorage {
 
   async createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent> {
     try {
+      // Filter out fields that don't exist in the database table 
+      // to avoid "column X does not exist" errors
+      const { 
+        title, 
+        content: contentText, 
+        contentType, 
+        createdBy, 
+        source, 
+        status, 
+        rawContent, 
+        mediaUrl, 
+        mediaType, 
+        socialMediaInfo, 
+        contactEmail, 
+        contactPhone, 
+        eventDate, 
+        eventLocation, 
+        registrationLink, 
+        price,
+        ...rest 
+      } = content as any;
+      
+      // Only include fields that actually exist in the database
+      const validContent = {
+        title,
+        content: contentText,
+        contentType,
+        createdBy,
+        source,
+        status,
+        rawContent,
+        mediaUrl,
+        mediaType,
+        socialMediaInfo,
+        contactEmail,
+        contactPhone,
+        eventDate,
+        eventLocation,
+        registrationLink,
+        price
+      };
+      
       const [createdContent] = await db.insert(aiKnowledgeContent)
-        .values(content)
+        .values(validContent)
         .returning();
       return createdContent;
     } catch (error) {

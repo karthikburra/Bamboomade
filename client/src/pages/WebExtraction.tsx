@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +9,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Globe, FileText, Calendar, Users, Image, Book, MessageSquare } from "lucide-react";
+import { 
+  Loader2, Globe, FileText, Calendar, Users, Image, Book, MessageSquare, 
+  Phone, MapPin, ExternalLink, Ticket, Mail, ShoppingCart 
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from "@/lib/utils";
@@ -25,6 +28,74 @@ interface ExtractSummary {
   itemsAddedToKnowledgeBase: number;
 }
 
+// Interfaces for the different extraction content types
+interface ScrapyPage {
+  url: string;
+  title: string;
+  content: string;
+  timestamp: string;
+}
+
+interface ScrapyEvent {
+  title: string;
+  url: string;
+  date?: string;
+  location?: string;
+  registration_link?: string;
+  price?: string;
+}
+
+interface ScrapyContact {
+  url: string;
+  email?: string[];
+  phone?: string[];
+  social_media?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
+}
+
+interface ScrapyImage {
+  url: string;
+  alt_text?: string;
+  title?: string;
+  page_url: string;
+}
+
+interface ScrapyBook {
+  title: string;
+  url: string;
+  author?: string;
+  publication_year?: string;
+  publisher?: string;
+  purchase_link?: string;
+  price?: string;
+}
+
+interface ScrapySocialMedia {
+  url: string;
+  platform?: string;
+  embed_code?: string;
+  post_date?: string;
+}
+
+interface ScrapyResults {
+  pages: ScrapyPage[];
+  events: ScrapyEvent[];
+  contacts: ScrapyContact[];
+  images: ScrapyImage[];
+  books: ScrapyBook[];
+  social_media: ScrapySocialMedia[];
+}
+
+interface ExtractionData {
+  url: string;
+  results: ScrapyResults;
+}
+
 const WebExtraction = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -34,7 +105,9 @@ const WebExtraction = () => {
   const [maxDepth, setMaxDepth] = useState<string>('2');
   const [isUrlValid, setIsUrlValid] = useState(true);
   const [activeTab, setActiveTab] = useState('extract');
+  const [activeDetailTab, setActiveDetailTab] = useState<string | null>(null);
   const [extractionSummary, setExtractionSummary] = useState<ExtractSummary | null>(null);
+  const [extractionData, setExtractionData] = useState<ScrapyResults | null>(null);
   
   // Validate URL format
   const validateUrl = (input: string) => {
@@ -303,25 +376,149 @@ const WebExtraction = () => {
                       <p className="text-sm text-green-400">Pages</p>
                     </div>
                     
-                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                    <div 
+                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
+                      onClick={() => {
+                        // Get the actual extraction data if not already loaded
+                        if (!extractionData && extractionSummary?.url) {
+                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success && data.results) {
+                                setExtractionData(data.results);
+                                setActiveDetailTab('events');
+                              } else {
+                                toast({
+                                  title: "Error Loading Results",
+                                  description: data.message || "There was a problem loading the extraction results.",
+                                  variant: "destructive",
+                                });
+                              }
+                            })
+                            .catch(err => {
+                              console.error("Error loading extraction data:", err);
+                              toast({
+                                title: "Error Loading Results",
+                                description: "Failed to load extraction results. Please try again.",
+                                variant: "destructive",
+                              });
+                            });
+                        } else {
+                          setActiveDetailTab('events');
+                        }
+                      }}
+                    >
                       <Calendar className="h-8 w-8 text-green-500 mb-2" />
                       <p className="text-2xl font-bold text-green-300">{extractionSummary.eventsFound}</p>
                       <p className="text-sm text-green-400">Events</p>
                     </div>
                     
-                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
-                      <Users className="h-8 w-8 text-green-500 mb-2" />
+                    <div 
+                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
+                      onClick={() => {
+                        // Get the actual extraction data if not already loaded
+                        if (!extractionData && extractionSummary?.url) {
+                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success && data.results) {
+                                setExtractionData(data.results);
+                                setActiveDetailTab('contacts');
+                              } else {
+                                toast({
+                                  title: "Error Loading Results",
+                                  description: data.message || "There was a problem loading the extraction results.",
+                                  variant: "destructive",
+                                });
+                              }
+                            })
+                            .catch(err => {
+                              console.error("Error loading extraction data:", err);
+                              toast({
+                                title: "Error Loading Results",
+                                description: "Failed to load extraction results. Please try again.",
+                                variant: "destructive",
+                              });
+                            });
+                        } else {
+                          setActiveDetailTab('contacts');
+                        }
+                      }}
+                    >
+                      <Phone className="h-8 w-8 text-green-500 mb-2" />
                       <p className="text-2xl font-bold text-green-300">{extractionSummary.contactsFound}</p>
                       <p className="text-sm text-green-400">Contacts</p>
                     </div>
                     
-                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                    <div 
+                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
+                      onClick={() => {
+                        // Get the actual extraction data if not already loaded
+                        if (!extractionData && extractionSummary?.url) {
+                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success && data.results) {
+                                setExtractionData(data.results);
+                                setActiveDetailTab('images');
+                              } else {
+                                toast({
+                                  title: "Error Loading Results",
+                                  description: data.message || "There was a problem loading the extraction results.",
+                                  variant: "destructive",
+                                });
+                              }
+                            })
+                            .catch(err => {
+                              console.error("Error loading extraction data:", err);
+                              toast({
+                                title: "Error Loading Results",
+                                description: "Failed to load extraction results. Please try again.",
+                                variant: "destructive",
+                              });
+                            });
+                        } else {
+                          setActiveDetailTab('images');
+                        }
+                      }}
+                    >
                       <Image className="h-8 w-8 text-green-500 mb-2" />
                       <p className="text-2xl font-bold text-green-300">{extractionSummary.imagesFound}</p>
                       <p className="text-sm text-green-400">Images</p>
                     </div>
                     
-                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                    <div 
+                      className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center cursor-pointer hover:bg-green-900/30"
+                      onClick={() => {
+                        // Get the actual extraction data if not already loaded
+                        if (!extractionData && extractionSummary?.url) {
+                          fetch(`/api/scrapy/results?url=${encodeURIComponent(extractionSummary.url)}`)
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success && data.results) {
+                                setExtractionData(data.results);
+                                setActiveDetailTab('books');
+                              } else {
+                                toast({
+                                  title: "Error Loading Results",
+                                  description: data.message || "There was a problem loading the extraction results.",
+                                  variant: "destructive",
+                                });
+                              }
+                            })
+                            .catch(err => {
+                              console.error("Error loading extraction data:", err);
+                              toast({
+                                title: "Error Loading Results",
+                                description: "Failed to load extraction results. Please try again.",
+                                variant: "destructive",
+                              });
+                            });
+                        } else {
+                          setActiveDetailTab('books');
+                        }
+                      }}
+                    >
                       <Book className="h-8 w-8 text-green-500 mb-2" />
                       <p className="text-2xl font-bold text-green-300">{extractionSummary.booksFound}</p>
                       <p className="text-sm text-green-400">Books</p>
