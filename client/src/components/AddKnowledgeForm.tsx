@@ -184,7 +184,7 @@ export default function AddKnowledgeForm() {
 
   return (
     <Card className="w-full bg-gray-900 border-gray-800">
-      <CardContent className="pt-6">
+      <CardContent className="pt-6 max-h-[80vh] overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Title Field */}
