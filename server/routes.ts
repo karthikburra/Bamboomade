@@ -4801,6 +4801,179 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Chat folder management endpoints for the admin panel
+  app.get("/api/chat/folders", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId || !req.session.adminUser) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const folders = await storage.getAllChatFolders(userId);
+      res.json(folders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch folders", error: (error as Error).message });
+    }
+  });
+  
+  app.post("/api/chat/folders", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId || !req.session.adminUser) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { name, description } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Folder name is required" });
+      }
+      
+      const newFolder = await storage.createChatFolder({
+        name,
+        description: description || null,
+        createdBy: userId
+      });
+      
+      res.status(201).json(newFolder);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create folder", error: (error as Error).message });
+    }
+  });
+  
+  app.put("/api/chat/folders/:id", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId || !req.session.adminUser) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const folderId = parseInt(req.params.id);
+      const { name, description } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Folder name is required" });
+      }
+      
+      // Verify the folder belongs to this admin
+      const existingFolder = await storage.getChatFolder(folderId);
+      
+      if (!existingFolder) {
+        return res.status(404).json({ message: "Folder not found" });
+      }
+      
+      if (existingFolder.createdBy !== userId) {
+        return res.status(403).json({ message: "You don't have permission to modify this folder" });
+      }
+      
+      const updatedFolder = await storage.updateChatFolder(folderId, {
+        name,
+        description: description || null
+      });
+      
+      res.json(updatedFolder);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update folder", error: (error as Error).message });
+    }
+  });
+  
+  app.delete("/api/chat/folders/:id", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId || !req.session.adminUser) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const folderId = parseInt(req.params.id);
+      
+      // Verify the folder belongs to this admin
+      const existingFolder = await storage.getChatFolder(folderId);
+      
+      if (!existingFolder) {
+        return res.status(404).json({ message: "Folder not found" });
+      }
+      
+      if (existingFolder.createdBy !== userId) {
+        return res.status(403).json({ message: "You don't have permission to delete this folder" });
+      }
+      
+      const success = await storage.deleteChatFolder(folderId);
+      
+      if (success) {
+        res.json({ success: true, message: "Folder deleted successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to delete folder" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete folder", error: (error as Error).message });
+    }
+  });
+  
+  app.get("/api/chat/folders/:id/messages", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId || !req.session.adminUser) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const folderId = parseInt(req.params.id);
+      
+      // Verify the folder belongs to this admin
+      const existingFolder = await storage.getChatFolder(folderId);
+      
+      if (!existingFolder) {
+        return res.status(404).json({ message: "Folder not found" });
+      }
+      
+      if (existingFolder.createdBy !== userId) {
+        return res.status(403).json({ message: "You don't have permission to view this folder" });
+      }
+      
+      const messages = await storage.getChatMessagesByFolder(folderId);
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch folder messages", error: (error as Error).message });
+    }
+  });
+  
+  app.post("/api/chat/messages/:id/move", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId || !req.session.adminUser) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const messageId = parseInt(req.params.id);
+      const { folderId } = req.body;
+      
+      // If folderId is null, we're removing the message from any folder
+      const targetFolderId = folderId ? parseInt(folderId) : null;
+      
+      // If moving to a folder, verify the folder exists and belongs to this admin
+      if (targetFolderId) {
+        const existingFolder = await storage.getChatFolder(targetFolderId);
+        
+        if (!existingFolder) {
+          return res.status(404).json({ message: "Target folder not found" });
+        }
+        
+        if (existingFolder.createdBy !== userId) {
+          return res.status(403).json({ message: "You don't have permission to use this folder" });
+        }
+      }
+      
+      const updatedMessage = await storage.updateChatMessageFolder(messageId, targetFolderId);
+      
+      if (!updatedMessage) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      res.json(updatedMessage);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to move message", error: (error as Error).message });
+    }
+  });
+  
   // Test endpoint for Gemini AI connection
   app.get('/api/test-gemini', async (req, res) => {
     try {

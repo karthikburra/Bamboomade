@@ -1041,6 +1041,31 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getChatMessagesByFolder(folderId: number): Promise<ChatMessage[]> {
+    try {
+      return await db.select()
+        .from(chatMessages)
+        .where(eq(chatMessages.folderId, folderId))
+        .orderBy(desc(chatMessages.timestamp));
+    } catch (error) {
+      console.error("Database error in getChatMessagesByFolder:", error);
+      return [];
+    }
+  }
+  
+  async updateChatMessageFolder(messageId: number, folderId: number | null): Promise<ChatMessage | undefined> {
+    try {
+      const [updatedMessage] = await db.update(chatMessages)
+        .set({ folderId })
+        .where(eq(chatMessages.id, messageId))
+        .returning();
+      return updatedMessage;
+    } catch (error) {
+      console.error("Database error in updateChatMessageFolder:", error);
+      return undefined;
+    }
+  }
+  
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     try {
       const [createdMessage] = await db.insert(chatMessages)
@@ -1050,6 +1075,74 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in createChatMessage:", error);
       throw error;
+    }
+  }
+  
+  // Chat folder operations
+  async getAllChatFolders(adminId: number): Promise<ChatFolder[]> {
+    try {
+      return await db.select()
+        .from(chatFolders)
+        .where(eq(chatFolders.createdBy, adminId))
+        .orderBy(asc(chatFolders.name));
+    } catch (error) {
+      console.error("Database error in getAllChatFolders:", error);
+      return [];
+    }
+  }
+
+  async getChatFolder(id: number): Promise<ChatFolder | undefined> {
+    try {
+      const [folder] = await db.select().from(chatFolders).where(eq(chatFolders.id, id));
+      return folder;
+    } catch (error) {
+      console.error("Database error in getChatFolder:", error);
+      return undefined;
+    }
+  }
+
+  async createChatFolder(folder: InsertChatFolder): Promise<ChatFolder> {
+    try {
+      const [newFolder] = await db.insert(chatFolders).values(folder).returning();
+      return newFolder;
+    } catch (error) {
+      console.error("Database error in createChatFolder:", error);
+      throw error;
+    }
+  }
+
+  async updateChatFolder(id: number, updates: Partial<ChatFolder>): Promise<ChatFolder | undefined> {
+    try {
+      // Always update the updatedAt timestamp
+      const updatesWithTimestamp = {
+        ...updates,
+        updatedAt: new Date()
+      };
+      
+      const [updatedFolder] = await db.update(chatFolders)
+        .set(updatesWithTimestamp)
+        .where(eq(chatFolders.id, id))
+        .returning();
+      return updatedFolder;
+    } catch (error) {
+      console.error("Database error in updateChatFolder:", error);
+      return undefined;
+    }
+  }
+
+  async deleteChatFolder(id: number): Promise<boolean> {
+    try {
+      // First update all chat messages in this folder to have null folderId
+      await db.update(chatMessages)
+        .set({ folderId: null })
+        .where(eq(chatMessages.folderId, id));
+      
+      // Then delete the folder
+      await db.delete(chatFolders).where(eq(chatFolders.id, id));
+      return true;
+    } catch (error) {
+      console.error("Database error in deleteChatFolder:", error);
+      return false;
     }
   }
   
