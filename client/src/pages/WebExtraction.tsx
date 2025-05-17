@@ -723,85 +723,54 @@ const WebExtraction = () => {
                             {renderContentItems('event', extractionData.events)}
                           </div>
                         </div>
-                      )}
-                                <h4 className="font-medium text-green-200 mb-1">{event.title}</h4>
-                                {event.date && (
-                                  <p className="text-sm text-green-400 mb-1">
-                                    <span className="font-medium">Date:</span> {event.date}
-                                  </p>
-                                )}
-                                {event.location && (
-                                  <p className="text-sm text-green-400 mb-1">
-                                    <span className="font-medium">Location:</span> {event.location}
-                                  </p>
-                                )}
-                                {event.price && (
-                                  <p className="text-sm text-green-400 mb-1">
-                                    <span className="font-medium">Price:</span> {event.price}
-                                  </p>
-                                )}
-                                {event.registration_link && (
-                                  <div className="mt-2">
-                                    <a 
-                                      href={event.registration_link} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-xs text-blue-400 hover:text-blue-300 underline"
-                                    >
-                                      Registration Link
-                                    </a>
-                                  </div>
-                                )}
-                                <div className="mt-3">
-                                  <Button 
-                                    size="sm" 
-                                    className="bg-green-700 hover:bg-green-600 text-white text-xs py-1 h-7"
-                                    onClick={async () => {
-                                      try {
-                                        const response = await fetch('/api/scrapy/save-item', {
-                                          method: 'POST',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({
-                                            item: event,
-                                            type: 'event',
-                                            sourceUrl: extractionSummary.url
-                                          })
-                                        });
-                                        
-                                        const result = await response.json();
-                                        
-                                        if (result.success) {
-                                          toast({
-                                            title: "Event Added",
-                                            description: "Event has been added to the knowledge base.",
-                                          });
-                                        } else {
-                                          toast({
-                                            title: "Error Adding Event",
-                                            description: result.message,
-                                            variant: "destructive",
-                                          });
-                                        }
-                                      } catch (error) {
-                                        console.error("Error saving event:", error);
-                                        toast({
-                                          title: "Error",
-                                          description: "Failed to add event to knowledge base.",
-                                          variant: "destructive",
-                                        });
-                                      }
-                                    }}
-                                  >
-                                    Add to Bamboo One
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
+                      )
+                      
+                      {activeDetailTab === 'books' && extractionData?.books && (
+                        <div className="mb-6 mt-2">
+                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Books ({extractionData.books.length})</h3>
+                          <div className="max-h-[500px] overflow-y-auto pr-2">
+                            {renderContentItems('book', extractionData.books)}
                           </div>
                         </div>
                       )}
                       
-                      {activeDetailTab !== 'events' && (
+                      {activeDetailTab === 'contacts' && extractionData?.contacts && (
+                        <div className="mb-6 mt-2">
+                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Contacts ({extractionData.contacts.length})</h3>
+                          <div className="max-h-[500px] overflow-y-auto pr-2">
+                            {renderContentItems('contact', extractionData.contacts)}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDetailTab === 'images' && extractionData?.images && (
+                        <div className="mb-6 mt-2">
+                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Images ({extractionData.images.length})</h3>
+                          <div className="max-h-[500px] overflow-y-auto pr-2">
+                            {renderContentItems('image', extractionData.images)}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDetailTab === 'social_media' && extractionData?.social_media && (
+                        <div className="mb-6 mt-2">
+                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Social Media ({extractionData.social_media.length})</h3>
+                          <div className="max-h-[500px] overflow-y-auto pr-2">
+                            {renderContentItems('social_media', extractionData.social_media)}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDetailTab === 'pages' && extractionData?.pages && (
+                        <div className="mb-6 mt-2">
+                          <h3 className="text-lg font-semibold text-green-300 mb-3">All Pages ({extractionData.pages.length})</h3>
+                          <div className="max-h-[500px] overflow-y-auto pr-2">
+                            {renderContentItems('page', extractionData.pages)}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {!activeDetailTab && (
                         <div className="flex flex-col sm:flex-row gap-3">
                           <Button
                             className="bg-green-700 hover:bg-green-600 text-white"
