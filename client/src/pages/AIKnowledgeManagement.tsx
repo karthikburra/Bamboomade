@@ -8,7 +8,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import AdminTabs from '@/components/AdminTabs';
 
 // Import AI Components
-import KnowledgeCompanion from '@/components/KnowledgeCompanion';
+import KnowledgeAssistantLayout from '@/components/KnowledgeAssistantLayout';
 
 const AIKnowledgeManagement: React.FC = () => {
   return (
@@ -19,8 +19,8 @@ const AIKnowledgeManagement: React.FC = () => {
 
       <AdminTabs value="knowledge">
         <TabsContent value="knowledge" className="mt-3 sm:mt-6">
-          <div className="w-full max-w-full sm:max-w-4xl mx-auto">
-            <KnowledgeCompanion 
+          <div className="w-full mx-auto">
+            <KnowledgeAssistantLayout 
               initialMessage="Welcome to the Knowledge Management interface. You can add content to the knowledge base by sharing information with me, or paste a website URL to automatically extract and add its content. What would you like to add today?"
             />
           </div>
