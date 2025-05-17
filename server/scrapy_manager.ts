@@ -218,10 +218,7 @@ export async function processScrapyResults(
           contentType: 'book',
           status: 'active',
           createdBy: userId,
-          authorName: book.author || '',
-          publicationYear: book.publication_year || '',
-          publisherName: book.publisher || '',
-          purchaseLink: book.purchase_link || '',
+          // Store the full book details in the rawContent field
           rawContent: JSON.stringify(book)
         });
       }
@@ -248,7 +245,6 @@ export async function processScrapyResults(
             contentType: 'enthusiast',
             status: 'active',
             createdBy: userId,
-            folderId,
             contactEmail: contact.email ? contact.email[0] : '',
             contactPhone: contact.phone ? contact.phone[0] : '',
             linkedinUrl: contact.social_media?.linkedin || '',
@@ -279,10 +275,8 @@ export async function processScrapyResults(
             contentType: 'social-media',
             status: 'active',
             createdBy: userId,
-            folderId,
-            socialPlatform: social.platform,
-            postDate: social.post_date || '',
-            embedCode: social.embed_code || '',
+            // Store social media details in content field
+            mediaUrl: social.url,
             rawContent: JSON.stringify(social)
           });
         }
