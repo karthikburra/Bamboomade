@@ -304,10 +304,19 @@ export async function processScrapyResults(
     let successCount = 0;
     for (const item of knowledgeItems) {
       try {
-        // Remove folderId if it exists since it's not in the database schema
-        const { folderId, ...cleanItem } = item as any;
+        // Remove problematic fields that don't exist in the actual database
+        const { 
+          folderId, 
+          authorName, 
+          publishYear, 
+          publisher, 
+          socialPlatform, 
+          embedCode, 
+          postDate,
+          ...cleanItem 
+        } = item as any;
         
-        // Use createAiKnowledgeContent instead of addAiKnowledgeContent
+        // Use createAiKnowledgeContent to save to database
         const result = await storage.createAiKnowledgeContent(cleanItem);
         if (result && result.id) {
           successCount++;
