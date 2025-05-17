@@ -101,6 +101,20 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     }
   ]);
   
+  // State for chat folders (one folder per URL)
+  const [chatFolders, setChatFolders] = useState<Array<{
+    id: number,
+    name: string,
+    description: string | null,
+    createdBy: number,
+    createdAt: string,
+    updatedAt: string,
+    selected: boolean
+  }>>([]);
+  
+  // Currently selected folder
+  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
+  
   const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1959,6 +1973,27 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         description: 'Adding web link to knowledge database...',
                       });
                       
+                      // First create a folder for this URL
+                      const folderName = new URL(webUrl).hostname || 'Web Content';
+                      const folderResponse = await fetch('/api/chat/folders', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          name: folderName,
+                          description: `Content from ${webUrl}`,
+                        }),
+                      });
+                      
+                      if (!folderResponse.ok) {
+                        throw new Error('Failed to create folder for this URL');
+                      }
+                      
+                      const folderData = await folderResponse.json();
+                      console.log('Created folder for URL:', folderData);
+                      
+                      // Then add the URL to the knowledge database
                       const response = await fetch('/api/ai-knowledge', {
                         method: 'POST',
                         headers: {
@@ -1970,6 +2005,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                           source: webUrl,
                           contentType: 'webpage',
                           status: 'active',
+                          folderId: folderData.id, // Link the content to the folder
                         }),
                       });
                       
