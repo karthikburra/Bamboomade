@@ -190,11 +190,17 @@ export async function processScrapyResults(
           contentType: 'event',
           status: 'active',
           createdBy: userId,
-          eventDate: event.date || '',
-          eventLocation: event.location || '',
-          registrationLink: event.registration_link || '',
-          price: event.price || '',
-          rawContent: JSON.stringify(event)
+          eventDate: event.date || null,
+          eventLocation: event.location || null,
+          registrationLink: event.registration_link || null,
+          price: event.price || null,
+          rawContent: JSON.stringify(event),
+          // Include all required fields with null values to avoid database errors
+          mediaUrl: null,
+          mediaType: null,
+          socialMediaInfo: null,
+          contactEmail: null,
+          contactPhone: null
         });
       }
     }
@@ -222,9 +228,22 @@ export async function processScrapyResults(
           status: 'active',
           createdBy: userId,
           // Store the full book details in the rawContent field
-          rawContent: JSON.stringify(book),
+          rawContent: JSON.stringify({
+            author: book.author,
+            publication_year: book.publication_year,
+            publisher: book.publisher
+          }),
           // Include book price if available
-          price: book.price ? String(book.price) : null
+          price: book.price ? String(book.price) : null,
+          // Include all required fields with null values to avoid database errors
+          mediaUrl: null,
+          mediaType: null,
+          socialMediaInfo: null,
+          contactEmail: null,
+          contactPhone: null,
+          eventDate: null,
+          eventLocation: null,
+          registrationLink: book.purchase_link || null
         });
       }
     }
@@ -250,13 +269,23 @@ export async function processScrapyResults(
             contentType: 'enthusiast',
             status: 'active',
             createdBy: userId,
-            contactEmail: contact.email ? contact.email[0] : '',
-            contactPhone: contact.phone ? contact.phone[0] : '',
-            linkedinUrl: contact.social_media?.linkedin || '',
-            instagramUrl: contact.social_media?.instagram || '',
-            twitterUrl: contact.social_media?.twitter || '',
-            facebookUrl: contact.social_media?.facebook || '',
-            rawContent: JSON.stringify(contact)
+            contactEmail: contact.email ? contact.email[0] : null,
+            contactPhone: contact.phone ? contact.phone[0] : null,
+            // Store social media links in socialMediaInfo
+            socialMediaInfo: JSON.stringify({
+              linkedinUrl: contact.social_media?.linkedin || '',
+              instagramUrl: contact.social_media?.instagram || '',
+              twitterUrl: contact.social_media?.twitter || '',
+              facebookUrl: contact.social_media?.facebook || ''
+            }),
+            rawContent: JSON.stringify(contact),
+            // Include all required fields with null values to avoid database errors
+            mediaUrl: null,
+            mediaType: null,
+            eventDate: null,
+            eventLocation: null,
+            registrationLink: null,
+            price: null
           });
         }
       }
