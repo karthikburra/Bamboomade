@@ -2009,7 +2009,11 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                       });
                       
                       // First create a folder for this URL
-                      const folderName = new URL(webUrl).hostname || 'Web Content';
+                      // Create a better folder name from the URL
+                      const urlObj = new URL(webUrl);
+                      const hostname = urlObj.hostname.replace('www.', '');
+                      const folderName = `${hostname} Content`;
+                      
                       const folderResponse = await fetch('/api/chat/folders', {
                         method: 'POST',
                         headers: {
@@ -2017,7 +2021,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         },
                         body: JSON.stringify({
                           name: folderName,
-                          description: `Content from ${webUrl}`,
+                          description: `Content extracted from ${webUrl}`,
                         }),
                       });
                       
@@ -2035,7 +2039,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                           'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                          title: `Web Content: ${webUrl}`,
+                          title: `Web Content: ${hostname}`,
                           content: `Website content from ${webUrl}. This URL was added to the knowledge database for analysis and reference.`,
                           source: webUrl,
                           contentType: 'webpage',
@@ -2049,6 +2053,20 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                       }
                       
                       const result = await response.json();
+                      
+                      // Update the selected folder to the newly created folder
+                      setSelectedFolderId(folderData.id);
+                      
+                      // Fetch updated folder list and select the new one
+                      await fetchChatFolders();
+                      
+                      // Update the chat history with a welcome message for the new folder
+                      setChatHistory([{
+                        role: 'assistant',
+                        content: `Welcome to the "${folderName}" folder. This folder contains information extracted from ${webUrl}. You can ask specific questions about this website's content.`,
+                        timestamp: new Date(),
+                        id: `welcome-folder-${folderData.id}`
+                      }]);
                       
                       setShowAddSourceModal(false);
                       setWebUrl('');
