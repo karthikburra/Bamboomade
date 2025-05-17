@@ -231,7 +231,8 @@ export async function processScrapyResults(
           rawContent: JSON.stringify({
             author: book.author,
             publication_year: book.publication_year,
-            publisher: book.publisher
+            publisher: book.publisher,
+            purchase_link: book.purchase_link
           }),
           // Include book price if available
           price: book.price ? String(book.price) : null,
@@ -244,6 +245,7 @@ export async function processScrapyResults(
           eventDate: null,
           eventLocation: null,
           registrationLink: book.purchase_link || null
+          // Don't include author_name as it's not in the database schema
         });
       }
     }
@@ -334,7 +336,8 @@ export async function processScrapyResults(
     for (const item of knowledgeItems) {
       try {
         // Only include fields that actually exist in the database table
-        // We just checked the database and confirmed these are the only valid fields
+        // IMPORTANT: We're explicitly not using authorName, publicationYear, publisherName
+        // as those fields appear to be missing from the actual database despite being in the schema
         const validItem = {
           title: item.title,
           content: item.content,
@@ -351,9 +354,7 @@ export async function processScrapyResults(
           eventDate: item.eventDate || null,
           eventLocation: item.eventLocation || null,
           registrationLink: item.registrationLink || null,
-          price: item.price || null,
-          // postDate: item.postDate || null,
-          // socialPlatform: item.socialPlatform || null
+          price: item.price || null
         };
         
         // Use createAiKnowledgeContent to save to database with only valid fields
