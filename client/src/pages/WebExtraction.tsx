@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Loader2, Globe, FileText, Calendar, Users, Image, Book, MessageSquare } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from "@/lib/utils";
 
 interface ExtractSummary {
   url: string;
@@ -126,26 +127,50 @@ const WebExtraction = () => {
   }
   
   return (
-    <div className="max-w-4xl mx-auto mt-12 pb-20">
+    <div className="max-w-4xl mx-auto mt-12 pb-20 text-green-50">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Web Content Extraction</h1>
-        <p className="text-lg text-muted-foreground">
+        <h1 className="text-3xl font-bold mb-2 text-green-300">Web Content Extraction</h1>
+        <p className="text-lg text-green-400">
           Extract content from websites and add it to the Bamboo Knowledge Base
         </p>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="extract">Extract Content</TabsTrigger>
-          <TabsTrigger value="status">Extraction Status</TabsTrigger>
-          <TabsTrigger value="results">Results</TabsTrigger>
+        <TabsList className="grid grid-cols-3 mb-8 bg-gray-800/50">
+          <TabsTrigger 
+            value="extract"
+            className={cn(
+              "data-[state=active]:bg-green-700/30 data-[state=active]:text-green-100",
+              "data-[state=inactive]:text-green-400 data-[state=inactive]:hover:bg-gray-700/50"
+            )}
+          >
+            Extract Content
+          </TabsTrigger>
+          <TabsTrigger 
+            value="status"
+            className={cn(
+              "data-[state=active]:bg-green-700/30 data-[state=active]:text-green-100",
+              "data-[state=inactive]:text-green-400 data-[state=inactive]:hover:bg-gray-700/50"
+            )}
+          >
+            Extraction Status
+          </TabsTrigger>
+          <TabsTrigger 
+            value="results"
+            className={cn(
+              "data-[state=active]:bg-green-700/30 data-[state=active]:text-green-100",
+              "data-[state=inactive]:text-green-400 data-[state=inactive]:hover:bg-gray-700/50"
+            )}
+          >
+            Results
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="extract">
-          <Card>
+          <Card className="bg-gray-800/50 border-green-800/30">
             <CardHeader>
-              <CardTitle>Start Web Extraction</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-green-300">Start Web Extraction</CardTitle>
+              <CardDescription className="text-green-400">
                 Enter a URL to extract content from. Our system will crawl the website and extract 
                 relevant information about bamboo architecture, events, contacts, and more.
               </CardDescription>
@@ -153,40 +178,43 @@ const WebExtraction = () => {
             <CardContent>
               <form onSubmit={handleExtract} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="url">Website URL</Label>
+                  <Label htmlFor="url" className="text-green-200">Website URL</Label>
                   <Input
                     id="url"
                     type="text"
                     placeholder="https://example.com"
                     value={url}
                     onChange={handleUrlChange}
-                    className={!isUrlValid ? "border-red-500" : ""}
+                    className={cn(
+                      "bg-gray-900/70 border-green-800/50 text-green-50 placeholder:text-gray-500",
+                      !isUrlValid && "border-red-500"
+                    )}
                   />
                   {!isUrlValid && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm text-red-400">
                       Please enter a valid URL starting with http:// or https://
                     </p>
                   )}
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="maxDepth">Crawl Depth</Label>
+                  <Label htmlFor="maxDepth" className="text-green-200">Crawl Depth</Label>
                   <Select
                     value={maxDepth}
                     onValueChange={(value) => setMaxDepth(value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-gray-900/70 border-green-800/50 text-green-50">
                       <SelectValue placeholder="Select crawl depth" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">Minimal (1 level)</SelectItem>
-                      <SelectItem value="2">Standard (2 levels)</SelectItem>
-                      <SelectItem value="3">Deep (3 levels)</SelectItem>
-                      <SelectItem value="4">Very Deep (4 levels)</SelectItem>
-                      <SelectItem value="5">Exhaustive (5 levels)</SelectItem>
+                    <SelectContent className="bg-gray-900 border-green-800/50">
+                      <SelectItem value="1" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Minimal (1 level)</SelectItem>
+                      <SelectItem value="2" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Standard (2 levels)</SelectItem>
+                      <SelectItem value="3" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Deep (3 levels)</SelectItem>
+                      <SelectItem value="4" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Very Deep (4 levels)</SelectItem>
+                      <SelectItem value="5" className="text-green-50 focus:bg-green-700/30 focus:text-green-100">Exhaustive (5 levels)</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-green-500">
                     Higher depth values will extract more content but take longer to complete.
                   </p>
                 </div>
@@ -196,7 +224,7 @@ const WebExtraction = () => {
               <Button 
                 onClick={handleExtract} 
                 disabled={extractMutation.isPending}
-                className="w-full"
+                className="w-full bg-green-700 hover:bg-green-600 text-white"
               >
                 {extractMutation.isPending ? (
                   <>
@@ -215,29 +243,29 @@ const WebExtraction = () => {
         </TabsContent>
         
         <TabsContent value="status">
-          <Card>
+          <Card className="bg-gray-800/50 border-green-800/30">
             <CardHeader>
-              <CardTitle>Extraction Status</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-green-300">Extraction Status</CardTitle>
+              <CardDescription className="text-green-400">
                 Current status of the web extraction process.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {extractMutation.isPending ? (
                 <div className="space-y-4">
-                  <p>Extracting content from {url}</p>
-                  <Progress value={50} className="h-2" />
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-green-200">Extracting content from <span className="text-green-300 font-medium">{url}</span></p>
+                  <Progress value={50} className="h-2 bg-gray-700" />
+                  <p className="text-sm text-green-500">
                     Please wait while we crawl the website and extract content.
                     This process may take several minutes depending on the size of the website.
                   </p>
                 </div>
               ) : extractionStatus.isLoading ? (
                 <div className="flex justify-center p-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <Loader2 className="h-8 w-8 animate-spin text-green-500" />
                 </div>
               ) : extractionStatus.isError ? (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="bg-red-900/30 border-red-800 text-red-300">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>
                     Failed to fetch extraction status. Please try again.
@@ -245,9 +273,9 @@ const WebExtraction = () => {
                 </Alert>
               ) : (
                 <div className="space-y-4">
-                  <p>{extractionStatus.data?.status || "No active extractions"}</p>
+                  <p className="text-green-200">{extractionStatus.data?.status || "No active extractions"}</p>
                   {extractionStatus.data?.isRunning && (
-                    <Progress value={75} className="h-2" />
+                    <Progress value={75} className="h-2 bg-gray-700" />
                   )}
                 </div>
               )}
@@ -256,67 +284,67 @@ const WebExtraction = () => {
         </TabsContent>
         
         <TabsContent value="results">
-          <Card>
+          <Card className="bg-gray-800/50 border-green-800/30">
             <CardHeader>
-              <CardTitle>Extraction Results</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-green-300">Extraction Results</CardTitle>
+              <CardDescription className="text-green-400">
                 Summary of content extracted from the website.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {extractionSummary ? (
                 <div className="space-y-6">
-                  <p className="font-medium">Content extracted from: {extractionSummary.url}</p>
+                  <p className="font-medium text-green-200">Content extracted from: <span className="text-green-300">{extractionSummary.url}</span></p>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="p-4 border rounded-lg flex flex-col items-center">
-                      <FileText className="h-8 w-8 text-primary mb-2" />
-                      <p className="text-2xl font-bold">{extractionSummary.pagesFound}</p>
-                      <p className="text-sm text-muted-foreground">Pages</p>
+                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                      <FileText className="h-8 w-8 text-green-500 mb-2" />
+                      <p className="text-2xl font-bold text-green-300">{extractionSummary.pagesFound}</p>
+                      <p className="text-sm text-green-400">Pages</p>
                     </div>
                     
-                    <div className="p-4 border rounded-lg flex flex-col items-center">
-                      <Calendar className="h-8 w-8 text-primary mb-2" />
-                      <p className="text-2xl font-bold">{extractionSummary.eventsFound}</p>
-                      <p className="text-sm text-muted-foreground">Events</p>
+                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                      <Calendar className="h-8 w-8 text-green-500 mb-2" />
+                      <p className="text-2xl font-bold text-green-300">{extractionSummary.eventsFound}</p>
+                      <p className="text-sm text-green-400">Events</p>
                     </div>
                     
-                    <div className="p-4 border rounded-lg flex flex-col items-center">
-                      <Users className="h-8 w-8 text-primary mb-2" />
-                      <p className="text-2xl font-bold">{extractionSummary.contactsFound}</p>
-                      <p className="text-sm text-muted-foreground">Contacts</p>
+                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                      <Users className="h-8 w-8 text-green-500 mb-2" />
+                      <p className="text-2xl font-bold text-green-300">{extractionSummary.contactsFound}</p>
+                      <p className="text-sm text-green-400">Contacts</p>
                     </div>
                     
-                    <div className="p-4 border rounded-lg flex flex-col items-center">
-                      <Image className="h-8 w-8 text-primary mb-2" />
-                      <p className="text-2xl font-bold">{extractionSummary.imagesFound}</p>
-                      <p className="text-sm text-muted-foreground">Images</p>
+                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                      <Image className="h-8 w-8 text-green-500 mb-2" />
+                      <p className="text-2xl font-bold text-green-300">{extractionSummary.imagesFound}</p>
+                      <p className="text-sm text-green-400">Images</p>
                     </div>
                     
-                    <div className="p-4 border rounded-lg flex flex-col items-center">
-                      <Book className="h-8 w-8 text-primary mb-2" />
-                      <p className="text-2xl font-bold">{extractionSummary.booksFound}</p>
-                      <p className="text-sm text-muted-foreground">Books</p>
+                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                      <Book className="h-8 w-8 text-green-500 mb-2" />
+                      <p className="text-2xl font-bold text-green-300">{extractionSummary.booksFound}</p>
+                      <p className="text-sm text-green-400">Books</p>
                     </div>
                     
-                    <div className="p-4 border rounded-lg flex flex-col items-center">
-                      <MessageSquare className="h-8 w-8 text-primary mb-2" />
-                      <p className="text-2xl font-bold">{extractionSummary.socialMediaFound}</p>
-                      <p className="text-sm text-muted-foreground">Social Media</p>
+                    <div className="p-4 border border-green-800/30 bg-gray-900/50 rounded-lg flex flex-col items-center">
+                      <MessageSquare className="h-8 w-8 text-green-500 mb-2" />
+                      <p className="text-2xl font-bold text-green-300">{extractionSummary.socialMediaFound}</p>
+                      <p className="text-sm text-green-400">Social Media</p>
                     </div>
                   </div>
                   
-                  <Alert className="mt-6">
-                    <AlertTitle>Knowledge Base Update</AlertTitle>
-                    <AlertDescription>
-                      {extractionSummary.itemsAddedToKnowledgeBase} new items were added to the knowledge base.
+                  <Alert className="mt-6 bg-green-900/30 border-green-800">
+                    <AlertTitle className="text-green-300">Knowledge Base Update</AlertTitle>
+                    <AlertDescription className="text-green-200">
+                      <span className="font-bold text-green-300">{extractionSummary.itemsAddedToKnowledgeBase}</span> new items were added to the knowledge base.
                     </AlertDescription>
                   </Alert>
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No extraction results to display yet.</p>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="text-green-300">No extraction results to display yet.</p>
+                  <p className="text-sm text-green-500 mt-2">
                     Run an extraction from the "Extract Content" tab to see results here.
                   </p>
                 </div>
@@ -330,7 +358,7 @@ const WebExtraction = () => {
                   setActiveTab('extract');
                 }}
                 variant="outline"
-                className="w-full"
+                className="w-full border-green-700 text-green-300 hover:bg-green-700/20 hover:text-green-200"
               >
                 Start New Extraction
               </Button>
