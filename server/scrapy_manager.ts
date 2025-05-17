@@ -202,15 +202,18 @@ export async function processScrapyResults(
     // Process books
     if (results.books && results.books.length > 0) {
       for (const book of results.books) {
+        // Create comprehensive content that includes all book details
         const bookContent = [
           book.title ? `Book: ${book.title}` : 'Unnamed Book',
           book.author ? `Author: ${book.author}` : '',
           book.publication_year ? `Year: ${book.publication_year}` : '',
           book.publisher ? `Publisher: ${book.publisher}` : '',
           book.purchase_link ? `Purchase: ${book.purchase_link}` : '',
+          book.price ? `Price: ${book.price}` : '',
           `Source: ${book.url}`
         ].filter(Boolean).join('\n\n');
         
+        // Create item with fields that exist in the actual database schema
         knowledgeItems.push({
           title: book.title || `Book from ${hostname}`,
           content: bookContent,
@@ -219,7 +222,9 @@ export async function processScrapyResults(
           status: 'active',
           createdBy: userId,
           // Store the full book details in the rawContent field
-          rawContent: JSON.stringify(book)
+          rawContent: JSON.stringify(book),
+          // Include book price if available
+          price: typeof book.price === 'string' ? book.price : null
         });
       }
     }
@@ -268,18 +273,25 @@ export async function processScrapyResults(
             `Source: ${social.url}`
           ].filter(Boolean).join('\n\n');
           
+          // Create structured socialMediaInfo object to store in the json field
+          const socialMediaInfo = {
+            platform: social.platform || null,
+            profileUrl: social.url || null,
+            handle: null, // We don't have this info from extraction
+            mediaUrls: []
+          };
+          
           knowledgeItems.push({
-            title: `${social.platform} Post from ${hostname}`,
+            title: `${social.platform || 'Social Media'} Post from ${hostname}`,
             content: socialContent,
             source: social.url,
             contentType: 'social-media',
             status: 'active',
             createdBy: userId,
-            // Store social media details in content field
+            // Store media URL
             mediaUrl: social.url,
-            socialPlatform: social.platform || '',
-            embedCode: social.embed_code || '',
-            postDate: social.post_date || '',
+            // Store social media details in the proper field
+            socialMediaInfo: socialMediaInfo,
             rawContent: JSON.stringify(social)
           });
         }
