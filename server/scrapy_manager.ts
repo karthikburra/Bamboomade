@@ -153,21 +153,8 @@ export async function processScrapyResults(
     const { url, results } = scrapyResult;
     const hostname = new URL(url).hostname;
     
-    // Create a folder for this website
-    const folderName = `Scrapy: ${hostname}`;
-    let folderId: number | undefined;
-    
-    try {
-      const folder = await storage.createChatFolder({
-        name: folderName,
-        description: `Content extracted from ${url} using Scrapy`,
-        createdBy: userId
-      });
-      folderId = folder.id;
-      console.log(`Created folder for Scrapy content with ID: ${folderId}`);
-    } catch (folderError) {
-      console.warn('Error creating folder for Scrapy content:', folderError);
-    }
+    // No folder organization for now as it's not part of our schema
+    console.log(`Processing content extracted from ${url}`);
     
     // Process web pages
     if (results.pages && results.pages.length > 0) {
@@ -179,7 +166,6 @@ export async function processScrapyResults(
           contentType: 'webpage',
           status: 'active',
           createdBy: userId,
-          folderId,
           rawContent: JSON.stringify(page)
         });
       }
@@ -204,7 +190,6 @@ export async function processScrapyResults(
           contentType: 'event',
           status: 'active',
           createdBy: userId,
-          folderId,
           eventDate: event.date || '',
           eventLocation: event.location || '',
           registrationLink: event.registration_link || '',
@@ -233,7 +218,6 @@ export async function processScrapyResults(
           contentType: 'book',
           status: 'active',
           createdBy: userId,
-          folderId,
           authorName: book.author || '',
           publicationYear: book.publication_year || '',
           publisherName: book.publisher || '',
