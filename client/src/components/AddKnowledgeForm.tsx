@@ -39,6 +39,21 @@ const knowledgeFormSchema = z.object({
   }),
   source: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   media: z.any().optional(), // Using any for file upload
+  
+  // Event specific fields
+  eventDate: z.date().optional(),
+  registrationLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  eventLocation: z.string().optional(),
+  
+  // Book specific fields
+  authorName: z.string().optional(),
+  purchaseLink: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  publicationYear: z.string().optional(),
+  
+  // Social media specific fields
+  embedCode: z.string().optional(),
+  postDate: z.date().optional(),
+  socialPlatform: z.string().optional(),
 });
 
 // Create a type for our form values
@@ -50,6 +65,9 @@ export default function AddKnowledgeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
+  // State to track selected content type
+  const [selectedContentType, setSelectedContentType] = useState<string>("webpage");
+  
   // Form setup with defaultValues and validation
   const form = useForm<KnowledgeFormValues>({
     resolver: zodResolver(knowledgeFormSchema),
@@ -58,8 +76,28 @@ export default function AddKnowledgeForm() {
       content: "",
       contentType: "webpage",
       source: "",
+      // Event defaults
+      eventDate: undefined,
+      registrationLink: "",
+      eventLocation: "",
+      // Book defaults
+      authorName: "",
+      purchaseLink: "",
+      publicationYear: "",
+      // Social media defaults
+      embedCode: "",
+      postDate: undefined,
+      socialPlatform: "",
     },
   });
+  
+  // Watch content type to show different form fields
+  const watchContentType = form.watch("contentType");
+  
+  // Update selected content type when form value changes
+  React.useEffect(() => {
+    setSelectedContentType(watchContentType);
+  }, [watchContentType]);
 
   // Handle file input changes
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,6 +272,222 @@ export default function AddKnowledgeForm() {
                 </FormItem>
               )}
             />
+            
+            {/* EVENT SPECIFIC FIELDS */}
+            {selectedContentType === "event" && (
+              <div className="space-y-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <h3 className="text-sm font-medium text-amber-500 mb-2">Event Details</h3>
+                
+                {/* Event Date */}
+                <FormField
+                  control={form.control}
+                  name="eventDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Event Date</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                          value={field.value ? new Date(field.value).toISOString().substring(0, 10) : ''}
+                          onChange={(e) => {
+                            const date = e.target.value ? new Date(e.target.value) : undefined;
+                            field.onChange(date);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Event Location */}
+                <FormField
+                  control={form.control}
+                  name="eventLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Event Location</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="New Delhi, India" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Registration Link */}
+                <FormField
+                  control={form.control}
+                  name="registrationLink"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Registration Link</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://example.com/register" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            
+            {/* BOOK SPECIFIC FIELDS */}
+            {selectedContentType === "book" && (
+              <div className="space-y-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <h3 className="text-sm font-medium text-amber-500 mb-2">Book Details</h3>
+                
+                {/* Author Name */}
+                <FormField
+                  control={form.control}
+                  name="authorName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Author Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="John Smith" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Publication Year */}
+                <FormField
+                  control={form.control}
+                  name="publicationYear"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Publication Year</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="2023" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Purchase Link */}
+                <FormField
+                  control={form.control}
+                  name="purchaseLink"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Purchase Link</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://example.com/buy-book" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            
+            {/* SOCIAL MEDIA SPECIFIC FIELDS */}
+            {selectedContentType === "social-media" && (
+              <div className="space-y-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                <h3 className="text-sm font-medium text-amber-500 mb-2">Social Media Details</h3>
+                
+                {/* Platform */}
+                <FormField
+                  control={form.control}
+                  name="socialPlatform"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Platform</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-gray-800 border-gray-700">
+                            <SelectValue placeholder="Select platform" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-gray-800 border-gray-700">
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                          <SelectItem value="twitter">X (Twitter)</SelectItem>
+                          <SelectItem value="facebook">Facebook</SelectItem>
+                          <SelectItem value="linkedin">LinkedIn</SelectItem>
+                          <SelectItem value="youtube">YouTube</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Post Date */}
+                <FormField
+                  control={form.control}
+                  name="postDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Post Date</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date" 
+                          className="bg-gray-800 border-gray-700"
+                          {...field}
+                          value={field.value ? new Date(field.value).toISOString().substring(0, 10) : ''}
+                          onChange={(e) => {
+                            const date = e.target.value ? new Date(e.target.value) : undefined;
+                            field.onChange(date);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Embed Code */}
+                <FormField
+                  control={form.control}
+                  name="embedCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-300">Embed Code</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Paste embed code here..." 
+                          className="bg-gray-800 border-gray-700 min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-gray-500">
+                        HTML embed code from the social media platform
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
             
             {/* Media Upload Field */}
             <div className="space-y-2">
