@@ -2186,7 +2186,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                       await fetchChatFolders();
                       
                       // Select the newly created folder
-                      handleFolderSelection(folderData.id);
+                      handleSourceSelection(folderData.id, 'folder');
                       
                       // Then add the URL to the knowledge database
                       const response = await fetch('/api/ai-knowledge', {
@@ -2203,6 +2203,16 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                           folderId: folderData.id, // Link the content to the folder
                         }),
                       });
+                      
+                      // Fetch updated folders list to show in the sidebar
+                      const refreshFolders = await fetch('/api/chat/folders');
+                      if (refreshFolders.ok) {
+                        const folders = await refreshFolders.json();
+                        setChatFolders(folders.map((folder: any) => ({
+                          ...folder,
+                          selected: folder.id === folderData.id
+                        })));
+                      }
                       
                       if (!response.ok) {
                         throw new Error('Failed to add web link to knowledge database');
