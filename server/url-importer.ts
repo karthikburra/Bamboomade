@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { getGeminiAI } from "./gemini-service";
+import { getOpenAI } from "./openai-service";
 import { storage } from "./storage";
 import { URL } from 'url';
 import path from 'path';
@@ -556,7 +556,7 @@ async function categorizeAndSummarizeContent(
   images: string[]
 ) {
   try {
-    const gemini = getGeminiAI();
+    const openai = getOpenAI();
     
     const prompt = `
     I need a detailed analysis of this web content about bamboo architecture and design. The goal is to intelligently categorize, extract, and summarize it for our knowledge database.
@@ -592,7 +592,7 @@ async function categorizeAndSummarizeContent(
     
     5. If this appears to be an event, extract any registration link information
     
-    6. Respond in this JSON format only:
+    The response must be valid JSON in this format:
     {
       "contentType": "type from above",
       "title": "improved title",
@@ -600,22 +600,23 @@ async function categorizeAndSummarizeContent(
       "summary": "comprehensive summary",
       "registrationLink": "event registration URL or null"
     }
-    
-    Here's the content:
-    
-    ${content.substring(0, 10000)}
     `;
 
-    const result = await gemini.generateContent(prompt);
-    const responseText = result.response.text();
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+      messages: [
+        { role: "system", content: "You are a specialized content analyzer for bamboo architecture." },
+        { role: "user", content: prompt + "\n\nContent:\n" + content.substring(0, 10000) }
+      ],
+      response_format: { type: "json_object" }
+    });
     
-    // Extract JSON from the response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
+    const responseText = response.choices[0].message.content;
+    if (responseText) {
       try {
-        return JSON.parse(jsonMatch[0]);
+        return JSON.parse(responseText);
       } catch (e) {
-        console.error('Failed to parse JSON from Gemini response:', e);
+        console.error('Failed to parse JSON from OpenAI response:', e);
       }
     }
     
@@ -628,7 +629,7 @@ async function categorizeAndSummarizeContent(
       registrationLink: null
     };
   } catch (error) {
-    console.error('Error categorizing content with Gemini:', error);
+    console.error('Error categorizing content with OpenAI:', error);
     // Fallback to basic categorization
     return {
       contentType: 'webpage',
