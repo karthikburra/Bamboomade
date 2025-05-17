@@ -232,7 +232,8 @@ export async function processScrapyResults(
             author: book.author,
             publication_year: book.publication_year,
             publisher: book.publisher,
-            purchase_link: book.purchase_link
+            purchase_link: book.purchase_link,
+            price: book.price
           }),
           // Include book price if available
           price: book.price ? String(book.price) : null,
@@ -245,7 +246,6 @@ export async function processScrapyResults(
           eventDate: null,
           eventLocation: null,
           registrationLink: book.purchase_link || null
-          // Don't include author_name as it's not in the database schema
         });
       }
     }

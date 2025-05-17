@@ -1432,13 +1432,14 @@ export class DatabaseStorage implements IStorage {
         ...rest 
       } = content as any;
       
-      // Only include fields that actually exist in the database
+      // CRITICAL: Only include fields that actually exist in the database
+      // DO NOT include fields like authorName, publisherName, etc. that aren't in the actual database
       // Make sure all fields have proper values (not undefined)
       const validContent = {
-        title,
-        content: contentText,
-        contentType,
-        createdBy,
+        title: title || '',
+        content: contentText || '',
+        contentType: contentType || '',
+        createdBy: createdBy || 0,
         source: source || null,
         status: status || 'active',
         rawContent: rawContent || null,
