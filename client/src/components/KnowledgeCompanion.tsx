@@ -157,15 +157,78 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
   }>>([]);
   
   // Track which type of source is currently selected
-  const [selectedSourceType, setSelectedSourceType] = useState<'database' | 'uploaded' | null>(null);
+  const [selectedSourceType, setSelectedSourceType] = useState<'database' | 'uploaded' | 'folder' | null>(null);
   
   // Track the selected source ID
   const [selectedSourceId, setSelectedSourceId] = useState<number | null>(null);
   
-  // Handle source selection (radio buttons)
-  const handleSourceSelection = (sourceId: number, sourceType: 'database' | 'uploaded') => {
+  // Handle source selection (radio buttons or folder selection)
+  const handleSourceSelection = (sourceId: number, sourceType: 'database' | 'uploaded' | 'folder') => {
     console.log(`Selecting source: ID=${sourceId}, Type=${sourceType}`);
     
+    // If selecting a folder, handle it differently
+    if (sourceType === 'folder') {
+      // Update selected folder ID
+      setSelectedFolderId(sourceId);
+      
+      // Update folder UI to highlight the selected folder
+      setChatFolders(prev => 
+        prev.map(folder => ({
+          ...folder,
+          selected: folder.id === sourceId
+        }))
+      );
+      
+      // Show toast notification
+      const selectedFolder = chatFolders.find(f => f.id === sourceId);
+      toast({
+        title: 'Source Selected',
+        description: `Now viewing content from ${selectedFolder?.name || 'URL source'}`,
+      });
+      
+      // Fetch the messages for this folder
+      fetch(`/api/chat/folders/${sourceId}/messages`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch folder messages');
+          }
+          return response.json();
+        })
+        .then(messages => {
+          if (messages && messages.length > 0) {
+            // Convert messages to chat history format
+            const formattedMessages = messages.map((msg: any) => ({
+              role: msg.role || (msg.userId ? 'user' : 'assistant'),
+              content: msg.content || (msg.userId ? msg.message : msg.response),
+              timestamp: new Date(msg.timestamp || msg.createdAt),
+              id: `msg-${msg.id}`
+            }));
+            
+            setChatHistory(formattedMessages);
+          } else {
+            // If no messages, create a welcome message for this folder
+            const folder = chatFolders.find(f => f.id === sourceId);
+            setChatHistory([{
+              role: 'assistant',
+              content: `This folder contains information extracted from "${folder?.name || 'URL content'}". You can ask specific questions about this source.`,
+              timestamp: new Date(),
+              id: `welcome-folder-${sourceId}`
+            }]);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching folder messages:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to load folder content',
+            variant: 'destructive'
+          });
+        });
+      
+      return;
+    }
+    
+    // Regular source selection (non-folder source)
     // Force the UI state to update by showing loading state
     setSourceExtractedData({
       facts: [],
@@ -548,10 +611,95 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory]);
   
-  // Fetch knowledge sources when component mounts
+  // Fetch knowledge sources and folders when component mounts
   useEffect(() => {
     fetchKnowledgeSources();
+    fetchChatFolders();
   }, []);
+  
+  // Function to fetch chat folders from the API
+  const fetchChatFolders = async () => {
+    try {
+      const response = await fetch('/api/chat/folders');
+      
+      if (response.ok) {
+        const folders = await response.json();
+        
+        // Mark selected folder if any
+        const formattedFolders = folders.map((folder: any) => ({
+          ...folder,
+          selected: folder.id === selectedFolderId
+        }));
+        
+        setChatFolders(formattedFolders);
+        console.log('Loaded URL folders:', formattedFolders.length);
+      } else {
+        console.error('Failed to fetch chat folders');
+      }
+    } catch (error) {
+      console.error('Error fetching chat folders:', error);
+    }
+  };
+  
+  // Handle folder selection when a folder is clicked in the sidebar
+  const handleFolderSelection = async (folderId: number) => {
+    try {
+      // Update selected folder ID
+      setSelectedFolderId(folderId);
+      
+      // Update folder UI to highlight the selected folder
+      setChatFolders(prev => 
+        prev.map(folder => ({
+          ...folder,
+          selected: folder.id === folderId
+        }))
+      );
+      
+      // Fetch the messages for this folder
+      const response = await fetch(`/api/chat/folders/${folderId}/messages`);
+      
+      if (response.ok) {
+        const messages = await response.json();
+        
+        // If there are messages for this folder, display them
+        if (messages && messages.length > 0) {
+          // Convert messages to chat history format
+          const formattedMessages = messages.map((msg: any) => ({
+            role: msg.role || (msg.userId ? 'user' : 'assistant'),
+            content: msg.content || (msg.userId ? msg.message : msg.response),
+            timestamp: new Date(msg.timestamp || msg.createdAt),
+            id: `msg-${msg.id}`
+          }));
+          
+          setChatHistory(formattedMessages);
+        } else {
+          // If no messages, create a welcome message for this folder
+          const folder = chatFolders.find(f => f.id === folderId);
+          setChatHistory([{
+            role: 'assistant',
+            content: `This folder contains information extracted from "${folder?.name || 'URL content'}". You can ask specific questions about this source.`,
+            timestamp: new Date(),
+            id: `welcome-folder-${folderId}`
+          }]);
+        }
+        
+        // Show user they've switched folders
+        toast({
+          title: 'Folder Selected',
+          description: `Now viewing conversations for ${chatFolders.find(f => f.id === folderId)?.name || 'URL source'}`,
+        });
+      } else {
+        throw new Error('Failed to fetch folder messages');
+      }
+    } catch (error) {
+      console.error('Error selecting folder:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load folder content',
+        variant: 'destructive'
+      });
+    }
+  };
   
   // If the user presses Enter in the textarea, submit the form
   const handleSubmit = (e: React.FormEvent) => {
@@ -909,8 +1057,8 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                       className={`flex items-center p-2 rounded-md cursor-pointer ${
                         folder.selected ? 'bg-blue-900/30 border border-blue-700/50' : 'hover:bg-gray-800'
                       }`}
-                      onClick={() => handleFolderSelection(folder.id)}
-                      title="Click to view content for this source"
+                      onClick={() => handleSourceSelection(folder.id, 'folder')}
+                      title={`View conversations about ${folder.name}`}
                     >
                       <div className="flex-none mr-2">
                         <LinkIcon className="h-3.5 w-3.5 text-amber-500" />
@@ -2015,6 +2163,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                       const hostname = urlObj.hostname.replace('www.', '');
                       const folderName = `${hostname} Content`;
                       
+                      // Create a folder for this URL content
                       const folderResponse = await fetch('/api/chat/folders', {
                         method: 'POST',
                         headers: {
@@ -2032,6 +2181,12 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                       
                       const folderData = await folderResponse.json();
                       console.log('Created folder for URL:', folderData);
+                      
+                      // Update the folders in the UI
+                      await fetchChatFolders();
+                      
+                      // Select the newly created folder
+                      handleFolderSelection(folderData.id);
                       
                       // Then add the URL to the knowledge database
                       const response = await fetch('/api/ai-knowledge', {
