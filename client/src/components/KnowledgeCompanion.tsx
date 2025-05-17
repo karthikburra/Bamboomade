@@ -910,6 +910,7 @@ export default function KnowledgeCompanion({ initialMessage }: KnowledgeCompanio
                         folder.selected ? 'bg-blue-900/30 border border-blue-700/50' : 'hover:bg-gray-800'
                       }`}
                       onClick={() => handleFolderSelection(folder.id)}
+                      title="Click to view content for this source"
                     >
                       <div className="flex-none mr-2">
                         <LinkIcon className="h-3.5 w-3.5 text-amber-500" />
