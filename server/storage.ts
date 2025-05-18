@@ -1276,11 +1276,22 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Get only active AI Knowledge Content for AI chat
   async getActiveAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
     try {
       return await db.select().from(aiKnowledgeContent)
         .where(eq(aiKnowledgeContent.status, 'active'))
+        .orderBy(desc(aiKnowledgeContent.createdAt));
+    } catch (error) {
+      console.error("Database error in getActiveAiKnowledgeContent:", error);
+      return [];
+    }
+  }
+  
+  // Get only pending AI Knowledge Content for moderation
+  async getPendingAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
+    try {
+      return await db.select().from(aiKnowledgeContent)
+        .where(eq(aiKnowledgeContent.status, 'pending'))
         .orderBy(desc(aiKnowledgeContent.createdAt));
     } catch (error) {
       console.error("Database error in getActiveAiKnowledgeContent:", error);
