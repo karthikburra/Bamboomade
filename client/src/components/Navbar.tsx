@@ -220,25 +220,14 @@ const Navbar: React.FC = () => {
     }
   };
 
-  // Base navigation links
-  const baseNavLinks = [
+  const navLinks = [
     { href: "/", label: "Home" },
     { href: "/our-works", label: "Our Experience" }, 
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
     { href: "/ai-chat", label: "Bamboo One", isBeta: true },
+    { href: "/admin-dashboard", label: "Admin", requiresAdmin: true, hide: !user?.isAdmin },
   ];
-  
-  // Admin-only links that will be added for admin users
-  const adminLinks = [
-    { href: "/web-extraction", label: "Web Extraction", isAdmin: true },
-    { href: "/manual-content-entry", label: "Manual Content", isAdmin: true },
-  ];
-  
-  // Combine base links with admin links if user is admin
-  const navLinks = user?.isAdmin 
-    ? [...baseNavLinks, ...adminLinks] 
-    : baseNavLinks;
   
   // User links removed as profile is now accessible via the dropdown menu
   const userLinks = [];

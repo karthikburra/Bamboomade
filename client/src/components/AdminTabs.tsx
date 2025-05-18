@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Calendar, Database, Users, HelpCircle, Server, BookOpen, FileText, Trash2, CreditCard } from "lucide-react";
+import { BarChart3, Calendar, Database, Users, HelpCircle, Server, BookOpen, FileText, Trash2, CreditCard, Globe, FileInput } from "lucide-react";
 
 interface AdminTabsProps {
   value?: string;
@@ -37,6 +37,12 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
         break;
       case "database":
         navigate("/ai-knowledge-database");
+        break;
+      case "web-extraction":
+        navigate("/web-extraction");
+        break;
+      case "manual-content":
+        navigate("/manual-content-entry");
         break;
       case "users":
         navigate("/admin-dashboard?tab=users");
@@ -88,6 +94,22 @@ const AdminTabs: React.FC<AdminTabsProps> = ({
           >
             <Database className="w-4 h-4 mr-2" />
             Knowledge Database
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="web-extraction" 
+            className="flex-1 data-[state=active]:bg-cyan-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+          >
+            <Globe className="w-4 h-4 mr-2" />
+            Web Extraction
+          </TabsTrigger>
+          
+          <TabsTrigger 
+            value="manual-content" 
+            className="flex-1 data-[state=active]:bg-green-600/90 data-[state=active]:text-white data-[state=active]:shadow-md text-sm font-medium whitespace-nowrap transition-all duration-200"
+          >
+            <FileInput className="w-4 h-4 mr-2" />
+            Manual Content
           </TabsTrigger>
           
           <TabsTrigger 
