@@ -771,7 +771,7 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                             const formData = new FormData();
                             formData.append('file', file);
                             
-                            const response = await fetch('/api/upload', {
+                            const response = await fetch('/api/upload-media', {
                               method: 'POST',
                               body: formData,
                             });
@@ -779,14 +779,14 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                             setUploadProgress(70);
                             const data = await response.json();
                             
-                            if (data.success && data.fileUrl) {
-                              setMediaUrl(data.fileUrl);
+                            if (data.success && data.url) {
+                              setMediaUrl(data.url);
                               toast({
                                 title: 'Image uploaded',
                                 description: 'The image has been uploaded successfully',
                               });
                             } else {
-                              throw new Error(data.error || 'Failed to upload image');
+                              throw new Error(data.message || 'Failed to upload image');
                             }
                           } catch (error: any) {
                             toast({
