@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen, RefreshCw } from 'lucide-react';
 import { 
   Card, 
@@ -18,10 +19,9 @@ interface BambooFactProps {
 }
 
 const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFactClick }) => {
-  // Use factsData if available, otherwise use the single factData as a legacy option
-  // Filter out any facts that are not specifically of type 'fact' and marked active
+  // Filter out any facts that are not specifically of type 'fact'
   const facts = (factsData && factsData.length > 0 ? factsData : (factData ? [factData] : []))
-    .filter(fact => fact.contentType === 'fact' && fact.status === 'active');
+    .filter(fact => fact.contentType === 'fact');
   
   const handleFactClick = (fact: BambooFactType | null) => {
     if (onFactClick && fact) {
