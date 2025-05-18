@@ -226,7 +226,7 @@ const Navbar: React.FC = () => {
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
     { href: "/ai-chat", label: "Bamboo One", isBeta: true },
-    { href: "/admin-dashboard", label: "Admin", requiresAdmin: true, hide: !user?.isAdmin },
+    // Admin is now accessible only from user dropdown menu
   ];
   
   // User links removed as profile is now accessible via the dropdown menu
