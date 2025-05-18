@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ImageIcon, Loader2 } from 'lucide-react';
+import { ImageIcon, Loader2, RefreshCw } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -10,6 +10,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 type ContentImage = {
   id: number;
@@ -28,12 +29,25 @@ type ContentImageResponse = {
 export default function ContentGallery({ onImageClick }: { onImageClick?: (topic: string) => void }) {
   const [isLoading, setIsLoading] = useState(true);
   const [contentImages, setContentImages] = useState<ContentImage[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch all content with images
-  const { data, isLoading: queryLoading, error } = useQuery({
+  const { data, isLoading: queryLoading, error, refetch } = useQuery({
     queryKey: ['/api/ai-knowledge'],
     retry: false,
   });
+  
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+    } catch (error) {
+      console.error('Failed to refresh gallery:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
+    }
+  };
 
   useEffect(() => {
     if (data && !queryLoading) {
@@ -101,12 +115,23 @@ export default function ContentGallery({ onImageClick }: { onImageClick?: (topic
     return (
       <Card className="h-full bg-zinc-900 border-zinc-800">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium text-zinc-100">
-            <div className="flex items-center">
-              <ImageIcon className="h-4 w-4 mr-2 text-green-500" />
-              <span>Content Gallery</span>
-            </div>
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium text-zinc-100">
+              <div className="flex items-center">
+                <ImageIcon className="h-4 w-4 mr-2 text-green-500" />
+                <span>Content Gallery</span>
+              </div>
+            </CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
           <CardDescription className="text-xs text-zinc-400">
             Visual content from the knowledge base
           </CardDescription>
