@@ -5042,6 +5042,19 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
     }
   });
   
+  // Public endpoint for active AI Knowledge content
+  app.get("/api/public/ai-knowledge", async (req, res) => {
+    try {
+      const allContent = await storage.getAllAiKnowledgeContent();
+      // Filter only active content for public display
+      const activeContent = allContent.filter(item => item.status === 'active');
+      res.json(activeContent);
+    } catch (error) {
+      console.error("Error fetching public AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to fetch knowledge content" });
+    }
+  });
+  
   // Get pending AI knowledge content for admin approval
   app.get("/api/ai-knowledge/pending", isAdmin, async (req, res) => {
     try {

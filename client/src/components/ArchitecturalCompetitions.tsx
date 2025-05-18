@@ -26,9 +26,9 @@ interface ArchitecturalCompetitionsProps {
 const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({ 
   onCompetitionClick
 }) => {
-  // Query all knowledge content and filter competitions
+  // Query public knowledge content for competitions
   const { data: allContent, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge'],
+    queryKey: ['/api/public/ai-knowledge'],
     retry: false,
   });
   
