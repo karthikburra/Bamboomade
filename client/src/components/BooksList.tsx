@@ -27,10 +27,13 @@ const BooksList: React.FC<BooksListProps> = ({
     retry: false,
   });
 
-  // Filter books from all content
+  // Filter active books from all content
   const books = React.useMemo(() => {
     if (!allContent || !Array.isArray(allContent)) return [];
-    return allContent.filter(item => item.contentType === 'book');
+    return allContent.filter(item => 
+      item.contentType === 'book' && 
+      item.status === 'active'
+    );
   }, [allContent]);
 
   // Function to handle clicking on a book

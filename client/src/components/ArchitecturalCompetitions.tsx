@@ -32,10 +32,13 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
     retry: false,
   });
   
-  // Filter competitions from all content
+  // Filter active competitions from all content
   const competitions = React.useMemo(() => {
     if (!allContent || !Array.isArray(allContent)) return [];
-    return allContent.filter(item => item.contentType === 'competition');
+    return allContent.filter(item => 
+      item.contentType === 'competition' && 
+      item.status === 'active'
+    );
   }, [allContent]);
 
   // Function to handle clicking on a competition

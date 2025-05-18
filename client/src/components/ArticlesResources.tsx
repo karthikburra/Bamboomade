@@ -27,13 +27,14 @@ const ArticlesResources: React.FC<ArticlesResourcesProps> = ({
     retry: false,
   });
 
-  // Filter resources (blogs, articles, documents) from all content
+  // Filter active resources (blogs, articles, documents) from all content
   const resources = React.useMemo(() => {
     if (!allContent || !Array.isArray(allContent)) return [];
     return allContent.filter(item => 
-      item.contentType === 'blog' || 
-      item.contentType === 'document' || 
-      (item.contentType === 'social' && item.title && item.title.toLowerCase().includes('article'))
+      (item.contentType === 'blog' || 
+       item.contentType === 'document' || 
+       (item.contentType === 'social' && item.title && item.title.toLowerCase().includes('article'))) &&
+      item.status === 'active'
     );
   }, [allContent]);
 
