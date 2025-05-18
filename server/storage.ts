@@ -1408,9 +1408,15 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createAiKnowledgeContent(content: InsertAiKnowledgeContent): Promise<AiKnowledgeContent> {
+  async createAiKnowledgeContent(content: InsertAiKnowledgeContent, useAiSummary: boolean = false): Promise<AiKnowledgeContent> {
     try {
       console.log("Creating AI knowledge content with fields:", Object.keys(content).join(", "));
+      
+      // Check if we have an AI summary to use
+      if (useAiSummary && 'aiSummary' in content && content.aiSummary) {
+        console.log("Using AI-generated summary for content");
+        content.content = content.aiSummary;
+      }
       
       // Get a clean subset of fields that we know exist in the database
       // This is a critical fix to prevent "column X does not exist" errors
