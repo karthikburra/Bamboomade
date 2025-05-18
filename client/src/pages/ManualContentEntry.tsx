@@ -386,7 +386,16 @@ const ManualContentEntry = () => {
 
   return (
     <div className="container mx-auto p-4 min-h-screen bg-gray-950 text-gray-100">
-      <h1 className="text-2xl font-bold mb-6 text-amber-400">Add Knowledge Content</h1>
+      <div className="flex items-center mb-6">
+        <Button 
+          onClick={() => window.location.href = "/admin-dashboard"} 
+          variant="outline" 
+          className="mr-4 bg-gray-800 text-amber-400 border-amber-400 hover:bg-amber-900 hover:text-amber-200"
+        >
+          Back to Admin Dashboard
+        </Button>
+        <h1 className="text-2xl font-bold text-amber-400">Add Knowledge Content</h1>
+      </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-6 mb-8 bg-gray-900/80 border border-gray-800">
