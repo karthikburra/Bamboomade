@@ -183,11 +183,10 @@ const AIChat: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Sixth column - Recent Articles */}
+                      {/* Sixth column - Articles & Resources */}
                       <div>
-                        <RecentArticles 
-                          articles={dashboardData?.updates || []} 
-                          onArticleClick={handleTopicClick}
+                        <ArticlesResources
+                          onResourceClick={handleTopicClick}
                         />
                       </div>
                       
