@@ -39,20 +39,39 @@
   
   /* Custom scrollbar styles */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
+    width: 1px;
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(17, 24, 39, 0.7);
+    background: transparent;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(55, 65, 81, 0.8);
+    background: rgba(100, 116, 139, 0.5);
     border-radius: 4px;
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(75, 85, 99, 0.9);
+    background: rgba(100, 116, 139, 0.7);
+  }
+  
+  /* Global minimal scrollbar styles */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.5) transparent;
+  }
+  
+  *::-webkit-scrollbar {
+    width: 1px;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.5);
+    border-radius: 4px;
   }
 }
 
