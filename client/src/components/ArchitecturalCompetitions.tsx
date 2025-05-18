@@ -71,7 +71,7 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
             <p className="text-zinc-500 text-sm">No active competitions found</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-500 scrollbar-track-zinc-800/50">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar scrollbar-w-1 scrollbar-thumb-zinc-500 scrollbar-track-transparent">
             {competitions.map((competition: Competition) => (
               <div 
                 key={competition.id}
