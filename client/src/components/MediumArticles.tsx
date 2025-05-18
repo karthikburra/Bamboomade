@@ -76,6 +76,23 @@ const MediumArticles: React.FC = () => {
           ))}
         </div>
 
+        {/* YouTube Video Section */}
+        <div className="mt-10 sm:mt-16">
+          <h3 className="text-xl sm:text-2xl font-semibold text-green-900 dark:text-green-200 text-center mb-6">
+            Featured Video
+          </h3>
+          <div className="aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg shadow-md">
+            <iframe 
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/tPF35tjKAjY" 
+              title="Bamboo Architecture Video"
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen>
+            </iframe>
+          </div>
+        </div>
+
         <div className="mt-8 sm:mt-12 text-center px-4 sm:px-0">
           <a href="https://medium.com/@bamboomade" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto inline-block">
             <Button variant="outline" size="lg" className="w-full sm:w-auto text-sm sm:text-base border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
