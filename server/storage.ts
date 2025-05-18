@@ -1443,14 +1443,17 @@ export class DatabaseStorage implements IStorage {
       
       // Remove any fields not in the insert schema that might be 
       // passed from the web extraction process
-      delete (content as any).authorName;
-      delete (content as any).author;
-      delete (content as any).publicationYear;
-      delete (content as any).publisherName;
-      delete (content as any).purchaseLink;
-      delete (content as any).embedCode;
-      delete (content as any).postDate;
-      delete (content as any).socialPlatform;
+      // Clean up any fields that might come from the web extraction 
+      // but aren't in our database schema
+      const fieldsToPrune = [
+        'authorName', 'author', 'publicationYear', 
+        'publisherName', 'purchaseLink', 'embedCode', 
+        'postDate', 'post_date', 'socialPlatform', 'platform'
+      ];
+      
+      for (const field of fieldsToPrune) {
+        delete (content as any)[field];
+      }
       
       const [createdContent] = await db.insert(aiKnowledgeContent)
         .values(validContent)
