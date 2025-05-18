@@ -2,13 +2,19 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { Express } from "express";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 /**
  * Configure and set up file upload routes for the application
  */
 export function setupFileUploadRoutes(app: Express) {
+  // Get current file path and directory
+  const currentFilePath = fileURLToPath(import.meta.url);
+  const currentDir = dirname(currentFilePath);
+  
   // Set up upload directory
-  const uploadDirectory = path.join(__dirname, '../public/uploads');
+  const uploadDirectory = path.join(currentDir, '../public/uploads');
   
   // Ensure upload directory exists
   if (!fs.existsSync(uploadDirectory)) {

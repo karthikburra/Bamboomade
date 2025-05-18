@@ -350,6 +350,20 @@ const Navbar: React.FC = () => {
                   <ClipboardList className="mr-2 h-4 w-4" />
                   My Sessions
                 </DropdownMenuItem>
+                {/* Admin options */}
+                {user?.isAdmin && (
+                  <>
+                    <DropdownMenuSeparator className="bg-green-800/30" />
+                    <DropdownMenuItem 
+                      className="flex items-center gap-2 cursor-pointer text-amber-300 focus:text-amber-200 focus:bg-amber-900/20"
+                      onClick={() => window.location.href = "/manual-content-entry"}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Manual Content Entry
+                    </DropdownMenuItem>
+                  </>
+                )}
+
                 <DropdownMenuSeparator className="bg-green-800/30" />
                 <DropdownMenuItem 
                   className="flex items-center gap-2 cursor-pointer text-red-400 focus:text-red-300 focus:bg-red-900/20"
