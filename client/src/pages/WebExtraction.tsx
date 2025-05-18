@@ -104,6 +104,30 @@ const WebExtraction = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Add mutation for AI summarization
+  const summarizeItemMutation = useMutation({
+    mutationFn: async ({ item, type }: { item: any, type: string }) => {
+      const response = await apiRequest('POST', '/api/scrapy/summarize-item', {
+        item,
+        type
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "AI Summary Generated",
+        description: "You can now add this item with the AI summary",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Generating Summary",
+        description: error.message || "Failed to generate AI summary",
+        variant: "destructive",
+      });
+    }
+  });
+  
   // Add mutation to save individual items to the knowledge base
   const saveItemMutation = useMutation({
     mutationFn: async ({ item, type, sourceUrl, useSummary }: { item: any, type: string, sourceUrl: string, useSummary?: boolean }) => {
@@ -209,6 +233,20 @@ const WebExtraction = () => {
     try {
       setIsSummarizing(true);
       
+      // Try to use the new dedicated scrapy API first
+      if (itemToSummarize && itemSummaryType) {
+        const result = await summarizeItemMutation.mutateAsync({
+          item: itemToSummarize,
+          type: itemSummaryType
+        });
+        
+        if (result.success && result.item?.aiSummary) {
+          setAiSummaryResult(result.item.aiSummary);
+          return;
+        }
+      }
+      
+      // Fall back to generic summarization if specific endpoint fails
       const response = await apiRequest('POST', '/api/openai/summarize', {
         prompt: aiSummaryPrompt
       });
