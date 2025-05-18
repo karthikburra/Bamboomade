@@ -68,9 +68,10 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
               size="icon" 
               className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
               title="Refresh events list"
-              onClick={() => window.location.reload()}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
             >
-              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+              <RefreshCw className={`h-3.5 w-3.5 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </CardHeader>
