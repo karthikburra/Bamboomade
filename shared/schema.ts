@@ -254,7 +254,7 @@ export const aiKnowledgeContent = pgTable("ai_knowledge_content", {
   
   // Social media specific fields
   embedCode: text("embed_code"), // HTML embed code for social media posts
-  postDate: text("post_date"), // Date when the social media post was published
+  // Note: postDate/post_date is removed as it doesn't exist in the actual database
   socialPlatform: text("social_platform"), // Name of the social media platform
   lastResummarizedAt: timestamp("last_resummarized_at"), // When content was last resummarized
   createdAt: timestamp("created_at").notNull().defaultNow(),
