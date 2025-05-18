@@ -746,7 +746,7 @@ const WebExtraction = () => {
   }
   
   return (
-    <div className="max-w-4xl mx-auto mt-6 pb-20 text-green-50">
+    <div className="max-w-4xl mx-auto mt-6 pb-20 bg-gray-950 min-h-screen text-gray-100">
       {/* Back button */}
       <div className="flex items-center mb-6">
         <Button 
