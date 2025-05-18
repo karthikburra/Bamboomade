@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                     </Link>
                   </li>
                   <li>
-                    <Link href="/gallery?category=workshop" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
+                    <Link href="/#our-experience" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
                       Workshops
                     </Link>
                   </li>
