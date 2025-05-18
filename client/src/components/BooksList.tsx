@@ -11,6 +11,7 @@ interface BookItem {
   content: string;
   source: string | null;
   mediaUrl: string | null;
+  contentType: string;
 }
 
 interface BooksListProps {
@@ -20,10 +21,17 @@ interface BooksListProps {
 const BooksList: React.FC<BooksListProps> = ({ 
   onBookClick
 }) => {
-  const { data: books, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge/book'],
+  // Query all knowledge content and filter for books
+  const { data: allContent, isLoading } = useQuery({
+    queryKey: ['/api/ai-knowledge'],
     retry: false,
   });
+
+  // Filter books from all content
+  const books = React.useMemo(() => {
+    if (!allContent || !Array.isArray(allContent)) return [];
+    return allContent.filter(item => item.contentType === 'book');
+  }, [allContent]);
 
   // Function to handle clicking on a book
   const handleBookClick = (book: BookItem) => {

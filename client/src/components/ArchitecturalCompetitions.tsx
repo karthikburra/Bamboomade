@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { Calendar, ExternalLink, Loader2, Trophy } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +16,7 @@ interface Competition {
   mediaUrl: string | null;
   submissionDeadline: string | null;
   price: string | null;
+  contentType: string;
 }
 
 interface ArchitecturalCompetitionsProps {
@@ -26,10 +26,17 @@ interface ArchitecturalCompetitionsProps {
 const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({ 
   onCompetitionClick
 }) => {
-  const { data: competitions, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge/competition'],
+  // Query all knowledge content
+  const { data: allContent, isLoading } = useQuery({
+    queryKey: ['/api/ai-knowledge'],
     retry: false,
   });
+  
+  // Filter competitions from all content
+  const competitions = React.useMemo(() => {
+    if (!allContent || !Array.isArray(allContent)) return [];
+    return allContent.filter(item => item.contentType === 'competition');
+  }, [allContent]);
 
   // Function to handle clicking on a competition
   const handleCompetitionClick = (competition: Competition) => {

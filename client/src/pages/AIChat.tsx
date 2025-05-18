@@ -12,6 +12,7 @@ import TodaysEnthusiast from "@/components/TodaysEnthusiast";
 import UpcomingEventsList from "@/components/UpcomingEventsList";
 import ArchitecturalCompetitions from "@/components/ArchitecturalCompetitions";
 import BooksList from "@/components/BooksList";
+import ArticlesResources from "@/components/ArticlesResources";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
