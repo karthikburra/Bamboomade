@@ -186,9 +186,7 @@ export function TodaysEnthusiast() {
           <div className="ml-4">
             <h3 className="text-md font-medium text-zinc-200">{enthusiast.title}</h3>
             <p className="text-sm text-zinc-400">
-              {enthusiast.createdAt ? (
-                `Added ${formatDistanceToNow(new Date(enthusiast.createdAt), { addSuffix: true })}`
-              ) : 'Recently added'}
+              Bamboo Architect & Designer
             </p>
           </div>
         </div>
