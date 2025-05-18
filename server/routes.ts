@@ -5349,7 +5349,16 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         // Event-specific fields
         eventDate,
         eventLocation,
-        registrationLink
+        registrationLink,
+        price,
+        additionalInfo,
+        // Book-specific fields
+        authorName,
+        publicationYear,
+        publisherName,
+        purchaseLink,
+        // Social media fields
+        embedCode
       } = req.body;
       
       console.log("PUT update with content type:", contentType);
