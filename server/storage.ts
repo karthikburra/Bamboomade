@@ -1424,19 +1424,33 @@ export class DatabaseStorage implements IStorage {
       
       const now = new Date();
       
-      // Let's inspect the actual database columns to see what's available
-      console.log("Attempting direct SQL insert to avoid schema mismatch");
+      // Bypass the ORM entirely and use pure SQL with only fields that are confirmed to exist
+      // in the database schema (from \d ai_knowledge_content output)
+      console.log("Using direct SQL insert with confirmed database fields");
       
+      // Handle special content types
+      let embedCode = null;
+      if (content.contentType === "social-media" && content.embedCode) {
+        embedCode = content.embedCode;
+      }
+      
+      let purchaseLink = null;
+      if (content.contentType === "book" && content.registrationLink) {
+        purchaseLink = content.registrationLink;
+      }
+      
+      // Now attempt the insert with the actual database column structure
       const query = {
         text: `
           INSERT INTO ai_knowledge_content (
             title, content, raw_content, source, content_type, status, 
             media_url, media_type, contact_email, contact_phone, 
-            event_date, event_location, registration_link, 
-            price, created_at, updated_at, created_by, post_date
+            linkedin_url, instagram_url, twitter_url, facebook_url,
+            personal_website, event_date, event_location, registration_link, 
+            price, created_at, updated_at, created_by, embed_code, purchase_link
           ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-            $11, $12, $13, $14, $15, $16, $17, $18
+            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
           ) RETURNING *
         `,
         values: [
@@ -1450,6 +1464,11 @@ export class DatabaseStorage implements IStorage {
           content.mediaType || null,
           content.contactEmail || null,
           content.contactPhone || null,
+          content.linkedinUrl || null,
+          content.instagramUrl || null,
+          content.twitterUrl || null,
+          content.facebookUrl || null,
+          content.personalWebsite || null,
           content.eventDate || null,
           content.eventLocation || null,
           content.registrationLink || null,
@@ -1457,14 +1476,17 @@ export class DatabaseStorage implements IStorage {
           now,
           now,
           content.createdBy || 0,
-          now  // Use current date for post_date as well
+          embedCode,
+          purchaseLink
         ]
       };
       
       // Execute the query directly
+      console.log("Executing insert query with confirmed database column names");
       const result = await db.$client.query(query);
       
       if (result.rows && result.rows.length > 0) {
+        console.log("Content successfully inserted");
         return result.rows[0] as AiKnowledgeContent;
       } else {
         throw new Error("Failed to create AI knowledge content - no row returned");
