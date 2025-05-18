@@ -261,22 +261,28 @@ export async function getUpcomingEvents(date?: Date): Promise<Array<{
     // Current date for comparing event dates
     const currentDate = new Date();
     
-    // Filter for event content types and content containing future dates
+    // Filter ONLY for content with contentType='event' and active status
     const upcomingEvents = allContent.filter(item => {
-      // First - check if it's an event content type with a future eventDate
-      if (item.contentType === 'event' && item.eventDate) {
+      // Only show items explicitly marked as 'event' type
+      if (item.contentType !== 'event') {
+        return false;
+      }
+      
+      // Must be active status
+      if (item.status !== 'active') {
+        return false;
+      }
+      
+      // If it has an event date, check if it's in the future
+      if (item.eventDate) {
         const eventDate = new Date(item.eventDate);
-        // If the event date is in the future, include it
-        if (eventDate >= currentDate && item.status === "active") {
+        // Only include future events
+        if (eventDate >= currentDate) {
           return true;
         }
       }
       
-      // Fallback to the old content analysis method
-      // Check if it's specifically an event content type
-      const isEventType = item.contentType === 'event';
-      
-      // Check if it has event keywords in title or content
+      // For events without explicit dates, include them if they have event-related keywords
       const hasEventKeywords = 
         (item.title && (
           item.title.toLowerCase().includes('workshop') ||
@@ -293,9 +299,8 @@ export async function getUpcomingEvents(date?: Date): Promise<Array<{
           item.content.toLowerCase().includes('training')
         ));
       
-      // Look for future date patterns in content
-      // This is a simplified approach - dates are complex to parse reliably
-      const hasRelevantDateInfo = item.content && (
+      // Look for future date patterns in content only for events that don't have an explicit date
+      const hasRelevantDateInfo = !item.eventDate && item.content && (
         // Look for months in the future
         (() => {
           const currentMonth = currentDate.getMonth();
