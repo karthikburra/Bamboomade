@@ -5338,6 +5338,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         contentType, 
         status, 
         mediaUrl,
+        mediaType,
         // Enthusiast-specific fields
         contactEmail,
         contactPhone,
@@ -5348,9 +5349,15 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         personalWebsite,
         // Event-specific fields
         eventDate,
+        eventEndDate,
+        eventTimings,
         eventLocation,
         registrationLink,
+        // Price information
         price,
+        currency,
+        priceRange,
+        discountPrice,
         additionalInfo,
         // Book-specific fields
         authorName,
@@ -5358,7 +5365,8 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         publisherName,
         purchaseLink,
         // Social media fields
-        embedCode
+        embedCode,
+        socialMediaInfo
       } = req.body;
       
       console.log("PUT update with content type:", contentType);
