@@ -64,10 +64,10 @@ const MediumArticles: React.FC = () => {
                 <span>May 2023 • YouTube Video</span>
               </div>
               <h3 className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">
-                Bamboo Architecture: Principles and Applications
+                Meeting Mr. Murali and Bamboo Artisan Community
               </h3>
               <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-green-600 dark:text-green-400 line-clamp-3">
-                Explore the fundamental principles and innovative applications of bamboo in modern sustainable architecture.
+                A journey meeting with Mr. Murali and the artisan community working with bamboo in sustainable design and craftsmanship.
               </p>
             </CardContent>
             <CardFooter className="p-3 sm:p-4 pt-0">
