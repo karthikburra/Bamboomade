@@ -10,7 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle, Sparkles } from 'lucide-react';
+import { 
+  Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle, Sparkles,
+  Calendar, Book, MessageSquare, FileText, Info, Upload, Check,
+  User, Link, Mail, Phone, Linkedin, Instagram, Twitter, Facebook
+} from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +36,36 @@ interface ContentItem {
   mediaUrl?: string | null;
   rawContent?: string | null;
   lastResummarizedAt?: Date | null;
+  
+  // Event fields
+  eventDate?: string | null;
+  eventEndDate?: string | null;
+  eventTimings?: string | null;
+  eventLocation?: string | null;
+  registrationLink?: string | null;
+  price?: string | null;
+  currency?: string | null;
+  priceRange?: string | null;
+  discountPrice?: string | null;
+  additionalInfo?: string | null;
+  
+  // Book fields
+  authorName?: string | null;
+  publicationYear?: string | null;
+  publisherName?: string | null;
+  purchaseLink?: string | null;
+  
+  // Enthusiast fields
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  linkedinUrl?: string | null;
+  instagramUrl?: string | null;
+  twitterUrl?: string | null;
+  facebookUrl?: string | null;
+  personalWebsite?: string | null;
+  
+  // Social media fields
+  embedCode?: string | null;
 }
 
 interface ContentEditDialogProps {
@@ -55,6 +89,35 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   const [isSavingFact, setIsSavingFact] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [factToDelete, setFactToDelete] = useState<number | null>(null);
+  
+  // Content-specific fields
+  // Event fields
+  const [eventDate, setEventDate] = useState('');
+  const [eventLocation, setEventLocation] = useState('');
+  const [registrationLink, setRegistrationLink] = useState('');
+  const [price, setPrice] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  
+  // Book fields
+  const [authorName, setAuthorName] = useState('');
+  const [purchaseLink, setPurchaseLink] = useState('');
+  const [publicationYear, setPublicationYear] = useState('');
+  const [publisherName, setPublisherName] = useState('');
+  
+  // Enthusiast fields
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
+  const [facebookUrl, setFacebookUrl] = useState('');
+  const [personalWebsite, setPersonalWebsite] = useState('');
+  
+  // Social media fields
+  const [embedCode, setEmbedCode] = useState('');
+  
+  // Media URL
+  const [mediaUrl, setMediaUrl] = useState('');
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -84,14 +147,55 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
 
   useEffect(() => {
     if (content) {
+      // Set basic fields
       setTitle(content.title || '');
       setBodyContent(content.content || '');
       setContentType(content.contentType || '');
       setSource(content.source || '');
       setStatus(content.status || '');
+      setMediaUrl(content.mediaUrl || '');
+      
+      // Set content type specific fields
+      // Event fields
+      setEventDate(content.eventDate || '');
+      setEventLocation(content.eventLocation || '');
+      setRegistrationLink(content.registrationLink || '');
+      setPrice(content.price || '');
+      setAdditionalInfo(content.additionalInfo || '');
+      
+      // Book fields
+      setAuthorName(content.authorName || '');
+      setPurchaseLink(content.purchaseLink || '');
+      setPublicationYear(content.publicationYear || '');
+      setPublisherName(content.publisherName || '');
+      
+      // Enthusiast fields
+      setContactEmail(content.contactEmail || '');
+      setContactPhone(content.contactPhone || '');
+      setLinkedinUrl(content.linkedinUrl || '');
+      setInstagramUrl(content.instagramUrl || '');
+      setTwitterUrl(content.twitterUrl || '');
+      setFacebookUrl(content.facebookUrl || '');
+      setPersonalWebsite(content.personalWebsite || '');
+      
+      // Social media fields
+      setEmbedCode(content.embedCode || '');
       
       // Reset extracted facts when content changes
       setExtractedFacts([]);
+      
+      // Set the active tab based on content type
+      if (content.contentType === 'event' || content.contentType === 'competition') {
+        setActiveTab('event');
+      } else if (content.contentType === 'book') {
+        setActiveTab('book');
+      } else if (content.contentType === 'enthusiast') {
+        setActiveTab('enthusiast');
+      } else if (content.contentType === 'social') {
+        setActiveTab('social');
+      } else {
+        setActiveTab('content');
+      }
     }
   }, [content]);
 
@@ -197,13 +301,55 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   });
 
   const handleSave = () => {
-    updateMutation.mutate({
+    // Common fields for all content types
+    const baseData = {
       title,
       content: bodyContent,
       contentType,
       source,
       status,
-    });
+      mediaUrl
+    };
+    
+    // Add type-specific fields based on content type
+    let updateData = { ...baseData };
+    
+    if (contentType === 'event' || contentType === 'competition') {
+      updateData = {
+        ...updateData,
+        eventDate,
+        eventLocation,
+        registrationLink,
+        price,
+        additionalInfo
+      };
+    } else if (contentType === 'book') {
+      updateData = {
+        ...updateData,
+        authorName,
+        publicationYear,
+        publisherName,
+        purchaseLink
+      };
+    } else if (contentType === 'enthusiast') {
+      updateData = {
+        ...updateData,
+        contactEmail,
+        contactPhone,
+        linkedinUrl,
+        instagramUrl,
+        twitterUrl,
+        facebookUrl,
+        personalWebsite
+      };
+    } else if (contentType === 'social') {
+      updateData = {
+        ...updateData,
+        embedCode
+      };
+    }
+    
+    updateMutation.mutate(updateData);
   };
 
   const handleRefreshWebsite = () => {
