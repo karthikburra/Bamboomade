@@ -80,38 +80,7 @@ const MediumArticles: React.FC = () => {
             </CardFooter>
           </Card>
 
-          {/* Second Video Card */}
-          <Card className="overflow-hidden h-full flex flex-col">
-            <div className="aspect-video w-full overflow-hidden">
-              <iframe 
-                className="w-full h-full"
-                src="https://www.youtube.com/embed/rCN0OFAxPO4" 
-                title="Bamboo Construction Video"
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen>
-              </iframe>
-            </div>
-            <CardContent className="p-3 sm:p-4 flex-grow">
-              <div className="flex items-center text-xs sm:text-sm text-green-600 dark:text-green-400 mb-1 sm:mb-2">
-                <span>Jun 2023 • YouTube Video</span>
-              </div>
-              <h3 className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">
-                Bamboo Construction: Techniques and Methods
-              </h3>
-              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-green-600 dark:text-green-400 line-clamp-3">
-                Learn about the various construction techniques and methods used in building with bamboo as a sustainable material.
-              </p>
-            </CardContent>
-            <CardFooter className="p-3 sm:p-4 pt-0">
-              <a href="https://www.youtube.com/watch?v=rCN0OFAxPO4" target="_blank" rel="noopener noreferrer" className="w-full">
-                <Button variant="outline" size="sm" className="w-full text-xs sm:text-sm border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
-                  Watch on YouTube
-                  <ExternalLink className="ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-                </Button>
-              </a>
-            </CardFooter>
-          </Card>
+
 
           {/* Article Cards */}
           {articles.map((article) => (
