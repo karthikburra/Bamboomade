@@ -38,6 +38,7 @@ import NotFound from "@/pages/not-found";
 import UserProfile from "@/pages/UserProfile";
 import KnowledgeImporterDemo from "@/pages/KnowledgeImporterDemo";
 import WebExtraction from "@/pages/WebExtraction";
+import ManualContentEntry from "@/pages/ManualContentEntry";
 // Workshop detail pages
 import BondWithBambooWorkshop from "@/pages/BondWithBambooWorkshop";
 import InternationalBambooFestWorkshop from "@/pages/InternationalBambooFestWorkshop";
@@ -74,6 +75,7 @@ function Router() {
       <Route path="/dev-admin-login" component={DevAdminLogin} />
       <Route path="/knowledge-importer-demo" component={KnowledgeImporterDemo} />
       <Route path="/web-extraction" component={WebExtraction} />
+      <Route path="/manual-content-entry" component={ManualContentEntry} />
       <Route path="/login" component={Login} />
       <Route path="/profile/edit" component={ProfileEdit} />
       <Route path="/add-whatsapp-bot" component={AddWhatsAppBot} />
