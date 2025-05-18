@@ -21,18 +21,20 @@ interface ArticlesResourcesProps {
 const ArticlesResources: React.FC<ArticlesResourcesProps> = ({ 
   onResourceClick
 }) => {
-  // Query active knowledge content
+  // Query all knowledge content
   const { data: allContent, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge/active'],
+    queryKey: ['/api/ai-knowledge'],
     retry: false,
   });
 
-  // Filter active resources (blogs, articles, documents) from all content
+  // Filter active resources (blogs, documents, webpages, blog_posts) from all content
   const resources = React.useMemo(() => {
     if (!allContent || !Array.isArray(allContent)) return [];
     return allContent.filter(item => 
       (item.contentType === 'blog' || 
        item.contentType === 'document' || 
+       item.contentType === 'blog_post' || 
+       item.contentType === 'webpage' || 
        (item.contentType === 'social' && item.title && item.title.toLowerCase().includes('article'))) &&
       item.status === 'active'
     );
@@ -51,9 +53,12 @@ const ArticlesResources: React.FC<ArticlesResourcesProps> = ({
   const getResourceIcon = (type: string) => {
     switch (type) {
       case 'blog':
+      case 'blog_post':
         return <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-amber-300">Blog</Badge>;
       case 'document':
         return <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-blue-300">Document</Badge>;
+      case 'webpage':
+        return <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-green-300">Webpage</Badge>;
       case 'social':
         return <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-purple-300">Article</Badge>;
       default:
