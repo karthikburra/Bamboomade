@@ -146,13 +146,13 @@ const ManualContentEntry = () => {
 
   // Submit mutations for different content types
   const addContentMutation = useMutation({
-    mutationFn: (data) => apiRequest('POST', '/api/ai-knowledge/add', data),
+    mutationFn: (data) => apiRequest('POST', '/api/ai-knowledge', data),
     onSuccess: () => {
       toast({
         title: "Content added",
         description: "The content has been successfully added to the knowledge base.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge/list'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/ai-knowledge'] });
       
       // Reset form based on active tab
       switch (activeTab) {

@@ -440,21 +440,6 @@ export default function AIKnowledgeDatabase() {
             <Lock className="mr-2 h-4 w-4" />
             Admin Login
           </Button>
-          <Button 
-            onClick={() => navigate("/admin-ai-knowledge-chat")}
-            variant="outline"
-            className="border-amber-700 text-amber-400 hover:border-amber-600 hover:bg-amber-950"
-          >
-            <Sparkles className="mr-2 h-4 w-4" />
-            Knowledge Assistant
-          </Button>
-          <Button 
-            onClick={() => setIsAddDialogOpen(true)}
-            className="bg-amber-600 hover:bg-amber-700 text-white"
-          >
-            <UploadCloud className="mr-2 h-4 w-4" />
-            Add Content
-          </Button>
         </div>
       </div>
       
