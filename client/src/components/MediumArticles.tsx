@@ -61,7 +61,7 @@ const MediumArticles: React.FC = () => {
             </div>
             <CardContent className="p-3 sm:p-4 flex-grow">
               <div className="flex items-center text-xs sm:text-sm text-green-600 dark:text-green-400 mb-1 sm:mb-2">
-                <span>May 2023 • YouTube Video</span>
+                <span>25 Jun 2022 • YouTube Video</span>
               </div>
               <h3 className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-300 line-clamp-2">
                 Meeting Mr. Murali and Bamboo Artisan Community
