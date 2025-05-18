@@ -70,6 +70,33 @@ const ManualContentEntry = () => {
     fact: '',
     source: ''
   });
+  
+  // Bamboo Enthusiast form state
+  const [enthusiastData, setEnthusiastData] = useState({
+    title: '',
+    content: '',
+    mediaUrl: '',
+    contactEmail: '',
+    contactPhone: '',
+    linkedinUrl: '',
+    instagramUrl: '',
+    twitterUrl: '',
+    facebookUrl: '',
+    personalWebsite: ''
+  });
+  
+  // Competition form state
+  const [competitionData, setCompetitionData] = useState({
+    title: '',
+    content: '',
+    mediaUrl: '',
+    registrationLink: '',
+    eventDate: '',
+    eventLocation: '',
+    price: '',
+    organiserName: '',
+    submissionDeadline: ''
+  });
 
   // Handle input changes for different form types
   const handleEventChange = (e) => {
@@ -100,6 +127,16 @@ const ManualContentEntry = () => {
   const handleFactChange = (e) => {
     const { name, value } = e.target;
     setFactData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleEnthusiastChange = (e) => {
+    const { name, value } = e.target;
+    setEnthusiastData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleCompetitionChange = (e) => {
+    const { name, value } = e.target;
+    setCompetitionData(prev => ({ ...prev, [name]: value }));
   };
 
   // File upload handlers
@@ -241,6 +278,66 @@ const ManualContentEntry = () => {
       price: eventData.price || null,
       // Include organiser name in the content if provided
       additionalInfo: eventData.organiserName ? `Organiser: ${eventData.organiserName}` : null,
+      createdBy: user?.id || 1,
+      status: 'active'
+    };
+
+    addContentMutation.mutate(contentData);
+  };
+  
+  // Bamboo Enthusiast submit handler
+  const handleEnthusiastSubmit = (e) => {
+    e.preventDefault();
+    if (!enthusiastData.title || !enthusiastData.content) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const contentData = {
+      title: enthusiastData.title,
+      content: enthusiastData.content,
+      contentType: 'enthusiast',
+      mediaUrl: enthusiastData.mediaUrl || null,
+      contactEmail: enthusiastData.contactEmail || null,
+      contactPhone: enthusiastData.contactPhone || null,
+      linkedinUrl: enthusiastData.linkedinUrl || null,
+      instagramUrl: enthusiastData.instagramUrl || null,
+      twitterUrl: enthusiastData.twitterUrl || null,
+      facebookUrl: enthusiastData.facebookUrl || null,
+      personalWebsite: enthusiastData.personalWebsite || null,
+      createdBy: user?.id || 1,
+      status: 'active'
+    };
+
+    addContentMutation.mutate(contentData);
+  };
+  
+  // Competition submit handler
+  const handleCompetitionSubmit = (e) => {
+    e.preventDefault();
+    if (!competitionData.title || !competitionData.content) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const contentData = {
+      title: competitionData.title,
+      content: competitionData.content,
+      contentType: 'competition',
+      mediaUrl: competitionData.mediaUrl || null,
+      eventDate: competitionData.eventDate || null,
+      eventLocation: competitionData.eventLocation || null,
+      registrationLink: competitionData.registrationLink || null,
+      price: competitionData.price || null,
+      additionalInfo: `Organiser: ${competitionData.organiserName || 'Not specified'}\nSubmission Deadline: ${competitionData.submissionDeadline || 'Not specified'}`,
       createdBy: user?.id || 1,
       status: 'active'
     };
