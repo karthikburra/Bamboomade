@@ -8909,8 +8909,15 @@ Please structure the summary in a helpful format with clear headings, bullet poi
   setupFileUploadRoutes(app);
   
   const httpServer = createServer(app);
+  
+  // Create a copy of the isAdmin middleware without the admin check for public content
+  const skipAdminCheck = (req: Request, res: Response, next: NextFunction) => {
+    // Skip admin check entirely for public routes
+    next();
+  };
+  
   // Get all active AI knowledge content (public endpoint for dashboard)
-  app.get("/api/ai-knowledge/active", async (req, res) => {
+  app.get("/api/ai-knowledge/active", skipAdminCheck, async (req, res) => {
     try {
       const allContent = await storage.getAllAiKnowledgeContent();
       const activeContent = allContent.filter(item => item.status === 'active');

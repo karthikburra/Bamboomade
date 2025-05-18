@@ -26,9 +26,9 @@ interface ArchitecturalCompetitionsProps {
 const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({ 
   onCompetitionClick
 }) => {
-  // Query all knowledge content
+  // Query active knowledge content
   const { data: allContent, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge'],
+    queryKey: ['/api/ai-knowledge/active'],
     retry: false,
   });
   
