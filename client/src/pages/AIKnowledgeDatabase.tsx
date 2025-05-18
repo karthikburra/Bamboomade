@@ -915,7 +915,7 @@ export default function AIKnowledgeDatabase() {
       {/* View Details Dialog */}
       {selectedContent && (
         <Dialog open={isViewDetailsDialogOpen} onOpenChange={setIsViewDetailsDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-800 shadow-xl dark px-4 sm:px-6">
+          <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto bg-gray-950 border border-gray-800 shadow-2xl px-4 sm:px-6 text-gray-100">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-amber-400">{selectedContent.title}</DialogTitle>
               <div className="flex flex-wrap gap-2 mt-2">
