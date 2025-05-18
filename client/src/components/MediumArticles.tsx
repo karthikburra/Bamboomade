@@ -79,17 +79,30 @@ const MediumArticles: React.FC = () => {
         {/* YouTube Video Section */}
         <div className="mt-10 sm:mt-16">
           <h3 className="text-xl sm:text-2xl font-semibold text-green-900 dark:text-green-200 text-center mb-6">
-            Featured Video
+            Featured Videos
           </h3>
-          <div className="aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg shadow-md">
-            <iframe 
-              className="w-full h-full"
-              src="https://www.youtube.com/embed/tPF35tjKAjY" 
-              title="Bamboo Architecture Video"
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-              allowFullScreen>
-            </iframe>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div className="aspect-video w-full overflow-hidden rounded-lg shadow-md">
+              <iframe 
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/tPF35tjKAjY" 
+                title="Bamboo Architecture Video"
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen>
+              </iframe>
+            </div>
+            
+            <div className="aspect-video w-full overflow-hidden rounded-lg shadow-md">
+              <iframe 
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/rCN0OFAxPO4" 
+                title="Bamboo Construction Video"
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen>
+              </iframe>
+            </div>
           </div>
         </div>
 
