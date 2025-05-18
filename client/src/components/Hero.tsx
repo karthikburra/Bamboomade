@@ -134,7 +134,7 @@ const Hero: React.FC = () => {
               <AnimatedText 
                 phrases={[
                   "Get Academic Project guidance from Experts.",
-                  "We bring Bamboo workshops to you."
+                  "We bring <span class='text-yellow-300'>Bamboo workshops</span> to you."
                 ]} 
               />
             </span>
