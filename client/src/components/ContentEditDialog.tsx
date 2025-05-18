@@ -211,7 +211,10 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('PUT', `/api/ai-knowledge/${content?.id}`, data);
+      if (!content?.id || isNaN(Number(content.id))) {
+        throw new Error('Invalid content ID');
+      }
+      return apiRequest('PUT', `/api/ai-knowledge/${content.id}`, data);
     },
     onSuccess: () => {
       toast({
