@@ -21,9 +21,9 @@ interface ArticlesResourcesProps {
 const ArticlesResources: React.FC<ArticlesResourcesProps> = ({ 
   onResourceClick
 }) => {
-  // Query all knowledge content
+  // Query public knowledge content
   const { data: allContent, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge'],
+    queryKey: ['/api/public/ai-knowledge'],
     retry: false,
   });
 

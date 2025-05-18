@@ -21,9 +21,9 @@ interface BooksListProps {
 const BooksList: React.FC<BooksListProps> = ({ 
   onBookClick
 }) => {
-  // Query all knowledge content and filter for books
+  // Query public knowledge content and filter for books
   const { data: allContent, isLoading } = useQuery({
-    queryKey: ['/api/ai-knowledge'],
+    queryKey: ['/api/public/ai-knowledge'],
     retry: false,
   });
 
