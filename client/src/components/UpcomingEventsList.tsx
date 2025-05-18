@@ -54,7 +54,7 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
       setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
     }
   };
-  if (!events || events.length === 0) {
+  if ((!localEvents || localEvents.length === 0) && (!events || events.length === 0)) {
     return (
       <Card className="bg-zinc-900 border-zinc-800">
         <CardHeader className="pb-3">
@@ -82,7 +82,8 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
   }
 
   // Display only up to maxEvents
-  const eventsToDisplay = events.slice(0, maxEvents);
+  const displayEvents = localEvents.length > 0 ? localEvents : events;
+  const eventsToDisplay = displayEvents.slice(0, maxEvents);
 
   return (
     <Card className="bg-zinc-900 border-zinc-800">

@@ -1,6 +1,6 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Book, ExternalLink, Loader2, ShoppingCart } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Book, ExternalLink, Loader2, ShoppingCart, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,11 +21,26 @@ interface BooksListProps {
 const BooksList: React.FC<BooksListProps> = ({ 
   onBookClick
 }) => {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
   // Query public knowledge content and filter for books
-  const { data: allContent, isLoading } = useQuery({
+  const { data: allContent, isLoading, refetch } = useQuery({
     queryKey: ['/api/public/ai-knowledge'],
     retry: false,
   });
+  
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+    } catch (error) {
+      console.error('Failed to refresh books:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
+    }
+  };
 
   // Filter active books from all content
   const books = React.useMemo(() => {

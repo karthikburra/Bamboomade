@@ -1,6 +1,6 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { FileText, ExternalLink, Loader2, Link as LinkIcon } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { FileText, ExternalLink, Loader2, Link as LinkIcon, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,11 +21,26 @@ interface ArticlesResourcesProps {
 const ArticlesResources: React.FC<ArticlesResourcesProps> = ({ 
   onResourceClick
 }) => {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
   // Query public knowledge content
-  const { data: allContent, isLoading } = useQuery({
+  const { data: allContent, isLoading, refetch } = useQuery({
     queryKey: ['/api/public/ai-knowledge'],
     retry: false,
   });
+  
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+    } catch (error) {
+      console.error('Failed to refresh resources:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
+    }
+  };
 
   // Filter active resources (blogs, documents, webpages, blog_posts) from all content
   const resources = React.useMemo(() => {
@@ -74,6 +89,15 @@ const ArticlesResources: React.FC<ArticlesResourcesProps> = ({
             <FileText className="h-4 w-4" />
             Articles & Resources
           </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </CardHeader>
       
