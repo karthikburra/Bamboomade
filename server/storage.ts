@@ -1440,6 +1440,7 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Now attempt the insert with the actual database column structure
+      // Important: Only include columns that actually exist in the database
       const query = {
         text: `
           INSERT INTO ai_knowledge_content (
@@ -1447,10 +1448,12 @@ export class DatabaseStorage implements IStorage {
             media_url, media_type, contact_email, contact_phone, 
             linkedin_url, instagram_url, twitter_url, facebook_url,
             personal_website, event_date, event_location, registration_link, 
-            price, created_at, updated_at, created_by, embed_code, purchase_link
+            price, created_at, updated_at, created_by, embed_code, purchase_link,
+            author_name, publication_year, publisher_name
           ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
+            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24,
+            $25, $26, $27
           ) RETURNING *
         `,
         values: [

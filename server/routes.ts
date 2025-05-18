@@ -5234,6 +5234,12 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         status,
         mediaUrl,
         mediaType,
+        // Event-specific fields
+        eventDate,
+        eventLocation,
+        registrationLink,
+        price,
+        additionalInfo,
         // Enthusiast-specific fields
         contactEmail,
         contactPhone,
@@ -5241,8 +5247,17 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         instagramUrl,
         twitterUrl,
         facebookUrl,
-        personalWebsite
+        personalWebsite,
+        // Book-specific fields
+        authorName,
+        publicationYear,
+        publisherName,
+        purchaseLink,
+        // Social media specific fields
+        embedCode,
       } = req.body;
+      
+      console.log(`Processing ${contentType} content: ${title}`);
       
       // Validate required fields
       if (!title || !content || !contentType) {
@@ -5255,7 +5270,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         return res.status(401).json({ message: "Unauthorized - You must be logged in as an admin" });
       }
       
-      // Create base content object
+      // Create base content object with only fields that exist in the database
       const contentData: any = {
         title,
         content,
@@ -5268,7 +5283,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
         createdBy: req.session.adminUser.id
       };
       
-      // Add enthusiast-specific fields if content type is "enthusiast"
+      // Add type-specific fields
       if (contentType === "enthusiast") {
         Object.assign(contentData, {
           contactEmail,
@@ -5279,7 +5294,27 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
           facebookUrl,
           personalWebsite
         });
+      } else if (contentType === "event") {
+        Object.assign(contentData, {
+          eventDate,
+          eventLocation,
+          registrationLink,
+          price
+        });
+      } else if (contentType === "book") {
+        Object.assign(contentData, {
+          authorName,
+          publicationYear,
+          publisherName,
+          purchaseLink
+        });
+      } else if (contentType === "social-media") {
+        Object.assign(contentData, {
+          embedCode
+        });
       }
+      
+      console.log("Content data prepared:", JSON.stringify(contentData));
       
       // Add the content
       const newContent = await storage.createAiKnowledgeContent(contentData);
@@ -5287,7 +5322,7 @@ You can access and modify the knowledge base. Be thorough, accurate, and helpful
       res.status(201).json(newContent);
     } catch (error) {
       console.error("Error creating AI knowledge content:", error);
-      res.status(500).json({ message: "Failed to create AI knowledge content" });
+      res.status(500).json({ message: "Failed to create AI knowledge content", error: error.message });
     }
   });
 
