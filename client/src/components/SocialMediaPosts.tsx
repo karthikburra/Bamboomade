@@ -180,9 +180,7 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
             <RefreshCw className="h-3.5 w-3.5 text-secondary" />
           </Button>
         </div>
-        <CardDescription className="text-zinc-400">
-          Latest updates from our social media channels
-        </CardDescription>
+
       </CardHeader>
       <CardContent>
         <div className="max-h-[400px] overflow-y-auto pr-2">
