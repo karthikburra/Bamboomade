@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -14,7 +15,7 @@ import {
   Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle, Sparkles,
   Calendar, Book, MessageSquare, FileText, Info, Upload, Check,
   User, Link, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
-  Share2
+  Share2, Image as ImageIcon
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -125,9 +126,6 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   
   // Social media fields
   const [embedCode, setEmbedCode] = useState('');
-  
-  // Media URL
-  const [mediaUrl, setMediaUrl] = useState('');
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -704,6 +702,116 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                       <SelectItem value="archived">Archived</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+              
+              {/* Image upload section */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                <Label className="sm:text-right">
+                  Image
+                </Label>
+                <div className="col-span-1 sm:col-span-3">
+                  {mediaUrl && (
+                    <div className="mb-3">
+                      <div className="relative w-48 h-48 overflow-hidden rounded-md border">
+                        <img 
+                          src={mediaUrl} 
+                          alt={title || 'Content image'}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMyNDI0MjQiLz48cGF0aCBkPSJNNzIgNjhIODJWODJINzJWNjhaIiBmaWxsPSIjMzREM0UyIi8+PHBhdGggZD0iTTgyIDY4SDkyVjU4SDgyVjY4WiIgZmlsbD0iIzM0RDNFMiIvPjxwYXRoIGQ9Ik05MiA1OEgxMDJWNDhIOTJWNThaIiBmaWxsPSIjMzREQUEyIi8+PHBhdGggZD0iTTEwMiA1OEgxMTJWNjhIMTAyVjU4WiIgZmlsbD0iIzM0REFBMiIvPjxwYXRoIGQ9Ik0xMTIgNjhIMTIyVjgySDExMlY2OFoiIGZpbGw9IiMzNERBQTIiLz48L3N2Zz4=';
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        if(fileInputRef.current) {
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {mediaUrl ? 'Change Image' : 'Upload Image'}
+                    </Button>
+                    
+                    {mediaUrl && (
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setMediaUrl('')}
+                        className="flex items-center gap-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remove
+                      </Button>
+                    )}
+                    
+                    <input 
+                      type="file" 
+                      ref={fileInputRef}
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={async (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          setIsUploading(true);
+                          setUploadProgress(10);
+                          
+                          try {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData,
+                            });
+                            
+                            setUploadProgress(70);
+                            const data = await response.json();
+                            
+                            if (data.success && data.fileUrl) {
+                              setMediaUrl(data.fileUrl);
+                              toast({
+                                title: 'Image uploaded',
+                                description: 'The image has been uploaded successfully',
+                              });
+                            } else {
+                              throw new Error(data.error || 'Failed to upload image');
+                            }
+                          } catch (error: any) {
+                            toast({
+                              title: 'Upload failed',
+                              description: error.message || 'Failed to upload image',
+                              variant: 'destructive',
+                            });
+                          } finally {
+                            setIsUploading(false);
+                            setUploadProgress(100);
+                            setTimeout(() => setUploadProgress(0), 500);
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  {isUploading && (
+                    <div className="w-full bg-secondary rounded-full h-2.5 my-2">
+                      <div 
+                        className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+                        style={{width: `${uploadProgress}%`}}
+                      ></div>
+                    </div>
+                  )}
                 </div>
               </div>
               
