@@ -80,7 +80,6 @@ export function registerScrapyRoutes(app: any) {
         case 'social_media':
           content = [
             item.platform ? `Platform: ${item.platform}` : 'Social Media Post',
-            item.post_date ? `Posted: ${item.post_date}` : '',
             item.embed_code ? `Content: ${item.embed_code}` : '',
             `Source: ${item.url || 'Unknown'}`
           ].filter(Boolean).join('\n');

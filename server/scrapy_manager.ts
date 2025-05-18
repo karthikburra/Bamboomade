@@ -61,7 +61,6 @@ interface ScrapySocialMedia {
   url: string;
   platform?: string;
   embed_code?: string;
-  post_date?: string;
 }
 
 interface ScrapyResults {
@@ -299,7 +298,6 @@ export async function processScrapyResults(
         if (social.platform && social.embed_code) {
           const socialContent = [
             `Platform: ${social.platform}`,
-            social.post_date ? `Posted: ${social.post_date}` : '',
             social.embed_code ? `Embed Code: ${social.embed_code}` : '',
             `Source: ${social.url}`
           ].filter(Boolean).join('\n\n');
