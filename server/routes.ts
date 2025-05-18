@@ -8909,6 +8909,39 @@ Please structure the summary in a helpful format with clear headings, bullet poi
   setupFileUploadRoutes(app);
   
   const httpServer = createServer(app);
+  // Get active bamboo facts for the "Did You Know?" section
+  app.get("/api/bamboo-facts", async (req, res) => {
+    try {
+      // Fetch all active content from the knowledge base
+      const allContent = await storage.getActiveAiKnowledgeContent();
+      
+      // Filter for active bamboo facts only
+      const facts = allContent
+        .filter(item => item.contentType === 'fact')
+        .map(fact => ({
+          id: fact.id,
+          fact: fact.content, 
+          contentType: fact.contentType,
+          source: fact.source || null
+        }));
+      
+      if (facts.length === 0) {
+        // If no active facts found, return a fallback message
+        return res.json([{
+          id: 0,
+          fact: "Bamboo is one of the fastest-growing plants on Earth. Some species can grow up to 91 cm (36 in) in a single day!",
+          contentType: "fact",
+          source: null
+        }]);
+      }
+      
+      res.json(facts);
+    } catch (error) {
+      console.error("Error fetching bamboo facts:", error);
+      res.status(500).json({ error: "Failed to fetch bamboo facts" });
+    }
+  });
+  
   // API route to fetch social media posts from the knowledge base
   app.get("/api/social-media-posts", async (req, res) => {
     try {

@@ -19,9 +19,17 @@ interface BambooFactProps {
 }
 
 const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFactClick }) => {
-  // Filter out any facts that are not specifically of type 'fact'
-  const facts = (factsData && factsData.length > 0 ? factsData : (factData ? [factData] : []))
-    .filter(fact => fact.contentType === 'fact');
+  // Fetch active bamboo facts from the API
+  const { data: activeFacts, isLoading, refetch } = useQuery({
+    queryKey: ['/api/bamboo-facts'],
+    retry: false
+  });
+  
+  // Use the active facts from API if available, otherwise fall back to props
+  const facts = activeFacts && activeFacts.length > 0 
+    ? activeFacts 
+    : (factsData && factsData.length > 0 ? factsData : (factData ? [factData] : []))
+      .filter(fact => fact.contentType === 'fact');
   
   const handleFactClick = (fact: BambooFactType | null) => {
     if (onFactClick && fact) {
