@@ -93,9 +93,14 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   // Content-specific fields
   // Event fields
   const [eventDate, setEventDate] = useState('');
+  const [eventEndDate, setEventEndDate] = useState('');
+  const [eventTimings, setEventTimings] = useState('');
   const [eventLocation, setEventLocation] = useState('');
   const [registrationLink, setRegistrationLink] = useState('');
   const [price, setPrice] = useState('');
+  const [currency, setCurrency] = useState('INR');
+  const [priceRange, setPriceRange] = useState('');
+  const [discountPrice, setDiscountPrice] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   
   // Book fields
@@ -158,9 +163,14 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       // Set content type specific fields
       // Event fields
       setEventDate(content.eventDate || '');
+      setEventEndDate(content.eventEndDate || '');
+      setEventTimings(content.eventTimings || '');
       setEventLocation(content.eventLocation || '');
       setRegistrationLink(content.registrationLink || '');
       setPrice(content.price || '');
+      setCurrency(content.currency || 'INR');
+      setPriceRange(content.priceRange || '');
+      setDiscountPrice(content.discountPrice || '');
       setAdditionalInfo(content.additionalInfo || '');
       
       // Book fields
@@ -318,9 +328,14 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
       updateData = {
         ...updateData,
         eventDate,
+        eventEndDate,
+        eventTimings,
         eventLocation,
         registrationLink,
         price,
+        currency,
+        priceRange,
+        discountPrice,
         additionalInfo
       };
     } else if (contentType === 'book') {
@@ -729,6 +744,32 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="eventEndDate" className="sm:text-right">
+                  End Date (optional)
+                </Label>
+                <Input
+                  id="eventEndDate"
+                  type="date"
+                  value={eventEndDate || ''}
+                  onChange={(e) => setEventEndDate(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="eventTimings" className="sm:text-right">
+                  Timings
+                </Label>
+                <Input
+                  id="eventTimings"
+                  placeholder="e.g., 9:00 AM - 5:00 PM"
+                  value={eventTimings || ''}
+                  onChange={(e) => setEventTimings(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
                 <Label htmlFor="eventLocation" className="sm:text-right">
                   Location
                 </Label>
@@ -756,10 +797,51 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                 <Label htmlFor="price" className="sm:text-right">
                   Price
                 </Label>
+                <div className="col-span-1 sm:col-span-3 grid grid-cols-2 gap-2">
+                  <Input
+                    id="price"
+                    placeholder="e.g., 500"
+                    value={price || ''}
+                    onChange={(e) => setPrice(e.target.value)}
+                  />
+                  <Select 
+                    value={currency || 'INR'} 
+                    onValueChange={(value) => setCurrency(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INR">INR (₹)</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="EUR">EUR (€)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="priceRange" className="sm:text-right">
+                  Price Range (optional)
+                </Label>
                 <Input
-                  id="price"
-                  value={price || ''}
-                  onChange={(e) => setPrice(e.target.value)}
+                  id="priceRange"
+                  placeholder="e.g., ₹500-₹1000"
+                  value={priceRange || ''}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="discountPrice" className="sm:text-right">
+                  Discount Price (optional)
+                </Label>
+                <Input
+                  id="discountPrice"
+                  placeholder="e.g., 400"
+                  value={discountPrice || ''}
+                  onChange={(e) => setDiscountPrice(e.target.value)}
                   className="col-span-1 sm:col-span-3"
                 />
               </div>
