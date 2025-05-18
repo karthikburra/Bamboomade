@@ -1418,57 +1418,75 @@ export class DatabaseStorage implements IStorage {
         content.content = content.aiSummary;
       }
       
-      // IMPORTANT: Only include fields that exist in the actual database table
-      // This prevents errors with fields defined in schema but missing from the DB
-      const validContent = {
+      // Build a clean object with only the fields we know exist in the database
+      const now = new Date();
+      
+      // Use the sql.raw method to directly create the object for insert
+      const insertData = {
         title: content.title || '',
         content: content.content || '',
-        contentType: content.contentType || '',
-        createdBy: content.createdBy || 0,
-        source: content.source || null,
+        raw_content: content.rawContent || null,
+        source: content.source || null, 
+        content_type: content.contentType || '',
         status: content.status || 'active',
-        rawContent: content.rawContent || null,
-        mediaUrl: content.mediaUrl || null,
-        mediaType: content.mediaType || null,
-        socialMediaInfo: content.socialMediaInfo || null,
-        contactEmail: content.contactEmail || null,
-        contactPhone: content.contactPhone || null,
-        eventDate: content.eventDate || null,
-        eventLocation: content.eventLocation || null,
-        registrationLink: content.registrationLink || null,
+        media_url: content.mediaUrl || null,
+        media_type: content.mediaType || null,
+        social_media_info: content.socialMediaInfo || null,
+        contact_email: content.contactEmail || null,
+        contact_phone: content.contactPhone || null,
+        event_date: content.eventDate || null,
+        event_location: content.eventLocation || null,
+        registration_link: content.registrationLink || null,
         price: content.price || null,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        created_at: now,
+        updated_at: now,
+        created_by: content.createdBy || 0
+      };
+     
+      // Use the pool to directly execute the query to bypass Drizzle ORM temporarily
+      // This helps us avoid the post_date column issue
+      const query = {
+        text: `
+          INSERT INTO ai_knowledge_content (
+            title, content, raw_content, source, content_type, status, 
+            media_url, media_type, social_media_info, contact_email, 
+            contact_phone, event_date, event_location, registration_link, 
+            price, created_at, updated_at, created_by
+          ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+            $11, $12, $13, $14, $15, $16, $17, $18
+          ) RETURNING *
+        `,
+        values: [
+          insertData.title,
+          insertData.content,
+          insertData.raw_content,
+          insertData.source,
+          insertData.content_type,
+          insertData.status,
+          insertData.media_url,
+          insertData.media_type,
+          insertData.social_media_info,
+          insertData.contact_email,
+          insertData.contact_phone,
+          insertData.event_date,
+          insertData.event_location,
+          insertData.registration_link,
+          insertData.price,
+          insertData.created_at,
+          insertData.updated_at,
+          insertData.created_by
+        ]
       };
       
-      // Remove any fields not in the insert schema that might be 
-      // passed from the web extraction process
-      // Instead of removing fields, only include fields that are in the schema
-      const validFields = {
-        title: validContent.title,
-        content: validContent.content,
-        contentType: validContent.contentType,
-        status: validContent.status,
-        createdBy: validContent.createdBy,
-        source: validContent.source,
-        rawContent: validContent.rawContent,
-        mediaUrl: validContent.mediaUrl,
-        mediaType: validContent.mediaType,
-        socialMediaInfo: validContent.socialMediaInfo,
-        contactEmail: validContent.contactEmail,
-        contactPhone: validContent.contactPhone,
-        eventDate: validContent.eventDate,
-        eventLocation: validContent.eventLocation,
-        registrationLink: validContent.registrationLink,
-        price: validContent.price,
-        createdAt: validContent.createdAt,
-        updatedAt: validContent.updatedAt
-      };
+      // Execute using the pool client directly to bypass Drizzle
+      const result = await db.$client.query(query);
       
-      const [createdContent] = await db.insert(aiKnowledgeContent)
-        .values(validFields)
-        .returning();
-      return createdContent;
+      if (result.rows && result.rows.length > 0) {
+        return result.rows[0] as AiKnowledgeContent;
+      } else {
+        throw new Error("Failed to create AI knowledge content - no row returned");
+      }
     } catch (error) {
       console.error("Database error in createAiKnowledgeContent:", error);
       throw error;
