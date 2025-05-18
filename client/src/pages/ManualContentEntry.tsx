@@ -65,6 +65,16 @@ const ManualContentEntry = () => {
     downloadLink: ''
   });
 
+  // Website form state
+  const [websiteData, setWebsiteData] = useState({
+    title: '',
+    content: '',
+    websiteUrl: '',
+    mediaUrl: '',
+    organizationName: '',
+    description: ''
+  });
+  
   // Bamboo Fact form state
   const [factData, setFactData] = useState({
     fact: '',
@@ -122,6 +132,11 @@ const ManualContentEntry = () => {
   const handleDocumentChange = (e) => {
     const { name, value } = e.target;
     setDocumentData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleWebsiteChange = (e) => {
+    const { name, value } = e.target;
+    setWebsiteData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFactChange = (e) => {
@@ -445,6 +460,39 @@ const ManualContentEntry = () => {
 
     addContentMutation.mutate(contentData);
   };
+  
+  const handleWebsiteSubmit = (e) => {
+    e.preventDefault();
+    if (!websiteData.title || !websiteData.content || !websiteData.websiteUrl) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields (title, description, and website URL).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create enhanced content with organization info if provided
+    let enhancedContent = websiteData.content;
+    if (websiteData.organizationName) {
+      enhancedContent = `Organization: ${websiteData.organizationName}\n\n${enhancedContent}`;
+    }
+    if (websiteData.description) {
+      enhancedContent = `${enhancedContent}\n\n${websiteData.description}`;
+    }
+
+    const contentData = {
+      title: websiteData.title,
+      content: enhancedContent,
+      contentType: 'webpage',
+      mediaUrl: websiteData.mediaUrl || null,
+      source: websiteData.websiteUrl || null,
+      createdBy: user?.id || 1,
+      status: 'active'
+    };
+
+    addContentMutation.mutate(contentData);
+  };
 
   const handleFactSubmit = (e) => {
     e.preventDefault();
@@ -504,6 +552,9 @@ const ManualContentEntry = () => {
           </TabsTrigger>
           <TabsTrigger value="book" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Book className="h-4 w-4" /> Book
+          </TabsTrigger>
+          <TabsTrigger value="website" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+            <Globe className="h-4 w-4" /> Website
           </TabsTrigger>
           <TabsTrigger value="social" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <MessageSquare className="h-4 w-4" /> Social Media
