@@ -72,7 +72,7 @@ const BooksList: React.FC<BooksListProps> = ({
             <p className="text-zinc-500 text-sm">No books found</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar scrollbar-w-1 scrollbar-thumb-zinc-500 scrollbar-track-transparent">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
             {books.map((book: BookItem) => (
               <div 
                 key={book.id}

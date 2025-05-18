@@ -87,7 +87,7 @@ const ArticlesResources: React.FC<ArticlesResourcesProps> = ({
             <p className="text-zinc-500 text-sm">No resources found</p>
           </div>
         ) : (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar scrollbar-w-1 scrollbar-thumb-zinc-500 scrollbar-track-transparent">
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
             {resources.map((resource: ResourceItem) => (
               <div 
                 key={resource.id}
