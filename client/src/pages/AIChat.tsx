@@ -10,6 +10,8 @@ import SocialMediaCarousel from "@/components/SocialMediaCarousel";
 import SocialMediaPosts from "@/components/SocialMediaPosts";
 import TodaysEnthusiast from "@/components/TodaysEnthusiast";
 import UpcomingEventsList from "@/components/UpcomingEventsList";
+import ArchitecturalCompetitions from "@/components/ArchitecturalCompetitions";
+import BooksList from "@/components/BooksList";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
@@ -166,7 +168,21 @@ const AIChat: React.FC = () => {
                         <TodaysEnthusiast />
                       </div>
                       
-                      {/* Fourth column - Recent Articles */}
+                      {/* Fourth column - Architectural Competitions */}
+                      <div>
+                        <ArchitecturalCompetitions
+                          onCompetitionClick={handleTopicClick}
+                        />
+                      </div>
+                      
+                      {/* Fifth column - Books */}
+                      <div>
+                        <BooksList
+                          onBookClick={handleTopicClick}
+                        />
+                      </div>
+                      
+                      {/* Sixth column - Recent Articles */}
                       <div>
                         <RecentArticles 
                           articles={dashboardData?.updates || []} 
@@ -174,8 +190,8 @@ const AIChat: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Fifth column - Social Media content from knowledge base */}
-                      <div className="md:col-span-2">
+                      {/* Seventh column - Social Media content from knowledge base */}
+                      <div className="md:col-span-3">
                         <SocialMediaPosts onPostClick={handleTopicClick} />
                       </div>
                     </div>
