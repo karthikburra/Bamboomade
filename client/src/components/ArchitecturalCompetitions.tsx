@@ -73,9 +73,9 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
                 className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800 transition"
                 onClick={() => handleCompetitionClick(competition)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex flex-col gap-3">
                   {competition.mediaUrl && (
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
+                    <div className="w-full h-40 flex-shrink-0">
                       <img 
                         src={competition.mediaUrl} 
                         alt={competition.title} 
@@ -85,7 +85,7 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
                   )}
                   
                   <div className="flex-1">
-                    <h3 className="text-zinc-200 font-medium text-sm sm:text-base">
+                    <h3 className="text-zinc-200 font-medium text-base">
                       {competition.title}
                     </h3>
                     
@@ -95,7 +95,12 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
                       </p>
                     )}
                     
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="mt-2 text-zinc-300 text-sm line-clamp-3">
+                      {competition.content && competition.content.substring(0, 180)}
+                      {competition.content && competition.content.length > 180 ? '...' : ''}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mt-3">
                       {competition.submissionDeadline && (
                         <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-zinc-300 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
@@ -106,6 +111,13 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
                       {competition.price && (
                         <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-green-300 flex items-center gap-1">
                           {competition.price}
+                        </Badge>
+                      )}
+                      
+                      {competition.registrationLink && (
+                        <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-blue-300 flex items-center gap-1">
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Register
                         </Badge>
                       )}
                     </div>
