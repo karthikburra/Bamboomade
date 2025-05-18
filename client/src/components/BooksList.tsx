@@ -36,9 +36,11 @@ const BooksList: React.FC<BooksListProps> = ({
     );
   }, [allContent]);
 
-  // Function to handle clicking on a book
+  // Function to handle clicking on a book - redirect to purchase link
   const handleBookClick = (book: BookItem) => {
-    if (onBookClick) {
+    if (book.source) {
+      window.open(book.source, '_blank');
+    } else if (onBookClick) {
       onBookClick(book);
     }
   };

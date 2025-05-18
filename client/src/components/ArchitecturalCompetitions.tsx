@@ -41,9 +41,11 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
     );
   }, [allContent]);
 
-  // Function to handle clicking on a competition
+  // Function to handle clicking on a competition - redirect to registration link
   const handleCompetitionClick = (competition: Competition) => {
-    if (onCompetitionClick) {
+    if (competition.registrationLink) {
+      window.open(competition.registrationLink, '_blank');
+    } else if (onCompetitionClick) {
       onCompetitionClick(competition);
     }
   };
