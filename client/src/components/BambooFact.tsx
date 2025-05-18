@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen, RefreshCw } from 'lucide-react';
+import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen, RefreshCw, Loader2 } from 'lucide-react';
 import { 
   Card, 
   CardContent, 
@@ -169,6 +169,26 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
     );
   };
 
+  // If loading or refreshing
+  if (isLoading && !isRefreshing) {
+    return (
+      <Card className="border-zinc-800 bg-zinc-900 h-full">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
+              <Lightbulb className="h-5 w-5 mr-2 text-amber-500" />
+              Did You Know?
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-amber-500" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If no facts are available
   if (facts.length === 0) {
     return (
       <Card className="border-zinc-800 bg-zinc-900 h-full">
@@ -183,9 +203,10 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
               size="icon" 
               className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
               title="Refresh bamboo facts"
-              onClick={() => window.location.reload()}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
             >
-              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+              <RefreshCw className={`h-3.5 w-3.5 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </CardHeader>
@@ -216,9 +237,10 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
               size="icon" 
               className="h-6 w-6 rounded-full text-zinc-400 hover:text-secondary"
               title="Refresh bamboo facts"
-              onClick={() => window.location.reload()}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
             >
-              <RefreshCw className="h-3.5 w-3.5 text-secondary" />
+              <RefreshCw className={`h-3.5 w-3.5 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </CardHeader>
@@ -251,9 +273,10 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
             variant="ghost" 
             size="sm" 
             className="text-zinc-400 hover:text-amber-400 -mt-1 -mr-2"
-            onClick={() => window.location.reload()}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
           >
-            <RefreshCw className="h-4 w-4 text-secondary" />
+            <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </CardHeader>
