@@ -38,9 +38,11 @@ const ArticlesResources: React.FC<ArticlesResourcesProps> = ({
     );
   }, [allContent]);
 
-  // Function to handle clicking on a resource
+  // Function to handle clicking on a resource - redirect to source link
   const handleResourceClick = (resource: ResourceItem) => {
-    if (onResourceClick) {
+    if (resource.source) {
+      window.open(resource.source, '_blank');
+    } else if (onResourceClick) {
       onResourceClick(resource);
     }
   };
