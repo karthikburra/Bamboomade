@@ -197,8 +197,6 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
                 onClick={() => {
                   if (post.source) {
                     window.open(post.source, '_blank');
-                  } else if (onPostClick) {
-                    onPostClick(`Tell me about "${post.title}"`);
                   }
                 }}
               >
@@ -208,7 +206,6 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
                     {getPlatformIcon(platform)}
                     {platform.charAt(0).toUpperCase() + platform.slice(1)}
                   </Badge>
-                  <span className="text-xs text-zinc-500">{formatDate(post.createdAt)}</span>
                 </div>
                 
                 {/* Post title */}
