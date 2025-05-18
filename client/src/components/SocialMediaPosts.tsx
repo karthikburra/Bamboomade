@@ -187,8 +187,8 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
       <CardContent>
         <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {posts.map((post) => {
-            const platform = post.socialMediaInfo?.platform || post.contentType.split('_')[1] || 'social';
+            {posts.map((post) => {
+              const platform = post.socialMediaInfo?.platform || post.contentType.split('_')[1] || 'social';
             
             return (
               <div 
@@ -255,8 +255,29 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
               </div>
             );
           })}
+          </div>
         </div>
       </CardContent>
+      
+      <CardFooter className="pt-1">
+        {posts && posts.length > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full text-zinc-400 text-xs hover:text-zinc-300"
+            onClick={() => {
+              // Find the social posts container and scroll to top
+              const container = document.querySelector(".max-h-\\[400px\\]");
+              if (container) {
+                container.scrollTop = 0;
+              }
+            }}
+          >
+            Scroll to top
+            <RefreshCw className="h-3 w-3 ml-1" />
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };
