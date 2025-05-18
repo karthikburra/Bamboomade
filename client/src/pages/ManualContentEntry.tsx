@@ -419,7 +419,7 @@ const ManualContentEntry = () => {
             <CardContent>
               <form onSubmit={handleEventSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="event-title">Event Title *</Label>
+                  <Label htmlFor="event-title" className="text-gray-300">Event Title *</Label>
                   <Input 
                     id="event-title" 
                     name="title" 
@@ -427,11 +427,12 @@ const ManualContentEntry = () => {
                     onChange={handleEventChange}
                     placeholder="Enter event title"
                     required
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-amber-500 focus:ring-amber-500"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="event-description">Event Description *</Label>
+                  <Label htmlFor="event-description" className="text-gray-300">Event Description *</Label>
                   <Textarea 
                     id="event-description" 
                     name="content"
@@ -440,6 +441,7 @@ const ManualContentEntry = () => {
                     placeholder="Enter event description"
                     rows={5}
                     required
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-amber-500 focus:ring-amber-500"
                   />
                 </div>
                 
