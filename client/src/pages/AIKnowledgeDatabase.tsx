@@ -428,7 +428,7 @@ export default function AIKnowledgeDatabase() {
   }, {});
 
   return (
-    <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl dark min-h-screen bg-gray-950 mx-auto">
+    <div className="pb-16 pt-8 px-6 md:px-8 lg:px-12 max-w-7xl min-h-screen bg-gray-950 text-gray-100 mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-amber-400">AI Knowledge Database</h1>
         <div className="flex gap-2">
@@ -460,7 +460,7 @@ export default function AIKnowledgeDatabase() {
       
       <AdminTabs value="database">
         <TabsContent value="database" className="space-y-6">
-          <div className="space-y-4 bg-gray-900 p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl">
+          <div className="space-y-4 bg-gray-900/80 p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl">
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
               <div className="relative flex-1 w-full max-w-md">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
