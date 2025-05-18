@@ -112,14 +112,7 @@ const MediumArticles: React.FC = () => {
           ))}
         </div>
 
-        <div className="mt-8 sm:mt-12 text-center px-4 sm:px-0">
-          <a href="https://medium.com/@bamboomade" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto inline-block">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto text-sm sm:text-base border-green-600 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30">
-              View All Articles
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </a>
-        </div>
+
       </div>
     </section>
   );
