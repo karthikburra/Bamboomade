@@ -1480,7 +1480,10 @@ export class DatabaseStorage implements IStorage {
           now,
           content.createdBy || 0,
           embedCode,
-          purchaseLink
+          purchaseLink,
+          content.authorName || null,
+          content.publicationYear || null,
+          content.publisherName || null
         ]
       };
       
