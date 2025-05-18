@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Loader2, Calendar, Book, MessageSquare, FileText, 
-  Info, Upload, Save, Check
+  Info, Upload, Save, Check, Globe, User, Trophy
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -783,6 +783,105 @@ const ManualContentEntry = () => {
                       Add Blog
                     </>
                   )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Website Form */}
+        <TabsContent value="website">
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
+            <CardHeader>
+              <CardTitle className="text-amber-400">Add Website</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleWebsiteSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="website-title">Website Title *</Label>
+                  <Input 
+                    id="website-title" 
+                    name="title" 
+                    value={websiteData.title}
+                    onChange={handleWebsiteChange}
+                    placeholder="Enter website title"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="website-url">Website URL *</Label>
+                  <Input 
+                    id="website-url" 
+                    name="websiteUrl" 
+                    value={websiteData.websiteUrl}
+                    onChange={handleWebsiteChange}
+                    placeholder="Enter full website URL (https://example.com)"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="website-organization">Organization Name</Label>
+                  <Input 
+                    id="website-organization" 
+                    name="organizationName" 
+                    value={websiteData.organizationName}
+                    onChange={handleWebsiteChange}
+                    placeholder="Enter organization name"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="website-content">Content Description *</Label>
+                  <Textarea 
+                    id="website-content" 
+                    name="content"
+                    value={websiteData.content}
+                    onChange={handleWebsiteChange}
+                    placeholder="Enter brief content description"
+                    rows={3}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="website-description">Detailed Description</Label>
+                  <Textarea 
+                    id="website-description" 
+                    name="description"
+                    value={websiteData.description}
+                    onChange={handleWebsiteChange}
+                    placeholder="Enter detailed website description"
+                    rows={5}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="website-logo">Logo/Image URL</Label>
+                  <div className="flex items-center gap-4">
+                    <Input 
+                      id="website-logo" 
+                      name="mediaUrl"
+                      value={websiteData.mediaUrl}
+                      onChange={handleWebsiteChange}
+                      placeholder="Enter logo/image URL"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Enter a URL for the website logo or a representative image</p>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  disabled={addContentMutation.isPending}
+                >
+                  {addContentMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : "Add Website"}
                 </Button>
               </form>
             </CardContent>
