@@ -158,7 +158,7 @@ export function TodaysEnthusiast() {
           <div>
             <CardTitle className="text-lg font-medium text-zinc-200 flex items-center">
               <User className="h-5 w-5 mr-2 text-amber-500" />
-              Bamboo Enthusiast
+              Enthusiast & Websites
             </CardTitle>
 
           </div>
