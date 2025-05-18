@@ -746,7 +746,18 @@ const WebExtraction = () => {
   }
   
   return (
-    <div className="max-w-4xl mx-auto mt-12 pb-20 text-green-50">
+    <div className="max-w-4xl mx-auto mt-6 pb-20 text-green-50">
+      {/* Back button */}
+      <div className="flex items-center mb-6">
+        <Button 
+          onClick={() => window.location.href = "/admin-dashboard"} 
+          variant="outline" 
+          className="mr-4 bg-gray-800 text-green-400 border-green-500 hover:bg-green-900/30 hover:text-green-200"
+        >
+          Back to Admin Dashboard
+        </Button>
+      </div>
+      
       {/* AI Summary Dialog */}
       <Dialog open={showAiSummaryDialog} onOpenChange={setShowAiSummaryDialog}>
         <DialogContent className="bg-gray-900 border-green-800/30 text-green-50 max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
