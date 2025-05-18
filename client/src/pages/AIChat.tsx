@@ -13,6 +13,7 @@ import UpcomingEventsList from "@/components/UpcomingEventsList";
 import ArchitecturalCompetitions from "@/components/ArchitecturalCompetitions";
 import BooksList from "@/components/BooksList";
 import ArticlesResources from "@/components/ArticlesResources";
+import ContentGallery from "@/components/ContentGallery";
 import useScrollTop from "@/hooks/use-scroll-top";
 import { Link } from "wouter";
 import { fetchDashboardData, DashboardData } from "@/lib/bamboo-ai";
@@ -190,7 +191,12 @@ const AIChat: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Seventh column - Social Media content from knowledge base */}
+                      {/* Seventh column - Content Images Gallery */}
+                      <div className="md:col-span-3">
+                        <ContentGallery onImageClick={handleTopicClick} />
+                      </div>
+                      
+                      {/* Eighth column - Social Media content from knowledge base */}
                       <div className="md:col-span-3">
                         <SocialMediaPosts onPostClick={handleTopicClick} />
                       </div>
