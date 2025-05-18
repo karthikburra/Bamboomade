@@ -191,12 +191,7 @@ const AIChat: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Seventh column - Content Images Gallery */}
-                      <div className="md:col-span-3">
-                        <ContentGallery onImageClick={handleTopicClick} />
-                      </div>
-                      
-                      {/* Eighth column - Social Media content from knowledge base */}
+                      {/* Seventh column - Social Media content from knowledge base */}
                       <div className="md:col-span-3">
                         <SocialMediaPosts onPostClick={handleTopicClick} />
                       </div>
