@@ -4213,12 +4213,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Content types available:", [...new Set(contentTypes)]);
       
       // Use both camelCase and snake_case for compatibility
+      // Include both enthusiast profiles and webpages in this section
       const enthusiasts = allContent.filter(item => 
-        (item.contentType === 'enthusiast' || item.content_type === 'enthusiast') && 
+        (item.contentType === 'enthusiast' || item.content_type === 'enthusiast' || 
+         item.contentType === 'webpage' || item.content_type === 'webpage') && 
         (item.status === 'published' || item.status === 'active')
       );
       
-      console.log("Filtered enthusiasts:", enthusiasts.length);
+      console.log("Filtered enthusiasts and websites:", enthusiasts.length);
       
       if (enthusiasts.length === 0) {
         return res.status(404).json({ error: "No bamboo enthusiasts found" });
