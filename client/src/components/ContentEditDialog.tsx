@@ -13,7 +13,8 @@ import { apiRequest } from '@/lib/queryClient';
 import { 
   Lightbulb, RefreshCw, Save, Plus, Trash2, AlertTriangle, Sparkles,
   Calendar, Book, MessageSquare, FileText, Info, Upload, Check,
-  User, Link, Mail, Phone, Linkedin, Instagram, Twitter, Facebook
+  User, Link, Mail, Phone, Linkedin, Instagram, Twitter, Facebook,
+  Share2
 } from 'lucide-react';
 import {
   AlertDialog,
