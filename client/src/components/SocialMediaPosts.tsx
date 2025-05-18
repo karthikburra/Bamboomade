@@ -209,12 +209,9 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
                   {post.title}
                 </h3>
                 
-                {/* Post content */}
-                <p className="text-xs text-zinc-400 mb-2 line-clamp-3">{post.content}</p>
-                
-                {/* Post media if available */}
+                {/* Post media if available - Always show first */}
                 {post.mediaUrl && (
-                  <div className="mt-2 mb-2 overflow-hidden rounded-md">
+                  <div className="mb-3 overflow-hidden rounded-md">
                     <img 
                       src={post.mediaUrl} 
                       alt={post.title} 
@@ -223,6 +220,9 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
                     />
                   </div>
                 )}
+                
+                {/* Post content */}
+                <p className="text-xs text-zinc-400 mb-2 line-clamp-3">{post.content}</p>
                 
                 {/* Source link if available */}
                 {post.source && (
