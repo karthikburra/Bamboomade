@@ -1,6 +1,6 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Calendar, ExternalLink, Loader2, Trophy } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Calendar, ExternalLink, Loader2, Trophy, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,11 +26,26 @@ interface ArchitecturalCompetitionsProps {
 const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({ 
   onCompetitionClick
 }) => {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
   // Query public knowledge content for competitions
-  const { data: allContent, isLoading } = useQuery({
+  const { data: allContent, isLoading, refetch } = useQuery({
     queryKey: ['/api/public/ai-knowledge'],
     retry: false,
   });
+  
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+    } catch (error) {
+      console.error('Failed to refresh competitions:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
+    }
+  };
   
   // Filter active competitions from all content
   const competitions = React.useMemo(() => {
@@ -58,6 +73,15 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
             <Trophy className="h-4 w-4" />
             Architectural Competitions
           </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </CardHeader>
       

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Lightbulb, ExternalLink, Instagram, Globe, Youtube, FileText, Calendar, MessageSquare, BookOpen, RefreshCw } from 'lucide-react';
 import { 
   Card, 
@@ -19,11 +19,26 @@ interface BambooFactProps {
 }
 
 const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFactClick }) => {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
   // Fetch active bamboo facts from the API
   const { data: activeFacts, isLoading, refetch } = useQuery({
     queryKey: ['/api/bamboo-facts'],
     retry: false
   });
+  
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      await refetch();
+    } catch (error) {
+      console.error('Failed to refresh bamboo facts:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
+    }
+  };
   
   // Use the active facts from API if available, otherwise fall back to props
   const facts = activeFacts && activeFacts.length > 0 

@@ -74,6 +74,15 @@ const BooksList: React.FC<BooksListProps> = ({
             <Book className="h-4 w-4" />
             Bamboo Books
           </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
+            onClick={handleRefresh}
+            disabled={isRefreshing || isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </CardHeader>
       
