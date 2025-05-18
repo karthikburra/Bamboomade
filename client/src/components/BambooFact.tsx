@@ -32,7 +32,9 @@ const BambooFact: React.FC<BambooFactProps> = ({ factData, factsData = [], onFac
       .filter(fact => fact.contentType === 'fact');
   
   const handleFactClick = (fact: BambooFactType | null) => {
-    if (onFactClick && fact) {
+    if (fact && fact.source && fact.source.startsWith('http')) {
+      window.open(fact.source, '_blank');
+    } else if (onFactClick && fact) {
       onFactClick(`Tell me more about "${fact.fact.split('.')[0]}"`);
     }
   };

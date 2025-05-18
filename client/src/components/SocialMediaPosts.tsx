@@ -193,7 +193,13 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
               <div 
                 key={post.id} 
                 className="border border-zinc-800 rounded-md p-4 bg-zinc-950/60 overflow-hidden"
-                onClick={() => onPostClick && onPostClick(`Tell me about "${post.title}"`)}
+                onClick={() => {
+                  if (post.source) {
+                    window.open(post.source, '_blank');
+                  } else if (onPostClick) {
+                    onPostClick(`Tell me about "${post.title}"`);
+                  }
+                }}
               >
                 {/* Post header with platform badge */}
                 <div className="mb-2 flex justify-between items-start">
