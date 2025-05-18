@@ -72,8 +72,8 @@ const BooksList: React.FC<BooksListProps> = ({
             <p className="text-zinc-500 text-sm">No books found</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {books.slice(0, 3).map((book: BookItem) => (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
+            {books.map((book: BookItem) => (
               <div 
                 key={book.id}
                 className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800 transition"
@@ -124,9 +124,15 @@ const BooksList: React.FC<BooksListProps> = ({
             variant="ghost" 
             size="sm" 
             className="w-full text-zinc-400 text-xs hover:text-zinc-300"
-            onClick={() => {/* Handle view all */}}
+            onClick={() => {
+              // Find the books container and scroll to top
+              const container = document.querySelector(".max-h-\\[400px\\]");
+              if (container) {
+                container.scrollTop = 0;
+              }
+            }}
           >
-            View all books
+            Scroll to top
             <ExternalLink className="h-3 w-3 ml-1" />
           </Button>
         )}

@@ -185,7 +185,8 @@ const SocialMediaPosts: React.FC<SocialMediaPostsProps> = ({ onPostClick }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {posts.map((post) => {
             const platform = post.socialMediaInfo?.platform || post.contentType.split('_')[1] || 'social';
             
