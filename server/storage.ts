@@ -1408,6 +1408,10 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  getPool() {
+    return db.$client;
+  }
+
   async createAiKnowledgeContent(content: InsertAiKnowledgeContent, useAiSummary: boolean = false): Promise<AiKnowledgeContent> {
     try {
       console.log("Creating AI knowledge content with fields:", Object.keys(content).join(", "));
@@ -1418,68 +1422,46 @@ export class DatabaseStorage implements IStorage {
         content.content = content.aiSummary;
       }
       
-      // Build a clean object with only the fields we know exist in the database
       const now = new Date();
       
-      // Use the sql.raw method to directly create the object for insert
-      const insertData = {
-        title: content.title || '',
-        content: content.content || '',
-        raw_content: content.rawContent || null,
-        source: content.source || null, 
-        content_type: content.contentType || '',
-        status: content.status || 'active',
-        media_url: content.mediaUrl || null,
-        media_type: content.mediaType || null,
-        social_media_info: content.socialMediaInfo || null,
-        contact_email: content.contactEmail || null,
-        contact_phone: content.contactPhone || null,
-        event_date: content.eventDate || null,
-        event_location: content.eventLocation || null,
-        registration_link: content.registrationLink || null,
-        price: content.price || null,
-        created_at: now,
-        updated_at: now,
-        created_by: content.createdBy || 0
-      };
-     
-      // Use the pool to directly execute the query to bypass Drizzle ORM temporarily
-      // This helps us avoid the post_date column issue
+      // Let's inspect the actual database columns to see what's available
+      console.log("Attempting direct SQL insert to avoid schema mismatch");
+      
       const query = {
         text: `
           INSERT INTO ai_knowledge_content (
             title, content, raw_content, source, content_type, status, 
-            media_url, media_type, social_media_info, contact_email, 
-            contact_phone, event_date, event_location, registration_link, 
-            price, created_at, updated_at, created_by
+            media_url, media_type, contact_email, contact_phone, 
+            event_date, event_location, registration_link, 
+            price, created_at, updated_at, created_by, post_date
           ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
             $11, $12, $13, $14, $15, $16, $17, $18
           ) RETURNING *
         `,
         values: [
-          insertData.title,
-          insertData.content,
-          insertData.raw_content,
-          insertData.source,
-          insertData.content_type,
-          insertData.status,
-          insertData.media_url,
-          insertData.media_type,
-          insertData.social_media_info,
-          insertData.contact_email,
-          insertData.contact_phone,
-          insertData.event_date,
-          insertData.event_location,
-          insertData.registration_link,
-          insertData.price,
-          insertData.created_at,
-          insertData.updated_at,
-          insertData.created_by
+          content.title || '',
+          content.content || '',
+          content.rawContent || null,
+          content.source || null,
+          content.contentType || '',
+          content.status || 'active',
+          content.mediaUrl || null,
+          content.mediaType || null,
+          content.contactEmail || null,
+          content.contactPhone || null,
+          content.eventDate || null,
+          content.eventLocation || null,
+          content.registrationLink || null,
+          content.price || null,
+          now,
+          now,
+          content.createdBy || 0,
+          now  // Use current date for post_date as well
         ]
       };
       
-      // Execute using the pool client directly to bypass Drizzle
+      // Execute the query directly
       const result = await db.$client.query(query);
       
       if (result.rows && result.rows.length > 0) {
