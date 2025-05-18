@@ -30,6 +30,7 @@ import { checkAndUpdateSubscriptions } from "./subscription-checker";
 import { importFromUrl } from "./url-importer";
 import { registerScrapyRoutes } from "./scrapy_routes";
 import openaiSummarizeRoutes from "./routes-openai-summarize";
+import { setupFileUploadRoutes } from "./upload-service";
 // PhonePe service removed
 import { 
   initiateRazorpayPayment, 
@@ -8868,6 +8869,9 @@ Please structure the summary in a helpful format with clear headings, bullet poi
   
   // OpenAI routes for content summarization
   app.use('/api/openai', openaiSummarizeRoutes);
+  
+  // Set up file upload routes for manual content entry
+  setupFileUploadRoutes(app);
   
   const httpServer = createServer(app);
   // API route to fetch social media posts from the knowledge base
