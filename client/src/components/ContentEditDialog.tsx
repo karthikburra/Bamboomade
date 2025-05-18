@@ -582,8 +582,27 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="content">Content</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="content" className="flex items-center gap-1">
+              <FileText className="h-4 w-4" />
+              Basic
+            </TabsTrigger>
+            <TabsTrigger value="event" className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              Event
+            </TabsTrigger>
+            <TabsTrigger value="book" className="flex items-center gap-1">
+              <Book className="h-4 w-4" />
+              Book
+            </TabsTrigger>
+            <TabsTrigger value="enthusiast" className="flex items-center gap-1">
+              <User className="h-4 w-4" />
+              Enthusiast
+            </TabsTrigger>
+            <TabsTrigger value="social" className="flex items-center gap-1">
+              <Share2 className="h-4 w-4" />
+              Social
+            </TabsTrigger>
             <TabsTrigger value="facts" className="flex items-center gap-1">
               <Lightbulb className="h-4 w-4" />
               Facts
@@ -687,6 +706,249 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
                       <Sparkles className={`h-3 w-3 sm:h-4 sm:w-4 ${isResummarizing ? 'animate-spin' : ''}`} />
                       {isResummarizing ? 'Processing...' : 'Resummarize Content'}
                     </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* Event Tab */}
+          <TabsContent value="event" className="space-y-4 pt-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="eventDate" className="sm:text-right">
+                  Event Date
+                </Label>
+                <Input
+                  id="eventDate"
+                  type="date"
+                  value={eventDate || ''}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="eventLocation" className="sm:text-right">
+                  Location
+                </Label>
+                <Input
+                  id="eventLocation"
+                  value={eventLocation || ''}
+                  onChange={(e) => setEventLocation(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="registrationLink" className="sm:text-right">
+                  Registration Link
+                </Label>
+                <Input
+                  id="registrationLink"
+                  value={registrationLink || ''}
+                  onChange={(e) => setRegistrationLink(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="price" className="sm:text-right">
+                  Price
+                </Label>
+                <Input
+                  id="price"
+                  value={price || ''}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                <Label htmlFor="additionalInfo" className="sm:text-right pt-2">
+                  Additional Info
+                </Label>
+                <Textarea
+                  id="additionalInfo"
+                  value={additionalInfo || ''}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  className="min-h-[100px] col-span-1 sm:col-span-3"
+                />
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* Book Tab */}
+          <TabsContent value="book" className="space-y-4 pt-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="authorName" className="sm:text-right">
+                  Author Name
+                </Label>
+                <Input
+                  id="authorName"
+                  value={authorName || ''}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="publicationYear" className="sm:text-right">
+                  Publication Year
+                </Label>
+                <Input
+                  id="publicationYear"
+                  value={publicationYear || ''}
+                  onChange={(e) => setPublicationYear(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="publisherName" className="sm:text-right">
+                  Publisher
+                </Label>
+                <Input
+                  id="publisherName"
+                  value={publisherName || ''}
+                  onChange={(e) => setPublisherName(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="purchaseLink" className="sm:text-right">
+                  Purchase Link
+                </Label>
+                <Input
+                  id="purchaseLink"
+                  value={purchaseLink || ''}
+                  onChange={(e) => setPurchaseLink(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* Enthusiast Tab */}
+          <TabsContent value="enthusiast" className="space-y-4 pt-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="contactEmail" className="sm:text-right">
+                  <Mail className="h-4 w-4 inline mr-1" /> Email
+                </Label>
+                <Input
+                  id="contactEmail"
+                  type="email"
+                  value={contactEmail || ''}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="contactPhone" className="sm:text-right">
+                  <Phone className="h-4 w-4 inline mr-1" /> Phone
+                </Label>
+                <Input
+                  id="contactPhone"
+                  value={contactPhone || ''}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="personalWebsite" className="sm:text-right">
+                  <Link className="h-4 w-4 inline mr-1" /> Website
+                </Label>
+                <Input
+                  id="personalWebsite"
+                  value={personalWebsite || ''}
+                  onChange={(e) => setPersonalWebsite(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="linkedinUrl" className="sm:text-right">
+                  <Linkedin className="h-4 w-4 inline mr-1" /> LinkedIn
+                </Label>
+                <Input
+                  id="linkedinUrl"
+                  value={linkedinUrl || ''}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="instagramUrl" className="sm:text-right">
+                  <Instagram className="h-4 w-4 inline mr-1" /> Instagram
+                </Label>
+                <Input
+                  id="instagramUrl"
+                  value={instagramUrl || ''}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="twitterUrl" className="sm:text-right">
+                  <Twitter className="h-4 w-4 inline mr-1" /> Twitter
+                </Label>
+                <Input
+                  id="twitterUrl"
+                  value={twitterUrl || ''}
+                  onChange={(e) => setTwitterUrl(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="facebookUrl" className="sm:text-right">
+                  <Facebook className="h-4 w-4 inline mr-1" /> Facebook
+                </Label>
+                <Input
+                  id="facebookUrl"
+                  value={facebookUrl || ''}
+                  onChange={(e) => setFacebookUrl(e.target.value)}
+                  className="col-span-1 sm:col-span-3"
+                />
+              </div>
+            </div>
+          </TabsContent>
+          
+          {/* Social Media Tab */}
+          <TabsContent value="social" className="space-y-4 pt-4">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                <Label htmlFor="embedCode" className="sm:text-right pt-2">
+                  Embed Code
+                </Label>
+                <Textarea
+                  id="embedCode"
+                  value={embedCode || ''}
+                  onChange={(e) => setEmbedCode(e.target.value)}
+                  className="min-h-[150px] col-span-1 sm:col-span-3 font-mono text-xs"
+                  placeholder="<iframe>, <blockquote> or other social media embed code..."
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-2 sm:gap-4">
+                <div className="sm:text-right pt-2">
+                  <Label>Preview</Label>
+                  <p className="text-xs text-muted-foreground mt-1">This preview may not be fully functional</p>
+                </div>
+                <div className="col-span-1 sm:col-span-3 border rounded-md p-4 min-h-[150px] bg-background">
+                  {embedCode ? (
+                    <div dangerouslySetInnerHTML={{ __html: embedCode }} />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      No embed code provided
+                    </div>
                   )}
                 </div>
               </div>
