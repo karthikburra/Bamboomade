@@ -32,7 +32,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone, User,
-  UserCircle, LogOut, Settings, Edit, ClipboardList, Loader2, Clock
+  UserCircle, LogOut, Settings, Edit, ClipboardList, Loader2, Clock, 
+  Globe, LayoutDashboard, CreditCard, BookOpen, MessageSquare, Moon, Sun, Info
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -225,7 +226,6 @@ const Navbar: React.FC = () => {
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
     { href: "/ai-chat", label: "Bamboo One", isBeta: true },
-    { href: "/web-extraction", label: "Web Extraction", isNew: true },
   ];
   
   // User links removed as profile is now accessible via the dropdown menu
@@ -354,12 +354,29 @@ const Navbar: React.FC = () => {
                 {user?.isAdmin && (
                   <>
                     <DropdownMenuSeparator className="bg-green-800/30" />
+                    <DropdownMenuLabel className="text-amber-300 mb-1">
+                      Admin Tools
+                    </DropdownMenuLabel>
+                    <DropdownMenuItem 
+                      className="flex items-center gap-2 cursor-pointer text-amber-300 focus:text-amber-200 focus:bg-amber-900/20"
+                      onClick={() => window.location.href = "/web-extraction"}
+                    >
+                      <Globe className="mr-2 h-4 w-4" />
+                      Web Extraction
+                    </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="flex items-center gap-2 cursor-pointer text-amber-300 focus:text-amber-200 focus:bg-amber-900/20"
                       onClick={() => window.location.href = "/manual-content-entry"}
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Manual Content Entry
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="flex items-center gap-2 cursor-pointer text-amber-300 focus:text-amber-200 focus:bg-amber-900/20"
+                      onClick={() => window.location.href = "/admin-dashboard"}
+                    >
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Admin Dashboard
                     </DropdownMenuItem>
                   </>
                 )}
