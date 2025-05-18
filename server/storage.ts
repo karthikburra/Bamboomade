@@ -1443,20 +1443,30 @@ export class DatabaseStorage implements IStorage {
       
       // Remove any fields not in the insert schema that might be 
       // passed from the web extraction process
-      // Clean up any fields that might come from the web extraction 
-      // but aren't in our database schema
-      const fieldsToPrune = [
-        'authorName', 'author', 'publicationYear', 
-        'publisherName', 'purchaseLink', 'embedCode', 
-        'postDate', 'post_date', 'socialPlatform', 'platform'
-      ];
-      
-      for (const field of fieldsToPrune) {
-        delete (content as any)[field];
-      }
+      // Instead of removing fields, only include fields that are in the schema
+      const validFields = {
+        title: validContent.title,
+        content: validContent.content,
+        contentType: validContent.contentType,
+        status: validContent.status,
+        createdBy: validContent.createdBy,
+        source: validContent.source,
+        rawContent: validContent.rawContent,
+        mediaUrl: validContent.mediaUrl,
+        mediaType: validContent.mediaType,
+        socialMediaInfo: validContent.socialMediaInfo,
+        contactEmail: validContent.contactEmail,
+        contactPhone: validContent.contactPhone,
+        eventDate: validContent.eventDate,
+        eventLocation: validContent.eventLocation,
+        registrationLink: validContent.registrationLink,
+        price: validContent.price,
+        createdAt: validContent.createdAt,
+        updatedAt: validContent.updatedAt
+      };
       
       const [createdContent] = await db.insert(aiKnowledgeContent)
-        .values(validContent)
+        .values(validFields)
         .returning();
       return createdContent;
     } catch (error) {
