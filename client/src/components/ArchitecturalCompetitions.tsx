@@ -71,8 +71,8 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
             <p className="text-zinc-500 text-sm">No active competitions found</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {competitions.slice(0, 3).map((competition: Competition) => (
+          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800">
+            {competitions.map((competition: Competition) => (
               <div 
                 key={competition.id}
                 className="bg-zinc-800/50 rounded-lg p-3 cursor-pointer hover:bg-zinc-800 transition"
@@ -138,9 +138,15 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
             variant="ghost" 
             size="sm" 
             className="w-full text-zinc-400 text-xs hover:text-zinc-300"
-            onClick={() => {/* Handle view all */}}
+            onClick={() => {
+              // Find the competitions container and scroll to top
+              const container = document.querySelector(".max-h-\\[600px\\]");
+              if (container) {
+                container.scrollTop = 0;
+              }
+            }}
           >
-            View all competitions
+            Scroll to top
             <ExternalLink className="h-3 w-3 ml-1" />
           </Button>
         )}
