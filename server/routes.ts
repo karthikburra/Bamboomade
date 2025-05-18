@@ -29,6 +29,7 @@ import { getLatestEventsSummary, getRecentUpdates, getInterestingBambooFact, get
 import { checkAndUpdateSubscriptions } from "./subscription-checker";
 import { importFromUrl } from "./url-importer";
 import { registerScrapyRoutes } from "./scrapy_routes";
+import openaiSummarizeRoutes from "./routes-openai-summarize";
 // PhonePe service removed
 import { 
   initiateRazorpayPayment, 

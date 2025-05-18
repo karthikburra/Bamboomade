@@ -463,22 +463,35 @@ const WebExtraction = () => {
                   )}
                 </div>
                 
-                {/* Add to knowledge base button */}
-                <Button
-                  size="sm"
-                  variant={itemAdded ? "outline" : "default"}
-                  className={itemAdded ? "bg-green-900/30 text-green-300 border-green-700" : "bg-green-700 text-white"}
-                  onClick={() => handleAddItem(type, item)}
-                  disabled={itemAdded || saveItemMutation.isPending}
-                >
-                  {saveItemMutation.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : itemAdded ? (
-                    "Added ✓"
-                  ) : (
-                    "Add to Database"
+                {/* Buttons */}
+                <div className="flex flex-col space-y-2">
+                  <Button
+                    size="sm"
+                    variant={itemAdded ? "outline" : "default"}
+                    className={itemAdded ? "bg-green-900/30 text-green-300 border-green-700" : "bg-green-700 text-white"}
+                    onClick={() => handleAddItem(type, item)}
+                    disabled={itemAdded || saveItemMutation.isPending}
+                  >
+                    {saveItemMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : itemAdded ? (
+                      "Added ✓"
+                    ) : (
+                      "Add to Database"
+                    )}
+                  </Button>
+                  
+                  {!itemAdded && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="bg-gray-900/50 text-green-300 border-green-700 hover:bg-green-900/30"
+                      onClick={() => openAiSummaryDialog(type, item)}
+                    >
+                      <Brain className="w-3 h-3 mr-1" /> Summarize with AI
+                    </Button>
                   )}
-                </Button>
+                </div>
               </div>
             </div>
           );
@@ -695,6 +708,94 @@ const WebExtraction = () => {
   
   return (
     <div className="max-w-4xl mx-auto mt-12 pb-20 text-green-50">
+      {/* AI Summary Dialog */}
+      <Dialog open={showAiSummaryDialog} onOpenChange={setShowAiSummaryDialog}>
+        <DialogContent className="bg-gray-900 border-green-800/30 text-green-50 max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-green-300 flex items-center">
+              <Brain className="h-5 w-5 mr-2" />
+              AI Summary for Knowledge Base
+            </DialogTitle>
+            <DialogDescription className="text-green-400">
+              Use AI to generate a well-formatted summary of this content before adding to the knowledge base.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4 flex-grow overflow-hidden">
+            <div className="flex flex-col space-y-2">
+              <Label htmlFor="prompt" className="text-green-300">AI Instructions (Edit as needed):</Label>
+              <Textarea 
+                id="prompt" 
+                className="flex-grow bg-gray-800/50 border-green-800/30 text-green-100 min-h-[100px]" 
+                value={aiSummaryPrompt}
+                onChange={(e) => setAiSummaryPrompt(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex justify-between">
+              <Label className="text-green-300">AI-Generated Summary:</Label>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="bg-gray-800/50 border-green-800/30 text-green-300 hover:bg-green-900/30"
+                onClick={handleAiSummarize}
+                disabled={isSummarizing}
+              >
+                {isSummarizing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Generate Summary
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            <div className="border border-green-800/30 rounded-md bg-gray-800/50 p-4 overflow-y-auto max-h-[300px]">
+              {aiSummaryResult ? (
+                <div className="text-green-100 whitespace-pre-line">
+                  {aiSummaryResult}
+                </div>
+              ) : (
+                <div className="text-green-500 text-center py-8">
+                  {isSummarizing ? (
+                    <div className="flex flex-col items-center">
+                      <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                      <p>Generating summary...</p>
+                    </div>
+                  ) : (
+                    <p>Click "Generate Summary" to create AI-enhanced content</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAiSummaryDialog(false)}
+              className="border-green-800/30 text-green-300"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddItemWithSummary} 
+              disabled={!aiSummaryResult || isSummarizing}
+              className="bg-green-700 text-white hover:bg-green-600"
+            >
+              <Check className="mr-2 h-4 w-4" />
+              Add with Summary
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2 text-green-300">Web Content Extraction</h1>
         <p className="text-lg text-green-400">
