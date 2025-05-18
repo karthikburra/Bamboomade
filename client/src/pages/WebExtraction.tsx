@@ -138,9 +138,11 @@ const WebExtraction = () => {
   const [isUrlValid, setIsUrlValid] = useState(true);
   const [activeTab, setActiveTab] = useState('extract');
   const [activeDetailTab, setActiveDetailTab] = useState<string | null>(null);
+  const [activePage, setActivePage] = useState<string | null>(null);
   const [extractionSummary, setExtractionSummary] = useState<ExtractSummary | null>(null);
   const [extractionData, setExtractionData] = useState<ScrapyResults | null>(null);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
+  const [pageContentMap, setPageContentMap] = useState<Record<string, any>>({});
   
   // Validate URL format
   const validateUrl = (input: string) => {
@@ -315,6 +317,129 @@ const WebExtraction = () => {
       // Store the extraction data if available
       if (data.results) {
         setExtractionData(data.results);
+        
+        // Organize content by page URL
+        const pageMap: Record<string, any> = {};
+        
+        // Add pages
+        if (data.results.pages) {
+          data.results.pages.forEach(page => {
+            if (!pageMap[page.url]) {
+              pageMap[page.url] = {
+                url: page.url,
+                title: page.title,
+                events: [],
+                books: [],
+                contacts: [],
+                images: [],
+                social_media: []
+              };
+            }
+          });
+        }
+        
+        // Map events to pages
+        if (data.results.events) {
+          data.results.events.forEach(event => {
+            const pageUrl = event.url;
+            if (pageMap[pageUrl]) {
+              pageMap[pageUrl].events.push(event);
+            } else {
+              // If the page isn't in our map yet, add it
+              pageMap[pageUrl] = {
+                url: pageUrl,
+                title: "Unknown Page",
+                events: [event],
+                books: [],
+                contacts: [],
+                images: [],
+                social_media: []
+              };
+            }
+          });
+        }
+        
+        // Map books to pages
+        if (data.results.books) {
+          data.results.books.forEach(book => {
+            const pageUrl = book.url;
+            if (pageMap[pageUrl]) {
+              pageMap[pageUrl].books.push(book);
+            } else {
+              pageMap[pageUrl] = {
+                url: pageUrl,
+                title: "Unknown Page",
+                events: [],
+                books: [book],
+                contacts: [],
+                images: [],
+                social_media: []
+              };
+            }
+          });
+        }
+        
+        // Map contacts to pages
+        if (data.results.contacts) {
+          data.results.contacts.forEach(contact => {
+            const pageUrl = contact.url;
+            if (pageMap[pageUrl]) {
+              pageMap[pageUrl].contacts.push(contact);
+            } else {
+              pageMap[pageUrl] = {
+                url: pageUrl,
+                title: "Unknown Page",
+                events: [],
+                books: [],
+                contacts: [contact],
+                images: [],
+                social_media: []
+              };
+            }
+          });
+        }
+        
+        // Map images to pages
+        if (data.results.images) {
+          data.results.images.forEach(image => {
+            const pageUrl = image.page_url || image.url;
+            if (pageMap[pageUrl]) {
+              pageMap[pageUrl].images.push(image);
+            } else {
+              pageMap[pageUrl] = {
+                url: pageUrl,
+                title: "Unknown Page",
+                events: [],
+                books: [],
+                contacts: [],
+                images: [image],
+                social_media: []
+              };
+            }
+          });
+        }
+        
+        // Map social media to pages
+        if (data.results.social_media) {
+          data.results.social_media.forEach(social => {
+            const pageUrl = social.url;
+            if (pageMap[pageUrl]) {
+              pageMap[pageUrl].social_media.push(social);
+            } else {
+              pageMap[pageUrl] = {
+                url: pageUrl,
+                title: "Unknown Page",
+                events: [],
+                books: [],
+                contacts: [],
+                images: [],
+                social_media: [social]
+              };
+            }
+          });
+        }
+        
+        setPageContentMap(pageMap);
       }
       
       // Switch to the results tab
@@ -610,36 +735,128 @@ const WebExtraction = () => {
                       </div>
                     </div>
                     
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="text-lg font-medium text-green-300 mb-4">Events</h3>
-                        {extractionData?.events && renderContentItems('event', extractionData.events)}
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-lg font-medium text-green-300 mb-4">Books</h3>
-                        {extractionData?.books && renderContentItems('book', extractionData.books)}
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-lg font-medium text-green-300 mb-4">Contacts</h3>
-                        {extractionData?.contacts && renderContentItems('contact', extractionData.contacts)}
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-lg font-medium text-green-300 mb-4">Pages</h3>
-                        {extractionData?.pages && renderContentItems('page', extractionData.pages)}
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-lg font-medium text-green-300 mb-4">Images</h3>
-                        {extractionData?.images && renderContentItems('image', extractionData.images)}
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-lg font-medium text-green-300 mb-4">Social Media</h3>
-                        {extractionData?.social_media && renderContentItems('social_media', extractionData.social_media)}
-                      </div>
+                    <div className="mb-6">
+                      <Tabs defaultValue={activePage || "by-type"} onValueChange={setActivePage}>
+                        <TabsList className="w-full bg-gray-800/50 mb-4 flex flex-wrap">
+                          <TabsTrigger 
+                            value="by-type" 
+                            className="data-[state=active]:bg-green-700/30 data-[state=active]:text-green-100 flex-grow"
+                          >
+                            View by Content Type
+                          </TabsTrigger>
+                          
+                          {Object.keys(pageContentMap).length > 0 && 
+                            Object.keys(pageContentMap).map((pageUrl, index) => (
+                              <TabsTrigger 
+                                key={pageUrl}
+                                value={pageUrl}
+                                className="data-[state=active]:bg-green-700/30 data-[state=active]:text-green-100 flex-grow"
+                              >
+                                {pageContentMap[pageUrl].title ? 
+                                  (pageContentMap[pageUrl].title.length > 20 ? 
+                                    pageContentMap[pageUrl].title.substring(0, 20) + '...' : 
+                                    pageContentMap[pageUrl].title) : 
+                                  `Page ${index + 1}`}
+                              </TabsTrigger>
+                            ))
+                          }
+                        </TabsList>
+                        
+                        <TabsContent value="by-type" className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-medium text-green-300 mb-4">Events</h3>
+                            {extractionData?.events && renderContentItems('event', extractionData.events)}
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-lg font-medium text-green-300 mb-4">Books</h3>
+                            {extractionData?.books && renderContentItems('book', extractionData.books)}
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-lg font-medium text-green-300 mb-4">Contacts</h3>
+                            {extractionData?.contacts && renderContentItems('contact', extractionData.contacts)}
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-lg font-medium text-green-300 mb-4">Pages</h3>
+                            {extractionData?.pages && renderContentItems('page', extractionData.pages)}
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-lg font-medium text-green-300 mb-4">Images</h3>
+                            {extractionData?.images && renderContentItems('image', extractionData.images)}
+                          </div>
+                          
+                          <div>
+                            <h3 className="text-lg font-medium text-green-300 mb-4">Social Media</h3>
+                            {extractionData?.social_media && renderContentItems('social_media', extractionData.social_media)}
+                          </div>
+                        </TabsContent>
+                        
+                        {/* Page-specific content tabs */}
+                        {Object.keys(pageContentMap).map(pageUrl => (
+                          <TabsContent key={pageUrl} value={pageUrl} className="space-y-6">
+                            <div className="mb-4 p-4 bg-gray-900/50 rounded-lg">
+                              <h3 className="text-lg font-medium text-green-300 mb-2">
+                                {pageContentMap[pageUrl].title || "Page Content"}
+                              </h3>
+                              <a 
+                                href={pageUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-green-400 hover:text-green-300 text-sm flex items-center"
+                              >
+                                <Globe className="w-4 h-4 mr-1" /> {pageUrl}
+                                <ExternalLink className="w-3 h-3 ml-1" />
+                              </a>
+                            </div>
+                            
+                            {pageContentMap[pageUrl].events.length > 0 && (
+                              <div>
+                                <h3 className="text-lg font-medium text-green-300 mb-4">Events on this Page</h3>
+                                {renderContentItems('event', pageContentMap[pageUrl].events)}
+                              </div>
+                            )}
+                            
+                            {pageContentMap[pageUrl].books.length > 0 && (
+                              <div>
+                                <h3 className="text-lg font-medium text-green-300 mb-4">Books on this Page</h3>
+                                {renderContentItems('book', pageContentMap[pageUrl].books)}
+                              </div>
+                            )}
+                            
+                            {pageContentMap[pageUrl].contacts.length > 0 && (
+                              <div>
+                                <h3 className="text-lg font-medium text-green-300 mb-4">Contacts on this Page</h3>
+                                {renderContentItems('contact', pageContentMap[pageUrl].contacts)}
+                              </div>
+                            )}
+                            
+                            {/* Find the page details in the pages array */}
+                            {extractionData?.pages && extractionData.pages.filter(p => p.url === pageUrl).length > 0 && (
+                              <div>
+                                <h3 className="text-lg font-medium text-green-300 mb-4">Page Content</h3>
+                                {renderContentItems('page', extractionData.pages.filter(p => p.url === pageUrl))}
+                              </div>
+                            )}
+                            
+                            {pageContentMap[pageUrl].images.length > 0 && (
+                              <div>
+                                <h3 className="text-lg font-medium text-green-300 mb-4">Images on this Page</h3>
+                                {renderContentItems('image', pageContentMap[pageUrl].images)}
+                              </div>
+                            )}
+                            
+                            {pageContentMap[pageUrl].social_media.length > 0 && (
+                              <div>
+                                <h3 className="text-lg font-medium text-green-300 mb-4">Social Media on this Page</h3>
+                                {renderContentItems('social_media', pageContentMap[pageUrl].social_media)}
+                              </div>
+                            )}
+                          </TabsContent>
+                        ))}
+                      </Tabs>
                     </div>
                   </div>
                 ) : (
