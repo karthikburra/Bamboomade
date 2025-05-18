@@ -11,8 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { 
   Loader2, Globe, FileText, Calendar, Users, Image, Book, MessageSquare, 
-  Phone, MapPin, ExternalLink, Ticket, Mail, ShoppingCart 
+  Phone, MapPin, ExternalLink, Ticket, Mail, ShoppingCart, Search, Filter,
+  Check, AlignLeft, Wand2, Brain
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from "@/lib/utils";
@@ -143,6 +146,15 @@ const WebExtraction = () => {
   const [extractionData, setExtractionData] = useState<ScrapyResults | null>(null);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
   const [pageContentMap, setPageContentMap] = useState<Record<string, any>>({});
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [itemsFilter, setItemsFilter] = useState<string>('all');
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [showAiSummaryDialog, setShowAiSummaryDialog] = useState<boolean>(false);
+  const [itemToSummarize, setItemToSummarize] = useState<any>(null);
+  const [itemSummaryType, setItemSummaryType] = useState<string>('');
+  const [aiSummaryPrompt, setAiSummaryPrompt] = useState<string>('');
+  const [aiSummaryResult, setAiSummaryResult] = useState<string>('');
+  const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
   
   // Validate URL format
   const validateUrl = (input: string) => {
@@ -162,6 +174,61 @@ const WebExtraction = () => {
     return addedItems[itemKey] === true;
   };
 
+  // Open AI summary dialog
+  const openAiSummaryDialog = (type: string, item: any) => {
+    setItemToSummarize(item);
+    setItemSummaryType(type);
+    
+    // Generate appropriate prompts based on content type
+    let initialPrompt = '';
+    switch(type) {
+      case 'event':
+        initialPrompt = `Please summarize this event in a clear, concise way for a bamboo architecture knowledge base:\n\nEvent: ${item.title || 'Untitled Event'}\nDate: ${item.date || 'Unknown'}\nLocation: ${item.location || 'Unknown'}\nURL: ${item.url || 'No URL'}\n\nPlease create a well-formatted description that combines these details into a professional summary. Include any relevant information about bamboo if present in the event description.`;
+        break;
+      case 'book':
+        initialPrompt = `Please summarize this book related to bamboo architecture in a clear, concise way for a knowledge base:\n\nTitle: ${item.title || 'Untitled Book'}\nAuthor: ${item.author || 'Unknown'}\nPublication Year: ${item.publication_year || 'Unknown'}\nURL: ${item.url || 'No URL'}\n\nPlease create a well-formatted description that combines these details into a professional summary. Focus on how this book relates to bamboo architecture if possible.`;
+        break;
+      case 'page':
+        initialPrompt = `Please summarize the following webpage content for a bamboo architecture knowledge base. Extract only the most relevant information about bamboo, sustainable architecture, or related practices:\n\nTitle: ${item.title || 'Untitled Page'}\nContent: ${item.content ? item.content.substring(0, 1500) + '...' : 'No content'}\nURL: ${item.url || 'No URL'}\n\nPlease create a concise, well-formatted summary that highlights key information relevant to bamboo architecture. Include specific techniques, projects, or innovations if mentioned.`;
+        break;
+      case 'contact':
+        initialPrompt = `Please format this contact information in a clear, professional way for a bamboo architecture knowledge base:\n\nEmail: ${item.email ? item.email.join(', ') : 'None provided'}\nPhone: ${item.phone ? item.phone.join(', ') : 'None provided'}\nURL: ${item.url || 'No URL'}\n\nPlease create a well-formatted description that provides this contact information in a professional manner. Include context about how this contact relates to bamboo architecture if possible.`;
+        break;
+      default:
+        initialPrompt = `Please summarize this content for a bamboo architecture knowledge base in a clear, concise way. Extract the most relevant information about bamboo, sustainable architecture, or related practices.`;
+    }
+    
+    setAiSummaryPrompt(initialPrompt);
+    setAiSummaryResult('');
+    setShowAiSummaryDialog(true);
+  };
+  
+  // Process AI summary request
+  const handleAiSummarize = async () => {
+    try {
+      setIsSummarizing(true);
+      
+      const response = await apiRequest('POST', '/api/openai/summarize', {
+        prompt: aiSummaryPrompt
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate summary');
+      }
+      
+      const data = await response.json();
+      setAiSummaryResult(data.result || '');
+    } catch (error) {
+      toast({
+        title: "Summarization Failed",
+        description: error instanceof Error ? error.message : "Failed to generate summary",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
   // Function to add an item to the knowledge base
   const handleAddItem = (type: string, item: any) => {
     saveItemMutation.mutate({ 
@@ -170,12 +237,98 @@ const WebExtraction = () => {
       sourceUrl: extractionSummary?.url || url 
     });
   };
+  
+  // Add item with AI generated summary to the knowledge base
+  const handleAddItemWithSummary = () => {
+    if (!itemToSummarize || !itemSummaryType || !aiSummaryResult) return;
+    
+    // Create modified item with AI summary
+    const enhancedItem = {
+      ...itemToSummarize,
+      aiSummary: aiSummaryResult
+    };
+    
+    saveItemMutation.mutate({ 
+      type: itemSummaryType, 
+      item: enhancedItem,
+      sourceUrl: extractionSummary?.url || url,
+      useSummary: true
+    });
+    
+    setShowAiSummaryDialog(false);
+  };
 
+  // Filter items based on search term
+  const filterItems = (items: any[], type: string) => {
+    if (!items) return [];
+    
+    // Filter by type if needed
+    if (itemsFilter !== 'all' && itemsFilter !== type) {
+      return [];
+    }
+    
+    // Filter by search term if present
+    if (searchTerm.trim() !== '') {
+      return items.filter(item => {
+        const searchLower = searchTerm.toLowerCase();
+        
+        // Different search logic based on content type
+        switch(type) {
+          case 'event':
+            return (
+              (item.title && item.title.toLowerCase().includes(searchLower)) ||
+              (item.date && item.date.toLowerCase().includes(searchLower)) ||
+              (item.location && item.location.toLowerCase().includes(searchLower))
+            );
+          case 'contact':
+            return (
+              (item.email && item.email.some((e: string) => e.toLowerCase().includes(searchLower))) ||
+              (item.phone && item.phone.some((p: string) => p.toLowerCase().includes(searchLower)))
+            );
+          case 'book':
+            return (
+              (item.title && item.title.toLowerCase().includes(searchLower)) ||
+              (item.author && item.author.toLowerCase().includes(searchLower)) ||
+              (item.publisher && item.publisher.toLowerCase().includes(searchLower))
+            );
+          case 'page':
+            return (
+              (item.title && item.title.toLowerCase().includes(searchLower)) ||
+              (item.content && item.content.toLowerCase().includes(searchLower))
+            );
+          case 'image':
+            return (
+              (item.title && item.title.toLowerCase().includes(searchLower)) ||
+              (item.alt_text && item.alt_text.toLowerCase().includes(searchLower))
+            );
+          case 'social_media':
+            return (
+              (item.platform && item.platform.toLowerCase().includes(searchLower))
+            );
+          default:
+            return false;
+        }
+      });
+    }
+    
+    return items;
+  };
+
+  // Toggle item expansion
+  const toggleItemExpansion = (itemId: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
+  
   // Render individual content items with add buttons
   const renderContentItems = (type: string, items: any[]) => {
-    if (!items || items.length === 0) {
+    const filteredItems = filterItems(items, type);
+    
+    if (!filteredItems || filteredItems.length === 0) {
       return (
-        <div className="text-center py-8 text-green-400">
+        <div className="text-center py-4 text-green-400">
           No {type} items found
         </div>
       );
@@ -183,84 +336,129 @@ const WebExtraction = () => {
 
     return (
       <div className="space-y-4">
-        {items.map((item, index) => {
-          // Create a unique ID for this item
+        <div className="text-sm text-green-300 mb-2">
+          Showing {filteredItems.length} of {items.length} {type} items
+        </div>
+        {filteredItems.map((item, index) => {
+          // Create unique IDs
+          const itemId = `${type}-${index}-${JSON.stringify(item).slice(0, 20)}`;
           const itemAdded = isItemAdded(type, item);
+          const isExpanded = expandedItems[itemId] || false;
+          
+          // Function to get a preview of content
+          const getPreviewContent = () => {
+            switch(type) {
+              case 'event':
+                return item.title || 'Unnamed Event';
+              case 'contact':
+                return (item.email && item.email.length > 0) ? 
+                  `Contact: ${item.email[0]}` : 'Contact Information';
+              case 'book':
+                return item.title || 'Unnamed Book';
+              case 'page':
+                return item.title || 'Page Content';
+              case 'image':
+                return item.title || item.alt_text || 'Image';
+              case 'social_media':
+                return `Social Media (${item.platform || 'Unknown Platform'})`;
+              default:
+                return 'Content Item';
+            }
+          };
           
           return (
-            <div key={index} className="border border-green-800/30 bg-gray-900/50 rounded-lg p-4">
+            <div key={itemId} className="border border-green-800/30 bg-gray-900/50 rounded-lg p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-grow">
-                  {/* Display item details based on type */}
-                  {type === 'event' && (
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
-                      {item.date && <p className="text-green-200"><Calendar className="inline w-4 h-4 mr-2" /> {item.date}</p>}
-                      {item.location && <p className="text-green-200"><MapPin className="inline w-4 h-4 mr-2" /> {item.location}</p>}
-                      {item.price && <p className="text-green-200"><Ticket className="inline w-4 h-4 mr-2" /> Price: {item.price}</p>}
-                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                  <div 
+                    onClick={() => toggleItemExpansion(itemId)}
+                    className="cursor-pointer flex items-center"
+                  >
+                    <div className={`mr-2 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
+                      ▶
                     </div>
-                  )}
+                    <h3 className="text-lg font-medium text-green-300 truncate">
+                      {getPreviewContent()}
+                    </h3>
+                  </div>
                   
-                  {type === 'contact' && (
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium text-green-300">Contact Information</h3>
-                      {item.email && item.email.length > 0 && (
-                        <p className="text-green-200">
-                          <Mail className="inline w-4 h-4 mr-2" /> 
-                          {item.email.join(', ')}
-                        </p>
-                      )}
-                      {item.phone && item.phone.length > 0 && (
-                        <p className="text-green-200">
-                          <Phone className="inline w-4 h-4 mr-2" /> 
-                          {item.phone.join(', ')}
-                        </p>
-                      )}
-                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
-                    </div>
-                  )}
-                  
-                  {type === 'book' && (
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
-                      {item.author && <p className="text-green-200">By {item.author}</p>}
-                      {item.publication_year && <p className="text-green-200">Published in {item.publication_year}</p>}
-                      {item.publisher && <p className="text-green-200">Publisher: {item.publisher}</p>}
-                      {item.price && <p className="text-green-200"><ShoppingCart className="inline w-4 h-4 mr-2" /> Price: {item.price}</p>}
-                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
-                    </div>
-                  )}
-                  
-                  {type === 'page' && (
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
-                      <p className="text-green-200 truncate">{item.content.substring(0, 150)}...</p>
-                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
-                    </div>
-                  )}
-                  
-                  {type === 'image' && (
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium text-green-300">{item.title || 'Image'}</h3>
-                      {item.url && (
-                        <div className="relative h-40 w-full">
-                          <img 
-                            src={item.url} 
-                            alt={item.alt_text || 'Extracted image'} 
-                            className="object-contain h-full mx-auto rounded-md"
-                          />
+                  {isExpanded && (
+                    <div className="mt-3 space-y-2 pl-4 border-l-2 border-green-800/30">
+                      {/* Display item details based on type */}
+                      {type === 'event' && (
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
+                          {item.date && <p className="text-green-200"><Calendar className="inline w-4 h-4 mr-2" /> {item.date}</p>}
+                          {item.location && <p className="text-green-200"><MapPin className="inline w-4 h-4 mr-2" /> {item.location}</p>}
+                          {item.price && <p className="text-green-200"><Ticket className="inline w-4 h-4 mr-2" /> Price: {item.price}</p>}
+                          <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
                         </div>
                       )}
-                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.page_url}</p>
-                    </div>
-                  )}
+                      
+                      {type === 'contact' && (
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-medium text-green-300">Contact Information</h3>
+                          {item.email && item.email.length > 0 && (
+                            <p className="text-green-200">
+                              <Mail className="inline w-4 h-4 mr-2" /> 
+                              {item.email.join(', ')}
+                            </p>
+                          )}
+                          {item.phone && item.phone.length > 0 && (
+                            <p className="text-green-200">
+                              <Phone className="inline w-4 h-4 mr-2" /> 
+                              {item.phone.join(', ')}
+                            </p>
+                          )}
+                          <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                        </div>
+                      )}
+                      
+                      {type === 'book' && (
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
+                          {item.author && <p className="text-green-200">By {item.author}</p>}
+                          {item.publication_year && <p className="text-green-200">Published in {item.publication_year}</p>}
+                          {item.publisher && <p className="text-green-200">Publisher: {item.publisher}</p>}
+                          {item.price && <p className="text-green-200"><ShoppingCart className="inline w-4 h-4 mr-2" /> Price: {item.price}</p>}
+                          <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                        </div>
+                      )}
+                      
+                      {type === 'page' && (
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-medium text-green-300">{item.title}</h3>
+                          <div className="max-h-40 overflow-y-auto text-green-200 text-sm bg-gray-800/50 p-2 rounded">
+                            {item.content}
+                          </div>
+                          <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                        </div>
+                      )}
+                      
+                      {type === 'image' && (
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-medium text-green-300">{item.title || 'Image'}</h3>
+                          {item.url && (
+                            <div className="relative h-40 w-full">
+                              <img 
+                                src={item.url} 
+                                alt={item.alt_text || 'Extracted image'} 
+                                className="object-contain h-full mx-auto rounded-md"
+                              />
+                            </div>
+                          )}
+                          {item.alt_text && <p className="text-green-200 text-sm">Alt text: {item.alt_text}</p>}
+                          <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.page_url}</p>
+                        </div>
+                      )}
 
-                  {type === 'social_media' && (
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium text-green-300">Social Media {item.platform || ''}</h3>
-                      {item.post_date && <p className="text-green-200">Posted: {item.post_date}</p>}
-                      <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                      {type === 'social_media' && (
+                        <div className="space-y-2">
+                          <h3 className="text-xl font-medium text-green-300">Social Media {item.platform || ''}</h3>
+                          {item.post_date && <p className="text-green-200">Posted: {item.post_date}</p>}
+                          <p className="text-green-400 text-sm"><Globe className="inline w-4 h-4 mr-1" /> {item.url}</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
