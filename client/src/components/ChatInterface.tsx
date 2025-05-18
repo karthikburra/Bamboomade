@@ -427,7 +427,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onTokensUsed, initialQues
         </div>
         
         <div className="flex-grow flex flex-col overflow-hidden mt-0 p-0 border-none">
-          <ScrollArea className="flex-grow p-2 sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950">
+          <ScrollArea className="flex-grow p-2 sm:p-4 bg-gradient-to-b from-zinc-900 to-zinc-950" scrollBarClassName="!w-1 bg-transparent" thumbClassName="!bg-slate-500/50 hover:!bg-slate-500/70">
             <div className="space-y-3 sm:space-y-4 relative">
               {messages.map((message) => (
                 <div
