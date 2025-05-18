@@ -88,6 +88,10 @@ export default function ContentEditDialog({ isOpen, onClose, content }: ContentE
   const [isResummarizing, setIsResummarizing] = useState(false);
   const [isExtractingFacts, setIsExtractingFacts] = useState(false);
   const [isSavingFact, setIsSavingFact] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [factToDelete, setFactToDelete] = useState<number | null>(null);
   
