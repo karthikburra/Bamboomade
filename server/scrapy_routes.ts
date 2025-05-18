@@ -6,12 +6,126 @@ import { Request, Response } from 'express';
 import { scrapeWebsite, processScrapyResults } from './scrapy_manager';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { summarizeContentWithAI } from './routes-openai-summarize';
 
 /**
  * Register web extraction routes
  * @param app Express application
  */
 export function registerScrapyRoutes(app: any) {
+  /**
+   * Get AI summary of extracted content
+   * POST /api/scrapy/summarize-item
+   * Body: { item: any, type: string }
+   */
+  app.post('/api/scrapy/summarize-item', async (req: Request, res: Response) => {
+    try {
+      const { item, type } = req.body;
+      
+      if (!item || !type) {
+        return res.status(400).json({
+          success: false,
+          message: 'Item and type are required'
+        });
+      }
+      
+      // Check if user is logged in
+      if (!req.session.userId) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Authentication required' 
+        });
+      }
+      
+      // Get the content based on item type
+      let content = '';
+      
+      // Extract content based on type
+      switch (type) {
+        case 'page':
+          content = item.content || '';
+          break;
+        case 'event':
+          content = [
+            item.title ? `Event: ${item.title}` : 'Unnamed Event',
+            item.date ? `Date: ${item.date}` : '',
+            item.location ? `Location: ${item.location}` : '',
+            item.price ? `Price: ${item.price}` : '',
+            item.registration_link ? `Registration: ${item.registration_link}` : '',
+            `Source: ${item.url || 'Unknown'}`
+          ].filter(Boolean).join('\n');
+          break;
+        case 'book':
+          content = [
+            item.title ? `Book: ${item.title}` : 'Unnamed Book',
+            item.author ? `Author: ${item.author}` : '',
+            item.publication_year ? `Year: ${item.publication_year}` : '',
+            item.publisher ? `Publisher: ${item.publisher}` : '',
+            item.price ? `Price: ${item.price}` : '',
+            item.purchase_link ? `Purchase: ${item.purchase_link}` : '',
+            `Source: ${item.url || 'Unknown'}`
+          ].filter(Boolean).join('\n');
+          break;
+        case 'contact':
+          content = [
+            'Contact Information:',
+            item.email ? `Email: ${Array.isArray(item.email) ? item.email.join(', ') : item.email}` : '',
+            item.phone ? `Phone: ${Array.isArray(item.phone) ? item.phone.join(', ') : item.phone}` : '',
+            item.social_media ? 'Social Media: ' + 
+              Object.entries(item.social_media)
+                .map(([platform, url]) => `${platform}: ${url}`)
+                .join(', ') : ''
+          ].filter(Boolean).join('\n');
+          break;
+        case 'social_media':
+          content = [
+            item.platform ? `Platform: ${item.platform}` : 'Social Media Post',
+            item.post_date ? `Posted: ${item.post_date}` : '',
+            item.embed_code ? `Content: ${item.embed_code}` : '',
+            `Source: ${item.url || 'Unknown'}`
+          ].filter(Boolean).join('\n');
+          break;
+        default:
+          content = JSON.stringify(item, null, 2);
+      }
+      
+      if (!content) {
+        return res.status(400).json({
+          success: false,
+          message: 'Could not extract content from item'
+        });
+      }
+      
+      // Generate summary using AI
+      const summary = await summarizeContentWithAI(content, type);
+      
+      if (!summary) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to generate AI summary'
+        });
+      }
+      
+      // Return the summarized item with original content preserved
+      const itemWithSummary = {
+        ...item,
+        aiSummary: summary
+      };
+      
+      return res.json({
+        success: true,
+        message: 'AI summary generated successfully',
+        item: itemWithSummary
+      });
+      
+    } catch (error: any) {
+      console.error('Error generating AI summary:', error);
+      return res.status(500).json({
+        success: false,
+        message: `Server error: ${error.message}`
+      });
+    }
+  });
   /**
    * Save extraction results to the knowledge base
    * POST /api/scrapy/save-extraction

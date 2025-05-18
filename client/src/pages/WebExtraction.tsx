@@ -106,11 +106,12 @@ const WebExtraction = () => {
   
   // Add mutation to save individual items to the knowledge base
   const saveItemMutation = useMutation({
-    mutationFn: async ({ item, type, sourceUrl }: { item: any, type: string, sourceUrl: string }) => {
+    mutationFn: async ({ item, type, sourceUrl, useSummary }: { item: any, type: string, sourceUrl: string, useSummary?: boolean }) => {
       const response = await apiRequest('POST', '/api/scrapy/save-item', {
         item, 
         type, 
-        sourceUrl
+        sourceUrl,
+        useSummary
       });
       return response.json();
     },
