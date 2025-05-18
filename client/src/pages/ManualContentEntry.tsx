@@ -385,36 +385,36 @@ const ManualContentEntry = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Add Knowledge Content</h1>
+    <div className="container mx-auto p-4 min-h-screen bg-gray-950 text-gray-100">
+      <h1 className="text-2xl font-bold mb-6 text-amber-400">Add Knowledge Content</h1>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-6 mb-8">
-          <TabsTrigger value="event" className="flex items-center gap-2">
+        <TabsList className="grid grid-cols-6 mb-8 bg-gray-900/80 border border-gray-800">
+          <TabsTrigger value="event" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Calendar className="h-4 w-4" /> Event
           </TabsTrigger>
-          <TabsTrigger value="blog" className="flex items-center gap-2">
+          <TabsTrigger value="blog" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <MessageSquare className="h-4 w-4" /> Blog
           </TabsTrigger>
-          <TabsTrigger value="book" className="flex items-center gap-2">
+          <TabsTrigger value="book" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Book className="h-4 w-4" /> Book
           </TabsTrigger>
-          <TabsTrigger value="social" className="flex items-center gap-2">
+          <TabsTrigger value="social" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <MessageSquare className="h-4 w-4" /> Social Media
           </TabsTrigger>
-          <TabsTrigger value="document" className="flex items-center gap-2">
+          <TabsTrigger value="document" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <FileText className="h-4 w-4" /> Document
           </TabsTrigger>
-          <TabsTrigger value="fact" className="flex items-center gap-2">
+          <TabsTrigger value="fact" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Info className="h-4 w-4" /> Bamboo Fact
           </TabsTrigger>
         </TabsList>
         
         {/* Event Form */}
         <TabsContent value="event">
-          <Card>
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
             <CardHeader>
-              <CardTitle>Add Event</CardTitle>
+              <CardTitle className="text-amber-400">Add Event</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleEventSubmit} className="space-y-4">
@@ -543,9 +543,9 @@ const ManualContentEntry = () => {
         
         {/* Blog Form */}
         <TabsContent value="blog">
-          <Card>
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
             <CardHeader>
-              <CardTitle>Add Blog</CardTitle>
+              <CardTitle className="text-amber-400">Add Blog</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleBlogSubmit} className="space-y-4">
@@ -626,9 +626,9 @@ const ManualContentEntry = () => {
         
         {/* Book Form */}
         <TabsContent value="book">
-          <Card>
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
             <CardHeader>
-              <CardTitle>Add Book</CardTitle>
+              <CardTitle className="text-amber-400">Add Book</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleBookSubmit} className="space-y-4">
@@ -720,9 +720,9 @@ const ManualContentEntry = () => {
         
         {/* Social Media Form */}
         <TabsContent value="social">
-          <Card>
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
             <CardHeader>
-              <CardTitle>Add Social Media Content</CardTitle>
+              <CardTitle className="text-amber-400">Add Social Media Content</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSocialSubmit} className="space-y-4">
@@ -787,9 +787,9 @@ const ManualContentEntry = () => {
         
         {/* Document Form */}
         <TabsContent value="document">
-          <Card>
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
             <CardHeader>
-              <CardTitle>Add Document</CardTitle>
+              <CardTitle className="text-amber-400">Add Document</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleDocumentSubmit} className="space-y-4">
@@ -870,9 +870,9 @@ const ManualContentEntry = () => {
         
         {/* Bamboo Fact Form */}
         <TabsContent value="fact">
-          <Card>
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
             <CardHeader>
-              <CardTitle>Add Bamboo Fact</CardTitle>
+              <CardTitle className="text-amber-400">Add Bamboo Fact</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleFactSubmit} className="space-y-4">
