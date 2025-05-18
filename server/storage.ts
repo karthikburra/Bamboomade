@@ -1418,8 +1418,8 @@ export class DatabaseStorage implements IStorage {
         content.content = content.aiSummary;
       }
       
-      // Get a clean subset of fields that we know exist in the database
-      // This is a critical fix to prevent "column X does not exist" errors
+      // IMPORTANT: Only include fields that exist in the actual database table
+      // This prevents errors with fields defined in schema but missing from the DB
       const validContent = {
         title: content.title || '',
         content: content.content || '',
@@ -1441,14 +1441,16 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date()
       };
       
-      // DO NOT include these fields as they don't exist in the database:
-      // - authorName
-      // - publicationYear  
-      // - publisherName
-      // - purchaseLink
-      // - embedCode
-      // - postDate
-      // - socialPlatform
+      // Remove any fields not in the insert schema that might be 
+      // passed from the web extraction process
+      delete (content as any).authorName;
+      delete (content as any).author;
+      delete (content as any).publicationYear;
+      delete (content as any).publisherName;
+      delete (content as any).purchaseLink;
+      delete (content as any).embedCode;
+      delete (content as any).postDate;
+      delete (content as any).socialPlatform;
       
       const [createdContent] = await db.insert(aiKnowledgeContent)
         .values(validContent)
