@@ -495,7 +495,7 @@ const ManualContentEntry = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-6 mb-8 bg-gray-900/80 border border-gray-800">
+        <TabsList className="grid grid-cols-8 mb-8 bg-gray-900/80 border border-gray-800">
           <TabsTrigger value="event" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Calendar className="h-4 w-4" /> Event
           </TabsTrigger>
@@ -513,6 +513,12 @@ const ManualContentEntry = () => {
           </TabsTrigger>
           <TabsTrigger value="fact" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
             <Info className="h-4 w-4" /> Bamboo Fact
+          </TabsTrigger>
+          <TabsTrigger value="enthusiast" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+            <MessageSquare className="h-4 w-4" /> Enthusiast
+          </TabsTrigger>
+          <TabsTrigger value="competition" className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+            <Calendar className="h-4 w-4" /> Competition
           </TabsTrigger>
         </TabsList>
         
@@ -1022,6 +1028,317 @@ const ManualContentEntry = () => {
                     <>
                       <Save className="mr-2 h-4 w-4" />
                       Add Bamboo Fact
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Bamboo Enthusiast Form */}
+        <TabsContent value="enthusiast">
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
+            <CardHeader>
+              <CardTitle className="text-amber-400">Add Bamboo Enthusiast</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleEnthusiastSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="enthusiast-name" className="text-gray-300">Name *</Label>
+                  <Input 
+                    id="enthusiast-name" 
+                    name="title" 
+                    value={enthusiastData.title}
+                    onChange={handleEnthusiastChange}
+                    placeholder="Enter enthusiast name"
+                    className="bg-gray-800 border-gray-700 text-gray-100" 
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="enthusiast-description" className="text-gray-300">Description *</Label>
+                  <Textarea 
+                    id="enthusiast-description" 
+                    name="content" 
+                    value={enthusiastData.content}
+                    onChange={handleEnthusiastChange}
+                    placeholder="Enter description about the enthusiast and their work with bamboo"
+                    className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]" 
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="enthusiast-email" className="text-gray-300">Email</Label>
+                  <Input 
+                    id="enthusiast-email" 
+                    name="contactEmail" 
+                    value={enthusiastData.contactEmail}
+                    onChange={handleEnthusiastChange}
+                    placeholder="Enter email address"
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                    type="email"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="enthusiast-phone" className="text-gray-300">Phone</Label>
+                  <Input 
+                    id="enthusiast-phone" 
+                    name="contactPhone" 
+                    value={enthusiastData.contactPhone}
+                    onChange={handleEnthusiastChange}
+                    placeholder="Enter phone number"
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="enthusiast-linkedin" className="text-gray-300">LinkedIn</Label>
+                    <Input 
+                      id="enthusiast-linkedin" 
+                      name="linkedinUrl" 
+                      value={enthusiastData.linkedinUrl}
+                      onChange={handleEnthusiastChange}
+                      placeholder="LinkedIn profile URL"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enthusiast-instagram" className="text-gray-300">Instagram</Label>
+                    <Input 
+                      id="enthusiast-instagram" 
+                      name="instagramUrl" 
+                      value={enthusiastData.instagramUrl}
+                      onChange={handleEnthusiastChange}
+                      placeholder="Instagram profile URL"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enthusiast-twitter" className="text-gray-300">Twitter</Label>
+                    <Input 
+                      id="enthusiast-twitter" 
+                      name="twitterUrl" 
+                      value={enthusiastData.twitterUrl}
+                      onChange={handleEnthusiastChange}
+                      placeholder="Twitter profile URL"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="enthusiast-facebook" className="text-gray-300">Facebook</Label>
+                    <Input 
+                      id="enthusiast-facebook" 
+                      name="facebookUrl" 
+                      value={enthusiastData.facebookUrl}
+                      onChange={handleEnthusiastChange}
+                      placeholder="Facebook profile URL"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="enthusiast-website" className="text-gray-300">Personal Website</Label>
+                  <Input 
+                    id="enthusiast-website" 
+                    name="personalWebsite" 
+                    value={enthusiastData.personalWebsite}
+                    onChange={handleEnthusiastChange}
+                    placeholder="Website URL"
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="enthusiast-image" className="text-gray-300">Profile Image</Label>
+                  <div className="flex items-center gap-4">
+                    <Input 
+                      id="enthusiast-image" 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, setEnthusiastData, enthusiastData)}
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                    {enthusiastData.mediaUrl && (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <Check className="h-4 w-4" /> Image uploaded
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  disabled={addContentMutation.isPending}
+                >
+                  {addContentMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Add Bamboo Enthusiast
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Competition Form */}
+        <TabsContent value="competition">
+          <Card className="bg-gray-900/80 border border-gray-800 shadow-xl text-gray-100">
+            <CardHeader>
+              <CardTitle className="text-amber-400">Add Competition</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCompetitionSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="competition-title" className="text-gray-300">Competition Title *</Label>
+                  <Input 
+                    id="competition-title" 
+                    name="title" 
+                    value={competitionData.title}
+                    onChange={handleCompetitionChange}
+                    placeholder="Enter competition title"
+                    className="bg-gray-800 border-gray-700 text-gray-100" 
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="competition-description" className="text-gray-300">Description *</Label>
+                  <Textarea 
+                    id="competition-description" 
+                    name="content" 
+                    value={competitionData.content}
+                    onChange={handleCompetitionChange}
+                    placeholder="Enter competition details, requirements, and other important information"
+                    className="bg-gray-800 border-gray-700 text-gray-100 min-h-[100px]" 
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="competition-date" className="text-gray-300">Event Date</Label>
+                    <Input 
+                      id="competition-date" 
+                      name="eventDate" 
+                      value={competitionData.eventDate}
+                      onChange={handleCompetitionChange}
+                      placeholder="E.g., June 15-20, 2025"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="competition-deadline" className="text-gray-300">Submission Deadline</Label>
+                    <Input 
+                      id="competition-deadline" 
+                      name="submissionDeadline" 
+                      value={competitionData.submissionDeadline}
+                      onChange={handleCompetitionChange}
+                      placeholder="E.g., May 31, 2025"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="competition-location" className="text-gray-300">Location</Label>
+                  <Input 
+                    id="competition-location" 
+                    name="eventLocation" 
+                    value={competitionData.eventLocation}
+                    onChange={handleCompetitionChange}
+                    placeholder="Enter event location or 'Virtual'"
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="competition-registration" className="text-gray-300">Registration Link</Label>
+                    <Input 
+                      id="competition-registration" 
+                      name="registrationLink" 
+                      value={competitionData.registrationLink}
+                      onChange={handleCompetitionChange}
+                      placeholder="Enter registration URL"
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="competition-price" className="text-gray-300">Entry Fee</Label>
+                    <Input 
+                      id="competition-price" 
+                      name="price" 
+                      value={competitionData.price}
+                      onChange={handleCompetitionChange}
+                      placeholder="E.g., ₹500, Free, etc."
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="competition-organiser" className="text-gray-300">Organiser</Label>
+                  <Input 
+                    id="competition-organiser" 
+                    name="organiserName" 
+                    value={competitionData.organiserName}
+                    onChange={handleCompetitionChange}
+                    placeholder="Enter organiser name"
+                    className="bg-gray-800 border-gray-700 text-gray-100"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="competition-image" className="text-gray-300">Competition Image</Label>
+                  <div className="flex items-center gap-4">
+                    <Input 
+                      id="competition-image" 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, setCompetitionData, competitionData)}
+                      className="bg-gray-800 border-gray-700 text-gray-100"
+                    />
+                    {competitionData.mediaUrl && (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <Check className="h-4 w-4" /> Image uploaded
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  disabled={addContentMutation.isPending}
+                >
+                  {addContentMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Add Competition
                     </>
                   )}
                 </Button>
