@@ -134,7 +134,7 @@ const Hero: React.FC = () => {
               <AnimatedText 
                 phrases={[
                   "Get Academic Project guidance from Experts.",
-                  "Explore BambooMade AI for more Knowledge.",
+                  "Experience Sustainable Bamboo Architecture.",
                   "We bring Bamboo workshops to you."
                 ]} 
               />
