@@ -66,11 +66,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                       Project Guidance
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/ai-chat" className="text-sm sm:text-base text-primary-300 hover:text-primary-50">
-                      BambooMade AI
-                    </Link>
-                  </li>
+                  {/* BambooMade AI link hidden for now */}
                 </ul>
               </div>
 
