@@ -74,15 +74,13 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
                 onClick={() => handleCompetitionClick(competition)}
               >
                 <div className="flex flex-col gap-3">
-                  {competition.mediaUrl && (
-                    <div className="w-full h-40 flex-shrink-0">
-                      <img 
-                        src={competition.mediaUrl} 
-                        alt={competition.title} 
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    </div>
-                  )}
+                  <div className="w-full h-40 flex-shrink-0">
+                    <img 
+                      src={competition.mediaUrl || "/attached_assets/22222.JPG"} 
+                      alt={competition.title} 
+                      className="w-full h-full object-cover rounded-md"
+                    />
+                  </div>
                   
                   <div className="flex-1">
                     <h3 className="text-zinc-200 font-medium text-base">
