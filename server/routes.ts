@@ -8909,6 +8909,18 @@ Please structure the summary in a helpful format with clear headings, bullet poi
   setupFileUploadRoutes(app);
   
   const httpServer = createServer(app);
+  // Get all active AI knowledge content (public endpoint for dashboard)
+  app.get("/api/ai-knowledge/active", async (req, res) => {
+    try {
+      const allContent = await storage.getAllAiKnowledgeContent();
+      const activeContent = allContent.filter(item => item.status === 'active');
+      res.json(activeContent);
+    } catch (error) {
+      console.error("Error fetching active AI knowledge content:", error);
+      res.status(500).json({ message: "Failed to fetch active AI knowledge content" });
+    }
+  });
+
   // Get active bamboo facts for the "Did You Know?" section
   app.get("/api/bamboo-facts", async (req, res) => {
     try {

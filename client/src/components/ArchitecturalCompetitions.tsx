@@ -102,10 +102,10 @@ const ArchitecturalCompetitions: React.FC<ArchitecturalCompetitionsProps> = ({
                     </div>
                     
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {competition.submissionDeadline && (
+                      {(competition.submissionDeadline || competition.eventDate) && (
                         <Badge variant="outline" className="text-xs bg-zinc-800 border-zinc-700 text-zinc-300 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Deadline: {competition.submissionDeadline}
+                          Deadline: {competition.submissionDeadline || competition.eventDate}
                         </Badge>
                       )}
                       
