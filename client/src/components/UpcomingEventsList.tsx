@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, ExternalLink, MapPin, User, RefreshCw, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,32 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
   onEventClick,
   maxEvents = 5
 }) => {
+  // Track refreshing state
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  
+  // Create local copy of events for refresh handling
+  const [localEvents, setLocalEvents] = React.useState<Event[]>(events);
+  
+  // Update local events when props change
+  React.useEffect(() => {
+    setLocalEvents(events);
+  }, [events]);
+  
+  // Handle refresh button click
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+      const response = await fetch('/api/public/ai-knowledge?contentType=event&status=active');
+      if (response.ok) {
+        const data = await response.json();
+        setLocalEvents(data);
+      }
+    } catch (error) {
+      console.error('Failed to refresh events:', error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500); // Add small delay to show spinner
+    }
+  };
   if (!events || events.length === 0) {
     return (
       <Card className="bg-zinc-900 border-zinc-800">
@@ -70,9 +96,10 @@ const UpcomingEventsList: React.FC<UpcomingEventsListProps> = ({
             variant="ghost" 
             size="sm" 
             className="text-zinc-400 hover:text-green-400 -mt-1 -mr-2"
-            onClick={() => window.location.reload()}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
           >
-            <RefreshCw className="h-4 w-4 text-secondary" />
+            <RefreshCw className={`h-4 w-4 text-secondary ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </CardHeader>
