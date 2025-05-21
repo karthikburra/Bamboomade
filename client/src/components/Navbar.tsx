@@ -374,6 +374,13 @@ const Navbar: React.FC = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="flex items-center gap-2 cursor-pointer text-amber-300 focus:text-amber-200 focus:bg-amber-900/20"
+                      onClick={() => window.location.href = "/ai-knowledge-database"}
+                    >
+                      <Database className="mr-2 h-4 w-4" />
+                      Bamboo One Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="flex items-center gap-2 cursor-pointer text-amber-300 focus:text-amber-200 focus:bg-amber-900/20"
                       onClick={() => window.location.href = "/admin-dashboard"}
                     >
                       <LayoutDashboard className="mr-2 h-4 w-4" />
