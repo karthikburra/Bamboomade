@@ -33,7 +33,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Menu, X, Sparkles, MessageSquareText, Home, Briefcase, Calendar, Phone, User,
   UserCircle, LogOut, Settings, Edit, ClipboardList, Loader2, Clock, 
-  Globe, LayoutDashboard, CreditCard, BookOpen, MessageSquare, Moon, Sun, Info
+  Globe, LayoutDashboard, CreditCard, BookOpen, MessageSquare, Moon, Sun, Info,
+  Database
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import darkLogoImage from "@assets/Lgo dark.png";
@@ -496,6 +497,41 @@ const Navbar: React.FC = () => {
                         <ClipboardList className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                         My Sessions
                       </ScrollLink>
+                      
+                      {/* Admin links */}
+                      {user?.isAdmin && (
+                        <>
+                          <div className="pt-4 mt-2 border-t border-amber-800/50">
+                            <h3 className="text-amber-300 font-semibold text-sm mb-2">Admin Tools</h3>
+                            <div className="space-y-3">
+                              <ScrollLink
+                                href="/admin-dashboard"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-amber-300 transition-colors hover:text-amber-200"
+                              >
+                                <LayoutDashboard className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                                Admin Dashboard
+                              </ScrollLink>
+                              <ScrollLink
+                                href="/ai-knowledge-database"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-amber-300 transition-colors hover:text-amber-200"
+                              >
+                                <Database className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                                Bamboo One Dashboard
+                              </ScrollLink>
+                              <ScrollLink
+                                href="/web-extraction"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center text-sm sm:text-base md:text-lg py-1.5 sm:py-2 font-medium text-amber-300 transition-colors hover:text-amber-200"
+                              >
+                                <Globe className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
+                                Web Extraction
+                              </ScrollLink>
+                            </div>
+                          </div>
+                        </>
+                      )}
 
                       {/* Logout button */}
                       <Button 
