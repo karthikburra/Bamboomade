@@ -221,14 +221,17 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const navLinks = [
+  // Define navigation links with conditional admin link
+  const baseNavLinks = [
     { href: "/", label: "Home" },
     { href: "/our-works", label: "Our Experience" }, 
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
-    { href: "/contact", label: "Contact" },
-    // Bamboo One dashboard for admin users
-    ...(user?.isAdmin ? [{ href: "/ai-knowledge-database", label: "Bamboo One", isNew: true }] : [])
+    { href: "/contact", label: "Contact" }
   ];
+  
+  const navLinks = user?.isAdmin 
+    ? [...baseNavLinks, { href: "/ai-knowledge-database", label: "Bamboo One", isNew: true }]
+    : baseNavLinks;
   
   // User links removed as profile is now accessible via the dropdown menu
   const userLinks = [];
