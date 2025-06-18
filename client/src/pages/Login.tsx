@@ -110,9 +110,25 @@ const Login: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-6">
-
+                    <div className="p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-green-500/20 shadow-lg flex items-start">
+                      <div className="mr-4 p-3 bg-green-600 rounded-full text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M12 17.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M12 7.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z"/><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/></svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-green-50 mb-2">6 Months Free Bamboo One Access</h3>
+                        <p className="text-green-200/80">Get 6 months of free access to our bamboo architecture AI assistant from your registration date. Ask questions, get design help, and learn about sustainable bamboo construction.</p>
+                      </div>
+                    </div>
                     
-
+                    <div className="p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-green-500/20 shadow-lg flex items-start">
+                      <div className="mr-4 p-3 bg-green-600 rounded-full text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/></svg>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-green-50 mb-2">Complete Knowledge Hub</h3>
+                        <p className="text-green-200/80">Access our full library of bamboo architecture information, techniques, and inspiration. Browse through case studies, tutorials, and design resources.</p>
+                      </div>
+                    </div>
                     
                     <div className="p-4 bg-white/5 backdrop-blur-sm rounded-lg border border-green-500/20 shadow-lg flex items-start">
                       <div className="mr-4 p-3 bg-green-600 rounded-full text-white">

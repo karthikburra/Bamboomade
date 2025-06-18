@@ -407,23 +407,13 @@ const AdminHome: React.FC = () => {
                         </div>
                       </CardContent>
                       <CardFooter>
-                        {/* Split buttons for Bamboo One dashboard access */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <Button 
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                            onClick={() => navigate("/ai-knowledge-database")}
-                          >
-                            <Database className="h-4 w-4 mr-2" />
-                            Knowledge Database
-                          </Button>
-                          <Button 
-                            className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700"
-                            onClick={() => navigate("/ai-knowledge-management")}
-                          >
-                            <BookOpen className="h-4 w-4 mr-2" />
-                            Content Management
-                          </Button>
-                        </div>
+                        <Button 
+                          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                          onClick={() => navigate("/ai-knowledge-management")}
+                        >
+                          <Database className="h-4 w-4 mr-2" />
+                          Go to Knowledge Base
+                        </Button>
                       </CardFooter>
                     </Card>
                   </div>
