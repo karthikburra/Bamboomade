@@ -226,8 +226,8 @@ const Navbar: React.FC = () => {
     { href: "/our-works", label: "Our Experience" }, 
     { href: "/project-guidance", label: "Project Guidance", isNew: true },
     { href: "/contact", label: "Contact" },
-    // Bamboo One section is hidden for now
-    // Admin is now accessible only from user dropdown menu
+    // Bamboo One dashboard for admin users
+    ...(user?.isAdmin ? [{ href: "/ai-knowledge-database", label: "Bamboo One", isNew: true }] : [])
   ];
   
   // User links removed as profile is now accessible via the dropdown menu
