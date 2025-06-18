@@ -230,7 +230,7 @@ const Navbar: React.FC = () => {
   ];
   
   const navLinks = user?.isAdmin 
-    ? [...baseNavLinks, { href: "/ai-knowledge-database", label: "Bamboo One", isNew: true }]
+    ? [...baseNavLinks, { href: "/admin", label: "Bamboo One", isNew: true }]
     : baseNavLinks;
   
   // User links removed as profile is now accessible via the dropdown menu
