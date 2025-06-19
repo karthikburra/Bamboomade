@@ -341,7 +341,7 @@ export async function getUpcomingEvents(date?: Date): Promise<Array<{
         item.content.toLowerCase().includes('register now')
       );
       
-      return (isEventType || hasEventKeywords) && hasRelevantDateInfo && item.status === "active";
+      return hasEventKeywords && hasRelevantDateInfo;
     });
     
     return upcomingEvents.sort((a, b) => 
