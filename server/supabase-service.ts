@@ -53,8 +53,8 @@ function cleanupExpiredVerifications() {
 setInterval(cleanupExpiredVerifications, 10 * 60 * 1000);
 
 /**
- * Generate and send a verification code via Supabase Auth (free) or fallback to Gmail SMTP
- * Priority: Supabase Auth OTP (free) -> Gmail SMTP (fallback)
+ * Generate and send a verification code via Gmail SMTP (primary)
+ * Uses the configured EMAIL_PASSWORD for info@bamboomade.in
  */
 export async function sendVerificationCode(email: string): Promise<{
   success: boolean;
@@ -82,57 +82,23 @@ export async function sendVerificationCode(email: string): Promise<{
     
     console.log(`📧 Sending verification code to: ${email}`);
     
-    // Try Supabase Auth OTP first (FREE)
-    if (supabase) {
-      try {
-        console.log(`🔑 Attempting to send verification email via Supabase Auth to: ${email}`);
-        
-        // Use Supabase Auth to send OTP - this is FREE with Supabase
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            shouldCreateUser: true,
-            data: {
-              verification_code: verificationCode
-            }
-          }
-        });
-        
-        if (!error) {
-          console.log(`✅ Supabase Auth OTP sent successfully to: ${email}`);
-          // Note: Supabase sends its own 6-digit code, but we also store ours for flexibility
-          return { 
-            success: true, 
-            message: 'Verification code sent to your email',
-            ...(process.env.NODE_ENV === 'development' ? { verificationCode } : {})
-          };
-        } else {
-          console.warn(`⚠️ Supabase OTP error:`, error.message);
-        }
-      } catch (supabaseError) {
-        console.error(`❌ Supabase Auth error:`, supabaseError);
-        console.log(`⚠️ Supabase failed, falling back to Gmail SMTP`);
-      }
-    }
-    
-    // Fallback to Gmail SMTP (using EMAIL_PASSWORD)
+    // Use Gmail SMTP (primary method)
     const { sendLoginVerificationEmail } = await import('./email-service');
     
     console.log(`🔑 Attempting to send verification email via Gmail SMTP to: ${email}`);
     const emailSent = await sendLoginVerificationEmail(email, verificationCode);
     
-    if (!emailSent) {
-      console.error(`❌ Failed to send verification email to: ${email}`);
-      throw new Error('Failed to send verification email. Please check email configuration.');
+    if (emailSent) {
+      console.log(`✅ Verification email sent via Gmail SMTP to: ${email}`);
+      return { 
+        success: true, 
+        message: 'Verification code sent to your email',
+        verificationCode: process.env.NODE_ENV === 'development' ? verificationCode : undefined
+      };
     }
     
-    console.log(`✅ Verification email sent via Gmail SMTP to: ${email}`);
-    
-    return { 
-      success: true, 
-      message: 'Verification code sent to your email',
-      verificationCode: process.env.NODE_ENV === 'development' ? verificationCode : undefined
-    };
+    console.error(`❌ Failed to send verification email to: ${email}`);
+    throw new Error('Failed to send verification email. Please check email configuration.');
   } catch (error: any) {
     console.error(`❌ Failed to send verification:`, error);
     
