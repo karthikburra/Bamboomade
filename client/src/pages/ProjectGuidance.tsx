@@ -79,7 +79,7 @@ const projectGuidanceFormSchema = z.object({
   studentName: z.string().min(2, { message: "Please enter your full name" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   phone: z.string().min(10, { message: "Please enter a valid phone number" }),
-  topic: z.string().min(5, { message: "Please enter a topic for discussion" }),
+  topic: z.string().optional(),
   notes: z.string().optional(),
   isStudent: z.boolean().default(true),
 });
@@ -929,6 +929,7 @@ function ProjectGuidance() {
                             />
                           </div>
                           
+                          {!form.watch("isStudent") && (
                           <FormField
                             control={form.control}
                             name="topic"
@@ -942,6 +943,7 @@ function ProjectGuidance() {
                               </FormItem>
                             )}
                           />
+                          )}
                           
                           <FormField
                             control={form.control}
