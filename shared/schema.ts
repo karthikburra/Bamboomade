@@ -71,7 +71,7 @@ export const projectGuidances = pgTable("project_guidance_sessions", {
   date: timestamp("date").notNull(),
   originalDate: timestamp("original_date"), // Original date before rescheduling
   duration: integer("duration").notNull(), // in minutes
-  topic: text("topic").notNull(),
+  topic: text("topic"),
   notes: text("notes"),
   paymentConfirmed: boolean("payment_confirmed").default(false),
   paymentId: text("payment_id"), // Razorpay payment ID once payment is complete
