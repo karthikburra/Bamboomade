@@ -1,11 +1,22 @@
 import { MailService } from '@sendgrid/mail';
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
-}
+let mailService: MailService | null = null;
+let sendGridEnabled = false;
 
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
+// Initialize SendGrid only if API key is available
+if (process.env.SENDGRID_API_KEY) {
+  try {
+    mailService = new MailService();
+    mailService.setApiKey(process.env.SENDGRID_API_KEY);
+    sendGridEnabled = true;
+    console.log('✅ SendGrid service initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize SendGrid:', error);
+    sendGridEnabled = false;
+  }
+} else {
+  console.warn('⚠️ SENDGRID_API_KEY not set - SendGrid email service disabled');
+}
 
 /**
  * SendGrid email service for reliable email delivery
@@ -13,7 +24,7 @@ mailService.setApiKey(process.env.SENDGRID_API_KEY);
  */
 export async function sendEmailWithSendGrid({
   to,
-  from = "Info@bamboomade.in",
+  from = "info@bamboomade.in",
   subject,
   text,
   html
@@ -24,6 +35,11 @@ export async function sendEmailWithSendGrid({
   text?: string;
   html?: string;
 }): Promise<boolean> {
+  if (!sendGridEnabled || !mailService) {
+    console.warn('⚠️ [SendGrid] Service not available, skipping');
+    return false;
+  }
+
   try {
     console.log(`📧 [SendGrid] Sending email to ${to}`);
     
@@ -31,8 +47,8 @@ export async function sendEmailWithSendGrid({
       to,
       from,
       subject,
-      text,
-      html
+      text: text || '',
+      html: html || text || ''
     });
     
     console.log(`✅ [SendGrid] Email sent successfully to ${to}`);
@@ -44,9 +60,9 @@ export async function sendEmailWithSendGrid({
       console.error(`Error message: ${error.message}`);
       
       // Log detailed SendGrid error information if available
-      if (error.hasOwnProperty('response')) {
-        // @ts-ignore
-        console.error(`Error response: ${JSON.stringify(error.response?.body || {})}`);
+      if ('response' in error) {
+        const responseError = error as any;
+        console.error(`Error response: ${JSON.stringify(responseError.response?.body || {})}`);
       }
     }
     return false;
@@ -84,7 +100,7 @@ export async function sendVerificationCodeEmailWithSendGrid(
       
       <div style="font-size: 12px; color: #666; text-align: center;">
         <p>© ${new Date().getFullYear()} BambooMade. All rights reserved.</p>
-        <p>Info@bamboomade.in | Banjara Hills, Hyderabad</p>
+        <p>info@bamboomade.in | Banjara Hills, Hyderabad</p>
       </div>
     </div>
   `;
@@ -102,7 +118,7 @@ export async function sendVerificationCodeEmailWithSendGrid(
     If you didn't request this code, please ignore this email.
     
     © ${new Date().getFullYear()} BambooMade. All rights reserved.
-    Info@bamboomade.in | Banjara Hills, Hyderabad
+    info@bamboomade.in | Banjara Hills, Hyderabad
   `;
   
   return await sendEmailWithSendGrid({
