@@ -9,7 +9,6 @@ import {
   CalendarClock, 
   CheckCircle, 
   GraduationCap, 
-  Briefcase, 
   User, 
   AlertCircle, 
   X,
@@ -72,8 +71,6 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import BookingCalendar from "@/components/BookingCalendar";
 import PaymentOptions from "@/components/PaymentOptions";
-
-import * as ToggleGroup from "@radix-ui/react-toggle-group";
 
 const projectGuidanceFormSchema = z.object({
   studentName: z.string().min(2, { message: "Please enter your full name" }),
@@ -844,49 +841,6 @@ function ProjectGuidance() {
                         }} className="space-y-4">
                           <FormField
                             control={form.control}
-                            name="isStudent"
-                            render={({ field }) => (
-                              <FormItem className="mb-6">
-                                <FormLabel>I am a:</FormLabel>
-                                <FormControl>
-                                  <div className="flex rounded-md overflow-hidden border border-input mt-1">
-                                    <ToggleGroup.Root
-                                      className="inline-flex w-full rounded-md"
-                                      type="single"
-                                      value={field.value ? "student" : "professional"}
-                                      onValueChange={(value) => {
-                                        if (value) { // Prevent deselection
-                                          field.onChange(value === "student");
-                                        }
-                                      }}
-                                      aria-label="User type"
-                                    >
-                                      <ToggleGroup.Item
-                                        className={`flex items-center justify-center gap-2 flex-1 p-2 h-10 data-[state=on]:bg-green-600 data-[state=on]:text-white transition-colors ${field.value ? 'bg-green-600 text-white' : 'hover:bg-muted'}`}
-                                        value="student"
-                                        aria-label="Student"
-                                      >
-                                        <User size={18} />
-                                        <span>Student</span>
-                                      </ToggleGroup.Item>
-                                      <ToggleGroup.Item
-                                        className={`flex items-center justify-center gap-2 flex-1 p-2 h-10 data-[state=on]:bg-green-600 data-[state=on]:text-white transition-colors ${!field.value ? 'bg-green-600 text-white' : 'hover:bg-muted'}`}
-                                        value="professional"
-                                        aria-label="Professional"
-                                      >
-                                        <Briefcase size={18} />
-                                        <span>Professional</span>
-                                      </ToggleGroup.Item>
-                                    </ToggleGroup.Root>
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
                             name="studentName"
                             render={({ field }) => (
                               <FormItem>
@@ -1127,20 +1081,12 @@ function ProjectGuidance() {
                             <p className="font-medium text-white">{selectedDuration} minutes</p>
                           </div>
                           <div className="bg-gray-800/60 p-3 rounded-md">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Session Type</p>
-                            <p className="font-medium text-white">{form.getValues().isStudent ? "Student" : "Professional"}</p>
+                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Amount Paid</p>
+                            <p className="font-medium text-white">₹{getCost().toLocaleString()}</p>
                           </div>
                           <div className="bg-gray-800/60 p-3 rounded-md md:col-span-2">
                             <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Payment ID</p>
                             <p className="font-medium text-white break-all">{paymentId || "Payment completed"}</p>
-                          </div>
-                          <div className="bg-gray-800/60 p-3 rounded-md">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Topic</p>
-                            <p className="font-medium text-white">{form.getValues().topic}</p>
-                          </div>
-                          <div className="bg-gray-800/60 p-3 rounded-md">
-                            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Amount Paid</p>
-                            <p className="font-medium text-white">₹{getCost().toLocaleString()}</p>
                           </div>
                         </div>
                       </div>
