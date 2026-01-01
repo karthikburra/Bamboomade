@@ -834,7 +834,7 @@ function ProjectGuidance() {
                         <form onSubmit={(e) => {
                           e.preventDefault();
                           // Just validate and go to step 2, don't submit yet
-                          const validFields = form.trigger(["studentName", "email", "phone", "topic"]);
+                          const validFields = form.trigger(["studentName", "email", "phone"]);
                           validFields.then(valid => {
                             if (valid) setStep(2);
                           });
