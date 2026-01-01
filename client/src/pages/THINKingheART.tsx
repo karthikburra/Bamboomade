@@ -1,15 +1,15 @@
 import { Helmet } from "react-helmet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Sparkles, Leaf, TreeDeciduous, Phone, ArrowRight } from "lucide-react";
+import { Heart, Sparkles, Leaf, TreeDeciduous, Phone, ArrowRight, Building2 } from "lucide-react";
 import terrariumImage from "@assets/IMG_20251212_104945996_1767269580547.jpg";
 
 const THINKingheART = () => {
   return (
     <>
       <Helmet>
-        <title>THINKingheART - Miniature Art & Terrariums | BambooMade</title>
-        <meta name="description" content="THINKingheART - Discover the art of terrariums and miniature landscapes. Handcrafted living art pieces that bring nature indoors." />
+        <title>THINKingheART - Miniature Art, Terrariums & Bamboo Models | BambooMade</title>
+        <meta name="description" content="THINKingheART - Discover the art of terrariums, miniature bamboo building models, and living sculptures. Handcrafted art pieces that bring nature and architecture together." />
       </Helmet>
       
       <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950">
@@ -22,7 +22,7 @@ const THINKingheART = () => {
               <span className="text-blue-400">ART</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-              The Art of Miniature Worlds - Terrariums & Living Sculptures
+              The Art of Miniature Worlds - Terrariums, Bamboo Models & Living Sculptures
             </p>
           </div>
 
@@ -44,31 +44,31 @@ const THINKingheART = () => {
 
             <div className="flex flex-col justify-center space-y-6">
               <h2 className="text-2xl md:text-3xl font-bold text-white">
-                Miniature Art & <span className="text-green-400">Terrariums</span>
+                Miniature Art, <span className="text-green-400">Terrariums</span> & <span className="text-amber-400">Bamboo Models</span>
               </h2>
               <p className="text-gray-300 leading-relaxed">
-                THINKingheART brings nature indoors through the enchanting world of terrariums and miniature art. 
-                Each piece is a carefully crafted ecosystem - a living sculpture that captures the beauty of nature in a glass vessel.
+                THINKingheART brings nature and architecture together through the enchanting world of terrariums, miniature art, 
+                and bamboo building models. Each piece is carefully crafted to capture beauty in miniature form.
               </p>
               <p className="text-gray-300 leading-relaxed">
-                Our terrariums feature lush moss, succulents, and natural elements, creating self-sustaining miniature 
-                landscapes that require minimal care while providing maximum aesthetic impact.
+                From self-sustaining terrariums with lush moss and succulents, to intricately detailed miniature bamboo 
+                building models that showcase architectural craftsmanship - every creation is a work of art.
               </p>
               <div className="flex flex-wrap gap-3">
                 <span className="px-3 py-1 bg-green-900/50 text-green-300 rounded-full text-sm border border-green-700/50">
                   Terrariums
                 </span>
                 <span className="px-3 py-1 bg-amber-900/50 text-amber-300 rounded-full text-sm border border-amber-700/50">
-                  Miniature Gardens
+                  Bamboo Models
                 </span>
                 <span className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-sm border border-blue-700/50">
-                  Living Art
+                  Miniature Gardens
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
             <Card className="bg-gray-800/50 border-green-500/30 hover:border-green-500/60 transition-colors">
               <CardHeader>
                 <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
@@ -81,8 +81,7 @@ const THINKingheART = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300 text-sm">
-                  Beautifully designed closed and open terrariums featuring moss, succulents, and miniature plants 
-                  that thrive with minimal maintenance.
+                  Beautifully designed closed and open terrariums featuring moss, succulents, and miniature plants.
                 </p>
               </CardContent>
             </Card>
@@ -90,17 +89,33 @@ const THINKingheART = () => {
             <Card className="bg-gray-800/50 border-amber-500/30 hover:border-amber-500/60 transition-colors">
               <CardHeader>
                 <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center mb-3">
-                  <TreeDeciduous className="w-6 h-6 text-amber-400" />
+                  <Building2 className="w-6 h-6 text-amber-400" />
                 </div>
-                <CardTitle className="text-amber-300">Miniature Gardens</CardTitle>
+                <CardTitle className="text-amber-300">Bamboo Building Models</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Miniature architectural masterpieces
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300 text-sm">
+                  Intricately crafted miniature bamboo building models showcasing traditional and modern architecture.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gray-800/50 border-blue-500/30 hover:border-blue-500/60 transition-colors">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
+                  <TreeDeciduous className="w-6 h-6 text-blue-400" />
+                </div>
+                <CardTitle className="text-blue-300">Miniature Gardens</CardTitle>
                 <CardDescription className="text-gray-400">
                   Tiny landscapes with big impact
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300 text-sm">
-                  Intricate miniature garden scenes featuring tiny pathways, fairy garden elements, 
-                  and carefully curated plant arrangements.
+                  Intricate miniature garden scenes featuring tiny pathways and fairy garden elements.
                 </p>
               </CardContent>
             </Card>
@@ -112,13 +127,12 @@ const THINKingheART = () => {
                 </div>
                 <CardTitle className="text-red-300">Custom Creations</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Personalized living art pieces
+                  Personalized art pieces
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-300 text-sm">
-                  Commission custom terrariums and miniature art pieces designed specifically for your space, 
-                  occasion, or as unique gifts.
+                  Commission custom miniature art designed specifically for your space or as unique gifts.
                 </p>
               </CardContent>
             </Card>
