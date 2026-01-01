@@ -3208,7 +3208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Manually validate duration field (might be 5 minutes for testing)
       const { studentName, email, phone, date, duration, topic, notes } = req.body;
       
-      if (!studentName || !email || !phone || !date || !topic) {
+      if (!studentName || !email || !phone || !date) {
         return res.status(400).json({ 
           message: "Validation error", 
           errors: "Missing required fields" 
@@ -3251,7 +3251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone,
         date: parsedDate,
         duration: duration || 60, // Default to 60 if not specified
-        topic,
+        topic: topic || "",
         notes: notes || ""
       });
       
