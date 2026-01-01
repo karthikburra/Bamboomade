@@ -279,10 +279,10 @@ const UserLoginForm: React.FC<UserLoginFormProps> = ({ onSuccess }) => {
               </label>
               <Input
                 id="verification-code"
-                placeholder="Enter 6-digit code"
+                placeholder="Enter verification code"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
-                maxLength={6}
+                maxLength={8}
                 className="text-center tracking-widest text-lg font-medium"
               />
               

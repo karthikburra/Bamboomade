@@ -186,10 +186,10 @@ const UserRegisterForm: React.FC<UserRegisterFormProps> = ({ onSuccess }) => {
               <FormLabel>Verification Code</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter 6-digit code"
+                  placeholder="Enter verification code"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  maxLength={6}
+                  maxLength={8}
                   className="text-center tracking-widest text-lg"
                 />
               </FormControl>

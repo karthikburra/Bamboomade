@@ -1322,15 +1322,15 @@ function ProjectGuidance() {
                             <div>
                               <label className="block text-sm font-medium mb-1">Verification Code</label>
                               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                                We've sent a 6-digit code to {verificationEmail}
+                                We've sent a code to {verificationEmail}
                               </p>
                               <Input 
                                 type="text" 
-                                placeholder="Enter the 6-digit code" 
+                                placeholder="Enter the verification code" 
                                 value={userEnteredCode}
                                 onChange={(e) => setUserEnteredCode(e.target.value)}
                                 className="w-full"
-                                maxLength={6}
+                                maxLength={8}
                               />
                             </div>
                             <Button 
