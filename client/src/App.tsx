@@ -53,6 +53,7 @@ import TermsAndConditions from "@/pages/TermsAndConditions";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import PricingAndRefundPolicy from "@/pages/PricingAndRefundPolicy";
 import ShippingPolicy from "@/pages/ShippingPolicy";
+import THINKingheART from "@/pages/THINKingheART";
 import { Helmet } from "react-helmet";
 
 function Router() {
@@ -65,6 +66,7 @@ function Router() {
       <Route path="/ai-chat">
         {() => <ProtectedRoute component={AIChat} requiresSubscription={true} />}
       </Route>
+      <Route path="/thinkingheart" component={THINKingheART} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-home" component={AdminHome} />
