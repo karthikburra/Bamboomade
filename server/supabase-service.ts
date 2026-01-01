@@ -53,8 +53,8 @@ function cleanupExpiredVerifications() {
 setInterval(cleanupExpiredVerifications, 10 * 60 * 1000);
 
 /**
- * Generate and send a verification code via our email service
- * This bypasses Supabase OTP completely and uses our custom email system
+ * Generate and send a verification code via Supabase Auth (free) or fallback to Gmail SMTP
+ * Priority: Supabase Auth OTP (free) -> Gmail SMTP (fallback)
  */
 export async function sendVerificationCode(email: string): Promise<{
   success: boolean;
@@ -82,34 +82,43 @@ export async function sendVerificationCode(email: string): Promise<{
     
     console.log(`📧 Sending verification code to: ${email}`);
     
-    // First try with SendGrid (more reliable)
-    try {
-      // Import SendGrid service dynamically
-      const { sendVerificationCodeEmailWithSendGrid } = await import('./sendgrid-service');
-      
-      console.log(`🔑 Attempting to send verification email via SendGrid to: ${email}`);
-      const sendgridResult = await sendVerificationCodeEmailWithSendGrid(email, verificationCode);
-      
-      if (sendgridResult) {
-        console.log(`✅ SendGrid verification email sent successfully to: ${email}`);
-        // If SendGrid works, we don't need to try the fallback
-        return { 
-          success: true, 
-          message: 'Verification code sent to your email',
-          ...(process.env.NODE_ENV === 'development' ? { verificationCode } : {})
-        };
+    // Try Supabase Auth OTP first (FREE)
+    if (supabase) {
+      try {
+        console.log(`🔑 Attempting to send verification email via Supabase Auth to: ${email}`);
+        
+        // Use Supabase Auth to send OTP - this is FREE with Supabase
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            shouldCreateUser: true,
+            data: {
+              verification_code: verificationCode
+            }
+          }
+        });
+        
+        if (!error) {
+          console.log(`✅ Supabase Auth OTP sent successfully to: ${email}`);
+          // Note: Supabase sends its own 6-digit code, but we also store ours for flexibility
+          return { 
+            success: true, 
+            message: 'Verification code sent to your email',
+            ...(process.env.NODE_ENV === 'development' ? { verificationCode } : {})
+          };
+        } else {
+          console.warn(`⚠️ Supabase OTP error:`, error.message);
+        }
+      } catch (supabaseError) {
+        console.error(`❌ Supabase Auth error:`, supabaseError);
+        console.log(`⚠️ Supabase failed, falling back to Gmail SMTP`);
       }
-    } catch (sendgridError) {
-      console.error(`❌ SendGrid email error:`, sendgridError);
-      // Continue to fallback if SendGrid fails
-      console.log(`⚠️ SendGrid failed, falling back to standard email service`);
     }
     
-    // Fallback to regular email service if SendGrid fails
+    // Fallback to Gmail SMTP (using EMAIL_PASSWORD)
     const { sendLoginVerificationEmail } = await import('./email-service');
     
-    // Try to send the email with fallback method
-    console.log(`🔑 Attempting to send verification email via fallback to: ${email}`);
+    console.log(`🔑 Attempting to send verification email via Gmail SMTP to: ${email}`);
     const emailSent = await sendLoginVerificationEmail(email, verificationCode);
     
     if (!emailSent) {
@@ -117,10 +126,8 @@ export async function sendVerificationCode(email: string): Promise<{
       throw new Error('Failed to send verification email. Please check email configuration.');
     }
     
-    console.log(`✅ Verification email sent to: ${email}`);
+    console.log(`✅ Verification email sent via Gmail SMTP to: ${email}`);
     
-    // For development or if email service is not configured properly,
-    // return the code directly for testing
     return { 
       success: true, 
       message: 'Verification code sent to your email',
