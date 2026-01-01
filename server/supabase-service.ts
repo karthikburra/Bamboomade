@@ -53,8 +53,8 @@ function cleanupExpiredVerifications() {
 setInterval(cleanupExpiredVerifications, 10 * 60 * 1000);
 
 /**
- * Generate and send a verification code via Gmail SMTP (primary)
- * Uses the configured EMAIL_PASSWORD for info@bamboomade.in
+ * Generate and send a verification code via Supabase Auth (FREE built-in emails)
+ * Supabase sends OTP codes directly - no external email service needed
  */
 export async function sendVerificationCode(email: string): Promise<{
   success: boolean;
@@ -68,37 +68,40 @@ export async function sendVerificationCode(email: string): Promise<{
   // Clean up any expired verifications first
   cleanupExpiredVerifications();
   
-  // Generate a 6-digit verification code
-  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-  
   try {
-    // Store the verification code for all emails
+    console.log(`📧 Sending verification code via Supabase Auth to: ${email}`);
+    
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
+    // Use Supabase Auth OTP - this sends an email with a magic link/code for FREE
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true
+      }
+    });
+    
+    if (error) {
+      console.error(`❌ Supabase OTP error:`, error.message);
+      throw new Error(error.message);
+    }
+    
+    console.log(`✅ Supabase Auth OTP sent successfully to: ${email}`);
+    
+    // Store a placeholder - Supabase manages the actual code
     pendingVerifications.set(email, {
       email,
-      code: verificationCode,
+      code: 'SUPABASE_OTP', // Supabase handles the actual verification
       createdAt: new Date(),
       attempts: 0
     });
     
-    console.log(`📧 Sending verification code to: ${email}`);
-    
-    // Use Gmail SMTP (primary method)
-    const { sendLoginVerificationEmail } = await import('./email-service');
-    
-    console.log(`🔑 Attempting to send verification email via Gmail SMTP to: ${email}`);
-    const emailSent = await sendLoginVerificationEmail(email, verificationCode);
-    
-    if (emailSent) {
-      console.log(`✅ Verification email sent via Gmail SMTP to: ${email}`);
-      return { 
-        success: true, 
-        message: 'Verification code sent to your email',
-        verificationCode: process.env.NODE_ENV === 'development' ? verificationCode : undefined
-      };
-    }
-    
-    console.error(`❌ Failed to send verification email to: ${email}`);
-    throw new Error('Failed to send verification email. Please check email configuration.');
+    return { 
+      success: true, 
+      message: 'Verification link sent to your email. Please check your inbox and click the link to sign in.'
+    };
   } catch (error: any) {
     console.error(`❌ Failed to send verification:`, error);
     
@@ -110,7 +113,7 @@ export async function sendVerificationCode(email: string): Promise<{
 }
 
 /**
- * Verify a code for the custom verification system
+ * Verify a code using Supabase Auth OTP verification
  */
 export async function verifyCode(email: string, code: string): Promise<{
   success: boolean;
@@ -121,54 +124,34 @@ export async function verifyCode(email: string, code: string): Promise<{
     return { success: false, message: 'Email and verification code are required' };
   }
   
-  console.log(`🔍 Verifying code for email: ${email}, code: ${code.substring(0, 2)}xxxx`);
+  console.log(`🔍 Verifying Supabase OTP for email: ${email}, code: ${code.substring(0, 2)}xxxx`);
   
-  // Clean up any expired verifications first
-  cleanupExpiredVerifications();
+  if (!supabase) {
+    return { success: false, message: 'Supabase client not initialized' };
+  }
   
-  // Check if there's a pending verification for this email
-  const verification = pendingVerifications.get(email);
-  
-  if (!verification) {
-    console.log(`❌ No pending verification found for: ${email}`);
+  try {
+    // Use Supabase Auth to verify the OTP code
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: 'email'
+    });
     
-    // For development mode, accept any code if ENV is set
-    if (process.env.NODE_ENV === 'development' && process.env.BYPASS_VERIFICATION === 'true') {
-      console.log(`🧪 [DEV] Bypassing verification in development mode`);
-      return { success: true, message: 'Verification successful (development bypass)' };
+    if (error) {
+      console.error(`❌ Supabase OTP verification error:`, error.message);
+      return { success: false, message: 'Invalid verification code. Please try again.' };
     }
     
-    return { success: false, message: 'Verification code expired or not requested. Please request a new code.' };
-  }
-  
-  // Show verification details for debugging
-  console.log(`🔍 Found verification record:`, {
-    createdAt: verification.createdAt,
-    attempts: verification.attempts,
-    expectedCode: verification.code.substring(0, 2) + 'xxxx'
-  });
-  
-  // Increment attempt count
-  verification.attempts += 1;
-  
-  // Check if too many attempts
-  if (verification.attempts > 5) {
+    // Clean up local verification record
     pendingVerifications.delete(email);
-    console.log(`❌ Too many verification attempts for: ${email}`);
-    return { success: false, message: 'Too many verification attempts. Please request a new code.' };
+    console.log(`✅ Supabase OTP verification successful for: ${email}`);
+    
+    return { success: true, message: 'Verification successful' };
+  } catch (error: any) {
+    console.error(`❌ Failed to verify code:`, error);
+    return { success: false, message: 'Verification failed. Please try again.' };
   }
-  
-  // Check if code matches
-  if (verification.code !== code) {
-    console.log(`❌ Invalid verification code for: ${email}. Expected: ${verification.code.substring(0, 2)}xxxx, Got: ${code.substring(0, 2)}xxxx`);
-    return { success: false, message: 'Invalid verification code. Please try again.' };
-  }
-  
-  // Code is valid, clean up and return success
-  pendingVerifications.delete(email);
-  console.log(`✅ Verification code valid for: ${email}`);
-  
-  return { success: true, message: 'Verification successful' };
 }
 
 /**
