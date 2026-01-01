@@ -49,7 +49,6 @@ const timeSlots = [
 
 // Define separate duration options for students and professionals
 const studentDurations = [
-  { value: 30, label: "30 minutes - ₹500" },
   { value: 60, label: "60 minutes - ₹800" }
 ];
 
