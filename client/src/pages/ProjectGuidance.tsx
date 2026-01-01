@@ -1780,24 +1780,9 @@ function ProjectGuidance() {
                   <CardTitle>Session Pricing</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <h4 className="font-medium text-green-700 dark:text-green-400 mb-2">Student Pricing</h4>
                   <div className="flex justify-between items-center pb-2 border-b">
-                    <span>30-minute Quick Review</span>
-                    <span className="font-medium">₹500</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-2 border-b mb-4">
                     <span>1-hour Detailed Guidance</span>
                     <span className="font-medium">₹800</span>
-                  </div>
-                  
-                  <h4 className="font-medium text-green-700 dark:text-green-400 mb-2">Professional Pricing</h4>
-                  <div className="flex justify-between items-center pb-2 border-b">
-                    <span>30-minute Quick Review</span>
-                    <span className="font-medium">₹1,000</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span>1-hour Detailed Guidance</span>
-                    <span className="font-medium">₹1,500</span>
                   </div>
                   <div className="mt-4 text-xs text-muted-foreground space-y-2">
                     <p>
