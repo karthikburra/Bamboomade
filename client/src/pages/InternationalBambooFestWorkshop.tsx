@@ -83,7 +83,7 @@ const InternationalBambooFestWorkshop: React.FC = () => {
                 At the International Bamboo Festival, we collaborated with Ewe Jin Low of Better Bamboo Buildings as volunteers at Tadom Hill Resorts. We modelled sustainable bamboo structures, shared insights on eco-friendly architecture, and contributed to the worldwide push for sustainable living.
               </p>
               <WhatsAppContact
-                phoneNumber="8971690163"
+                phoneNumber="918971690163"
                 message="Hello, I'm interested in learning about your experience at the International Bamboo Festival. Could you share more information?"
                 className="bg-green-600 hover:bg-green-700 text-white"
                 size="lg"
@@ -208,7 +208,7 @@ const InternationalBambooFestWorkshop: React.FC = () => {
                   Contact Us
                 </Link>
               </Button>
-              <WhatsAppContact phoneNumber="8971690163" className="bg-green-700 hover:bg-green-800" />
+              <WhatsAppContact phoneNumber="918971690163" className="bg-green-700 hover:bg-green-800" />
             </div>
           </div>
         </div>

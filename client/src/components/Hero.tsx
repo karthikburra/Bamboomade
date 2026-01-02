@@ -178,7 +178,7 @@ const Hero: React.FC = () => {
                 <span className="text-xs sm:text-sm">Email Us</span>
               </Button>
             </a>
-            <a href="https://wa.me/8971690163" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-300 hover:text-green-200 transition-colors">
+            <a href="https://wa.me/918971690163" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-300 hover:text-green-200 transition-colors">
               <Button
                 variant="outline"
                 size="sm"

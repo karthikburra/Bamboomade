@@ -156,7 +156,7 @@ const THINKingheART = () => {
                   Contact Us
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <a href="https://wa.me/8971690163" target="_blank" rel="noopener noreferrer">
+                <a href="https://wa.me/918971690163" target="_blank" rel="noopener noreferrer">
                   <Button 
                     variant="outline"
                     className="border-green-600 text-green-400 hover:bg-green-900/30 w-full sm:w-auto"

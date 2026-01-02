@@ -209,7 +209,7 @@ const OurWorks: React.FC = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <WhatsAppContact 
-                      phoneNumber="8971690163" 
+                      phoneNumber="918971690163" 
                       message="Hello, I'm interested in a bamboo consultation for my project. Can you provide more information?"
                       variant="default"
                       className="bg-green-700 hover:bg-green-600 text-white w-full sm:w-auto"
@@ -258,7 +258,7 @@ const OurWorks: React.FC = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <WhatsAppContact 
-                      phoneNumber="8971690163" 
+                      phoneNumber="918971690163" 
                       message="Hello, I'm interested in attending/scheduling a bamboo workshop. Can you provide more details?"
                       variant="default"
                       className="bg-green-700 hover:bg-green-600 text-white w-full sm:w-auto"
@@ -314,7 +314,7 @@ const OurWorks: React.FC = () => {
                       Book a Session
                     </Button>
                     <WhatsAppContact 
-                      phoneNumber="8971690163" 
+                      phoneNumber="918971690163" 
                       message="Hello, I'm interested in project guidance for my bamboo project. Can we discuss the details?"
                       variant="outline"
                       className="border-green-700 text-green-400 hover:bg-green-950/30 w-full sm:w-auto"
@@ -339,7 +339,7 @@ const OurWorks: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <WhatsAppContact 
-              phoneNumber="8971690163" 
+              phoneNumber="918971690163" 
               message="Hello, I'd like to discuss a potential bamboo project collaboration."
               variant="default"
               size="lg"

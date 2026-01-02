@@ -85,7 +85,7 @@ const SirpurWorkshop: React.FC = () => {
                 An immersive training program equipping villagers with essential bamboo crafting skills, fostering self-sustainability and economic empowerment. Our aim was to prepare these artisans to become key players in the future bamboo product industry.
               </p>
               <WhatsAppContact
-                phoneNumber="8971690163"
+                phoneNumber="918971690163"
                 message="Hello, I'm interested in organizing a community bamboo workshop similar to the one at Sirpur. Could you provide more information?"
                 className="bg-green-600 hover:bg-green-700 text-white"
                 size="lg"
@@ -210,7 +210,7 @@ const SirpurWorkshop: React.FC = () => {
                   Contact Us
                 </Link>
               </Button>
-              <WhatsAppContact phoneNumber="8971690163" className="bg-green-700 hover:bg-green-800" />
+              <WhatsAppContact phoneNumber="918971690163" className="bg-green-700 hover:bg-green-800" />
             </div>
           </div>
         </div>

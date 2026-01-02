@@ -123,7 +123,7 @@ const NITBhopalWorkshop: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <WhatsAppContact
-                  phoneNumber="8971690163"
+                  phoneNumber="918971690163"
                   message="Hello, I'm interested in learning more about your NIT Bhopal workshop. Could you share additional information?"
                   className="bg-green-600 hover:bg-green-700 text-white"
                   size="lg"
@@ -266,7 +266,7 @@ const NITBhopalWorkshop: React.FC = () => {
                   Contact Us
                 </Link>
               </Button>
-              <WhatsAppContact phoneNumber="8971690163" className="bg-green-700 hover:bg-green-800" />
+              <WhatsAppContact phoneNumber="918971690163" className="bg-green-700 hover:bg-green-800" />
             </div>
           </div>
         </div>

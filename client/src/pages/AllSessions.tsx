@@ -1104,7 +1104,7 @@ export default function AllSessions() {
               
               <div className="mt-4 text-center">
                 <a 
-                  href="https://wa.me/8971690163" 
+                  href="https://wa.me/918971690163" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-gray-400 hover:text-gray-300 text-sm"
