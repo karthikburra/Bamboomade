@@ -36,36 +36,6 @@ const CallToAction: React.FC = () => {
               <span className="inline sm:hidden">Project Guidance</span>
             </Button>
           </ScrollLink>
-          
-          <ScrollLink href="/ai-chat" className="w-full sm:w-auto">
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto border-green-700 text-green-400 hover:bg-green-950/30"
-            >
-              <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center mr-2">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  className="w-2.5 h-2.5 text-green-100"
-                >
-                  <path d="M21 12.5c0 .3-.1.6-.2.9"></path>
-                  <path d="M14 19.5c-.4 0-.8-.1-1.2-.3"></path>
-                  <path d="M3 13l0-.3c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8"></path>
-                  <path d="M13 22H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path>
-                  <path d="M18 22a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
-                  <path d="m16.5 19 3-3"></path>
-                  <path d="M7 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"></path>
-                </svg>
-              </div>
-              Try BambooMade AI
-            </Button>
-          </ScrollLink>
         </div>
       </div>
     </section>
