@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import AnimatedLeaves from "@/components/AnimatedLeaves";
 import ScrollToTop from "@/components/ScrollToTop";
 import DevToolsButton from "@/components/DevToolsButton";
+import WhatsAppFloatingButton from "@/components/WhatsAppFloatingButton";
 import { useEffect } from "react";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
@@ -162,6 +163,7 @@ function App() {
               </main>
               <Footer className="relative" />
               <DevToolsButton />
+              <WhatsAppFloatingButton />
             </div>
           </div>
         </ProfileRedirectChecker>
