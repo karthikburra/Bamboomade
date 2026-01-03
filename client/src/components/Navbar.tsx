@@ -296,17 +296,7 @@ const Navbar: React.FC = () => {
 
         <div className="flex flex-1 items-center justify-end space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
           
-          {!user && !isMobile && (
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => window.location.href = "/login"}
-            >
-              Login
-            </Button>
-          )}
-          
+                    
           {user && !isMobile && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -501,21 +491,7 @@ const Navbar: React.FC = () => {
                         Logout
                       </Button>
                     </div>
-                  ) : (
-                    <div className="pt-3 sm:pt-4 mt-1 sm:mt-2 border-t border-green-800/50">
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          window.location.href = "/login";
-                        }} 
-                        className="w-full text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-11 bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        Login
-                      </Button>
-                    </div>
-                  )}
+                  ) : null}
                 </nav>
               </SheetContent>
             </Sheet>
