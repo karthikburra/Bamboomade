@@ -52,7 +52,7 @@ const WhyBambooMade: React.FC = () => {
     },
     {
       icon: <Home size={24} />,
-      title: "Design Studios",
+      title: "Design Studio",
       description: "Architectural Design Studio, focusing on bamboo's potential as a sustainable building material.",
       imageUrl: "/img/projects/bamboo-structure-model.jpg"
     },
