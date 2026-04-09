@@ -377,6 +377,46 @@ function ProjectGuidance() {
     scrollToTop();
   };
   
+  // Coupon code state
+  const [couponCode, setCouponCode] = useState<string>("");
+  const [couponStatus, setCouponStatus] = useState<"idle" | "success" | "error">("idle");
+  const [couponMessage, setCouponMessage] = useState<string>("");
+  const [isCouponApplying, setIsCouponApplying] = useState(false);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsCouponApplying(true);
+    setCouponStatus("idle");
+    setCouponMessage("");
+    try {
+      const res = await fetch("/api/apply-coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          couponCode: couponCode.trim(),
+          email: form.getValues().email,
+          phone: form.getValues().phone,
+          sessionId,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCouponStatus("success");
+        setCouponMessage(data.message);
+        setPaymentId(`COUPON_${couponCode.trim().toUpperCase()}`);
+        setTimeout(() => setStep(4), 1500);
+      } else {
+        setCouponStatus("error");
+        setCouponMessage(data.message || "Invalid coupon code.");
+      }
+    } catch {
+      setCouponStatus("error");
+      setCouponMessage("Failed to apply coupon. Please try again.");
+    } finally {
+      setIsCouponApplying(false);
+    }
+  };
+
   // Handle successful payment and set payment ID for displaying on the success page
   const [paymentId, setPaymentId] = useState<string | null>(null);
   
@@ -988,6 +1028,47 @@ function ProjectGuidance() {
                             </div>
                           </div>
                           
+                          {/* Coupon Code Section */}
+                          <div className="border border-dashed border-green-700/50 rounded-lg p-4 bg-green-950/20">
+                            <h4 className="text-sm font-medium text-green-400 mb-3 flex items-center gap-2">
+                              <span>🎟️</span> Have a Coupon Code?
+                            </h4>
+                            {couponStatus === "success" ? (
+                              <div className="flex items-center gap-2 text-green-400 font-medium text-sm">
+                                <span>✅</span> {couponMessage}
+                              </div>
+                            ) : (
+                              <>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={couponCode}
+                                    onChange={(e) => {
+                                      setCouponCode(e.target.value.toUpperCase());
+                                      setCouponStatus("idle");
+                                      setCouponMessage("");
+                                    }}
+                                    onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                                    placeholder="Enter coupon code"
+                                    className="flex-1 bg-gray-800 border border-gray-700 text-white text-sm rounded-md px-3 py-2 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-green-500 uppercase"
+                                    disabled={isCouponApplying}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={applyCoupon}
+                                    disabled={isCouponApplying || !couponCode.trim()}
+                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
+                                  >
+                                    {isCouponApplying ? "Applying..." : "Apply"}
+                                  </button>
+                                </div>
+                                {couponStatus === "error" && (
+                                  <p className="text-red-400 text-xs mt-2">{couponMessage}</p>
+                                )}
+                              </>
+                            )}
+                          </div>
+
                           <div className="space-y-4">
                             <h4 className="text-base font-medium">Select Payment Method</h4>
                             <PaymentOptions 

@@ -16,11 +16,11 @@ declare module 'express-session' {
   }
 }
 import { db } from "./db";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, or, asc, desc } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent, bambooFacts } from "@shared/schema";
+import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent, bambooFacts, couponUsages, projectGuidances } from "@shared/schema";
 import { processMessage as processOpenAIMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import { getGeminiAI, processMessage, summarizeContent as geminiSummarizeContent, extractFactsFromContent as geminiExtractFacts } from "./gemini-service";
 import { processUrlWithGemini, processFileWithGemini } from "./gemini-extractor";
@@ -3786,6 +3786,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to verify pending payments",
         error: (error as Error).message
       });
+    }
+  });
+
+// Coupon Code Validation & Application
+  app.post("/api/apply-coupon", async (req, res) => {
+    try {
+      const { couponCode, email, phone, sessionId } = req.body;
+      if (!couponCode || !email || !phone || !sessionId) {
+        return res.status(400).json({ success: false, message: "Missing required fields." });
+      }
+
+      const code = couponCode.trim().toUpperCase();
+      const validCoupons = ["STUDENT"];
+
+      if (!validCoupons.includes(code)) {
+        return res.status(400).json({ success: false, message: "Invalid coupon code." });
+      }
+
+      // Check if this email or phone has already used this coupon
+      const existing = await db
+        .select()
+        .from(couponUsages)
+        .where(
+          and(
+            eq(couponUsages.couponCode, code),
+            or(
+              eq(couponUsages.email, email.toLowerCase()),
+              eq(couponUsages.phone, phone)
+            )
+          )
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        return res.status(400).json({ success: false, message: "This coupon has already been used by your account." });
+      }
+
+      // Record coupon usage
+      await db.insert(couponUsages).values({
+        couponCode: code,
+        email: email.toLowerCase(),
+        phone,
+        sessionId,
+      });
+
+      // Mark the session as paid with coupon
+      await db
+        .update(projectGuidances)
+        .set({
+          paymentConfirmed: true,
+          paymentStatus: "Paid",
+          paymentId: `COUPON_${code}_${Date.now()}`,
+          amount: 0,
+          status: "confirmed",
+        })
+        .where(eq(projectGuidances.id, sessionId));
+
+      return res.json({ success: true, message: "Coupon applied! Your session is now free." });
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      return res.status(500).json({ success: false, message: "Failed to apply coupon. Please try again." });
     }
   });
 

@@ -454,3 +454,23 @@ export const insertDeletedUserSchema = createInsertSchema(deletedUsers).pick({
 
 export type DeletedUser = typeof deletedUsers.$inferSelect;
 export type InsertDeletedUser = z.infer<typeof insertDeletedUserSchema>;
+
+// Coupon usage tracking - one per unique user (email or phone)
+export const couponUsages = pgTable("coupon_usages", {
+  id: serial("id").primaryKey(),
+  couponCode: text("coupon_code").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  sessionId: integer("session_id").notNull(),
+  usedAt: timestamp("used_at").notNull().defaultNow(),
+});
+
+export const insertCouponUsageSchema = createInsertSchema(couponUsages).pick({
+  couponCode: true,
+  email: true,
+  phone: true,
+  sessionId: true,
+});
+
+export type CouponUsage = typeof couponUsages.$inferSelect;
+export type InsertCouponUsage = z.infer<typeof insertCouponUsageSchema>;
