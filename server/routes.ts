@@ -560,8 +560,10 @@ const upload = multer({
 import cron from "node-cron";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Schedule automatic payment verification to run every 30 minutes
-  cron.schedule("*/30 * * * *", async () => {
+  // Disable cron jobs on Vercel as serverless functions cannot run persistent background tasks
+  if (!process.env.VERCEL) {
+    // Schedule automatic payment verification to run every 30 minutes
+    cron.schedule("*/30 * * * *", async () => {
     console.log("🔄 Running scheduled verification of pending Razorpay payments...");
     try {
       const result = await verifyPendingPayments(storage);
@@ -639,6 +641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("❌ Error checking failed sessions for successful payments:", error);
     }
   });
+  }
   // Development mode endpoint for debugging session state
   if (process.env.NODE_ENV === 'development') {
     app.get("/api/debug/session", (req, res) => {

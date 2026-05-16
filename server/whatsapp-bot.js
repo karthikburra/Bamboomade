@@ -383,14 +383,13 @@ class WhatsAppBot {
 // Create and export a singleton instance
 const whatsappBot = new WhatsAppBot();
 
-// Auto-initialize the WhatsApp bot when the module is loaded
-(async () => {
-  try {
-    console.log('[WhatsApp Bot] Auto-initializing bot on server start...');
-    await whatsappBot.initialize();
-  } catch (error) {
+// Auto-initialize the WhatsApp bot when the module is loaded (unless on Vercel)
+if (!process.env.VERCEL) {
+  whatsappBot.initialize().catch(error => {
     console.error('[WhatsApp Bot] Auto-initialization failed:', error);
-  }
-})();
+  });
+} else {
+  console.log('[WhatsApp Bot] Disabled on Vercel serverless environment');
+}
 
 export default whatsappBot;
