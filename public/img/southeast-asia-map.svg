@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="500" fill="#023047" opacity="0.9"/>
+  
+  <!-- India -->
+  <path d="M240,150 L300,150 L330,200 L340,270 L320,320 L270,350 L220,340 L190,300 L180,250 L200,180 Z" 
+        fill="#1e392a" stroke="#45734c" stroke-width="2"/>
+  
+  <!-- Delhi marker -->
+  <circle cx="240" cy="200" r="5" fill="#77DD77"/>
+  <text x="240" y="185" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">Delhi</text>
+  
+  <!-- Bhopal marker -->
+  <circle cx="250" cy="250" r="5" fill="#77DD77"/>
+  <text x="250" y="235" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">Bhopal</text>
+  
+  <!-- Hyderabad marker -->
+  <circle cx="280" cy="300" r="5" fill="#77DD77"/>
+  <text x="280" y="285" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">Hyderabad</text>
+  
+  <!-- Sirpur marker -->
+  <circle cx="260" cy="270" r="5" fill="#77DD77"/>
+  <text x="260" y="255" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">Sirpur</text>
+  
+  <!-- Southeast Asia region -->
+  <path d="M500,250 C520,230 540,240 550,260 C560,280 580,290 590,280 C600,270 610,280 620,300 C630,320 620,340 600,350 C580,360 560,350 550,330 C540,310 520,300 510,310 C500,320 480,310 490,290 C500,270 490,260 500,250 Z" 
+        fill="#1e392a" stroke="#45734c" stroke-width="2"/>
+  
+  <!-- Malaysia marker -->
+  <circle cx="575" cy="320" r="5" fill="#77DD77"/>
+  <text x="575" y="305" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">Kuala Lumpur</text>
+  
+  <!-- Water -->
+  <path d="M340,270 L400,280 L450,270 L500,250 L550,260 L590,280 L600,350 L550,330 L510,310 L490,290 L450,310 L400,320 L340,310 Z" 
+        fill="#023e8a" stroke="#0077b6" stroke-width="1" opacity="0.7"/>
+  
+  <!-- Compass -->
+  <circle cx="730" cy="70" r="25" fill="#333" opacity="0.7"/>
+  <line x1="730" y1="45" x2="730" y2="95" stroke="#fff" stroke-width="1"/>
+  <line x1="705" y1="70" x2="755" y2="70" stroke="#fff" stroke-width="1"/>
+  <text x="730" y="55" font-family="Arial" font-size="10" fill="#fff" text-anchor="middle">N</text>
+  <text x="730" y="90" font-family="Arial" font-size="10" fill="#fff" text-anchor="middle">S</text>
+  <text x="710" y="70" font-family="Arial" font-size="10" fill="#fff" text-anchor="middle">W</text>
+  <text x="750" y="70" font-family="Arial" font-size="10" fill="#fff" text-anchor="middle">E</text>
+  
+  <!-- Title -->
+  <text x="400" y="30" font-family="Arial" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">BambooMade Workshop Locations</text>
+  
+  <!-- Legend -->
+  <rect x="40" y="420" width="15" height="15" fill="#77DD77"/>
+  <text x="65" y="432" font-family="Arial" font-size="12" fill="#ffffff">Workshop Locations</text>
+</svg>

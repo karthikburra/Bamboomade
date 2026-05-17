@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple world map outline -->
+  <path d="M95,90 L105,85 L115,80 L125,79 L135,80 L140,85 L145,90 L150,95 L155,100 L165,100 L175,95 L185,90 L190,85 L200,80 L210,75 L220,70 L230,65 L240,65 L250,70 L260,75 L270,80 L280,85 L290,90 L300,95 L310,100 L320,105 L330,110 L340,115 L350,120 L360,125 L370,130 L380,135 L390,140 L400,145 L410,150 L420,155 L430,160 L440,165 L450,170 L460,175 L470,180 L480,185 L490,190 L500,195 L510,200 L520,205 L530,210 L540,215 L550,220 L560,225 L570,230 L580,235 L590,240 L600,245 L610,250 L620,255 L630,260 L640,265 L650,270 L660,275 L670,280 L680,285 L690,290 L700,295 L710,300 L720,305 L730,310" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- North America -->
+  <path d="M50,60 L60,65 L70,70 L80,75 L90,80 L100,85 L110,90 L120,95 L130,100 L140,105 L150,110 L160,115 L170,120 L180,125 L190,130 L200,135 L210,140 L220,145 L230,140 L240,135 L250,130 L260,125 L270,120" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- South America -->
+  <path d="M210,160 L205,170 L200,180 L195,190 L190,200 L185,210 L180,220 L175,230 L170,240 L175,250 L180,260 L185,270 L190,280" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- Europe -->
+  <path d="M380,70 L390,75 L400,80 L410,85 L420,90 L430,95 L440,100 L450,105 L460,110 L470,115" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- Africa -->
+  <path d="M400,120 L410,130 L420,140 L430,150 L440,160 L450,170 L460,180 L450,190 L440,200 L430,210 L420,220 L410,230" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- Asia -->
+  <path d="M480,60 L490,65 L500,70 L510,75 L520,80 L530,85 L540,90 L550,95 L560,100 L570,105 L580,110 L590,115 L600,120 L610,125 L620,130 L630,135 L640,140 L650,145" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- Australia -->
+  <path d="M650,200 L660,205 L670,210 L680,215 L690,220 L700,225 L690,230 L680,235 L670,240 L660,245 L650,250" 
+        stroke="currentColor" stroke-width="2" fill="none" />
+  
+  <!-- India specific (more detailed) -->
+  <path d="M560,140 L570,145 L575,150 L580,155 L585,160 L590,165 L585,170 L580,175 L575,180 L570,185 L565,190" 
+        stroke="currentColor" stroke-width="2.5" fill="none" />
+  
+  <!-- Malaysia specific (more detailed) -->
+  <path d="M600,180 L605,185 L610,190 L615,195" 
+        stroke="currentColor" stroke-width="2.5" fill="none" />
+</svg>
