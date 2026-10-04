@@ -9,6 +9,7 @@ import AnimatedLeaves from "@/components/AnimatedLeaves";
 import ScrollToTop from "@/components/ScrollToTop";
 import DevToolsButton from "@/components/DevToolsButton";
 import WhatsAppFloatingButton from "@/components/WhatsAppFloatingButton";
+import BambooMobilityLaunchModal from "@/components/BambooMobilityLaunchModal";
 import { useEffect } from "react";
 import Home from "@/pages/Home";
 import Gallery from "@/pages/Gallery";
@@ -164,6 +165,7 @@ function App() {
               <Footer className="relative" />
               <DevToolsButton />
               <WhatsAppFloatingButton />
+              <BambooMobilityLaunchModal />
             </div>
           </div>
         </ProfileRedirectChecker>

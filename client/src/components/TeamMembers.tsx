@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { SiLinkedin } from "react-icons/si";
+import { Linkedin } from "lucide-react";
 import karthikImage from "@assets/karthik_new.jpg";
 import dollyImage from "@assets/dolly_new.jpg";
 import krishnaiahPic from "@assets/krishnaiah.png";
@@ -42,7 +42,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({
             rel="noopener noreferrer"
             className="inline-flex items-center text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
           >
-            <SiLinkedin className="h-5 w-5 mr-2" />
+            <Linkedin className="h-5 w-5 mr-2" />
             Connect on LinkedIn
           </a>
         )}

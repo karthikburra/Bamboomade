@@ -1,5 +1,6 @@
 import React from "react";
 import Hero from "@/components/Hero";
+import BambooMobilityBanner from "@/components/BambooMobilityBanner";
 import FeaturedProjects from "@/components/FeaturedProjects";
 import WhyBambooMade from "@/components/WhyBambooMade";
 import CallToAction from "@/components/CallToAction";
@@ -16,6 +17,7 @@ const Home: React.FC = () => {
         <meta name="description" content="BambooMade provides bamboo workshops, architectural solutions, and student project guidance. We specialize in sustainable design using bamboo as a versatile building material." />
       </Helmet>
       
+      <BambooMobilityBanner />
       <Hero />
       <WhyBambooMade />
       <FeaturedProjects />
