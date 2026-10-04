@@ -10,6 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Preload the above-the-fold E Bamboo Bike banner so it loads in parallel with the JS bundle -->
+    <link rel="preload" as="image" href="/images/bamboo-mobility-banner.jpg"
+      imagesrcset="/images/bamboo-mobility-banner-mobile.jpg 800w, /images/bamboo-mobility-banner.jpg 1024w"
+      imagesizes="(max-width: 640px) 100vw, 1024px" fetchpriority="high">
   </head>
   <body>
     <div id="root"></div>

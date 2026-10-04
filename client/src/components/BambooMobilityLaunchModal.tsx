@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { X, ExternalLink, Sparkles, ShieldCheck, Bike, Zap, ArrowRight, Eye, Globe } from "lucide-react";
+import { X, ExternalLink, Sparkles, ShieldCheck, Bike, Zap, ArrowRight, Eye, Globe, Leaf, PackageOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+/** Tri-wheel stability glyph: a triangle frame with a wheel at each corner (lucide-style stroke icon). */
+const TriWheelIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M12 6.5 6.4 16.2M12 6.5l5.6 9.7M7.5 18.5h9" />
+    <circle cx="12" cy="4.5" r="2.5" />
+    <circle cx="5" cy="18.5" r="2.5" />
+    <circle cx="19" cy="18.5" r="2.5" />
+  </svg>
+);
 
 interface BambooMobilityLaunchModalProps {
   defaultOpen?: boolean;
@@ -121,156 +140,162 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
   return (
     <>
       {/* Floating launcher button (accessible after closing or anytime) */}
-      <div className="fixed bottom-6 left-6 z-40">
+      <div className="fixed bottom-4 sm:bottom-6 left-3 sm:left-6 z-40 max-w-[calc(100vw-24px)]">
         <button
           onClick={() => setIsOpen(true)}
-          className="group flex items-center gap-2.5 rounded-full bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 px-4 py-2.5 sm:py-3 text-white shadow-xl shadow-emerald-950/40 transition-all duration-300 hover:scale-105 hover:shadow-emerald-500/25 active:scale-95 border border-emerald-400/40 whitespace-nowrap shrink-0"
+          className="group flex items-center gap-2 sm:gap-2.5 rounded-full bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 px-3 sm:px-4 py-2 sm:py-2.5 text-white shadow-xl shadow-emerald-950/40 transition-all duration-300 hover:scale-105 hover:shadow-emerald-500/25 active:scale-95 border border-emerald-400/40 whitespace-nowrap shrink-0"
           aria-label="View E Bamboo Bike Launch & Crowd funding"
         >
-          <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
-          <Bike className="h-4 w-4 sm:h-5 sm:w-5 text-amber-200 transition-transform group-hover:rotate-12 shrink-0" />
+          <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+          <Bike className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-200 transition-transform group-hover:rotate-12 shrink-0" />
           <span className="text-xs sm:text-sm font-semibold tracking-wide whitespace-nowrap">
-            E Bamboo Bike • <span className="text-amber-300 underline underline-offset-2">Crowd funding open</span>
+            E Bamboo Bike • <span className="text-amber-300 underline underline-offset-2">Crowd funding</span>
           </span>
         </button>
       </div>
 
       {/* Main Modal Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 md:p-6 overflow-y-auto">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
             onClick={handleClose}
           />
 
-          {/* Modal Container */}
+          {/* Modal Container - Compact on mobile */}
           <div
-            className="relative z-10 w-full max-w-5xl rounded-2xl bg-neutral-900/95 border border-neutral-800 shadow-2xl text-neutral-100 backdrop-blur-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]"
+            className="relative z-10 w-full max-w-sm sm:max-w-5xl rounded-2xl bg-neutral-900/95 border border-neutral-800 shadow-2xl text-neutral-100 backdrop-blur-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[86vh] sm:max-h-[92vh]"
             role="dialog"
             aria-modal="true"
           >
             {/* Header Bar */}
-            <div className="flex items-center justify-between border-b border-neutral-800/80 px-3.5 sm:px-6 py-2.5 sm:py-3.5 bg-neutral-950/40 gap-2">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center justify-between border-b border-neutral-800/80 px-3 sm:px-6 py-2 sm:py-3 bg-neutral-950/60 gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-emerald-400 truncate">
-                  Crowd funding open to get Special launch discount
+                <span className="text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-emerald-400 truncate">
+                  Crowd funding open • Special launch discount
                 </span>
               </div>
               <button
                 onClick={handleClose}
-                className="rounded-full p-1.5 text-neutral-400 hover:text-white hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 shrink-0"
+                className="rounded-full p-1 text-neutral-400 hover:text-white hover:bg-neutral-800/80 transition-colors focus:outline-none shrink-0"
                 aria-label="Close modal"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
 
             {/* Scrollable Body Content */}
-            <div className="overflow-y-auto p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
-                {/* Left Column: Launch Poster Image */}
+            <div className="overflow-y-auto p-3 sm:p-6 md:p-8 space-y-3 sm:space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 lg:gap-8 items-start">
+                {/* Left Column: Launch Poster Image - compact on mobile */}
                 <div className="lg:col-span-6 flex flex-col items-center">
-                  <div className="group relative w-full overflow-hidden rounded-xl border border-emerald-900/40 bg-neutral-950 shadow-lg shadow-black/40">
+                  <div className="group relative w-full overflow-hidden rounded-xl border border-emerald-900/40 bg-neutral-950 shadow-md">
                     <img
-                      src="/images/bamboo-mobility-launch.jpg"
+                      src="/images/bamboo-mobility-banner.jpg"
+                      srcSet="/images/bamboo-mobility-banner-mobile.jpg 800w, /images/bamboo-mobility-banner.jpg 1024w"
+                      sizes="(max-width: 640px) 100vw, 50vw"
                       alt="E Bamboo Bike - Ride Carry Explore - Launching Soon"
-                      className="w-full h-auto max-h-[42vh] sm:max-h-[70vh] object-contain mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
+                      width={1024}
+                      height={385}
+                      className="w-full h-auto object-cover mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
                       loading="eager"
+                      decoding="async"
+                      fetchPriority="high"
                     />
                     {/* Zoom / Full Preview Overlay Button */}
                     <button
                       onClick={() => setIsZoomed(true)}
-                      className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-lg bg-black/75 px-3 py-1.5 text-xs font-medium text-neutral-200 backdrop-blur-md opacity-90 transition-opacity hover:opacity-100 hover:text-white hover:bg-black/90 border border-neutral-700/60"
+                      className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/80 px-2 py-1 text-[10px] sm:text-xs font-medium text-neutral-200 backdrop-blur-md opacity-90 transition-opacity hover:opacity-100 hover:text-white border border-neutral-700/60"
                     >
-                      <Eye className="h-3.5 w-3.5 text-emerald-400" />
-                      View Poster Fullscreen
+                      <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-400" />
+                      Fullscreen
                     </button>
                   </div>
-                  <p className="mt-2 text-center text-xs text-neutral-400">
+                  <p className="mt-1 text-center text-[10px] sm:text-xs text-neutral-400 hidden sm:block">
                     E Bamboo Bike • Designed for a Sustainable Tomorrow
                   </p>
                 </div>
 
                 {/* Right Column: E Bamboo Bike & Currency Selector Panel */}
-                <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
+                <div className="lg:col-span-6 flex flex-col justify-between space-y-3 sm:space-y-5">
                   {/* Headline & Badges */}
                   <div>
-                    <div className="inline-flex items-center gap-2 rounded-full bg-emerald-950/70 border border-emerald-500/30 px-3 py-1 text-xs font-semibold text-emerald-300 mb-3">
-                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold text-emerald-300 mb-1.5 sm:mb-2.5">
+                      <Sparkles className="h-3 w-3 text-amber-400" />
                       Crowd funding open to get Special launch discount
                     </div>
 
-                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                    <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight text-white">
                       E Bamboo Bike
                     </h2>
-                    <p className="text-sm font-medium text-amber-300/90 mt-1">
+                    <p className="text-xs sm:text-sm font-medium text-amber-300/90 mt-0.5 sm:mt-1">
                       RIDE • CARRY • EXPLORE — One Design. Many Possibilities.
                     </p>
-                    <p className="mt-3 text-sm text-neutral-300 leading-relaxed">
+                    <p className="mt-1.5 sm:mt-2.5 text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-2 sm:line-clamp-none">
                       Experience the world&apos;s most innovative foldable E Bamboo Bike. Crafted with sustainable bamboo composite, tri-wheel stability, and multi-modal portability.
                     </p>
                   </div>
 
                   {/* Feature Highlights Grid */}
-                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs">
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-800/60 p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-emerald-900/50 p-1.5 text-emerald-400">
-                        🌱
+                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 text-xs">
+                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
+                      <div className="rounded-md bg-emerald-900/50 p-1 sm:p-1.5 text-emerald-400 shrink-0">
+                        <Leaf className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </div>
                       <div>
-                        <div className="font-semibold text-neutral-200">Sustainable Bamboo</div>
-                        <div className="text-[11px] text-neutral-400">Eco-conscious frame</div>
+                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Sustainable Bamboo</div>
+                        <div className="text-[10px] text-neutral-400 hidden sm:block">Eco-conscious frame</div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-800/60 p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-amber-900/50 p-1.5 text-amber-400">
-                        <Zap className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
+                      <div className="rounded-md bg-amber-900/50 p-1 sm:p-1.5 text-amber-400 shrink-0">
+                        <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </div>
                       <div>
-                        <div className="font-semibold text-neutral-200">Electric Assist</div>
-                        <div className="text-[11px] text-neutral-400">Effortless commutes</div>
+                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Electric Assist</div>
+                        <div className="text-[10px] text-neutral-400 hidden sm:block">Effortless commutes</div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-800/60 p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-blue-900/50 p-1.5 text-blue-400">
-                        📦
+                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
+                      <div className="rounded-md bg-sky-900/50 p-1 sm:p-1.5 text-sky-400 shrink-0">
+                        <PackageOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </div>
                       <div>
-                        <div className="font-semibold text-neutral-200">Ultra-Compact Fold</div>
-                        <div className="text-[11px] text-neutral-400">Bus, Train & Car Boot</div>
+                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Ultra-Compact Fold</div>
+                        <div className="text-[10px] text-neutral-400 hidden sm:block">Bus, Train & Car Boot</div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-800/60 p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-purple-900/50 p-1.5 text-purple-400">
-                        ⚖️
+                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
+                      <div className="rounded-md bg-purple-900/50 p-1 sm:p-1.5 text-purple-400 shrink-0">
+                        <TriWheelIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       </div>
                       <div>
-                        <div className="font-semibold text-neutral-200">Tri-Wheel Stability</div>
-                        <div className="text-[11px] text-neutral-400">Superior safe balance</div>
+                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Tri-Wheel Stability</div>
+                        <div className="text-[10px] text-neutral-400 hidden sm:block">Superior safe balance</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Action & Launch Button Section */}
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-4 sm:p-5">
+                  <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-3 sm:p-5">
                     <Button
                       type="button"
                       onClick={() => setShowCurrencyDialog(true)}
-                      className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-emerald-500 via-emerald-600 to-amber-600 hover:from-emerald-600 hover:to-amber-700 text-white shadow-lg shadow-emerald-950/50 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 rounded-xl"
+                      className="w-full h-10 sm:h-12 text-xs sm:text-base font-semibold bg-gradient-to-r from-emerald-500 via-emerald-600 to-amber-600 hover:from-emerald-600 hover:to-amber-700 text-white shadow-lg shadow-emerald-950/50 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 rounded-xl"
                     >
                       <span>Help us launch</span>
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
 
                     {/* Trust and Security Footnote */}
-                    <div className="mt-3 pt-3 border-t border-neutral-900/80 flex items-center justify-center gap-2 text-[11px] text-neutral-400">
-                      <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-                      <span>100% Secure Payment handled directly via Razorpay</span>
+                    <div className="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-neutral-900/80 flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span>100% Secure Payment via Razorpay</span>
                     </div>
                   </div>
                 </div>
@@ -283,16 +308,16 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
       {/* Currency Selection Dialog (triggered after clicking 'Help us launch') */}
       {showCurrencyDialog && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in"
           onClick={() => setShowCurrencyDialog(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-neutral-900 border border-neutral-800 p-5 sm:p-6 shadow-2xl text-neutral-100 space-y-4"
+            className="w-full max-w-sm sm:max-w-md rounded-2xl bg-neutral-900 border border-neutral-800 p-4 sm:p-6 shadow-2xl text-neutral-100 space-y-3 sm:space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
               <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <Globe className="h-5 w-5 text-emerald-400 shrink-0" />
+                <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 shrink-0" />
                 Select Payment Currency
               </h4>
               <button
@@ -306,18 +331,18 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
               Please choose whether you would like to complete your payment in SGD, INR, or USD to continue:
             </p>
 
-            <div className="grid grid-cols-1 gap-2.5 sm:gap-3 pt-1">
+            <div className="grid grid-cols-1 gap-2 sm:gap-3 pt-1">
               <button
                 onClick={() => handleProceedPayment("SGD")}
-                className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl shrink-0">🇸🇬</span>
+                  <span className="text-xl sm:text-2xl shrink-0">🇸🇬</span>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-emerald-300">
+                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
                       Pay in SGD
                     </div>
-                    <div className="text-xs text-neutral-400">Singapore Dollar (S$)</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-400">Singapore Dollar (S$)</div>
                   </div>
                 </div>
                 <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -325,15 +350,15 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
 
               <button
                 onClick={() => handleProceedPayment("INR")}
-                className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl shrink-0">🇮🇳</span>
+                  <span className="text-xl sm:text-2xl shrink-0">🇮🇳</span>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-emerald-300">
+                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
                       Pay in INR
                     </div>
-                    <div className="text-xs text-neutral-400">Indian Rupee (₹) • India</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-400">Indian Rupee (₹) • India</div>
                   </div>
                 </div>
                 <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -341,15 +366,15 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
 
               <button
                 onClick={() => handleProceedPayment("USD")}
-                className="flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl shrink-0">🇺🇸</span>
+                  <span className="text-xl sm:text-2xl shrink-0">🇺🇸</span>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-emerald-300">
+                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
                       Pay in USD
                     </div>
-                    <div className="text-xs text-neutral-400">US Dollar ($) • Global</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-400">US Dollar ($) • Global</div>
                   </div>
                 </div>
                 <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -373,7 +398,7 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
             <X className="h-6 w-6" />
           </button>
           <img
-            src="/images/bamboo-mobility-launch.jpg"
+            src="/images/bamboo-mobility-launch-opt.jpg"
             alt="E Bamboo Bike Poster Fullscreen"
             className="max-h-[92vh] max-w-[95vw] object-contain rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()}

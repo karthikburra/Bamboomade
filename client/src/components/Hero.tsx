@@ -3,7 +3,8 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle, Mail, Phone } from "lucide-react";
 import WhatsAppContact from "./WhatsAppContact";
-import heroImage from "@assets/Hero.png";
+import heroImage from "@assets/Hero-opt.jpg";
+import heroImageMobile from "@assets/Hero-mobile.jpg";
 
 interface AnimatedTextProps {
   phrases: string[];
@@ -108,20 +109,19 @@ const AnimatedText: React.FC<AnimatedTextProps> = ({ phrases }) => {
   );
 };
 
+const heroBgStyle = (src: string): React.CSSProperties => ({
+  backgroundImage: `url(${src})`,
+  filter: 'brightness(0.4)',
+  backgroundPosition: 'center 25%',
+  backgroundSize: 'cover',
+});
+
 const Hero: React.FC = () => {
   return (
     <div className="relative bg-gradient-to-b from-green-950/90 to-green-900/90 overflow-hidden">
-      {/* Background Image with Overlay - optimized for all screen sizes */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center z-0 transform scale-105" 
-        style={{ 
-          backgroundImage: `url(${heroImage})`,
-          filter: 'brightness(0.4)',
-          backgroundPosition: 'center 25%',
-          backgroundSize: 'cover',
-          willChange: 'transform'
-        }}
-      />
+      {/* Background Image - small version on mobile, larger on desktop (CSS-only so only one is downloaded) */}
+      <div className="absolute inset-0 z-0 transform scale-105 sm:hidden" style={heroBgStyle(heroImageMobile)} />
+      <div className="absolute inset-0 z-0 transform scale-105 hidden sm:block" style={heroBgStyle(heroImage)} />
       {/* Additional dark overlay for better text readability with gradient for depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40 z-0"></div>
       

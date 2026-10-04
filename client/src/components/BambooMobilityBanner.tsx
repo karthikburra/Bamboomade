@@ -77,10 +77,16 @@ export const BambooMobilityBanner: React.FC = () => {
           className="group relative cursor-pointer overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-emerald-950/40"
         >
           <img
-            src="/images/bamboo-mobility-banner.png"
+            src="/images/bamboo-mobility-banner.jpg"
+            srcSet="/images/bamboo-mobility-banner-mobile.jpg 800w, /images/bamboo-mobility-banner.jpg 1024w"
+            sizes="(max-width: 640px) 100vw, 1024px"
             alt="Tesseract E Bamboo Bike - Ride Carry Explore - Launching Soon"
+            width={1024}
+            height={385}
             className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-[1.01]"
-            loading="lazy"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
           />
           {/* Subtle hover overlay hint */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 sm:p-6">
@@ -140,76 +146,76 @@ export const BambooMobilityBanner: React.FC = () => {
       {/* Currency Selection Dialog Modal if clicked without picking */}
       {showCurrencyModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in"
           onClick={() => setShowCurrencyModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-neutral-900 border border-neutral-800 p-6 shadow-2xl text-neutral-100 space-y-4"
+            className="w-full max-w-sm sm:max-w-md rounded-2xl bg-neutral-900 border border-neutral-800 p-4 sm:p-6 shadow-2xl text-neutral-100 space-y-3 sm:space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                <Globe className="h-5 w-5 text-emerald-400" />
+              <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 shrink-0" />
                 Select Payment Currency
               </h4>
               <button
                 onClick={() => setShowCurrencyModal(false)}
-                className="text-neutral-400 hover:text-white"
+                className="text-neutral-400 hover:text-white p-1 rounded-lg"
               >
                 ✕
               </button>
             </div>
-            <p className="text-sm text-neutral-300">
+            <p className="text-xs sm:text-sm text-neutral-300">
               Please choose whether you would like to complete your payment in SGD, INR, or USD to continue:
             </p>
 
-            <div className="grid grid-cols-1 gap-3 pt-2">
+            <div className="grid grid-cols-1 gap-2 sm:gap-3 pt-1">
               <button
                 onClick={() => handleRedirect("SGD")}
-                className="flex items-center justify-between p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🇸🇬</span>
+                  <span className="text-xl sm:text-2xl shrink-0">🇸🇬</span>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-emerald-300">
+                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
                       Pay in SGD
                     </div>
-                    <div className="text-xs text-neutral-400">Singapore Dollar (S$)</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-400">Singapore Dollar (S$)</div>
                   </div>
                 </div>
-                <ExternalLink className="h-4 w-4 text-emerald-400" />
+                <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
               </button>
 
               <button
                 onClick={() => handleRedirect("INR")}
-                className="flex items-center justify-between p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🇮🇳</span>
+                  <span className="text-xl sm:text-2xl shrink-0">🇮🇳</span>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-emerald-300">
+                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
                       Pay in INR
                     </div>
-                    <div className="text-xs text-neutral-400">Indian Rupee (₹) • India</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-400">Indian Rupee (₹) • India</div>
                   </div>
                 </div>
-                <ExternalLink className="h-4 w-4 text-emerald-400" />
+                <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
               </button>
 
               <button
                 onClick={() => handleRedirect("USD")}
-                className="flex items-center justify-between p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">🇺🇸</span>
+                  <span className="text-xl sm:text-2xl shrink-0">🇺🇸</span>
                   <div>
-                    <div className="text-sm font-bold text-white group-hover:text-emerald-300">
+                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
                       Pay in USD
                     </div>
-                    <div className="text-xs text-neutral-400">US Dollar ($) • Global</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-400">US Dollar ($) • Global</div>
                   </div>
                 </div>
-                <ExternalLink className="h-4 w-4 text-emerald-400" />
+                <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
               </button>
             </div>
           </div>

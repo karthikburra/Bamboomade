@@ -1287,18 +1287,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Get only pending AI Knowledge Content for moderation
-  async getPendingAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
-    try {
-      return await db.select().from(aiKnowledgeContent)
-        .where(eq(aiKnowledgeContent.status, 'pending'))
-        .orderBy(desc(aiKnowledgeContent.createdAt));
-    } catch (error) {
-      console.error("Database error in getActiveAiKnowledgeContent:", error);
-      return [];
-    }
-  }
-  
+
   // Get only pending AI Knowledge Content for admin approval
   async getPendingAiKnowledgeContent(): Promise<AiKnowledgeContent[]> {
     try {
@@ -1828,24 +1817,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Method to update a project guidance session status
-  async updateProjectGuidanceStatus(id: number, status: string): Promise<ProjectGuidance | undefined> {
-    try {
-      console.log(`Updating session ${id} status to ${status}`);
-      
-      const [session] = await db.update(projectGuidances)
-        .set({ 
-          status: status,
-        })
-        .where(eq(projectGuidances.id, id))
-        .returning();
-      
-      return session;
-    } catch (error) {
-      console.error(`Database error in updateProjectGuidanceStatus(${id}, ${status}):`, error);
-      return undefined;
-    }
-  }
 
   // Method to automatically mark sessions as completed when their end time has passed
   async updateCompletedSessionStatuses(): Promise<number> {
