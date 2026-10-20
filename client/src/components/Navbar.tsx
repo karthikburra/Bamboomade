@@ -295,11 +295,11 @@ const Navbar: React.FC = () => {
         )}
 
         <div className="flex flex-1 items-center justify-end space-x-2 sm:space-x-3">
-          {/* E Bamboo Bike Crowd Funding Action Button - Desktop only */}
+          {/* E Bamboo Bike Action Button - Desktop only */}
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("open-bamboo-mobility-modal"))}
             className="hidden md:inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 hover:from-emerald-500 hover:to-amber-500 text-white shadow-md shadow-emerald-950/40 hover:shadow-emerald-500/25 transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap shrink-0 border border-emerald-400/40 group"
-            title="E Bamboo Bike - Crowd funding open"
+            title="E Bamboo Bike - Book Test Ride"
           >
             <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
@@ -456,7 +456,7 @@ const Navbar: React.FC = () => {
                       className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 text-white font-semibold text-xs sm:text-sm shadow-md transition-all active:scale-95"
                     >
                       <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                      E Bamboo Bike • Crowd funding open
+                      E Bamboo Bike • Book Test Ride
                     </button>
                   </div>
                   

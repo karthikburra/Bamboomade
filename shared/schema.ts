@@ -474,3 +474,39 @@ export const insertCouponUsageSchema = createInsertSchema(couponUsages).pick({
 
 export type CouponUsage = typeof couponUsages.$inferSelect;
 export type InsertCouponUsage = z.infer<typeof insertCouponUsageSchema>;
+
+// Test ride enrollment / show interest submissions
+export const testRideEnrollments = pgTable("test_ride_enrollments", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  city: text("city").notNull(),
+  occupation: text("occupation").notNull(),
+  age: text("age").notNull(),
+  gender: text("gender").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertTestRideEnrollmentSchema = createInsertSchema(testRideEnrollments).pick({
+  name: true,
+  email: true,
+  phone: true,
+  city: true,
+  occupation: true,
+  age: true,
+  gender: true,
+  notes: true,
+}).extend({
+  email: z.string().email("Please enter a valid email address"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().min(6, "Please enter a valid phone number"),
+  city: z.string().min(2, "Please enter your city"),
+  occupation: z.string().min(2, "Please enter your occupation"),
+  age: z.string().min(1, "Please provide your age"),
+  gender: z.string().min(1, "Please select your gender"),
+});
+
+export type TestRideEnrollment = typeof testRideEnrollments.$inferSelect;
+export type InsertTestRideEnrollment = z.infer<typeof insertTestRideEnrollmentSchema>;

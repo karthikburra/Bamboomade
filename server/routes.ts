@@ -20,7 +20,7 @@ import { eq, and, or, asc, desc } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, User, socialMediaContent, bambooFacts, couponUsages, projectGuidances } from "@shared/schema";
+import { insertUserSchema, insertProjectSchema, insertProjectGuidanceSchema, insertChatMessageSchema, insertAiTrainingDataSchema, insertTokenPurchaseSchema, insertTestRideEnrollmentSchema, User, socialMediaContent, bambooFacts, couponUsages, projectGuidances } from "@shared/schema";
 import { processMessage as processOpenAIMessage, convertWhatsAppToTrainingData, getOpenAI } from "./openai-service.js";
 import { getGeminiAI, processMessage, summarizeContent as geminiSummarizeContent, extractFactsFromContent as geminiExtractFacts } from "./gemini-service";
 import { processUrlWithGemini, processFileWithGemini } from "./gemini-extractor";
@@ -48,7 +48,9 @@ import { autoMapPaymentsToSessions, checkFailedSessionsForSuccessfulPayments } f
 import { 
   generateGoogleMeetLink, 
   generateGoogleCalendarLink,
-  sendVerificationCodeEmail
+  sendVerificationCodeEmail,
+  sendTestRideAdminNotificationEmail,
+  sendTestRideUserConfirmationEmail
 } from "./email-service";
 import { sendVerificationEmail, generateVerificationCode } from "./verification-utils";
 // Web crawler and document analyzer
@@ -698,6 +700,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     };
   };
+
+  // Test Ride Enrollment Endpoints
+  /**
+   * Enroll for E-Bamboo Bike test ride / show interest
+   * Validates details, saves record, notifies admin & user via email
+   */
+  app.post("/api/test-ride/enroll", validateRequest(insertTestRideEnrollmentSchema), async (req, res) => {
+    try {
+      console.log("🚲 Test ride enrollment received:", req.body.name, req.body.city, req.body.email);
+      const enrollmentData = req.body;
+
+      // 1. Save enrollment to storage (database or safe fallback)
+      const savedRecord = await storage.createTestRideEnrollment(enrollmentData);
+
+      // 2. Trigger emails asynchronously so response isn't delayed
+      Promise.allSettled([
+        sendTestRideAdminNotificationEmail(savedRecord),
+        sendTestRideUserConfirmationEmail(savedRecord)
+      ]).then((results) => {
+        results.forEach((res, index) => {
+          if (res.status === 'fulfilled') {
+            console.log(`✅ Test ride email ${index === 0 ? 'Admin' : 'User'} sent successfully`);
+          } else {
+            console.error(`❌ Test ride email ${index === 0 ? 'Admin' : 'User'} failed:`, res.reason);
+          }
+        });
+      }).catch((err) => {
+        console.error("Unexpected error in test ride email dispatch:", err);
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "You have been successfully registered for the test ride!",
+        enrollmentId: savedRecord.id
+      });
+    } catch (error) {
+      console.error("Error creating test ride enrollment:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to submit test ride enrollment. Please try again or reach out on WhatsApp.",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/api/test-ride/enrollments", async (req, res) => {
+    try {
+      const records = await storage.getAllTestRideEnrollments();
+      return res.json({ success: true, count: records.length, records });
+    } catch (error) {
+      console.error("Error fetching test ride enrollments:", error);
+      return res.status(500).json({ success: false, message: "Failed to fetch enrollments" });
+    }
+  });
 
   // User routes
   /**

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { X, ExternalLink, Sparkles, ShieldCheck, Bike, Zap, ArrowRight, Eye, Globe, Leaf, PackageOpen } from "lucide-react";
+import { X, ExternalLink, Sparkles, ShieldCheck, Bike, Zap, ArrowRight, Eye, Leaf, PackageOpen, CheckCircle2, Coffee, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-/** Tri-wheel stability glyph: a triangle frame with a wheel at each corner (lucide-style stroke icon). */
+/** Tri-wheel stability glyph: a triangle frame with a wheel at each corner */
 const TriWheelIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg
     viewBox="0 0 24 24"
@@ -25,66 +25,35 @@ interface BambooMobilityLaunchModalProps {
   defaultOpen?: boolean;
 }
 
-type CurrencyType = "SGD" | "INR" | "USD";
-
-interface CurrencyOption {
-  currency: CurrencyType;
-  label: string;
+interface TestRideFormData {
   name: string;
-  symbol: string;
-  flag: string;
-  buttonText: string;
-  buttonId: string;
-  directUrl: string;
-  description: string;
-  badge: string;
+  email: string;
+  phone: string;
+  city: string;
+  occupation: string;
+  age: string;
+  gender: string;
 }
 
-const PAYMENT_OPTIONS: Record<CurrencyType, CurrencyOption> = {
-  SGD: {
-    currency: "SGD",
-    label: "SGD (S$)",
-    name: "Singapore Dollar",
-    symbol: "S$",
-    flag: "🇸🇬",
-    buttonText: "Pay in SGD",
-    buttonId: "pl_TjhJzcuPJ23SV8",
-    directUrl: "https://razorpay.com/payment-button/pl_TjhJzcuPJ23SV8/view",
-    description: "Support international rollout & get special launch discount in Singapore Dollars",
-    badge: "International",
-  },
-  INR: {
-    currency: "INR",
-    label: "INR (₹)",
-    name: "Indian Rupee",
-    symbol: "₹",
-    flag: "🇮🇳",
-    buttonText: "Pay in INR",
-    buttonId: "pl_TjhR7PGDDKFDIH",
-    directUrl: "https://razorpay.com/payment-button/pl_TjhR7PGDDKFDIH/view",
-    badge: "India",
-    description: "Support India launch & get special launch discount in Indian Rupees",
-  },
-  USD: {
-    currency: "USD",
-    label: "USD ($)",
-    name: "US Dollar",
-    symbol: "$",
-    flag: "🇺🇸",
-    buttonText: "Pay in USD",
-    buttonId: "pl_TjmS8c30f59XeK",
-    directUrl: "https://razorpay.com/payment-button/pl_TjmS8c30f59XeK/view",
-    badge: "Global / US",
-    description: "Support global rollout & get special launch discount in US Dollars",
-  },
+const INITIAL_FORM_DATA: TestRideFormData = {
+  name: "",
+  email: "",
+  phone: "",
+  city: "",
+  occupation: "",
+  age: "",
+  gender: "",
 };
 
 export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps> = ({
   defaultOpen = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showCurrencyDialog, setShowCurrencyDialog] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [formData, setFormData] = useState<TestRideFormData>(INITIAL_FORM_DATA);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Auto open after a slight delay on initial visit unless user has dismissed in this session
   useEffect(() => {
@@ -101,6 +70,8 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
   useEffect(() => {
     const handleOpen = () => {
       setIsOpen(true);
+      setIsSubmitted(false);
+      setErrorMessage(null);
     };
     window.addEventListener("open-bamboo-mobility-modal", handleOpen);
     return () => {
@@ -112,9 +83,7 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (showCurrencyDialog) {
-          setShowCurrencyDialog(false);
-        } else if (isZoomed) {
+        if (isZoomed) {
           setIsZoomed(false);
         } else if (isOpen) {
           handleClose();
@@ -123,18 +92,49 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, isZoomed, showCurrencyDialog]);
+  }, [isOpen, isZoomed]);
 
   const handleClose = () => {
     setIsOpen(false);
-    setShowCurrencyDialog(false);
     sessionStorage.setItem("bamboomade_mobility_popup_closed", "true");
   };
 
-  const handleProceedPayment = (currency: CurrencyType) => {
-    const config = PAYMENT_OPTIONS[currency];
-    window.open(config.directUrl, "_blank", "noopener,noreferrer");
-    setShowCurrencyDialog(false);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errorMessage) setErrorMessage(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    // Basic frontend validations
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.city.trim() || !formData.occupation.trim() || !formData.age.trim() || !formData.gender.trim()) {
+      setErrorMessage("Please fill in all the required fields.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("/api/test-ride/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to submit enrollment");
+      }
+
+      setIsSubmitted(true);
+    } catch (err: any) {
+      console.error("Test ride submission error:", err);
+      setErrorMessage(err.message || "Submission failed. Please try again or reach out on WhatsApp.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -142,14 +142,17 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
       {/* Floating launcher button (accessible after closing or anytime) */}
       <div className="fixed bottom-4 sm:bottom-6 left-3 sm:left-6 z-40 max-w-[calc(100vw-24px)]">
         <button
-          onClick={() => setIsOpen(true)}
-          className="group flex items-center gap-2 sm:gap-2.5 rounded-full bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 px-3 sm:px-4 py-2 sm:py-2.5 text-white shadow-xl shadow-emerald-950/40 transition-all duration-300 hover:scale-105 hover:shadow-emerald-500/25 active:scale-95 border border-emerald-400/40 whitespace-nowrap shrink-0"
-          aria-label="View E Bamboo Bike Launch & Crowd funding"
+          onClick={() => {
+            setIsOpen(true);
+            setIsSubmitted(false);
+          }}
+          className="group flex items-center gap-2 sm:gap-2.5 rounded-full bg-gradient-to-r from-emerald-600 via-green-600 to-amber-600 px-3.5 sm:px-4 py-2 sm:py-2.5 text-white shadow-xl shadow-emerald-950/40 transition-all duration-300 hover:scale-105 hover:shadow-emerald-500/25 active:scale-95 border border-emerald-400/40 whitespace-nowrap shrink-0"
+          aria-label="Enroll for E Bamboo Bike Test Ride"
         >
           <span className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping shrink-0" />
           <Bike className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-200 transition-transform group-hover:rotate-12 shrink-0" />
           <span className="text-xs sm:text-sm font-semibold tracking-wide whitespace-nowrap">
-            E Bamboo Bike • <span className="text-amber-300 underline underline-offset-2">Crowd funding</span>
+            E Bamboo Bike • <span className="text-amber-300 underline underline-offset-2">Book Test Ride</span>
           </span>
         </button>
       </div>
@@ -163,18 +166,18 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
             onClick={handleClose}
           />
 
-          {/* Modal Container - Compact on mobile */}
+          {/* Modal Container */}
           <div
-            className="relative z-10 w-full max-w-sm sm:max-w-5xl rounded-2xl bg-neutral-900/95 border border-neutral-800 shadow-2xl text-neutral-100 backdrop-blur-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[86vh] sm:max-h-[92vh]"
+            className="relative z-10 w-full max-w-sm sm:max-w-5xl rounded-2xl bg-neutral-900/95 border border-neutral-800 shadow-2xl text-neutral-100 backdrop-blur-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[88vh] sm:max-h-[92vh]"
             role="dialog"
             aria-modal="true"
           >
             {/* Header Bar */}
-            <div className="flex items-center justify-between border-b border-neutral-800/80 px-3 sm:px-6 py-2 sm:py-3 bg-neutral-950/60 gap-2 shrink-0">
-              <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex items-center justify-between border-b border-neutral-800/80 px-3 sm:px-6 py-2.5 sm:py-3 bg-neutral-950/70 gap-2 shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-emerald-400 truncate">
-                  Crowd funding open • Special launch discount
+                <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-emerald-400 truncate">
+                  Show Interest • Exclusive Test Ride Enrollment
                 </span>
               </div>
               <button
@@ -187,16 +190,17 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
             </div>
 
             {/* Scrollable Body Content */}
-            <div className="overflow-y-auto p-3 sm:p-6 md:p-8 space-y-3 sm:space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 lg:gap-8 items-start">
-                {/* Left Column: Launch Poster Image - compact on mobile */}
-                <div className="lg:col-span-6 flex flex-col items-center">
+            <div className="overflow-y-auto p-3.5 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-start">
+                
+                {/* Left Column: Launch Poster Image & Feature Pills */}
+                <div className="lg:col-span-5 flex flex-col items-center space-y-3">
                   <div className="group relative w-full overflow-hidden rounded-xl border border-emerald-900/40 bg-neutral-950 shadow-md">
                     <img
                       src="/images/bamboo-mobility-banner.jpg"
                       srcSet="/images/bamboo-mobility-banner-mobile.jpg 800w, /images/bamboo-mobility-banner.jpg 1024w"
-                      sizes="(max-width: 640px) 100vw, 50vw"
-                      alt="E Bamboo Bike - Ride Carry Explore - Launching Soon"
+                      sizes="(max-width: 640px) 100vw, 40vw"
+                      alt="E Bamboo Bike - Ride Connect Explore"
                       width={1024}
                       height={385}
                       className="w-full h-auto object-cover mx-auto transition-transform duration-500 group-hover:scale-[1.01]"
@@ -204,7 +208,6 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
                       decoding="async"
                       fetchPriority="high"
                     />
-                    {/* Zoom / Full Preview Overlay Button */}
                     <button
                       onClick={() => setIsZoomed(true)}
                       className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/80 px-2 py-1 text-[10px] sm:text-xs font-medium text-neutral-200 backdrop-blur-md opacity-90 transition-opacity hover:opacity-100 hover:text-white border border-neutral-700/60"
@@ -213,172 +216,262 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
                       Fullscreen
                     </button>
                   </div>
-                  <p className="mt-1 text-center text-[10px] sm:text-xs text-neutral-400 hidden sm:block">
-                    E Bamboo Bike • Designed for a Sustainable Tomorrow
-                  </p>
-                </div>
-
-                {/* Right Column: E Bamboo Bike & Currency Selector Panel */}
-                <div className="lg:col-span-6 flex flex-col justify-between space-y-3 sm:space-y-5">
-                  {/* Headline & Badges */}
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold text-emerald-300 mb-1.5 sm:mb-2.5">
-                      <Sparkles className="h-3 w-3 text-amber-400" />
-                      Crowd funding open to get Special launch discount
-                    </div>
-
-                    <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight text-white">
-                      E Bamboo Bike
-                    </h2>
-                    <p className="text-xs sm:text-sm font-medium text-amber-300/90 mt-0.5 sm:mt-1">
-                      RIDE • CARRY • EXPLORE — One Design. Many Possibilities.
-                    </p>
-                    <p className="mt-1.5 sm:mt-2.5 text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-2 sm:line-clamp-none">
-                      Experience the world&apos;s most innovative foldable E Bamboo Bike. Crafted with sustainable bamboo composite, tri-wheel stability, and multi-modal portability.
-                    </p>
-                  </div>
 
                   {/* Feature Highlights Grid */}
-                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 text-xs">
-                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-emerald-900/50 p-1 sm:p-1.5 text-emerald-400 shrink-0">
-                        <Leaf className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Sustainable Bamboo</div>
-                        <div className="text-[10px] text-neutral-400 hidden sm:block">Eco-conscious frame</div>
-                      </div>
+                  <div className="grid grid-cols-2 gap-2 w-full text-xs">
+                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
+                      <Leaf className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-[11px] font-medium text-neutral-200">Bamboo Composite</span>
                     </div>
-
-                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-amber-900/50 p-1 sm:p-1.5 text-amber-400 shrink-0">
-                        <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Electric Assist</div>
-                        <div className="text-[10px] text-neutral-400 hidden sm:block">Effortless commutes</div>
-                      </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
+                      <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                      <span className="text-[11px] font-medium text-neutral-200">Electric Assist</span>
                     </div>
-
-                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-sky-900/50 p-1 sm:p-1.5 text-sky-400 shrink-0">
-                        <PackageOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Ultra-Compact Fold</div>
-                        <div className="text-[10px] text-neutral-400 hidden sm:block">Bus, Train & Car Boot</div>
-                      </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
+                      <PackageOpen className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+                      <span className="text-[11px] font-medium text-neutral-200">Compact Foldable</span>
                     </div>
-
-                    <div className="flex items-center gap-1.5 sm:gap-2 rounded-lg bg-neutral-800/60 p-2 sm:p-2.5 border border-neutral-700/50">
-                      <div className="rounded-md bg-purple-900/50 p-1 sm:p-1.5 text-purple-400 shrink-0">
-                        <TriWheelIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-neutral-200 text-[11px] sm:text-xs">Tri-Wheel Stability</div>
-                        <div className="text-[10px] text-neutral-400 hidden sm:block">Superior safe balance</div>
-                      </div>
+                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
+                      <TriWheelIcon className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+                      <span className="text-[11px] font-medium text-neutral-200">Tri-Wheel Stability</span>
                     </div>
                   </div>
 
-                  {/* Action & Launch Button Section */}
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-3 sm:p-5">
-                    <Button
-                      type="button"
-                      onClick={() => setShowCurrencyDialog(true)}
-                      className="w-full h-10 sm:h-12 text-xs sm:text-base font-semibold bg-gradient-to-r from-emerald-500 via-emerald-600 to-amber-600 hover:from-emerald-600 hover:to-amber-700 text-white shadow-lg shadow-emerald-950/50 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 rounded-xl"
+                  {/* Optional Pay for Coffee Support Link */}
+                  <div className="w-full pt-2 border-t border-neutral-800/80 text-center">
+                    <a
+                      href="https://razorpay.com/payment-button/pl_TjhR7PGDDKFDIH/view"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-neutral-400 hover:text-amber-300 transition-colors py-1 group"
                     >
-                      <span>Help us launch</span>
-                      <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-
-                    {/* Trust and Security Footnote */}
-                    <div className="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-neutral-900/80 flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                      <span>100% Secure Payment via Razorpay</span>
-                    </div>
+                      <Coffee className="h-3.5 w-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                      <span>Love our mission? <span className="underline underline-offset-2">Pay for a coffee</span></span>
+                      <ExternalLink className="h-3 w-3 opacity-60" />
+                    </a>
                   </div>
                 </div>
+
+                {/* Right Column: Show Interest & Test Ride Enrollment Form */}
+                <div className="lg:col-span-7 flex flex-col justify-between">
+                  {isSubmitted ? (
+                    /* Submission Success State */
+                    <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/30 p-6 sm:p-8 text-center space-y-4 animate-in fade-in zoom-in-95">
+                      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <CheckCircle2 className="h-8 w-8" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="text-xl sm:text-2xl font-bold text-white">
+                          You&apos;re Enrolled for the Test Ride!
+                        </h3>
+                        <p className="text-sm text-emerald-300/90 font-medium">
+                          Thank you, {formData.name}!
+                        </p>
+                      </div>
+
+                      <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-md mx-auto">
+                        We have sent a confirmation email to <strong className="text-emerald-300">{formData.email}</strong>. Our team will contact you directly to schedule your test ride when demo units arrive in <strong className="text-emerald-300">{formData.city}</strong>.
+                      </p>
+
+                      <div className="pt-4 border-t border-emerald-900/60 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <a
+                          href="https://razorpay.com/payment-button/pl_TjhR7PGDDKFDIH/view"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-neutral-950 px-4 py-2.5 text-xs sm:text-sm font-semibold transition-transform hover:scale-105"
+                        >
+                          <Coffee className="h-4 w-4" />
+                          <span>Treat the team: Pay for a coffee</span>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                        <Button
+                          variant="outline"
+                          onClick={handleClose}
+                          className="border-neutral-700 hover:bg-neutral-800 text-neutral-200 text-xs sm:text-sm"
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* The Test Ride Enrollment Form */
+                    <div className="space-y-3 sm:space-y-4">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] sm:text-xs font-semibold text-emerald-300 mb-1">
+                          <Sparkles className="h-3 w-3 text-amber-400" />
+                          Limited Test Ride Slots
+                        </div>
+                        <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
+                          Enroll for E Bamboo Bike Test Ride
+                        </h2>
+                        <p className="text-xs sm:text-sm text-neutral-300 mt-1">
+                          Share your details to show interest and be among the first to experience our sustainable electric micro-mobility bike.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleSubmit} className="space-y-3">
+                        {errorMessage && (
+                          <div className="p-2.5 rounded-lg bg-red-950/50 border border-red-800/80 text-red-200 text-xs">
+                            {errorMessage}
+                          </div>
+                        )}
+
+                        {/* Name & Email */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                              Full Name <span className="text-emerald-400">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              required
+                              value={formData.name}
+                              onChange={handleInputChange}
+                              placeholder="e.g. Rahul Sharma"
+                              className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                              Email Address <span className="text-emerald-400">*</span>
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              required
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              placeholder="you@example.com"
+                              className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Phone & City */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                              Phone / WhatsApp <span className="text-emerald-400">*</span>
+                            </label>
+                            <input
+                              type="tel"
+                              name="phone"
+                              required
+                              value={formData.phone}
+                              onChange={handleInputChange}
+                              placeholder="+91 98765 43210"
+                              className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                              City <span className="text-emerald-400">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              name="city"
+                              required
+                              value={formData.city}
+                              onChange={handleInputChange}
+                              placeholder="e.g. Hyderabad / Bangalore"
+                              className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Occupation */}
+                        <div>
+                          <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                            Occupation <span className="text-emerald-400">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="occupation"
+                            required
+                            value={formData.occupation}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Architect, Student, Software Engineer, Business Owner"
+                            className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                          />
+                        </div>
+
+                        {/* Age & Gender */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div>
+                            <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                              Age <span className="text-emerald-400">*</span>
+                            </label>
+                            <input
+                              type="number"
+                              name="age"
+                              min="12"
+                              max="100"
+                              required
+                              value={formData.age}
+                              onChange={handleInputChange}
+                              placeholder="e.g. 26"
+                              className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-500 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] sm:text-xs font-semibold text-neutral-300 mb-1">
+                              Gender <span className="text-emerald-400">*</span>
+                            </label>
+                            <select
+                              name="gender"
+                              required
+                              value={formData.gender}
+                              onChange={handleInputChange}
+                              className="w-full h-9 sm:h-10 px-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                            >
+                              <option value="" disabled className="text-neutral-500">Select Gender</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Non-binary">Non-binary</option>
+                              <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Privacy Policy Disclaimer Box */}
+                        <div className="rounded-xl bg-neutral-950/80 border border-neutral-800 p-2.5 sm:p-3 text-[11px] text-neutral-400 space-y-1">
+                          <div className="flex items-center gap-1.5 font-semibold text-emerald-400">
+                            <Lock className="h-3.5 w-3.5 shrink-0" />
+                            <span>Privacy Policy & Research Commitment</span>
+                          </div>
+                          <p className="leading-relaxed">
+                            This data is solely collected for research, development, and scheduling test rides by <strong>BambooMade</strong>. Your information is 100% confidential and will never be sold, rented, or shared with third parties.
+                          </p>
+                        </div>
+
+                        {/* Submit Button */}
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold bg-gradient-to-r from-emerald-500 via-green-600 to-amber-600 hover:from-emerald-600 hover:to-amber-700 text-white shadow-lg shadow-emerald-950/50 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 rounded-xl"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Enrolling your test ride...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Enroll for Test Ride</span>
+                              <ArrowRight className="h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Currency Selection Dialog (triggered after clicking 'Help us launch') */}
-      {showCurrencyDialog && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in"
-          onClick={() => setShowCurrencyDialog(false)}
-        >
-          <div
-            className="w-full max-w-sm sm:max-w-md rounded-2xl bg-neutral-900 border border-neutral-800 p-4 sm:p-6 shadow-2xl text-neutral-100 space-y-3 sm:space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h4 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 shrink-0" />
-                Select Payment Currency
-              </h4>
-              <button
-                onClick={() => setShowCurrencyDialog(false)}
-                className="text-neutral-400 hover:text-white p-1 rounded-lg"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="text-xs sm:text-sm text-neutral-300">
-              Please choose whether you would like to complete your payment in SGD, INR, or USD to continue:
-            </p>
-
-            <div className="grid grid-cols-1 gap-2 sm:gap-3 pt-1">
-              <button
-                onClick={() => handleProceedPayment("SGD")}
-                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl sm:text-2xl shrink-0">🇸🇬</span>
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
-                      Pay in SGD
-                    </div>
-                    <div className="text-[11px] sm:text-xs text-neutral-400">Singapore Dollar (S$)</div>
-                  </div>
-                </div>
-                <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
-              </button>
-
-              <button
-                onClick={() => handleProceedPayment("INR")}
-                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl sm:text-2xl shrink-0">🇮🇳</span>
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
-                      Pay in INR
-                    </div>
-                    <div className="text-[11px] sm:text-xs text-neutral-400">Indian Rupee (₹) • India</div>
-                  </div>
-                </div>
-                <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
-              </button>
-
-              <button
-                onClick={() => handleProceedPayment("USD")}
-                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-neutral-800 hover:border-emerald-500 bg-neutral-950 hover:bg-emerald-950/30 transition-all text-left group"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl sm:text-2xl shrink-0">🇺🇸</span>
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300">
-                      Pay in USD
-                    </div>
-                    <div className="text-[11px] sm:text-xs text-neutral-400">US Dollar ($) • Global</div>
-                  </div>
-                </div>
-                <ExternalLink className="h-4 w-4 text-emerald-400 shrink-0" />
-              </button>
             </div>
           </div>
         </div>

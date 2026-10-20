@@ -10,7 +10,8 @@ import {
   aiKnowledgeContent, type AiKnowledgeContent, type InsertAiKnowledgeContent,
   dashboardSnapshots, type DashboardSnapshot, type InsertDashboardSnapshot,
   userLoginHistory, type UserLoginHistory, type InsertUserLoginHistory,
-  deletedUsers, type DeletedUser, type InsertDeletedUser
+  deletedUsers, type DeletedUser, type InsertDeletedUser,
+  testRideEnrollments, type TestRideEnrollment, type InsertTestRideEnrollment
 } from "@shared/schema";
 import { eq, and, asc, desc, isNull, ne, gt, lt, or, isNotNull, count, max, SQL } from 'drizzle-orm';
 import { differenceInDays } from 'date-fns';
@@ -121,6 +122,10 @@ export interface IStorage {
   getActiveUserSessions(): Promise<UserLoginHistory[]>;
   updateUserLoginActivity(sessionId: string): Promise<UserLoginHistory | undefined>;
   updateUserLogout(sessionId: string): Promise<UserLoginHistory | undefined>;
+
+  // Test Ride Enrollment operations
+  createTestRideEnrollment(enrollment: InsertTestRideEnrollment): Promise<TestRideEnrollment>;
+  getAllTestRideEnrollments(): Promise<TestRideEnrollment[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1855,6 +1860,44 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Database error in updateCompletedSessionStatuses:", error);
       return 0;
+    }
+  }
+
+  // Fallback in-memory storage for test ride enrollments if DB table is syncing
+  private inMemoryTestRides: TestRideEnrollment[] = [];
+  private nextTestRideId = 1;
+
+  async createTestRideEnrollment(enrollment: InsertTestRideEnrollment): Promise<TestRideEnrollment> {
+    try {
+      const [record] = await db.insert(testRideEnrollments).values(enrollment).returning();
+      console.log("Successfully saved test ride enrollment to database:", record.id);
+      return record;
+    } catch (dbError) {
+      console.warn("Database error inserting testRideEnrollment, falling back to memory:", dbError);
+      const fallbackRecord: TestRideEnrollment = {
+        id: this.nextTestRideId++,
+        name: enrollment.name,
+        email: enrollment.email,
+        phone: enrollment.phone,
+        city: enrollment.city,
+        occupation: enrollment.occupation,
+        age: enrollment.age,
+        gender: enrollment.gender,
+        notes: enrollment.notes || null,
+        createdAt: new Date(),
+      };
+      this.inMemoryTestRides.push(fallbackRecord);
+      return fallbackRecord;
+    }
+  }
+
+  async getAllTestRideEnrollments(): Promise<TestRideEnrollment[]> {
+    try {
+      const records = await db.select().from(testRideEnrollments).orderBy(desc(testRideEnrollments.createdAt));
+      return records;
+    } catch (dbError) {
+      console.warn("Database error fetching testRideEnrollments, returning in-memory:", dbError);
+      return [...this.inMemoryTestRides].reverse();
     }
   }
 }

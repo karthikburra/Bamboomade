@@ -689,3 +689,200 @@ BambooMade Team
     return false;
   }
 }
+
+export interface TestRideEmailData {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  occupation: string;
+  age: string;
+  gender: string;
+  notes?: string | null;
+  createdAt?: Date;
+}
+
+/**
+ * Send notification to BambooMade admin when someone enrolls for a test ride
+ */
+export async function sendTestRideAdminNotificationEmail(data: TestRideEmailData): Promise<boolean> {
+  const submissionTime = data.createdAt 
+    ? format(new Date(data.createdAt), 'EEEE, MMMM do, yyyy h:mm a') 
+    : format(new Date(), 'EEEE, MMMM do, yyyy h:mm a');
+
+  const textContent = `
+NEW E-BAMBOO BIKE TEST RIDE ENROLLMENT RECEIVED!
+
+Participant Details:
+- Name: ${data.name}
+- Email: ${data.email}
+- Phone: ${data.phone}
+- City: ${data.city}
+- Occupation: ${data.occupation}
+- Age: ${data.age}
+- Gender: ${data.gender}
+${data.notes ? `- Notes / Preferences: ${data.notes}\n` : ''}- Submitted At: ${submissionTime}
+
+Please review and schedule a test ride slot accordingly.
+  `.trim();
+
+  const htmlContent = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e0e0e0;">
+  <div style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); padding: 24px 28px; text-align: left;">
+    <span style="display: inline-block; background-color: rgba(251, 191, 36, 0.2); color: #fde68a; border: 1px solid rgba(251, 191, 36, 0.4); padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">New Test Ride Lead</span>
+    <h2 style="color: #ffffff; margin: 12px 0 4px 0; font-size: 22px; font-weight: 700;">🚲 E Bamboo Bike - Test Ride Enrollment</h2>
+    <p style="color: #a7f3d0; margin: 0; font-size: 13px;">A new user has submitted their interest for the test ride.</p>
+  </div>
+
+  <div style="padding: 24px 28px;">
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; width: 140px; font-size: 13px;">Full Name:</td>
+        <td style="padding: 10px 0; font-weight: 700; color: #111827; font-size: 14px;">${data.name}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">Email Address:</td>
+        <td style="padding: 10px 0; color: #047857; font-weight: 600; font-size: 14px;"><a href="mailto:${data.email}" style="color: #047857; text-decoration: none;">${data.email}</a></td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">Phone / WhatsApp:</td>
+        <td style="padding: 10px 0; color: #111827; font-weight: 600; font-size: 14px;"><a href="https://wa.me/${data.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color: #059669; text-decoration: none;">${data.phone} (WhatsApp)</a></td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">City:</td>
+        <td style="padding: 10px 0; color: #111827; font-weight: 700; font-size: 14px;">${data.city}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">Occupation:</td>
+        <td style="padding: 10px 0; color: #111827; font-size: 14px;">${data.occupation}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">Age & Gender:</td>
+        <td style="padding: 10px 0; color: #111827; font-size: 14px;">${data.age} yrs • ${data.gender}</td>
+      </tr>
+      ${data.notes ? `
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">Notes:</td>
+        <td style="padding: 10px 0; color: #374151; font-size: 13px;">${data.notes}</td>
+      </tr>` : ''}
+      <tr>
+        <td style="padding: 10px 0; font-weight: 600; color: #4b5563; font-size: 13px;">Received At:</td>
+        <td style="padding: 10px 0; color: #6b7280; font-size: 13px;">${submissionTime}</td>
+      </tr>
+    </table>
+
+    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-top: 10px;">
+      <p style="margin: 0; color: #166534; font-size: 12px;"><strong>Research Data Protection:</strong> This submission was collected under the BambooMade Research Privacy Policy for internal product development only.</p>
+    </div>
+  </div>
+</div>
+  `;
+
+  return await sendEmail({
+    to: 'info@bamboomade.in',
+    cc: 'bamboomade.in@gmail.com',
+    subject: `🚲 New Test Ride Enrollment: ${data.name} (${data.city})`,
+    text: textContent,
+    html: htmlContent
+  });
+}
+
+/**
+ * Send confirmation email to the user who enrolled for a test ride
+ */
+export async function sendTestRideUserConfirmationEmail(data: TestRideEmailData): Promise<boolean> {
+  const textContent = `
+Hello ${data.name},
+
+Thank you for enrolling to test ride the BambooMade E Bamboo Bike!
+
+We have successfully received your interest:
+- City: ${data.city}
+- Phone: ${data.phone}
+- Occupation: ${data.occupation}
+
+What happens next?
+Our team is organizing test ride experiences and product demos. As soon as slots open up in ${data.city}, our team will get in touch with you via WhatsApp or Email to coordinate your exclusive ride slot.
+
+Privacy Commitment:
+The information you provided is strictly used for BambooMade product research and scheduling. It will never be sold, rented, or shared with third parties.
+
+Have questions?
+Reach us anytime at info@bamboomade.in or WhatsApp at +91 8971690163.
+
+Warm regards,
+Team BambooMade
+www.bamboomade.in
+  `.trim();
+
+  const htmlContent = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+  <div style="background: linear-gradient(135deg, #064e3b 0%, #065f46 60%, #047857 100%); padding: 32px 28px; text-align: center;">
+    <h1 style="color: #ffffff; margin: 0 0 8px 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">BambooMade</h1>
+    <span style="display: inline-block; background-color: rgba(251, 191, 36, 0.25); color: #fef3c7; border: 1px solid rgba(251, 191, 36, 0.5); padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Test Ride Registration Confirmed</span>
+  </div>
+
+  <div style="padding: 28px 28px 24px 28px;">
+    <h2 style="color: #111827; margin: 0 0 12px 0; font-size: 20px; font-weight: 700;">Hello ${data.name},</h2>
+    <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+      Thank you for your interest in the <strong>BambooMade Foldable E Bamboo Bike</strong>! We've successfully registered your details for an exclusive test ride.
+    </p>
+
+    <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
+      <h3 style="margin: 0 0 12px 0; color: #047857; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Your Registration Details:</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280; width: 110px;">City:</td>
+          <td style="padding: 4px 0; color: #111827; font-weight: 600;">${data.city}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Contact:</td>
+          <td style="padding: 4px 0; color: #111827; font-weight: 600;">${data.phone}</td>
+        </tr>
+        <tr>
+          <td style="padding: 4px 0; color: #6b7280;">Occupation:</td>
+          <td style="padding: 4px 0; color: #111827; font-weight: 600;">${data.occupation}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="border-left: 4px solid #059669; background-color: #f0fdf4; padding: 16px 18px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
+      <h4 style="margin: 0 0 6px 0; color: #065f46; font-size: 14px; font-weight: 700;">What happens next?</h4>
+      <p style="margin: 0; color: #166534; font-size: 13.5px; line-height: 1.5;">
+        Our engineering and mobility team is preparing upcoming demonstration test drives. As soon as testing dates are scheduled for <strong>${data.city}</strong>, our team will reach out directly to coordinate your preferred time slot!
+      </p>
+    </div>
+
+    <div style="background-color: #fefce8; border: 1px solid #fef08a; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px;">
+      <p style="margin: 0; color: #854d0e; font-size: 12.5px; line-height: 1.5;">
+        🔒 <strong>Our Privacy Promise:</strong> This information is collected solely for BambooMade product research and test ride scheduling. Your personal data is completely safe with us and will never be shared with third parties.
+      </p>
+    </div>
+
+    <div style="text-align: center; padding: 18px 0; border-top: 1px solid #f3f4f6; margin-top: 10px;">
+      <p style="margin: 0 0 10px 0; font-size: 13px; color: #6b7280;">Love what we're building for sustainable mobility?</p>
+      <a href="https://razorpay.com/payment-button/pl_TjhR7PGDDKFDIH/view" target="_blank" style="display: inline-block; background-color: #111827; color: #ffffff; padding: 9px 18px; border-radius: 999px; text-decoration: none; font-size: 12.5px; font-weight: 600; transition: all 0.2s;">
+        ☕ Pay for a Coffee to Support Team
+      </a>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 13px;">
+      <p style="margin: 0 0 4px 0;">Need to update your city or contact details?</p>
+      <p style="margin: 0;">Reply to this email or reach us on WhatsApp: <a href="https://wa.me/918971690163" style="color: #059669; font-weight: 600; text-decoration: none;">+91 8971690163</a></p>
+    </div>
+  </div>
+
+  <div style="background-color: #f9fafb; padding: 16px 28px; text-align: center; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af;">
+    <p style="margin: 0 0 4px 0;">© 2026 BambooMade. Sustainable mobility engineered from bamboo composite.</p>
+    <p style="margin: 0;">Hyderabad, India | <a href="https://bamboomade.in" style="color: #047857; text-decoration: none;">bamboomade.in</a></p>
+  </div>
+</div>
+  `;
+
+  return await sendEmail({
+    to: data.email,
+    subject: `🚲 You're Enrolled for the E Bamboo Bike Test Ride! - BambooMade`,
+    text: textContent,
+    html: htmlContent
+  });
+}
