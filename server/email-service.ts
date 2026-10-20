@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import nodemailer from 'nodemailer';
+import { sendEmailWithSendGrid } from './sendgrid-service';
 
 // Email service configuration
 let emailServiceEnabled = false;
@@ -778,6 +779,17 @@ Please review and schedule a test ride slot accordingly.
 </div>
   `;
 
+  // Try SendGrid first (works on Vercel serverless), fall back to SMTP
+  const sgSent = await sendEmailWithSendGrid({
+    to: 'info@bamboomade.in',
+    from: 'info@bamboomade.in',
+    subject: `🚲 New Test Ride Enrollment: ${data.name} (${data.city})`,
+    text: textContent,
+    html: htmlContent
+  });
+  if (sgSent) return true;
+
+  // Fallback: nodemailer SMTP
   return await sendEmail({
     to: 'info@bamboomade.in',
     cc: 'bamboomade.in@gmail.com',
@@ -879,6 +891,17 @@ www.bamboomade.in
 </div>
   `;
 
+  // Try SendGrid first (works on Vercel serverless), fall back to SMTP
+  const sgSent = await sendEmailWithSendGrid({
+    to: data.email,
+    from: 'info@bamboomade.in',
+    subject: `🚲 You're Enrolled for the E Bamboo Bike Test Ride! - BambooMade`,
+    text: textContent,
+    html: htmlContent
+  });
+  if (sgSent) return true;
+
+  // Fallback: nodemailer SMTP
   return await sendEmail({
     to: data.email,
     subject: `🚲 You're Enrolled for the E Bamboo Bike Test Ride! - BambooMade`,
