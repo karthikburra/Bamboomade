@@ -26,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
                 <img 
                   src={logoImage} 
                   alt="BambooMade" 
-                  className="h-8 sm:h-9 w-auto object-contain" 
+                  className="h-10 sm:h-12 w-auto max-w-[200px] sm:max-w-[240px] object-contain" 
                 />
               </Link>
               <p className="mt-1 text-xs sm:text-sm text-primary-200">

@@ -241,7 +241,7 @@ const Navbar: React.FC = () => {
             <img 
               src={logoImage} 
               alt="BambooMade Logo" 
-              className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto object-contain transition-transform duration-200 hover:scale-105" 
+              className="h-10 sm:h-12 md:h-13 lg:h-14 w-auto max-w-[180px] sm:max-w-[220px] md:max-w-[240px] lg:max-w-[260px] object-contain transition-transform duration-200 hover:scale-105" 
             />
           </ScrollLink>
         </div>
@@ -411,7 +411,7 @@ const Navbar: React.FC = () => {
               <SheetContent className="w-[85%] sm:max-w-sm px-4 sm:px-6 bg-gray-900 border-l border-green-800/50 text-white">
                 <SheetHeader className="pb-2 sm:pb-3">
                   <div className="flex items-center mb-1 sm:mb-2">
-                    <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-9 w-auto object-contain" />
+                    <img src={logoImage} alt="BambooMade Logo" className="h-10 sm:h-12 w-auto max-w-[200px] object-contain" />
                     <SheetTitle className="sr-only">BambooMade</SheetTitle>
                   </div>
                   <SheetDescription className="text-sm sm:text-base text-green-400">
