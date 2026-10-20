@@ -52,20 +52,24 @@ export const BambooMobilityBanner: React.FC = () => {
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-                Be the first to test ride our ultra-compact, foldable bamboo composite electric bike. Fill the quick interest form to help our research and reserve your slot.
+                Be the first to test ride our compact bamboo frame electric bike. Fill the quick interest form to help our research and reserve your slot.
               </p>
 
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1 text-xs text-neutral-400">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950/70 border border-neutral-800/80 px-2.5 py-1 text-[11px] sm:text-xs">
                   <Leaf className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  Bamboo Composite Frame
+                  Bamboo Frame
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950/70 border border-neutral-800/80 px-2.5 py-1 text-[11px] sm:text-xs">
+                  <Zap className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+                  Compact Design
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950/70 border border-neutral-800/80 px-2.5 py-1 text-[11px] sm:text-xs">
                   <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                   Electric Mobility
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-950/70 border border-neutral-800/80 px-2.5 py-1 text-[11px] sm:text-xs">
-                  <Lock className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+                  <Lock className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
                   Research Privacy Protected
                 </span>
               </div>

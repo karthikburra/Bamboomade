@@ -2,25 +2,6 @@ import React, { useState, useEffect } from "react";
 import { X, ExternalLink, Sparkles, ShieldCheck, Bike, Zap, ArrowRight, Eye, Leaf, PackageOpen, CheckCircle2, Coffee, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-/** Tri-wheel stability glyph: a triangle frame with a wheel at each corner */
-const TriWheelIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-    aria-hidden="true"
-  >
-    <path d="M12 6.5 6.4 16.2M12 6.5l5.6 9.7M7.5 18.5h9" />
-    <circle cx="12" cy="4.5" r="2.5" />
-    <circle cx="5" cy="18.5" r="2.5" />
-    <circle cx="19" cy="18.5" r="2.5" />
-  </svg>
-);
-
 interface BambooMobilityLaunchModalProps {
   defaultOpen?: boolean;
 }
@@ -217,23 +198,19 @@ export const BambooMobilityLaunchModal: React.FC<BambooMobilityLaunchModalProps>
                     </button>
                   </div>
 
-                  {/* Feature Highlights Grid */}
-                  <div className="grid grid-cols-2 gap-2 w-full text-xs">
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
-                      <Leaf className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                      <span className="text-[11px] font-medium text-neutral-200">Bamboo Composite</span>
+                  {/* Feature Highlights Grid - Matching the Official Poster */}
+                  <div className="grid grid-cols-3 gap-2 w-full text-xs">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-lg bg-neutral-950/60 p-2 sm:p-2.5 border border-neutral-800 text-center sm:text-left">
+                      <Leaf className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-200">Bamboo Frame</span>
                     </div>
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
-                      <Zap className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                      <span className="text-[11px] font-medium text-neutral-200">Electric Assist</span>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-lg bg-neutral-950/60 p-2 sm:p-2.5 border border-neutral-800 text-center sm:text-left">
+                      <PackageOpen className="h-4 w-4 text-sky-400 shrink-0" />
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-200">Compact Design</span>
                     </div>
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
-                      <PackageOpen className="h-3.5 w-3.5 text-sky-400 shrink-0" />
-                      <span className="text-[11px] font-medium text-neutral-200">Compact Foldable</span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-lg bg-neutral-950/60 p-2 border border-neutral-800">
-                      <TriWheelIcon className="h-3.5 w-3.5 text-purple-400 shrink-0" />
-                      <span className="text-[11px] font-medium text-neutral-200">Tri-Wheel Stability</span>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 rounded-lg bg-neutral-950/60 p-2 sm:p-2.5 border border-neutral-800 text-center sm:text-left">
+                      <Zap className="h-4 w-4 text-amber-400 shrink-0" />
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-neutral-200">Electric Mobility</span>
                     </div>
                   </div>
 

@@ -825,7 +825,7 @@ www.bamboomade.in
   <div style="padding: 28px 28px 24px 28px;">
     <h2 style="color: #111827; margin: 0 0 12px 0; font-size: 20px; font-weight: 700;">Hello ${data.name},</h2>
     <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-      Thank you for your interest in the <strong>BambooMade Foldable E Bamboo Bike</strong>! We've successfully registered your details for an exclusive test ride.
+      Thank you for your interest in the <strong>BambooMade E Bamboo Bike</strong>! We've successfully registered your details for an exclusive test ride.
     </p>
 
     <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
