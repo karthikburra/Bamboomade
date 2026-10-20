@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { SiMedium } from "react-icons/si";
 import { cn } from "@/lib/utils";
+import logoImage from "@assets/BambooMade-logo-darkmode.png";
 
 interface FooterProps {
   className?: string;
@@ -21,10 +22,14 @@ const Footer: React.FC<FooterProps> = ({ className }) => {
         <div className="lg:grid lg:grid-cols-3 xl:grid-cols-4 lg:gap-6 xl:gap-8">
           <div className="space-y-6 sm:space-y-8 lg:col-span-1">
             <div>
-              <span className="text-xl sm:text-2xl font-bold text-primary-50">
-                Bamboo<span className="text-secondary-400">Made</span>
-              </span>
-              <p className="mt-2 text-xs sm:text-sm text-primary-200">
+              <Link href="/" className="inline-block mb-3">
+                <img 
+                  src={logoImage} 
+                  alt="BambooMade" 
+                  className="h-8 sm:h-9 w-auto object-contain" 
+                />
+              </Link>
+              <p className="mt-1 text-xs sm:text-sm text-primary-200">
                 Innovating sustainable architecture with bamboo since 2019
               </p>
             </div>

@@ -35,8 +35,7 @@ import {
   UserCircle, LogOut, Settings, Edit, ClipboardList, Loader2, Clock, 
   Globe, LayoutDashboard, CreditCard, BookOpen, MessageSquare, Moon, Sun, Info, Bike
 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import darkLogoImage from "@assets/Lgo dark.png";
+import darkLogoImage from "@assets/BambooMade-logo-darkmode.png";
 
 // Custom component for Free Trial badge
 const FreeTrialBadge = ({ className = "" }: { className?: string }) => {
@@ -238,11 +237,12 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 sm:h-16 md:h-18 lg:h-20 max-w-screen-xl items-center px-2 sm:px-4 md:px-6 lg:px-8">
         <div className="mr-2 sm:mr-4 md:mr-6 lg:mr-8 flex">
-          <ScrollLink href="/" className="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
-            <img src={logoImage} alt="BambooMade Logo" className="h-7 sm:h-8 md:h-9 lg:h-10 w-auto" />
-            <span className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-green-300">
-              Bamboo<span className="text-green-400">Made</span>
-            </span>
+          <ScrollLink href="/" className="flex items-center">
+            <img 
+              src={logoImage} 
+              alt="BambooMade Logo" 
+              className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto object-contain transition-transform duration-200 hover:scale-105" 
+            />
           </ScrollLink>
         </div>
 
@@ -410,9 +410,9 @@ const Navbar: React.FC = () => {
               </SheetTrigger>
               <SheetContent className="w-[85%] sm:max-w-sm px-4 sm:px-6 bg-gray-900 border-l border-green-800/50 text-white">
                 <SheetHeader className="pb-2 sm:pb-3">
-                  <div className="flex items-center space-x-2 sm:space-x-3 mb-1 sm:mb-2">
-                    <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-10 w-auto" />
-                    <SheetTitle className="text-lg sm:text-xl md:text-2xl text-green-300">BambooMade</SheetTitle>
+                  <div className="flex items-center mb-1 sm:mb-2">
+                    <img src={logoImage} alt="BambooMade Logo" className="h-8 sm:h-9 w-auto object-contain" />
+                    <SheetTitle className="sr-only">BambooMade</SheetTitle>
                   </div>
                   <SheetDescription className="text-sm sm:text-base text-green-400">
                     Sustainable Bamboo Architecture
